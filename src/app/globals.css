@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+:root {
+  /* Core brand palette */
+  --fk-bg: #FAFAF8;
+  --fk-surface: #FFFFFF;
+  --fk-surface-muted: #F8FAFC;
+
+  --fk-text: #0F172A;
+  --fk-text-muted: #475569;
+  --fk-text-subtle: #94A3B8;
+
+  --fk-border: #E2E8F0;
+  --fk-border-strong: #CBD5E1;
+
+  --fk-primary: #2563EB;
+  --fk-primary-hover: #1D4ED8;
+  --fk-accent: #06B6D4;
+
+  /* Semantic palette */
+  --fk-success: #16A34A;
+  --fk-success-bg: #F0FDF4;
+  --fk-warning: #D97706;
+  --fk-warning-bg: #FFFBEB;
+  --fk-danger: #DC2626;
+  --fk-danger-bg: #FEF2F2;
+  --fk-server: #4F46E5;
+  --fk-server-bg: #EEF2FF;
+
+  /* Border radii */
+  --fk-radius-sm: 8px;
+  --fk-radius-md: 12px;
+  --fk-radius-lg: 16px;
+  --fk-radius-xl: 24px;
+
+  /* Spacing scale */
+  --fk-space-1: 4px;
+  --fk-space-2: 8px;
+  --fk-space-3: 12px;
+  --fk-space-4: 16px;
+  --fk-space-6: 24px;
+  --fk-space-8: 32px;
+  --fk-space-12: 48px;
+  --fk-space-16: 64px;
+}
+
+@theme {
+  /* Custom colors matching Stockholm Utility Minimalism */
+  --color-fk-bg: var(--fk-bg);
+  --color-fk-surface: var(--fk-surface);
+  --color-fk-surface-muted: var(--fk-surface-muted);
+
+  --color-fk-text: var(--fk-text);
+  --color-fk-text-muted: var(--fk-text-muted);
+  --color-fk-text-subtle: var(--fk-text-subtle);
+
+  --color-fk-border: var(--fk-border);
+  --color-fk-border-strong: var(--fk-border-strong);
+
+  --color-fk-primary: var(--fk-primary);
+  --color-fk-primary-hover: var(--fk-primary-hover);
+  --color-fk-accent: var(--fk-accent);
+
+  --color-fk-success: var(--fk-success);
+  --color-fk-success-bg: var(--fk-success-bg);
+  --color-fk-warning: var(--fk-warning);
+  --color-fk-warning-bg: var(--fk-warning-bg);
+  --color-fk-danger: var(--fk-danger);
+  --color-fk-danger-bg: var(--fk-danger-bg);
+  --color-fk-server: var(--fk-server);
+  --color-fk-server-bg: var(--fk-server-bg);
+
+  /* Border radii mapping */
+  --radius-fk-sm: var(--fk-radius-sm);
+  --radius-fk-md: var(--fk-radius-md);
+  --radius-fk-lg: var(--fk-radius-lg);
+  --radius-fk-xl: var(--fk-radius-xl);
+
+  /* Spacing mapping */
+  --spacing-fk-1: var(--fk-space-1);
+  --spacing-fk-2: var(--fk-space-2);
+  --spacing-fk-3: var(--fk-space-3);
+  --spacing-fk-4: var(--fk-space-4);
+  --spacing-fk-6: var(--fk-space-6);
+  --spacing-fk-8: var(--fk-space-8);
+  --spacing-fk-12: var(--fk-space-12);
+  --spacing-fk-16: var(--fk-space-16);
+
+  /* Typographic fonts mapping */
+  --font-sans: 'Inter', var(--font-geist-sans), sans-serif;
+  --font-mono: 'JetBrains Mono', var(--font-geist-mono), monospace;
+}
+
+body {
+  background: var(--fk-bg);
+  color: var(--fk-text);
+  font-family: var(--font-sans);
+}
