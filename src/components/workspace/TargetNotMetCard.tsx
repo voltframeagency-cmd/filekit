@@ -3,10 +3,12 @@
 import React from "react";
 import { useLanguage } from "../layout/LanguageContext";
 import { VerificationResult } from "@/utils/engine/types";
+import { EntitlementState } from "@/hooks/useWorkspaceState";
 
 interface TargetNotMetCardProps {
   filename: string;
   result: VerificationResult;
+  entitlement: EntitlementState;
   onReset: () => void;
   onTryServer: () => void;
 }
@@ -14,16 +16,21 @@ interface TargetNotMetCardProps {
 export default function TargetNotMetCard({
   filename,
   result,
+  entitlement,
   onReset,
   onTryServer,
 }: TargetNotMetCardProps) {
   const { t } = useLanguage();
 
   const handleDownload = () => {
-    alert(`Downloading partially compressed file: ${filename}`);
+    if (entitlement === "PAYMENT_REQUIRED") {
+      alert("Redirecting to paywall page (Phase 1C Integration)...");
+    } else {
+      alert(`Downloading partially compressed file: ${filename}`);
+    }
   };
 
-  // Human readable format helper
+  // Format bytes helper
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -31,6 +38,18 @@ export default function TargetNotMetCard({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   };
+
+  // Critical Fix 1: Safe result metrics format
+  let changeDescription = "";
+  if (result.outputSizeBytes < result.originalSizeBytes) {
+    changeDescription = `${result.reductionPercentage.toFixed(1)}% smaller`;
+  } else if (result.outputSizeBytes === result.originalSizeBytes) {
+    changeDescription = "No size reduction";
+  } else {
+    changeDescription = `Output is ${result.reductionPercentage.toFixed(1)}% larger`;
+  }
+
+  const isDownloadReady = entitlement === "DOWNLOAD_READY";
 
   return (
     <div className="flex-1 flex flex-col p-6 md:p-8 animate-in fade-in duration-200 text-left ltr:text-left rtl:text-right gap-6">
@@ -73,8 +92,8 @@ export default function TargetNotMetCard({
           <span className="font-bold text-fk-text font-mono"><bdi>{formatBytes(result.outputSizeBytes)}</bdi></span>
         </div>
         <div className="flex flex-col gap-0.5 text-right rtl:text-left">
-          <span className="text-[11px] text-fk-primary uppercase tracking-wider font-bold">Reduction</span>
-          <span className="font-bold text-fk-primary font-mono"><bdi>{result.reductionPercentage}% Reduced</bdi></span>
+          <span className="text-[11px] text-fk-primary uppercase tracking-wider font-bold">Change</span>
+          <span className="font-bold text-fk-primary font-mono"><bdi>{changeDescription}</bdi></span>
         </div>
       </div>
 
@@ -84,20 +103,26 @@ export default function TargetNotMetCard({
           Available Next Steps
         </span>
         
-        {/* Option 1: Download anyway */}
+        {/* Option 1: Download anyway / Unlock */}
         <button
           type="button"
           onClick={handleDownload}
           className="w-full flex items-center justify-between p-3.5 border border-fk-border hover:border-fk-primary rounded-fk-md bg-white hover:bg-fk-primary/[0.01] transition-colors duration-150 text-left ltr:text-left rtl:text-right"
         >
           <div className="flex flex-col min-w-0">
-            <span className="text-[14px] font-bold text-fk-text">Download Valid Result</span>
-            <span className="text-[11px] text-fk-text-subtle mt-0.5">Save the current version ({formatBytes(result.outputSizeBytes)}) anyway.</span>
+            <span className="text-[14px] font-bold text-fk-text">
+              {isDownloadReady ? "Download Valid Result" : "Unlock Download"}
+            </span>
+            <span className="text-[11px] text-fk-text-subtle mt-0.5">
+              {isDownloadReady 
+                ? `Save the current version (${formatBytes(result.outputSizeBytes)}) anyway.` 
+                : "Complete premium acquisition to unlock the partial file."}
+            </span>
           </div>
           <span className="text-[13px] font-bold text-fk-primary">Download →</span>
         </button>
 
-        {/* Option 2: Server fallback for stronger compression */}
+        {/* Option 2: Server fallback for stronger compression - forces consent */}
         {result.processingLocation === "local" && (
           <button
             type="button"

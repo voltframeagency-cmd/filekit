@@ -33,6 +33,7 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
     verificationResult,
     failure,
     consentRecord,
+    entitlement,
     loadFile,
     removeFile,
     startProcessing,
@@ -233,12 +234,14 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
               <VerifiedResultCard
                 filename={file.name}
                 result={verificationResult}
+                entitlement={entitlement}
                 onReset={removeFile}
               />
             ) : (
               <TargetNotMetCard
                 filename={file.name}
                 result={verificationResult}
+                entitlement={entitlement}
                 onReset={removeFile}
                 onTryServer={recordServerConsent}
               />
@@ -278,6 +281,15 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
           </div>
         )}
       </div>
+
+      {/* Conditional bottom troubleText reassurance banner */}
+      {state !== "COMPLETED" && state !== "FAILED" && (
+        <div className="max-w-[840px] mx-auto w-full text-center mt-4 px-2">
+          <p className="text-[12px] text-fk-text-subtle font-medium leading-relaxed">
+            {t("workspace.troubleText")}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

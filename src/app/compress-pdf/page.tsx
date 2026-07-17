@@ -44,13 +44,6 @@ export default function CompressPdfPage() {
           <UploadWorkspace initialFile={initialFile} />
         </section>
 
-        {/* Bottom Reassurance Banner */}
-        <section className="max-w-[840px] mx-auto w-full text-center px-2">
-          <p className="text-[12px] text-fk-text-subtle font-medium leading-relaxed">
-            {t("workspace.troubleText")}
-          </p>
-        </section>
-
         {/* Trust Panel */}
         <section className="w-full mt-6">
           <TrustPanel />

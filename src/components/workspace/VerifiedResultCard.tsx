@@ -3,25 +3,32 @@
 import React from "react";
 import { useLanguage } from "../layout/LanguageContext";
 import { VerificationResult } from "@/utils/engine/types";
+import { EntitlementState } from "@/hooks/useWorkspaceState";
 
 interface VerifiedResultCardProps {
   filename: string;
   result: VerificationResult;
+  entitlement: EntitlementState;
   onReset: () => void;
 }
 
 export default function VerifiedResultCard({
   filename,
   result,
+  entitlement,
   onReset,
 }: VerifiedResultCardProps) {
   const { t } = useLanguage();
 
   const handleDownload = () => {
-    alert(`Downloading compressed file: ${filename}`);
+    if (entitlement === "PAYMENT_REQUIRED") {
+      alert("Redirecting to paywall page (Phase 1C Integration)...");
+    } else {
+      alert(`Downloading compressed file: ${filename}`);
+    }
   };
 
-  // Human readable format helper
+  // Format bytes helper
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -29,6 +36,18 @@ export default function VerifiedResultCard({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   };
+
+  // Critical Fix 1: Safe result metrics format
+  let changeDescription = "";
+  if (result.outputSizeBytes < result.originalSizeBytes) {
+    changeDescription = `${result.reductionPercentage.toFixed(1)}% smaller`;
+  } else if (result.outputSizeBytes === result.originalSizeBytes) {
+    changeDescription = "No size reduction";
+  } else {
+    changeDescription = `Output is ${result.reductionPercentage.toFixed(1)}% larger`;
+  }
+
+  const isDownloadReady = entitlement === "DOWNLOAD_READY";
 
   return (
     <div className="flex-1 flex flex-col p-6 md:p-8 animate-in fade-in duration-200 text-center items-center gap-6">
@@ -80,7 +99,7 @@ export default function VerifiedResultCard({
       {/* Stats Description */}
       <div className="flex flex-col gap-1 text-[13px]">
         <p className="font-bold text-fk-text">
-          <bdi>{result.reductionPercentage}% Reduced</bdi>  •  <span className="text-fk-success">Target met</span>
+          <bdi>{changeDescription}</bdi>  •  <span className="text-fk-success">Target met</span>
         </p>
         <span className="text-fk-text-subtle text-[11px]">
           Processed {result.processingLocation === "local" ? "privately on your device" : "securely via server"}
@@ -92,9 +111,13 @@ export default function VerifiedResultCard({
         <button
           type="button"
           onClick={handleDownload}
-          className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fk-primary focus-visible:ring-offset-2"
+          className={`flex-1 h-[50px] text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+            isDownloadReady 
+              ? "bg-fk-primary hover:bg-fk-primary-hover focus-visible:ring-fk-primary" 
+              : "bg-fk-server hover:bg-indigo-700 focus-visible:ring-fk-server"
+          }`}
         >
-          Download Compressed PDF
+          {isDownloadReady ? "Download Compressed PDF" : "Unlock Download"}
         </button>
         <button
           type="button"

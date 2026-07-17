@@ -1,4 +1,4 @@
-import { CompressionEngine, ProcessingJob, ProcessingStage, ProcessingProgressEvent, VerificationResult, ProcessingFailure } from "./types";
+import { CompressionEngine, ProcessingJob, ProcessingStage, VerificationResult, ProcessingFailure } from "./types";
 
 export class MockCompressionEngine implements CompressionEngine {
   id = "mock-wasm-retained-engine";
@@ -15,6 +15,11 @@ export class MockCompressionEngine implements CompressionEngine {
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     try {
+      // Rule: Reject originalBytes <= 0
+      if (file.size <= 0) {
+        throw new Error("Validation Error: Cannot process empty files (0 bytes original size).");
+      }
+
       for (const item of stages) {
         // 1. Check for cancellation before executing each phase
         if (job.abortSignal.aborted) {
@@ -53,14 +58,18 @@ export class MockCompressionEngine implements CompressionEngine {
 
       // Mock target-not-met trigger
       if (fileNameLower.includes("not-met") || fileNameLower === "not-met.pdf") {
-        const originalBytes = file.size > 0 ? file.size : 4.8 * 1024 * 1024;
-        // Output size exceeds 2 MB target (e.g. 3.2 MB)
-        const outputBytes = Math.round(3.2 * 1024 * 1024);
+        const originalBytes = file.size;
+        // In visual audit we want realistic values: e.g. 4.8MB original size
+        const visualOriginal = originalBytes < 1000 ? 4.8 * 1024 * 1024 : originalBytes;
+        const visualOutput = Math.round(3.2 * 1024 * 1024);
         
+        const delta = visualOutput - visualOriginal;
+        const pct = parseFloat((Math.abs(delta / visualOriginal) * 100).toFixed(1));
+
         const result: VerificationResult = {
-          originalSizeBytes: originalBytes,
-          outputSizeBytes: outputBytes,
-          reductionPercentage: Math.round(((originalBytes - outputBytes) / originalBytes) * 100),
+          originalSizeBytes: visualOriginal,
+          outputSizeBytes: visualOutput,
+          reductionPercentage: pct,
           pagesBefore: 24,
           pagesAfter: 24,
           targetRequested: targetSize,
@@ -70,20 +79,62 @@ export class MockCompressionEngine implements CompressionEngine {
           processingLocation: "local",
           engineIdentifier: this.id,
           completionTimestamp: Date.now(),
-          warnings: ["Image compression limits reached. Further reduction could degrade text legibility."]
+          warnings: ["Image compression limits reached. Further reduction could degrade text legibility."],
+          headerValid: true,
+          parserReadable: true,
+          eofStructureValid: true,
+          mimeValid: true,
+          fatalErrors: []
+        };
+        job.onSuccess(result);
+        return;
+      }
+
+      // Mock output larger than input trigger
+      if (fileNameLower.includes("larger") || fileNameLower === "larger.pdf") {
+        const originalBytes = file.size;
+        const visualOriginal = originalBytes < 1000 ? 1.2 * 1024 * 1024 : originalBytes;
+        const visualOutput = Math.round(1.5 * 1024 * 1024); // Output is larger!
+        
+        const delta = visualOutput - visualOriginal;
+        const pct = parseFloat((Math.abs(delta / visualOriginal) * 100).toFixed(1));
+
+        const result: VerificationResult = {
+          originalSizeBytes: visualOriginal,
+          outputSizeBytes: visualOutput,
+          reductionPercentage: pct,
+          pagesBefore: 24,
+          pagesAfter: 24,
+          targetRequested: targetSize,
+          targetAchieved: false,
+          outputMimeType: "application/pdf",
+          isReadable: true,
+          processingLocation: "local",
+          engineIdentifier: this.id,
+          completionTimestamp: Date.now(),
+          warnings: ["Embedded font expansion occurred during restructuring."],
+          headerValid: true,
+          parserReadable: true,
+          eofStructureValid: true,
+          mimeValid: true,
+          fatalErrors: []
         };
         job.onSuccess(result);
         return;
       }
 
       // Normal mock success
-      const originalBytes = file.size > 0 ? file.size : 4.8 * 1024 * 1024;
-      const outputBytes = Math.round(originalBytes * 0.38); // 62% reduction
+      const originalBytes = file.size;
+      const visualOriginal = originalBytes < 1000 ? 4.8 * 1024 * 1024 : originalBytes;
+      const visualOutput = Math.round(visualOriginal * 0.38); // 62% reduction
       
+      const delta = visualOutput - visualOriginal;
+      const pct = parseFloat((Math.abs(delta / visualOriginal) * 100).toFixed(1));
+
       const result: VerificationResult = {
-        originalSizeBytes: originalBytes,
-        outputSizeBytes: outputBytes,
-        reductionPercentage: 62,
+        originalSizeBytes: visualOriginal,
+        outputSizeBytes: visualOutput,
+        reductionPercentage: pct,
         pagesBefore: 24,
         pagesAfter: 24,
         targetRequested: targetSize,
@@ -93,7 +144,12 @@ export class MockCompressionEngine implements CompressionEngine {
         processingLocation: "local",
         engineIdentifier: this.id,
         completionTimestamp: Date.now(),
-        warnings: []
+        warnings: [],
+        headerValid: true,
+        parserReadable: true,
+        eofStructureValid: true,
+        mimeValid: true,
+        fatalErrors: []
       };
       
       job.onSuccess(result);
@@ -101,7 +157,7 @@ export class MockCompressionEngine implements CompressionEngine {
     } catch (e: any) {
       if (job.abortSignal.aborted) return;
       job.onError({
-        category: "UNKNOWN",
+        category: e.message && e.message.includes("Validation") ? "CORRUPT_FILE" : "UNKNOWN",
         message: e.message || "An unexpected error occurred during local processing.",
         recoverable: true,
         recommendedAction: "Try running the operation again or use server-assisted processing.",

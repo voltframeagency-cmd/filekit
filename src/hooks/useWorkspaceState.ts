@@ -11,7 +11,9 @@ import {
   ServerConsentRecord,
   ProcessingJob
 } from "@/utils/engine/types";
-import { MockCompressionEngine } from "@/utils/engine/mockEngine";
+import { engineRegistry } from "@/utils/engine/engineRegistry";
+
+export type EntitlementState = "DOWNLOAD_READY" | "PAYMENT_REQUIRED";
 
 export function useWorkspaceState(initialFile: File | null = null) {
   const [state, setState] = useState<WorkspaceState>("EMPTY");
@@ -24,6 +26,9 @@ export function useWorkspaceState(initialFile: File | null = null) {
   const [failure, setFailure] = useState<ProcessingFailure | null>(null);
   const [consentRecord, setConsentRecord] = useState<ServerConsentRecord | null>(null);
   const [targetSize, setTargetSize] = useState<string>("Under 2 MB (Recommended)");
+  
+  // Entitlement State for Phase 1C integration
+  const [entitlement, setEntitlement] = useState<EntitlementState>("DOWNLOAD_READY");
   
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -43,6 +48,14 @@ export function useWorkspaceState(initialFile: File | null = null) {
     setVerificationResult(null);
     setFailure(null);
     setConsentRecord(null);
+
+    // Mock entitlement trigger: if file contains 'premium' or 'paywall', require payment
+    const fileNameLower = selectedFile.name.toLowerCase();
+    if (fileNameLower.includes("premium") || fileNameLower.includes("paywall")) {
+      setEntitlement("PAYMENT_REQUIRED");
+    } else {
+      setEntitlement("DOWNLOAD_READY");
+    }
 
     // Simulate preflight inspection delay (1.2s)
     setTimeout(() => {
@@ -89,9 +102,9 @@ export function useWorkspaceState(initialFile: File | null = null) {
     setProgressEvent(null);
     setFailure(null);
 
-    const engine = new MockCompressionEngine();
+    // Fetch engine from registry (throws in production if mock engine is requested)
+    const engine = engineRegistry.getEngine("mock-wasm-retained-engine");
 
-    // Map location: check if we route locally or via server
     const isServerRoute = forceServer || state === "SERVER_REQUIRED" || (state === "SERVER_RECOMMENDED" && consentRecord?.consentGranted);
     
     const job: ProcessingJob = {
@@ -101,36 +114,45 @@ export function useWorkspaceState(initialFile: File | null = null) {
         setProgressEvent(event);
       },
       onSuccess: (result) => {
-        // Output Verification Phase
         setState("VERIFYING");
         
         setTimeout(() => {
-          // Double check abort signal
           if (controller.signal.aborted) return;
 
-          // Run Verification Algorithm
+          // Critical Fix 6: Strengthen verification checks
           const isValidPdf = result.outputMimeType === "application/pdf" && result.outputSizeBytes > 0;
           const isPageCountPreserved = result.pagesBefore === result.pagesAfter;
+          
+          const isVerificationPassed = 
+            result.headerValid && 
+            result.parserReadable && 
+            result.eofStructureValid && 
+            result.mimeValid && 
+            result.fatalErrors.length === 0;
 
-          if (!isValidPdf || !isPageCountPreserved) {
+          if (!isValidPdf || !isPageCountPreserved || !isVerificationPassed) {
+            const errors = [...result.fatalErrors];
+            if (!isValidPdf) errors.push("Output is not a valid PDF MIME type.");
+            if (!isPageCountPreserved) errors.push("Page count mismatch.");
+
             setFailure({
               category: "OUTPUT_VERIFICATION_FAILED",
-              message: "Generated PDF document failed structural verification checks.",
+              message: "The compressed file failed PDF structural verification checks.",
               recoverable: true,
               recommendedAction: "Try compressing again with a different target size.",
-              diagnosticCode: "ERR_VERIFICATION_BAD_STRUCTURE"
+              diagnosticCode: "ERR_VERIFICATION_FAILED: " + errors.join(", ")
             });
             setState("FAILED");
             return;
           }
 
-          // If successful, record results and set COMPLETED
           setVerificationResult({
             ...result,
             processingLocation: isServerRoute ? "server" : "local",
           });
+          
           setState("COMPLETED");
-        }, 800); // Verify stage latency
+        }, 800);
       },
       onError: (err) => {
         if (controller.signal.aborted) return;
@@ -160,15 +182,12 @@ export function useWorkspaceState(initialFile: File | null = null) {
       abortControllerRef.current = null;
     }
     
-    // Revoke any hypothetical temporary URLs to clear memory
     if (typeof window !== "undefined") {
-      // In a real app we'd call URL.revokeObjectURL(url) on buffer URLs
       console.log("Workspace state: Aborted job, cleaned up object URLs and memory buffers.");
     }
 
     setProgressEvent(null);
 
-    // Return to a safe retry state
     if (file) {
       const evaluatedState = FileCapabilityRouter.evaluate({
         file,
@@ -188,10 +207,9 @@ export function useWorkspaceState(initialFile: File | null = null) {
       consentGranted: true,
       timestamp: Date.now(),
       fileHash: "sha256-mock-hash-value-178429",
-      transportSecurity: "TLS_1.3",
+      transportSecurity: "TLS",
     });
 
-    // Move to next step or immediately initiate processing
     setState("AWAITING_SERVER_CONSENT");
   };
 
@@ -217,6 +235,8 @@ export function useWorkspaceState(initialFile: File | null = null) {
     consentRecord,
     targetSize,
     setTargetSize,
+    entitlement,
+    setEntitlement,
     loadFile,
     removeFile,
     startProcessing,

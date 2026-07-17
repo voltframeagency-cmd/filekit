@@ -6,18 +6,70 @@ export interface CapabilityInput {
   isPasswordProtected?: boolean;
   isCorrupted?: boolean;
   requestedOperation: string;
+  hasPdfSignature?: boolean;
+  estimatedDecodedMemoryMB?: number;
+  browserMemoryClassGB?: number; // navigator.deviceMemory or estimate
+  hasWebWorker?: boolean;
+  hasWasmSupport?: boolean;
+  priorLocalFailureCount?: number;
 }
 
-export class FileCapabilityRouter {
-  static evaluate(input: CapabilityInput): WorkspaceState {
-    const { file, pages = 24, isPasswordProtected = false, isCorrupted = false, requestedOperation } = input;
+export interface RouterThresholds {
+  maxLocalFileSizeMB: number;
+  recommendedLocalFileSizeMB: number;
+  maxLocalPageCount: number;
+  warningPageCount: number;
+  minMemoryClassGB: number;
+  requireWasm: boolean;
+  requireWorker: boolean;
+}
 
-    // 1. Inspect file extension and MIME type
-    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-    if (!isPdf) {
+// Configurable thresholds matching system constraints
+export const DEFAULT_THRESHOLDS: RouterThresholds = {
+  maxLocalFileSizeMB: 100,
+  recommendedLocalFileSizeMB: 50,
+  maxLocalPageCount: 500,
+  warningPageCount: 50,
+  minMemoryClassGB: 4,
+  requireWasm: true,
+  requireWorker: true,
+};
+
+export class FileCapabilityRouter {
+  private static thresholds: RouterThresholds = DEFAULT_THRESHOLDS;
+
+  static configure(customThresholds: Partial<RouterThresholds>) {
+    this.thresholds = { ...this.thresholds, ...customThresholds };
+  }
+
+  static getThresholds(): RouterThresholds {
+    return this.thresholds;
+  }
+
+  static evaluate(input: CapabilityInput): WorkspaceState {
+    const {
+      file,
+      pages = 24,
+      isPasswordProtected = false,
+      isCorrupted = false,
+      requestedOperation,
+      hasPdfSignature = true,
+      estimatedDecodedMemoryMB,
+      browserMemoryClassGB = 4,
+      hasWebWorker = typeof window !== "undefined" && typeof window.Worker !== "undefined",
+      hasWasmSupport = typeof window !== "undefined" && typeof (window as any).WebAssembly !== "undefined",
+      priorLocalFailureCount = 0,
+    } = input;
+
+    const t = this.thresholds;
+
+    // 1. MIME and Extension Verification
+    const isPdfExtension = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdfExtension) {
       return "UNSUPPORTED";
     }
 
+    // 2. Check mock filename routes for visual testing
     const fileNameLower = file.name.toLowerCase();
     if (fileNameLower.includes("server-req")) {
       return "SERVER_REQUIRED";
@@ -26,44 +78,58 @@ export class FileCapabilityRouter {
       return "SERVER_RECOMMENDED";
     }
 
-    // 2. Readability/corruption check
-    if (isCorrupted) {
-      return "FAILED";
+    // 3. Signature & Parser Verification
+    if (!hasPdfSignature || isCorrupted) {
+      return "UNSUPPORTED"; // Or FAILED/UNSUPPORTED depending on policy
     }
 
-    // 3. Password protection check
+    // 4. Security Check (Encryption / Password protection)
     if (isPasswordProtected) {
-      return "FAILED"; // Or custom warning state in future
+      // Password protected files cannot be parsed locally without user inputting password
+      return "UNSUPPORTED";
     }
 
-    // 4. File size thresholds
+    // 5. Check operations requirements
+    if (requestedOperation !== "compress") {
+      return "UNSUPPORTED";
+    }
+
+    // 6. Check environment capability (WASM and Worker requirements)
+    if (t.requireWasm && !hasWasmSupport) {
+      return "SERVER_REQUIRED"; // Missing WASM fallback to server processing
+    }
+    if (t.requireWorker && !hasWebWorker) {
+      return "SERVER_RECOMMENDED"; // Lack of multi-threading makes local operation slow
+    }
+
+    // 7. Decoded Memory Estimation & Browser Memory limits
     const ONE_MB = 1024 * 1024;
     const fileSizeMB = file.size / ONE_MB;
+    const estMemoryMB = estimatedDecodedMemoryMB ?? (pages * 3.5 + fileSizeMB);
 
-    // Web Worker support check
-    const hasWebWorker = typeof window !== "undefined" && typeof window.Worker !== "undefined";
+    // If browser is running low-end device profile
+    if (browserMemoryClassGB < t.minMemoryClassGB) {
+      if (fileSizeMB > t.recommendedLocalFileSizeMB / 2) {
+        return "SERVER_REQUIRED";
+      }
+    }
 
-    // Estimate decoded memory: ~3MB per page average for rendering canvas memory + file buffer
-    const estimatedMemoryMB = pages * 3 + fileSizeMB;
-
-    // Simulate browser capability check (standard threshold for local WebAssembly/JS memory limits is ~512MB)
-    const browserMemoryLimitMB = typeof navigator !== "undefined" && (navigator as any).deviceMemory
-      ? (navigator as any).deviceMemory * 1024 * 0.1 // 10% of total system RAM
-      : 512;
-
-    // Capability Decision Routing logic
-    if (fileSizeMB > 100 || estimatedMemoryMB > browserMemoryLimitMB) {
-      // Too large for safe local browser memory processing
+    // 8. Size and complexity decision matrix
+    if (fileSizeMB > t.maxLocalFileSizeMB || pages > t.maxLocalPageCount) {
       return "SERVER_REQUIRED";
     }
 
-    if (fileSizeMB > 50 || !hasWebWorker) {
-      // Local processing possible but slow, or lacking Web Worker offloading
+    // 9. Prior failures local-engine routing guard
+    if (priorLocalFailureCount > 0) {
       return "SERVER_RECOMMENDED";
     }
 
-    if (pages > 50) {
-      // High page count might lag UI thread slightly
+    if (fileSizeMB > t.recommendedLocalFileSizeMB) {
+      return "SERVER_RECOMMENDED";
+    }
+
+    // 10. High page count warnings
+    if (pages > t.warningPageCount) {
       return "LOCAL_WITH_WARNING";
     }
 

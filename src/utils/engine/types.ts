@@ -47,6 +47,11 @@ export interface VerificationResult {
   engineIdentifier: string;
   completionTimestamp: number;
   warnings: string[];
+  headerValid: boolean;
+  parserReadable: boolean;
+  eofStructureValid: boolean;
+  mimeValid: boolean;
+  fatalErrors: string[];
 }
 
 export type FailureCategory =
@@ -74,7 +79,7 @@ export interface ServerConsentRecord {
   consentGranted: boolean;
   timestamp: number;
   fileHash: string;
-  transportSecurity: "TLS_1.3";
+  transportSecurity: "TLS";
 }
 
 export interface ProcessingJob {
