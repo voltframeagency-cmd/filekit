@@ -3,6 +3,11 @@ import { FileCapabilityRouter, DEFAULT_THRESHOLDS } from "../../capabilityRouter
 import { engineRegistry } from "../engineRegistry";
 import { MockCompressionEngine } from "../mockEngine";
 import { VerificationResult, ProcessingFailure } from "../types";
+import { PdfPreflightInspector } from "../PdfPreflightInspector";
+import { CompressionStrategySelector } from "../CompressionStrategySelector";
+import { TargetSizeController } from "../TargetSizeController";
+import * as fs from "fs";
+import * as path from "path";
 
 // Helper to create mock File objects
 function createMockFile(name: string, size: number, type: string = "application/pdf"): File {
@@ -488,6 +493,73 @@ function runBackToResultPreservesOutputTest() {
   console.log("✓ Back to Result preserves output verified.");
 }
 
+async function runLocalEngineTests() {
+  console.log("Running Local PDF Engine Integration & Unit Tests...");
+
+  const getBuffer = (name: string): ArrayBuffer => {
+    const filePath = path.join(__dirname, "../../../../public/test-fixtures", name);
+    const buf = fs.readFileSync(filePath);
+    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+  };
+
+  // 1. Password/encryption validation tests
+  const encryptedBuf = getBuffer("encrypted_aes256.pdf");
+  await assert.rejects(async () => {
+    await PdfPreflightInspector.inspect(encryptedBuf);
+  }, /PDF_ENCRYPTED_OR_LOCKED/, "Must throw encrypted/locked on encrypted files");
+
+  const pwdBuf = getBuffer("password_protected.pdf");
+  await assert.rejects(async () => {
+    await PdfPreflightInspector.inspect(pwdBuf);
+  }, /PDF_ENCRYPTED_OR_LOCKED/, "Must throw encrypted/locked on password protected files");
+
+  // 2. Digital Signature detection tests
+  const signedBuf = getBuffer("signed_digital.pdf");
+  await assert.rejects(async () => {
+    await PdfPreflightInspector.inspect(signedBuf);
+  }, /UNSUPPORTED_SIGNED_DOCUMENT/, "Must throw signature error on signed files");
+
+  const signedStrategy = await CompressionStrategySelector.select(signedBuf);
+  assert.strictEqual(signedStrategy, "UNSUPPORTED_SIGNED_DOCUMENT", "Must select signature strategy");
+
+  // 3. Image encoding strategy selector tests
+  const scanBuf = getBuffer("scan_balanced.pdf");
+  const scanStrategy = await CompressionStrategySelector.select(scanBuf);
+  assert.strictEqual(scanStrategy, "UNSUPPORTED_IMAGE_ENCODING", "Scanned files with LZW/Indexed must be unsupported color/filter");
+
+  const textBuf = getBuffer("text_simple.pdf");
+  const textStrategy = await CompressionStrategySelector.select(textBuf);
+  assert.strictEqual(textStrategy, "NO_IMAGES_FOUND", "Text files must select NO_IMAGES_FOUND");
+
+  // 4. TargetSizeController tests
+  const step0 = TargetSizeController.getStep(0);
+  assert.strictEqual(step0.scale, 0.8);
+  assert.strictEqual(step0.quality, 0.75);
+
+  const shouldStopTrue = TargetSizeController.shouldStop({
+    iteration: 0,
+    maxIterations: 3,
+    outputSize: 500,
+    targetSize: 1000
+  });
+  assert.strictEqual(shouldStopTrue, true);
+
+  const shouldStopFalse = TargetSizeController.shouldStop({
+    iteration: 0,
+    maxIterations: 3,
+    outputSize: 1500,
+    targetSize: 1000
+  });
+  assert.strictEqual(shouldStopFalse, false);
+
+  const orig = new Uint8Array([1, 2, 3]);
+  const largerComp = new Uint8Array([1, 2, 3, 4]); // size growth!
+  const bestBuf = TargetSizeController.getBestBuffer(orig, largerComp);
+  assert.deepStrictEqual(bestBuf, orig, "Growth guard must return original buffer");
+
+  console.log("✓ Local PDF Engine Integration & Unit Tests passed successfully.");
+}
+
 // Execute all test runner cases
 async function main() {
   try {
@@ -513,6 +585,7 @@ async function main() {
     await runAdapterProductionGuardTest();
     runRouteSpecificTrustCopyTest();
     runBackToResultPreservesOutputTest();
+    await runLocalEngineTests();
 
     console.log("\n--------------------------------------------------");
     console.log("ALL TESTS COMPLETED SUCCESSFULLY!");
