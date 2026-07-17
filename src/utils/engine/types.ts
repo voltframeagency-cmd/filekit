@@ -94,3 +94,62 @@ export interface CompressionEngine {
   id: string;
   compress(file: File, targetSize: string, job: ProcessingJob): Promise<void>;
 }
+
+export type EntitlementStatus =
+  | "FREE_DOWNLOAD"
+  | "SINGLE_EXPORT"
+  | "PASS_ACTIVE"
+  | "PRO_ACTIVE"
+  | "NONE";
+
+export interface EntitlementCheckInput {
+  fileHash: string;
+  fileSize: number;
+  locale: string;
+}
+
+export interface EntitlementResult {
+  status: EntitlementStatus;
+  isEligible: boolean;
+  reason?: string;
+}
+
+export interface PurchasePlan {
+  id: string;
+  price: string;
+  name: string;
+  billingFrequency: "once" | "monthly";
+  renewalLanguage: string;
+  tagline: string;
+  badge?: string;
+}
+
+export interface CheckoutSession {
+  sessionId: string;
+  planId: string;
+  checkoutUrl: string;
+}
+
+export interface PaymentConfirmation {
+  transactionId: string;
+  planId: string;
+  timestamp: number;
+}
+
+export interface DownloadGrant {
+  grantId: string;
+  objectUrl: string;
+  expiresAt: number;
+}
+
+export interface EntitlementService {
+  check(input: EntitlementCheckInput): Promise<EntitlementResult>;
+  grant(input: PaymentConfirmation): Promise<DownloadGrant>;
+  registerMockGrant(fileHash: string): void;
+  clearMockGrants(): void;
+}
+
+export interface CheckoutAdapter {
+  createSession(planId: string, fileHash: string): Promise<CheckoutSession>;
+  verifyPayment(sessionId: string): Promise<PaymentConfirmation>;
+}

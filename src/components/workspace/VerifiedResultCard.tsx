@@ -2,13 +2,13 @@
 
 import React from "react";
 import { useLanguage } from "../layout/LanguageContext";
-import { VerificationResult } from "@/utils/engine/types";
-import { EntitlementState } from "@/hooks/useWorkspaceState";
+import { VerificationResult, EntitlementStatus } from "@/utils/engine/types";
 
 interface VerifiedResultCardProps {
   filename: string;
   result: VerificationResult;
-  entitlement: EntitlementState;
+  entitlement: EntitlementStatus;
+  downloadUrl?: string | null;
   onReset: () => void;
 }
 
@@ -16,13 +16,21 @@ export default function VerifiedResultCard({
   filename,
   result,
   entitlement,
+  downloadUrl,
   onReset,
 }: VerifiedResultCardProps) {
   const { t } = useLanguage();
 
   const handleDownload = () => {
-    if (entitlement === "PAYMENT_REQUIRED") {
+    if (entitlement === "NONE") {
       alert("Redirecting to paywall page (Phase 1C Integration)...");
+    } else if (downloadUrl) {
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `compressed_${filename}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } else {
       alert(`Downloading compressed file: ${filename}`);
     }
@@ -47,7 +55,7 @@ export default function VerifiedResultCard({
     changeDescription = `Output is ${result.reductionPercentage.toFixed(1)}% larger`;
   }
 
-  const isDownloadReady = entitlement === "DOWNLOAD_READY";
+  const isDownloadReady = entitlement !== "NONE";
 
   return (
     <div className="flex-1 flex flex-col p-6 md:p-8 animate-in fade-in duration-200 text-center items-center gap-6">

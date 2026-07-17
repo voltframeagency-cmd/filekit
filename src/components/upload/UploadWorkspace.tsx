@@ -16,6 +16,7 @@ import ServerFallbackConsent from "../workspace/ServerFallbackConsent";
 import VerifiedResultCard from "../workspace/VerifiedResultCard";
 import TargetNotMetCard from "../workspace/TargetNotMetCard";
 import ErrorRecoveryPanel from "../workspace/ErrorRecoveryPanel";
+import ResultFirstPaywall from "../workspace/ResultFirstPaywall";
 
 interface UploadWorkspaceProps {
   initialFile?: File | null;
@@ -34,6 +35,11 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
     failure,
     consentRecord,
     entitlement,
+    checkoutPending,
+    paymentError,
+    executePlanCheckout,
+    triggerCheckoutCancel,
+    downloadUrl,
     loadFile,
     removeFile,
     startProcessing,
@@ -235,6 +241,7 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
                 filename={file.name}
                 result={verificationResult}
                 entitlement={entitlement}
+                downloadUrl={downloadUrl}
                 onReset={removeFile}
               />
             ) : (
@@ -242,11 +249,24 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
                 filename={file.name}
                 result={verificationResult}
                 entitlement={entitlement}
+                downloadUrl={downloadUrl}
                 onReset={removeFile}
                 onTryServer={recordServerConsent}
               />
             )}
           </>
+        )}
+
+        {/* Result-First Paywall */}
+        {state === "PAYMENT_REQUIRED" && file && verificationResult && (
+          <ResultFirstPaywall
+            filename={file.name}
+            result={verificationResult}
+            onSelectPlan={executePlanCheckout}
+            onCancel={removeFile}
+            checkoutPending={checkoutPending}
+            paymentError={paymentError}
+          />
         )}
 
         {/* Failure Panel */}
