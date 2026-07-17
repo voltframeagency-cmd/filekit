@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { FileCapabilityRouter } from "@/utils/capabilityRouter";
 
 export type WorkspaceState =
   | "EMPTY"
@@ -44,9 +45,13 @@ export function useWorkspaceState(initialFile: File | null = null) {
 
     // Simulate inspection delay (1.2s) for local security and file parsing
     setTimeout(() => {
-      // In this demo, we assume the file is safe and processable locally
-      const isPdf = selectedFile.type === "application/pdf" || selectedFile.name.endsWith(".pdf");
-      if (!isPdf) {
+      const evaluatedState = FileCapabilityRouter.evaluate({
+        file: selectedFile,
+        pages: 24, // Mock page count or extract in future
+        requestedOperation: "compress",
+      });
+
+      if (evaluatedState === "UNSUPPORTED") {
         setState("UNSUPPORTED");
         return;
       }
@@ -55,10 +60,9 @@ export function useWorkspaceState(initialFile: File | null = null) {
         name: selectedFile.name,
         size: formatBytes(selectedFile.size),
         sizeBytes: selectedFile.size,
-        // Mocking page count or default to a solid number matching mockup spec (e.g. 24 pages)
         pages: 24,
       });
-      setState("LOCAL_SAFE");
+      setState(evaluatedState);
     }, 1200);
   };
 

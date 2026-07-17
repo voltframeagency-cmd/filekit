@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/components/layout/AppHeader";
 import AppFooter from "@/components/layout/AppFooter";
@@ -8,20 +8,27 @@ import ToolHero from "@/components/layout/ToolHero";
 import ToolGrid from "@/components/layout/ToolGrid";
 import TrustPanel from "@/components/layout/TrustPanel";
 import UploadDropzone from "@/components/upload/UploadDropzone";
+import ActionChooser from "@/components/layout/ActionChooser";
 import { fileManager } from "@/utils/fileManager";
 
 export default function Home() {
   const router = useRouter();
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isChooserOpen, setIsChooserOpen] = useState(false);
 
   const handleFileSelect = (file: File) => {
-    // If it's a PDF, redirect to compress tool and pre-load file
-    if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-      fileManager.setActiveFile(file);
+    // Stage the file and prompt user for intent choice
+    setUploadedFile(file);
+    setIsChooserOpen(true);
+  };
+
+  const handleActionSelect = (actionId: string) => {
+    if (actionId === "compress-pdf" && uploadedFile) {
+      fileManager.setActiveFile(uploadedFile);
       router.push("/compress-pdf");
-    } else {
-      // Standard fallback / alert if not PDF (can expand later for other tools)
-      alert("Please upload a PDF file for this workflow demo.");
     }
+    setIsChooserOpen(false);
+    setUploadedFile(null);
   };
 
   return (
@@ -42,7 +49,7 @@ export default function Home() {
           {/* Right Column: Generic Upload Dropzone Card */}
           <div className="w-full lg:w-1/2 flex items-center justify-center">
             <div className="bg-white border border-fk-border rounded-fk-xl shadow-sm p-6 md:p-8 w-full max-w-[560px]">
-              <UploadDropzone isGeneric={true} onFileSelect={handleFileSelect} />
+              <UploadDropzone isGeneric={true} onFileSelect={handleFileSelect} accept="*" />
             </div>
           </div>
         </section>
@@ -61,6 +68,17 @@ export default function Home() {
 
       {/* Footer */}
       <AppFooter />
+
+      {/* Action Chooser Modal for Universal Homepage Drop routing */}
+      <ActionChooser
+        isOpen={isChooserOpen}
+        file={uploadedFile}
+        onClose={() => {
+          setIsChooserOpen(false);
+          setUploadedFile(null);
+        }}
+        onSelectAction={handleActionSelect}
+      />
     </div>
   );
 }

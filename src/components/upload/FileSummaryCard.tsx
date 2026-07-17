@@ -39,10 +39,10 @@ export default function FileSummaryCard({
         {/* File name and metadata details */}
         <div className="flex flex-col text-left ltr:text-left rtl:text-right min-w-0">
           <span className="text-[15px] font-bold text-fk-text leading-tight truncate">
-            {metadata.name}
+            <bdi>{metadata.name}</bdi>
           </span>
           <span className="text-[12px] text-fk-text-subtle mt-1 font-mono">
-            Original size: {metadata.size}  •  {metadata.pages} pages
+            Original size: <bdi>{metadata.size}</bdi>  •  <bdi>{metadata.pages} pages</bdi>
           </span>
         </div>
       </div>
