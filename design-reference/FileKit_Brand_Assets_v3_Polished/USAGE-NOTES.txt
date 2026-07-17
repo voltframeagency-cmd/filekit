@@ -1,3 +1,0 @@
-FileKit brand assets prepared for the FileKit project.
-No third-party font files are included.
-The wordmark uses outlined Inter glyphs in production SVGs.
