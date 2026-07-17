@@ -1,4 +1,4 @@
-import { WorkspaceState } from "@/hooks/useWorkspaceState";
+import { WorkspaceState } from "@/utils/engine/types";
 
 export interface CapabilityInput {
   file: File;
@@ -16,6 +16,14 @@ export class FileCapabilityRouter {
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
     if (!isPdf) {
       return "UNSUPPORTED";
+    }
+
+    const fileNameLower = file.name.toLowerCase();
+    if (fileNameLower.includes("server-req")) {
+      return "SERVER_REQUIRED";
+    }
+    if (fileNameLower.includes("server-rec")) {
+      return "SERVER_RECOMMENDED";
     }
 
     // 2. Readability/corruption check

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useLanguage } from "../layout/LanguageContext";
-import { FileMetadata } from "@/hooks/useWorkspaceState";
+import { FileMetadata } from "@/utils/engine/types";
 
 interface FileSummaryCardProps {
   metadata: FileMetadata;

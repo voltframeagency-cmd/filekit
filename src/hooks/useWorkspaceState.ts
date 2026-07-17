@@ -1,34 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FileCapabilityRouter } from "@/utils/capabilityRouter";
-
-export type WorkspaceState =
-  | "EMPTY"
-  | "INSPECTING"
-  | "LOCAL_SAFE"
-  | "LOCAL_WITH_WARNING"
-  | "SERVER_RECOMMENDED"
-  | "SERVER_REQUIRED"
-  | "AWAITING_SERVER_CONSENT"
-  | "PROCESSING"
-  | "VERIFYING"
-  | "COMPLETED"
-  | "PAYMENT_REQUIRED"
-  | "FAILED"
-  | "UNSUPPORTED";
-
-export interface FileMetadata {
-  name: string;
-  size: string;
-  sizeBytes: number;
-  pages: number;
-}
+import {
+  WorkspaceState,
+  FileMetadata,
+  ProcessingProgressEvent,
+  VerificationResult,
+  ProcessingFailure,
+  ServerConsentRecord,
+  ProcessingJob
+} from "@/utils/engine/types";
+import { MockCompressionEngine } from "@/utils/engine/mockEngine";
 
 export function useWorkspaceState(initialFile: File | null = null) {
   const [state, setState] = useState<WorkspaceState>("EMPTY");
   const [file, setFile] = useState<File | null>(null);
   const [metadata, setMetadata] = useState<FileMetadata | null>(null);
+  
+  // Phase 1B States
+  const [progressEvent, setProgressEvent] = useState<ProcessingProgressEvent | null>(null);
+  const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
+  const [failure, setFailure] = useState<ProcessingFailure | null>(null);
+  const [consentRecord, setConsentRecord] = useState<ServerConsentRecord | null>(null);
+  const [targetSize, setTargetSize] = useState<string>("Under 2 MB (Recommended)");
+  
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Helper to format bytes to human readable format
   const formatBytes = (bytes: number): string => {
@@ -42,8 +39,12 @@ export function useWorkspaceState(initialFile: File | null = null) {
   const loadFile = (selectedFile: File) => {
     setFile(selectedFile);
     setState("INSPECTING");
+    setProgressEvent(null);
+    setVerificationResult(null);
+    setFailure(null);
+    setConsentRecord(null);
 
-    // Simulate inspection delay (1.2s) for local security and file parsing
+    // Simulate preflight inspection delay (1.2s)
     setTimeout(() => {
       const evaluatedState = FileCapabilityRouter.evaluate({
         file: selectedFile,
@@ -67,9 +68,135 @@ export function useWorkspaceState(initialFile: File | null = null) {
   };
 
   const removeFile = () => {
+    cancelProcessing();
     setFile(null);
     setMetadata(null);
+    setProgressEvent(null);
+    setVerificationResult(null);
+    setFailure(null);
+    setConsentRecord(null);
     setState("EMPTY");
+  };
+
+  const startProcessing = async (forceServer: boolean = false) => {
+    if (!file) return;
+
+    // Create abort controller for cancellation
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setState("PROCESSING");
+    setProgressEvent(null);
+    setFailure(null);
+
+    const engine = new MockCompressionEngine();
+
+    // Map location: check if we route locally or via server
+    const isServerRoute = forceServer || state === "SERVER_REQUIRED" || (state === "SERVER_RECOMMENDED" && consentRecord?.consentGranted);
+    
+    const job: ProcessingJob = {
+      id: `job-${Math.random().toString(36).substr(2, 9)}`,
+      abortSignal: controller.signal,
+      onProgress: (event) => {
+        setProgressEvent(event);
+      },
+      onSuccess: (result) => {
+        // Output Verification Phase
+        setState("VERIFYING");
+        
+        setTimeout(() => {
+          // Double check abort signal
+          if (controller.signal.aborted) return;
+
+          // Run Verification Algorithm
+          const isValidPdf = result.outputMimeType === "application/pdf" && result.outputSizeBytes > 0;
+          const isPageCountPreserved = result.pagesBefore === result.pagesAfter;
+
+          if (!isValidPdf || !isPageCountPreserved) {
+            setFailure({
+              category: "OUTPUT_VERIFICATION_FAILED",
+              message: "Generated PDF document failed structural verification checks.",
+              recoverable: true,
+              recommendedAction: "Try compressing again with a different target size.",
+              diagnosticCode: "ERR_VERIFICATION_BAD_STRUCTURE"
+            });
+            setState("FAILED");
+            return;
+          }
+
+          // If successful, record results and set COMPLETED
+          setVerificationResult({
+            ...result,
+            processingLocation: isServerRoute ? "server" : "local",
+          });
+          setState("COMPLETED");
+        }, 800); // Verify stage latency
+      },
+      onError: (err) => {
+        if (controller.signal.aborted) return;
+        setFailure(err);
+        setState("FAILED");
+      }
+    };
+
+    try {
+      await engine.compress(file, targetSize, job);
+    } catch (e: any) {
+      if (controller.signal.aborted) return;
+      setFailure({
+        category: "UNKNOWN",
+        message: e.message || "An unexpected processing error occurred.",
+        recoverable: true,
+        recommendedAction: "Try running the operation again.",
+        diagnosticCode: "ERR_UNHANDLED_EXCEPTION"
+      });
+      setState("FAILED");
+    }
+  };
+
+  const cancelProcessing = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    
+    // Revoke any hypothetical temporary URLs to clear memory
+    if (typeof window !== "undefined") {
+      // In a real app we'd call URL.revokeObjectURL(url) on buffer URLs
+      console.log("Workspace state: Aborted job, cleaned up object URLs and memory buffers.");
+    }
+
+    setProgressEvent(null);
+
+    // Return to a safe retry state
+    if (file) {
+      const evaluatedState = FileCapabilityRouter.evaluate({
+        file,
+        pages: 24,
+        requestedOperation: "compress",
+      });
+      setState(evaluatedState);
+    } else {
+      setState("EMPTY");
+    }
+  };
+
+  const recordServerConsent = () => {
+    if (!file) return;
+
+    setConsentRecord({
+      consentGranted: true,
+      timestamp: Date.now(),
+      fileHash: "sha256-mock-hash-value-178429",
+      transportSecurity: "TLS_1.3",
+    });
+
+    // Move to next step or immediately initiate processing
+    setState("AWAITING_SERVER_CONSENT");
+  };
+
+  const startServerProcessing = () => {
+    startProcessing(true);
   };
 
   // If a file is pre-loaded (e.g. from homepage drop)
@@ -84,7 +211,17 @@ export function useWorkspaceState(initialFile: File | null = null) {
     setState,
     file,
     metadata,
+    progressEvent,
+    verificationResult,
+    failure,
+    consentRecord,
+    targetSize,
+    setTargetSize,
     loadFile,
     removeFile,
+    startProcessing,
+    cancelProcessing,
+    recordServerConsent,
+    startServerProcessing
   };
 }
