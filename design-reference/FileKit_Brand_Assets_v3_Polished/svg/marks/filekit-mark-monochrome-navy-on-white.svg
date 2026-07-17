@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+ viewBox="0 0 200 200"
+ role="img"
+ aria-label="FileKit mark"
+ shape-rendering="geometricPrecision">
+<path fill="#0F172A" d="
+M44 18
+H120
+L176 74
+V162
+C176 176.4 164.4 188 150 188
+H44
+C29.6 188 18 176.4 18 162
+V44
+C18 29.6 29.6 18 44 18
+Z
+"/>
+<path fill="#FFFFFF" d="
+M46 32
+H120
+V58
+C120 66.8 127.2 74 136 74
+H162
+V160
+C162 167.7 155.7 174 148 174
+H46
+C38.3 174 32 167.7 32 160
+V46
+C32 38.3 38.3 32 46 32
+Z
+"/>
+<path fill="#0F172A" d="
+M120 18
+H123
+L174.5 69.5
+Q176 71 176 74
+H136
+C127.2 74 120 66.8 120 58
+Z
+"/>
+<path d="M49 78 V52 H75" fill="none" stroke="#0F172A" stroke-width="9" stroke-linecap="square" stroke-linejoin="miter"/>
+<path d="M119 158 H149 V128" fill="none" stroke="#0F172A" stroke-width="9" stroke-linecap="square" stroke-linejoin="miter"/>
+</svg>

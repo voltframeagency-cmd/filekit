@@ -1,0 +1,632 @@
+[
+  {
+    "path": "README.md",
+    "bytes": 1213,
+    "sha256": "0c4d3659806ed782216409a31e758792050002e16b84c1925f8281b7d7fce10c"
+  },
+  {
+    "path": "USAGE-NOTES.txt",
+    "bytes": 155,
+    "sha256": "adcf64d34f8376707899f85e4f01abaa62bc07a8c567fe819fd32c835c8021e4"
+  },
+  {
+    "path": "app-icons/filekit-app-icon-1024x1024.png",
+    "bytes": 26754,
+    "sha256": "2a19a798fe6afbb3e57e98e101b868f9a9442672434e1abfc316b8f30b7389ab"
+  },
+  {
+    "path": "app-icons/filekit-app-icon-128x128.png",
+    "bytes": 2947,
+    "sha256": "b88a0a35c0eefd66ebcada29a077d922be0df5f9d7011e851436b9dab228d53b"
+  },
+  {
+    "path": "app-icons/filekit-app-icon-180x180.png",
+    "bytes": 4057,
+    "sha256": "674480856a47525156ee65b05610153ac444a8f5630abf5e117aaaec5c128284"
+  },
+  {
+    "path": "app-icons/filekit-app-icon-192x192.png",
+    "bytes": 4418,
+    "sha256": "3436899f6cdb34874df0d66d172b2534f73415f17ead626d5184a3b658de274b"
+  },
+  {
+    "path": "app-icons/filekit-app-icon-256x256.png",
+    "bytes": 5818,
+    "sha256": "6dd1bb4c394d243fe058ddefa41a7f179df60999abb735bc6fbca4a695cdb72e"
+  },
+  {
+    "path": "app-icons/filekit-app-icon-512x512.png",
+    "bytes": 12214,
+    "sha256": "f7d2f7bb576b7d504738145c913c1ea004be1a2aede7804d401f10b3ad9170a1"
+  },
+  {
+    "path": "app-icons/filekit-app-icon-64x64.png",
+    "bytes": 1610,
+    "sha256": "c69d8258e32f47c1451edcc2fa53fb01739140ccbfbdf09e711a9658d31399ea"
+  },
+  {
+    "path": "favicons/android-chrome-192x192.png",
+    "bytes": 4418,
+    "sha256": "3436899f6cdb34874df0d66d172b2534f73415f17ead626d5184a3b658de274b"
+  },
+  {
+    "path": "favicons/android-chrome-512x512.png",
+    "bytes": 12214,
+    "sha256": "f7d2f7bb576b7d504738145c913c1ea004be1a2aede7804d401f10b3ad9170a1"
+  },
+  {
+    "path": "favicons/apple-touch-icon.png",
+    "bytes": 4057,
+    "sha256": "674480856a47525156ee65b05610153ac444a8f5630abf5e117aaaec5c128284"
+  },
+  {
+    "path": "favicons/favicon.ico",
+    "bytes": 534,
+    "sha256": "dfcb0d873dd5532e4af2359eaa574d7d506aa0f2caf60722992b9ce12c6fd290"
+  },
+  {
+    "path": "favicons/favicon.svg",
+    "bytes": 862,
+    "sha256": "24ddf1a8872bd9d563cc64d5c45b8ca4195dacd82984eedf67137d7f018147cb"
+  },
+  {
+    "path": "favicons/filekit-favicon-128x128.png",
+    "bytes": 2947,
+    "sha256": "b88a0a35c0eefd66ebcada29a077d922be0df5f9d7011e851436b9dab228d53b"
+  },
+  {
+    "path": "favicons/filekit-favicon-16x16.png",
+    "bytes": 530,
+    "sha256": "84647f63a97acb9201afe957fe02364b7cd2a2cfdbf34c40b3745e95ad455d13"
+  },
+  {
+    "path": "favicons/filekit-favicon-180x180.png",
+    "bytes": 4057,
+    "sha256": "674480856a47525156ee65b05610153ac444a8f5630abf5e117aaaec5c128284"
+  },
+  {
+    "path": "favicons/filekit-favicon-192x192.png",
+    "bytes": 4418,
+    "sha256": "3436899f6cdb34874df0d66d172b2534f73415f17ead626d5184a3b658de274b"
+  },
+  {
+    "path": "favicons/filekit-favicon-24x24.png",
+    "bytes": 723,
+    "sha256": "7ea68ecf1bd3cc1086d80acc921482f660b3780eb6218c077e9c4aaf0aac8f47"
+  },
+  {
+    "path": "favicons/filekit-favicon-256x256.png",
+    "bytes": 5818,
+    "sha256": "6dd1bb4c394d243fe058ddefa41a7f179df60999abb735bc6fbca4a695cdb72e"
+  },
+  {
+    "path": "favicons/filekit-favicon-32x32.png",
+    "bytes": 899,
+    "sha256": "02e59640b9edff2c12814b537e5cc63436ff62264684f20ad7bca48673034ebf"
+  },
+  {
+    "path": "favicons/filekit-favicon-48x48.png",
+    "bytes": 1303,
+    "sha256": "8beead0f3314c383573ba7221a56cab5cdeadd6740b92d06f04e4de508b8eb75"
+  },
+  {
+    "path": "favicons/filekit-favicon-512x512.png",
+    "bytes": 12214,
+    "sha256": "f7d2f7bb576b7d504738145c913c1ea004be1a2aede7804d401f10b3ad9170a1"
+  },
+  {
+    "path": "favicons/filekit-favicon-64x64.png",
+    "bytes": 1610,
+    "sha256": "c69d8258e32f47c1451edcc2fa53fb01739140ccbfbdf09e711a9658d31399ea"
+  },
+  {
+    "path": "favicons/site.webmanifest",
+    "bytes": 371,
+    "sha256": "f0dabaa22e1d0598309b37826375b8629276e50e83165b5db302f1f6bf13d0b5"
+  },
+  {
+    "path": "identity-board/filekit-identity-board-1920x1080.png",
+    "bytes": 129098,
+    "sha256": "27c1132e88185f692fa410d0990d58ca269b13e090cab44207e81da0ceac1c22"
+  },
+  {
+    "path": "identity-board/filekit-identity-board-3840x2160.png",
+    "bytes": 271757,
+    "sha256": "67b15a7597915da1d4b19585258e728c8d61790ed14824482d0521fb719d697d"
+  },
+  {
+    "path": "identity-board/filekit-identity-board-editable.svg",
+    "bytes": 5708,
+    "sha256": "06ce67b8450b7aa26012b23d728a14fc4900ad76c7080a5c6cddeda1df2d754a"
+  },
+  {
+    "path": "identity-board/filekit-identity-board-outlined.svg",
+    "bytes": 128192,
+    "sha256": "38486fe9921e9be0cd8816d9ee86e2638432267f103e8d44ccc0257c7fa62522"
+  },
+  {
+    "path": "png/logos/filekit-logo-compact-color-1024.png",
+    "bytes": 11016,
+    "sha256": "3173b9007eb52a0a60487ad33d4c6066222dabde36c3a5eb2086c3b1c9a97cfa"
+  },
+  {
+    "path": "png/logos/filekit-logo-compact-color-2048.png",
+    "bytes": 23982,
+    "sha256": "388c8d28758172fab6bdcd5f15acb7535d072d4d680ee932bd3685d4788db792"
+  },
+  {
+    "path": "png/logos/filekit-logo-compact-color-512.png",
+    "bytes": 5542,
+    "sha256": "ba1f55fdaa10af1fe68fe05b7b402d856715ac576cd4ebd5b56a2de84f28f682"
+  },
+  {
+    "path": "png/logos/filekit-logo-compact-inverted-1024.png",
+    "bytes": 10006,
+    "sha256": "8b3ff2a8cbc6992e5f0f35e619e66600dff7fe3c652009cd1fbea4135972bfe7"
+  },
+  {
+    "path": "png/logos/filekit-logo-compact-inverted-2048.png",
+    "bytes": 21969,
+    "sha256": "7a149fd7ff29df8fda08bd0ccfdfd4a1b41e26293f7cfb1f6ab20f8c5925fc8a"
+  },
+  {
+    "path": "png/logos/filekit-logo-compact-inverted-512.png",
+    "bytes": 5005,
+    "sha256": "e8e2fa5cacb712de389d2570c5e2f416ffcb195a99720d7575da4381eef661f4"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-color-1024.png",
+    "bytes": 11894,
+    "sha256": "e0f5b8a9ec87e7a65f9a26f6fa484b095f176abb8d2efa2a8ed506bb379b04d3"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-color-2048.png",
+    "bytes": 25533,
+    "sha256": "6c4e1c80df7131a0f5f88022a243a1c5b1dee7b0d9195db5bb43dfb493413c8c"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-color-512.png",
+    "bytes": 6038,
+    "sha256": "35591402f12d40ce7ec8a9202260cea879b7206e8a47b903f030788cb6cad347"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-inverted-1024.png",
+    "bytes": 10819,
+    "sha256": "fc2d6251464ab514906a6d5e72dc3c990d29b633dd3c71ead30798b089e80481"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-inverted-2048.png",
+    "bytes": 23334,
+    "sha256": "cc853576637ee51421433b5dc843c20ab6cb0b1df08bfa60fd870086f42e3a5c"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-inverted-512.png",
+    "bytes": 5456,
+    "sha256": "7e4bed6d4cbfe9edf222c7c10528d6fc8e6e147fd07a530d38f4a398ae74c9dd"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-monochrome-navy-1024.png",
+    "bytes": 11733,
+    "sha256": "8ab98b010d882abd16228661564af821b02c0c7265f15ece19c85c5aadbc6699"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-monochrome-navy-2048.png",
+    "bytes": 25200,
+    "sha256": "42be33961cb562c6afaff263964b6c908038bfb64401fc5e242769deb73272bf"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-monochrome-navy-512.png",
+    "bytes": 5937,
+    "sha256": "f58fe2b9ae7e91bd76f6e92503548a63632cf5d850b14259c02362306ba68252"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-monochrome-white-1024.png",
+    "bytes": 9578,
+    "sha256": "f7d6ba7411f500d20f31187e06b30471c0ee25290693bc6f2c4fa0c390cbfeff"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-monochrome-white-2048.png",
+    "bytes": 21006,
+    "sha256": "81cdb20ea34a3556c47676ac38a06e9026ed592fa17e4b86788b1ab892b0d80d"
+  },
+  {
+    "path": "png/logos/filekit-logo-horizontal-monochrome-white-512.png",
+    "bytes": 4824,
+    "sha256": "047974fa566412c26dd6d038735f3c860ae72c179d973fbab03b89eb2b766ba2"
+  },
+  {
+    "path": "png/logos/filekit-wordmark-color-1024.png",
+    "bytes": 12944,
+    "sha256": "a96166be5c1852108ce4f704953e876ac51e07965b5ee7408c4959c7bdb8aa64"
+  },
+  {
+    "path": "png/logos/filekit-wordmark-color-2048.png",
+    "bytes": 28479,
+    "sha256": "3c74c271f9f751cbe1132a98f231c0bad278f021d0995bb3b5cd6348097432cf"
+  },
+  {
+    "path": "png/logos/filekit-wordmark-color-512.png",
+    "bytes": 6500,
+    "sha256": "10fe94b7296fa358b68b496d0e9a8b7c7c455592a5538a5beeb799909a8e04ef"
+  },
+  {
+    "path": "png/logos/filekit-wordmark-monochrome-navy-1024.png",
+    "bytes": 12794,
+    "sha256": "0ff9d45316784250e1380f293364323d3e1fee120512fff83d3550790e910809"
+  },
+  {
+    "path": "png/logos/filekit-wordmark-monochrome-navy-2048.png",
+    "bytes": 28159,
+    "sha256": "04147a013b8c5dca229fb72ac8b736cc39945f546d55ddba187fa13d2fd2177e"
+  },
+  {
+    "path": "png/logos/filekit-wordmark-monochrome-navy-512.png",
+    "bytes": 6416,
+    "sha256": "ccfad248f18dc435c1b8bf1e11592593dddc6442ca84d9f70d9d4123ec6509e1"
+  },
+  {
+    "path": "png/logos/filekit-wordmark-monochrome-white-1024.png",
+    "bytes": 10164,
+    "sha256": "77f6ac31f8643b9f0fbf1084f0fdf3008c7800417f988c366246e64e0d0e96af"
+  },
+  {
+    "path": "png/logos/filekit-wordmark-monochrome-white-2048.png",
+    "bytes": 22984,
+    "sha256": "d7a81949f56c0a6dab53542a67ec5c4f69d3751c7a75513303e99fba797a717c"
+  },
+  {
+    "path": "png/logos/filekit-wordmark-monochrome-white-512.png",
+    "bytes": 4989,
+    "sha256": "f3dde2059309a4501f72799e283ee890e12e74fd23ed5906218f95876f4e3230"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-blue-1024.png",
+    "bytes": 25760,
+    "sha256": "9bbba7e0001430de44c1339e4ddea61a0ca69a71e1520e44896699ec29b21681"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-blue-128.png",
+    "bytes": 2859,
+    "sha256": "ed63233982b9f013e833697776883f5986b4bd735579c586f9a9e03032f4bf7d"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-blue-256.png",
+    "bytes": 5559,
+    "sha256": "1115908943febbced9be71e2a548b411d942d062c736e265a6844c182afa062c"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-blue-512.png",
+    "bytes": 11768,
+    "sha256": "8ee8827d02a1e9f13f183c3835ab30acda9b842bb47bdaa80a80cc591ba1c57a"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-blue-64.png",
+    "bytes": 1589,
+    "sha256": "ba605e8986cf133445fda836a5bed2a3c595d02197d20bae06b4b03223eb03bf"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-light-1024.png",
+    "bytes": 24442,
+    "sha256": "51c8795713028f7e518c44649f712e19249e224f4701f875949db26406f0dd9d"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-light-128.png",
+    "bytes": 2708,
+    "sha256": "4752f02821d80352a67ff8056119d375d3b1ab21415879b6e7830c5d01ff0cb6"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-light-256.png",
+    "bytes": 5288,
+    "sha256": "15796b319108347d84ae4692c7e18ecff8eda11a87c9e7f750926e28a375822d"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-light-512.png",
+    "bytes": 11176,
+    "sha256": "ef2bb122765850951d494e217e5264a7bb48122fa43fbf6cea7d4e31bcd6f31e"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-light-64.png",
+    "bytes": 1519,
+    "sha256": "ccdb61afe9214e181d944357404b85af192c829c5752a2a824b8fc7fd735df99"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-navy-1024.png",
+    "bytes": 26754,
+    "sha256": "2a19a798fe6afbb3e57e98e101b868f9a9442672434e1abfc316b8f30b7389ab"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-navy-128.png",
+    "bytes": 2947,
+    "sha256": "b88a0a35c0eefd66ebcada29a077d922be0df5f9d7011e851436b9dab228d53b"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-navy-256.png",
+    "bytes": 5818,
+    "sha256": "6dd1bb4c394d243fe058ddefa41a7f179df60999abb735bc6fbca4a695cdb72e"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-navy-512.png",
+    "bytes": 12214,
+    "sha256": "f7d2f7bb576b7d504738145c913c1ea004be1a2aede7804d401f10b3ad9170a1"
+  },
+  {
+    "path": "png/marks/filekit-app-icon-navy-64.png",
+    "bytes": 1610,
+    "sha256": "c69d8258e32f47c1451edcc2fa53fb01739140ccbfbdf09e711a9658d31399ea"
+  },
+  {
+    "path": "png/marks/filekit-mark-color-on-white-1024.png",
+    "bytes": 16725,
+    "sha256": "081442e05bfca1471d0733edd109cc2e1787c9f6a45fa61925f33d1d1cb2c0ee"
+  },
+  {
+    "path": "png/marks/filekit-mark-color-on-white-128.png",
+    "bytes": 1992,
+    "sha256": "34c516bae0c67432629f8f55647f03ff5a81de98a994809ce3cf1b6d0f030a06"
+  },
+  {
+    "path": "png/marks/filekit-mark-color-on-white-256.png",
+    "bytes": 3713,
+    "sha256": "a2a1dd82549ed37139656aabd493c6975ffa731106b18279edfbe7f02d2b304f"
+  },
+  {
+    "path": "png/marks/filekit-mark-color-on-white-512.png",
+    "bytes": 7580,
+    "sha256": "9b6d048a0ba738f5a2dbbb62c927bf0b342a25cd873d4ad2e94d41437da276df"
+  },
+  {
+    "path": "png/marks/filekit-mark-color-on-white-64.png",
+    "bytes": 1221,
+    "sha256": "b65f563213233635fd32903b57ba96aeb294bf47ff26d9c359c9512fc278eb25"
+  },
+  {
+    "path": "png/marks/filekit-mark-color-transparent-1024.png",
+    "bytes": 16543,
+    "sha256": "7c75741f5d4c307b1efcb8d996b590839c19f8d588755c95e9dab8642ca95376"
+  },
+  {
+    "path": "png/marks/filekit-mark-color-transparent-128.png",
+    "bytes": 1963,
+    "sha256": "29439e73ceb481652e75280d9bcfb662d6ff0e3ada3659dece43ed1a4b95cd5e"
+  },
+  {
+    "path": "png/marks/filekit-mark-color-transparent-256.png",
+    "bytes": 3629,
+    "sha256": "95030cd3f5bed50af1fc8ef4077712401de67e0fa9b50766b1f5189f2d716d56"
+  },
+  {
+    "path": "png/marks/filekit-mark-color-transparent-512.png",
+    "bytes": 7446,
+    "sha256": "8db3c5bb7bbb913e38c6e06594187a695dab7d22a58cd14686d1dff469c31a99"
+  },
+  {
+    "path": "png/marks/filekit-mark-color-transparent-64.png",
+    "bytes": 1185,
+    "sha256": "c307fd3f060f3e2e9c62cd5f3302682f7b328310edbc6644f106c47a28e3f46b"
+  },
+  {
+    "path": "png/marks/filekit-mark-inverted-transparent-1024.png",
+    "bytes": 14904,
+    "sha256": "4189a74b9389bb9b935e4b76096c54f1a8b65541672ee573b7495f3db5543444"
+  },
+  {
+    "path": "png/marks/filekit-mark-inverted-transparent-128.png",
+    "bytes": 1727,
+    "sha256": "291b8b2517566da160fd4ea64f71cd011d999f09624c17b11281f519705713bb"
+  },
+  {
+    "path": "png/marks/filekit-mark-inverted-transparent-256.png",
+    "bytes": 3192,
+    "sha256": "5a4c561c050830535d55fe5785cdc2202a996df337e48c2bc5a8592211d8c360"
+  },
+  {
+    "path": "png/marks/filekit-mark-inverted-transparent-512.png",
+    "bytes": 6666,
+    "sha256": "6fd4eaeeeec8d8cb6a6f14b246652cf428d5154d52bb4df553c4f2f165e2fd5d"
+  },
+  {
+    "path": "png/marks/filekit-mark-inverted-transparent-64.png",
+    "bytes": 1087,
+    "sha256": "1c58530187f90d22acc8c27e53754900120e3e3aee93824ad4dc21f1a41361d0"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-navy-on-white-1024.png",
+    "bytes": 16580,
+    "sha256": "e64c40d06eb777f705b37f2e4b2e11774b50ee30f5fd6e0be7373fc435bb1f83"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-navy-on-white-128.png",
+    "bytes": 1963,
+    "sha256": "8dd31be9983149cdf6a2eb60dba7f94539370266c65bd86e332fe8f5569f25f3"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-navy-on-white-256.png",
+    "bytes": 3672,
+    "sha256": "3641e51b5d95a4b3d113b069fc109427621acef6352015319b540f9626a587dc"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-navy-on-white-512.png",
+    "bytes": 7550,
+    "sha256": "8560c47982d37068238af6f44a724306f877d3734ab165445710e10f7765e6ad"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-navy-on-white-64.png",
+    "bytes": 1193,
+    "sha256": "e99e269571f508452833fd52469df6dbfa350b1719a6392170358a068e434638"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-navy-transparent-1024.png",
+    "bytes": 16161,
+    "sha256": "bb52fd6c5306be3e59f47c15ccffad79e8bb0415ef84f3f813108e4f76e3cd35"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-navy-transparent-128.png",
+    "bytes": 1883,
+    "sha256": "420885992ad4d5febb0ac659bd5ed5b2cec726d0522c922e9a59435fab930d0b"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-navy-transparent-256.png",
+    "bytes": 3529,
+    "sha256": "86513f97ac68c53058e66b087141a5f9c432a5ec3a5b62ee549cb7ec2a94be5a"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-navy-transparent-512.png",
+    "bytes": 7276,
+    "sha256": "cf2e06ce840e28ff73708147cf509d9caad10537c6dc66cd7ba867bf4a753669"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-navy-transparent-64.png",
+    "bytes": 1142,
+    "sha256": "40e69279626cf321b8f4675b7cd865cc27c0bcc92fd67d8ec781c2b93f9b77fb"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-white-transparent-1024.png",
+    "bytes": 14098,
+    "sha256": "27f02e72476dd46de2246206f5a14d6ad6f7fa7808f478282a451ab4b83cce5a"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-white-transparent-128.png",
+    "bytes": 1510,
+    "sha256": "071c69d68d8382a753f65843bec2dc9092766fedf3d249b3e97f83ae82224d54"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-white-transparent-256.png",
+    "bytes": 2919,
+    "sha256": "85485845957a599308a98ee9e906e0c8a8219a088c9753b344802be666a6945b"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-white-transparent-512.png",
+    "bytes": 6259,
+    "sha256": "73fc49e4d671aa7b334b09e6a48d19a2b9c450ad13831953c99e41e35a4bdd8a"
+  },
+  {
+    "path": "png/marks/filekit-mark-monochrome-white-transparent-64.png",
+    "bytes": 893,
+    "sha256": "5e5746bf7fba0f1b17d3f502e156c1bff7eb1f77e75e0be4118aa3d105f0defc"
+  },
+  {
+    "path": "reference/approved-raster-concept-board.png",
+    "bytes": 1805068,
+    "sha256": "947094974a2cc8dae16debe9ebaf8a50612b39d30932c6b81756fbc50b62c997"
+  },
+  {
+    "path": "reference/approved-raster-icon-crop.png",
+    "bytes": 28808,
+    "sha256": "8bac6b5a03b1cd484d88a230c69c1c89d0459c82bf179598d4fedb787e59bc8e"
+  },
+  {
+    "path": "reference/fold-geometry-comparison.png",
+    "bytes": 78249,
+    "sha256": "ae6080f64fa79d7d162c83dcbe4235f11f0481dd722215d57657f62d316bf473"
+  },
+  {
+    "path": "svg/logos/filekit-logo-compact-color.svg",
+    "bytes": 3271,
+    "sha256": "3fb46af0a509e34d970d1cc23e8d3d433c856b94f6dd6156709ef918767542c6"
+  },
+  {
+    "path": "svg/logos/filekit-logo-compact-inverted.svg",
+    "bytes": 3271,
+    "sha256": "a88601c33997e51bd5596f71438556b0d88a731dc768ece725a13eb6d2293d93"
+  },
+  {
+    "path": "svg/logos/filekit-logo-horizontal-color.svg",
+    "bytes": 3281,
+    "sha256": "915ac8de7742bdf7fd29fc88054e08c44c4f49c92f9e05d15286f1d175244c72"
+  },
+  {
+    "path": "svg/logos/filekit-logo-horizontal-inverted.svg",
+    "bytes": 3281,
+    "sha256": "46367a97f92a75f66cdf3bd0822e1566d1441a1b1980c7ca19fcb7437ef825ee"
+  },
+  {
+    "path": "svg/logos/filekit-logo-horizontal-monochrome-navy.svg",
+    "bytes": 3281,
+    "sha256": "2216c164fa1733a7646716256c9fd560c1c2c21ce9f60f5decccad3a26786f2b"
+  },
+  {
+    "path": "svg/logos/filekit-logo-horizontal-monochrome-white.svg",
+    "bytes": 3281,
+    "sha256": "28fa2a0d4545f038a3f68ddfd3562373dcab8894b4a6fefd2e607d8b1b59f0b2"
+  },
+  {
+    "path": "svg/logos/filekit-wordmark-color.svg",
+    "bytes": 2398,
+    "sha256": "eeb04bea9281f6474ae647ddbe95196a02431ff0ee0d6533e95a8416141816e7"
+  },
+  {
+    "path": "svg/logos/filekit-wordmark-monochrome-navy.svg",
+    "bytes": 2398,
+    "sha256": "9a753363887aba6daa2ad8e42215c9ad5ec2f6f4bd0662a512d7d469ce10a497"
+  },
+  {
+    "path": "svg/logos/filekit-wordmark-monochrome-white.svg",
+    "bytes": 2398,
+    "sha256": "d81438fba672104c3f0aa2ad110ec8de0fb4d388ab29b877f81f867ec0f3c8ce"
+  },
+  {
+    "path": "svg/marks/filekit-app-icon-blue.svg",
+    "bytes": 862,
+    "sha256": "9855f76e01d4adfbd5ae100339fac15a866cab120e308a5e0facc814bedd28ee"
+  },
+  {
+    "path": "svg/marks/filekit-app-icon-light.svg",
+    "bytes": 862,
+    "sha256": "09dd6ac75c927924d17a7674144d891991cdc280afac49c137261e455daa40c0"
+  },
+  {
+    "path": "svg/marks/filekit-app-icon-navy.svg",
+    "bytes": 862,
+    "sha256": "24ddf1a8872bd9d563cc64d5c45b8ca4195dacd82984eedf67137d7f018147cb"
+  },
+  {
+    "path": "svg/marks/filekit-mark-color-on-white.svg",
+    "bytes": 806,
+    "sha256": "30cefd504da1b7c7372596985696cf0ebec6f14388ba6bd6d5d6443d9a37ebd0"
+  },
+  {
+    "path": "svg/marks/filekit-mark-color-transparent.svg",
+    "bytes": 799,
+    "sha256": "56c4bbda3b11b96cefea3199030a6cef0a5ef847cc67d681f1014cfa09132732"
+  },
+  {
+    "path": "svg/marks/filekit-mark-inverted-transparent.svg",
+    "bytes": 799,
+    "sha256": "c4263c1f4d80baf5181c187317cc18eb58de9e4ca91ed6531ad2681e9d674eb6"
+  },
+  {
+    "path": "svg/marks/filekit-mark-monochrome-navy-on-white.svg",
+    "bytes": 806,
+    "sha256": "17e227f4821c1dd80d3717fe7c539370beac95f0f31a3386f20233afdd1b7f1b"
+  },
+  {
+    "path": "svg/marks/filekit-mark-monochrome-navy-transparent.svg",
+    "bytes": 799,
+    "sha256": "ae67235d0482aa6f366ed9871bc3d3ee2e68a441dd3a813775f5e64501b4146f"
+  },
+  {
+    "path": "svg/marks/filekit-mark-monochrome-white-transparent.svg",
+    "bytes": 799,
+    "sha256": "6a07f4e22e2944a48bdbac75d9a0fa51294750fe9eb4bb94127d5e0b1ed0d7cc"
+  },
+  {
+    "path": "tokens/filekit.tailwind-v4.css",
+    "bytes": 247,
+    "sha256": "f4d682331deb08d8a1543437cc32af711d292b36f7921d82adedaf64f2527aab"
+  },
+  {
+    "path": "tokens/filekit.tokens.css",
+    "bytes": 245,
+    "sha256": "9309415dcfecf22803bf0d627e821b1f9f39168f544a41b85c359ab181d03057"
+  },
+  {
+    "path": "tokens/filekit.tokens.json",
+    "bytes": 1186,
+    "sha256": "e4380e226290f04c5ce19c9d42941c7751a2a490348902225b70f52e7ac04f64"
+  },
+  {
+    "path": "tokens/filekit.tokens.ts",
+    "bytes": 371,
+    "sha256": "dcc357ab9858ee6aef797fee0ef6323704c47b46f46369701c7c61b8bff6c126"
+  }
+]

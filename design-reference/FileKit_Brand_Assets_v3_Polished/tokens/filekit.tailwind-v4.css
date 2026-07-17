@@ -1,0 +1,10 @@
+@theme {
+  --color-fk-bg: #FAFAF8;
+  --color-fk-surface: #FFFFFF;
+  --color-fk-text: #0F172A;
+  --color-fk-muted: #475569;
+  --color-fk-primary: #2563EB;
+  --color-fk-accent: #06B6D4;
+  --color-fk-success: #16A34A;
+  --color-fk-server: #4F46E5;
+}
