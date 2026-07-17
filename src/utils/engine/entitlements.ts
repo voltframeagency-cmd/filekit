@@ -60,6 +60,17 @@ export class DevelopmentEntitlementService implements EntitlementService {
 }
 
 export class DevelopmentCheckoutAdapter implements CheckoutAdapter {
+  private simulatedOutcome: "PAYMENT_SUCCESS" | "PAYMENT_FAILED" = "PAYMENT_SUCCESS";
+
+  constructor(options?: { outcome?: "PAYMENT_SUCCESS" | "PAYMENT_FAILED" }) {
+    if (options?.outcome) {
+      this.simulatedOutcome = options.outcome;
+    }
+  }
+
+  setSimulatedOutcome(outcome: "PAYMENT_SUCCESS" | "PAYMENT_FAILED") {
+    this.simulatedOutcome = outcome;
+  }
 
   private guardProduction() {
     if (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "production") {
@@ -81,6 +92,23 @@ export class DevelopmentCheckoutAdapter implements CheckoutAdapter {
 
   async verifyPayment(sessionId: string): Promise<PaymentConfirmation> {
     this.guardProduction();
+    
+    let outcome = this.simulatedOutcome;
+    
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryOutcome = urlParams.get("mock_payment_outcome");
+      if (queryOutcome === "PAYMENT_FAILED" || queryOutcome === "PAYMENT_SUCCESS") {
+        outcome = queryOutcome;
+      }
+      if ((window as any).__MOCK_PAYMENT_OUTCOME__) {
+        outcome = (window as any).__MOCK_PAYMENT_OUTCOME__;
+      }
+    }
+
+    if (outcome === "PAYMENT_FAILED") {
+      throw new Error("Card declined. Please try another card or billing method.");
+    }
     
     return {
       transactionId: `tx-${Math.random().toString(36).substr(2, 9)}`,

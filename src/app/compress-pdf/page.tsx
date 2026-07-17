@@ -27,14 +27,14 @@ export default function CompressPdfPage() {
       <AppHeader />
 
       {/* Main Container */}
-      <main className="flex-1 flex flex-col gap-10 max-w-7xl mx-auto w-full px-6 md:px-12 py-10 md:py-12">
+      <main className="flex-1 flex flex-col gap-6 md:gap-10 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-12 py-6 md:py-12">
         
         {/* H1 Title & Intro */}
-        <section className="flex flex-col gap-2 max-w-[840px] mx-auto w-full text-left ltr:text-left rtl:text-right px-2">
-          <h1 className="text-[32px] md:text-[38px] font-black text-fk-text leading-tight tracking-tight">
+        <section className="flex flex-col gap-1.5 max-w-[840px] mx-auto w-full text-left ltr:text-left rtl:text-right px-2">
+          <h1 className="text-[clamp(1.75rem,7vw,2.25rem)] font-black text-fk-text leading-[1.1] tracking-tight">
             {t("compress.title")}
           </h1>
-          <p className="text-[14px] md:text-[15px] font-medium text-fk-text-muted leading-relaxed">
+          <p className="text-[13px] md:text-[15px] font-medium text-fk-text-muted leading-relaxed">
             {t("compress.subtitle")}
           </p>
         </section>

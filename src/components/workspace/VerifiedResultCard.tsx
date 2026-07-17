@@ -10,6 +10,7 @@ interface VerifiedResultCardProps {
   entitlement: EntitlementStatus;
   downloadUrl?: string | null;
   onReset: () => void;
+  onUnlock: () => void;
 }
 
 export default function VerifiedResultCard({
@@ -18,12 +19,13 @@ export default function VerifiedResultCard({
   entitlement,
   downloadUrl,
   onReset,
+  onUnlock,
 }: VerifiedResultCardProps) {
   const { t } = useLanguage();
 
   const handleDownload = () => {
     if (entitlement === "NONE") {
-      alert("Redirecting to paywall page (Phase 1C Integration)...");
+      onUnlock();
     } else if (downloadUrl) {
       const link = document.createElement("a");
       link.href = downloadUrl;

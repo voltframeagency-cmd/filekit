@@ -11,6 +11,7 @@ interface TargetNotMetCardProps {
   downloadUrl?: string | null;
   onReset: () => void;
   onTryServer: () => void;
+  onUnlock: () => void;
 }
 
 export default function TargetNotMetCard({
@@ -20,12 +21,13 @@ export default function TargetNotMetCard({
   downloadUrl,
   onReset,
   onTryServer,
+  onUnlock,
 }: TargetNotMetCardProps) {
   const { t } = useLanguage();
 
   const handleDownload = () => {
     if (entitlement === "NONE") {
-      alert("Redirecting to paywall page (Phase 1C Integration)...");
+      onUnlock();
     } else if (downloadUrl) {
       const link = document.createElement("a");
       link.href = downloadUrl;

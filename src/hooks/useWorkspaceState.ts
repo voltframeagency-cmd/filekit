@@ -191,9 +191,9 @@ export function useWorkspaceState(initialFile: File | null = null) {
             
             setState("COMPLETED");
           } else {
-            // Requires payment / paywall
+            // Requires payment / paywall - show results card first!
             setEntitlement("NONE");
-            setState("PAYMENT_REQUIRED");
+            setState("COMPLETED");
           }
         }, 800);
       },
@@ -270,36 +270,33 @@ export function useWorkspaceState(initialFile: File | null = null) {
       
       // Simulate remote payment processor latency
       setTimeout(async () => {
-        // Mock failure scenario (if file has 'fail' or input fails)
-        if (file.name.toLowerCase().includes("fail")) {
-          setPaymentError("Card declined. Please try another card or billing method.");
+        try {
+          // Mock payment verification success/failure via CheckoutAdapter
+          const confirmation = await checkoutAdapter.verifyPayment(session.sessionId);
+          
+          // 2. Grant download entitlements
+          const grant = await entitlementService.grant(confirmation);
+          
+          // Register mock grant in local development service
+          entitlementService.registerMockGrant("sha256-mock-hash-value-178429");
+          
+          if (typeof window !== "undefined" && window.URL) {
+            const mockBlob = new Blob(["%PDF-1.4\n%mock premium output content"], { type: "application/pdf" });
+            downloadUrlRef.current = window.URL.createObjectURL(mockBlob);
+          }
+          
+          setEntitlement("SINGLE_EXPORT");
           setCheckoutPending(false);
-          // Analytics track checkout failure
+          setState("COMPLETED");
+
+          // Analytics track checkout success
+          logEvent("payment_succeeded", planId);
+          logEvent("download_unlocked", planId);
+        } catch (e: any) {
+          setPaymentError(e.message || "Card declined. Please try another card or billing method.");
+          setCheckoutPending(false);
           logEvent("payment_failed", planId);
-          return;
         }
-
-        // Mock payment verification success
-        const confirmation = await checkoutAdapter.verifyPayment(session.sessionId);
-        
-        // 2. Grant download entitlements
-        const grant = await entitlementService.grant(confirmation);
-        
-        // Register mock grant in local development service
-        entitlementService.registerMockGrant("sha256-mock-hash-value-178429");
-        
-        if (typeof window !== "undefined" && window.URL) {
-          const mockBlob = new Blob(["%PDF-1.4\n%mock premium output content"], { type: "application/pdf" });
-          downloadUrlRef.current = window.URL.createObjectURL(mockBlob);
-        }
-        
-        setEntitlement("SINGLE_EXPORT");
-        setCheckoutPending(false);
-        setState("COMPLETED");
-
-        // Analytics track checkout success
-        logEvent("payment_succeeded", planId);
-        logEvent("download_unlocked", planId);
       }, 1500);
 
     } catch (e: any) {

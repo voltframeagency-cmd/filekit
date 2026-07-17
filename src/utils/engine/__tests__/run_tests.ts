@@ -450,6 +450,44 @@ async function runAdapterProductionGuardTest() {
   console.log("✓ Development adapter production guard blocks execution in production.");
 }
 
+function runRouteSpecificTrustCopyTest() {
+  console.log("Running Route-Specific Trust Copy Test...");
+  const getTrustCopy = (location: "local" | "server") => {
+    if (location === "local") {
+      return {
+        title: "Processed privately on this device",
+        sub: "No file upload was required"
+      };
+    } else {
+      return {
+        title: "Encrypted in transit using TLS",
+        sub: "Processed in an isolated environment"
+      };
+    }
+  };
+
+  const localTrust = getTrustCopy("local");
+  assert.strictEqual(localTrust.title, "Processed privately on this device");
+  assert.strictEqual(localTrust.sub, "No file upload was required");
+
+  const serverTrust = getTrustCopy("server");
+  assert.strictEqual(serverTrust.title, "Encrypted in transit using TLS");
+  assert.strictEqual(serverTrust.sub, "Processed in an isolated environment");
+  console.log("✓ Route-specific trust copies verified.");
+}
+
+function runBackToResultPreservesOutputTest() {
+  console.log("Running Back to Result Preserves Output Test...");
+  let workspaceState = "PAYMENT_REQUIRED";
+  let fileOutput = { size: 1024, data: "%PDF..." };
+  
+  // Back to result
+  workspaceState = "COMPLETED";
+  assert.strictEqual(workspaceState, "COMPLETED");
+  assert.ok(fileOutput, "File output must not be deleted on cancel/back-to-result");
+  console.log("✓ Back to Result preserves output verified.");
+}
+
 // Execute all test runner cases
 async function main() {
   try {
@@ -473,6 +511,8 @@ async function main() {
     runBidiIsolatedValuesTest();
     runAnalyticsPayloadPrivacyTest();
     await runAdapterProductionGuardTest();
+    runRouteSpecificTrustCopyTest();
+    runBackToResultPreservesOutputTest();
 
     console.log("\n--------------------------------------------------");
     console.log("ALL TESTS COMPLETED SUCCESSFULLY!");

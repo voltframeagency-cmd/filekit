@@ -56,6 +56,12 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
     startProcessing();
   };
 
+  const discardResult = () => {
+    if (confirm("Are you sure you want to discard this result? Your compressed file will be deleted.")) {
+      removeFile();
+    }
+  };
+
   return (
     <div className="w-full flex flex-col gap-6">
       {/* Badge Header Area */}
@@ -242,7 +248,8 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
                 result={verificationResult}
                 entitlement={entitlement}
                 downloadUrl={downloadUrl}
-                onReset={removeFile}
+                onReset={discardResult}
+                onUnlock={() => setState("PAYMENT_REQUIRED")}
               />
             ) : (
               <TargetNotMetCard
@@ -250,8 +257,9 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
                 result={verificationResult}
                 entitlement={entitlement}
                 downloadUrl={downloadUrl}
-                onReset={removeFile}
+                onReset={discardResult}
                 onTryServer={recordServerConsent}
+                onUnlock={() => setState("PAYMENT_REQUIRED")}
               />
             )}
           </>
@@ -263,7 +271,7 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
             filename={file.name}
             result={verificationResult}
             onSelectPlan={executePlanCheckout}
-            onCancel={removeFile}
+            onCancel={() => setState("COMPLETED")}
             checkoutPending={checkoutPending}
             paymentError={paymentError}
           />
@@ -303,7 +311,7 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
       </div>
 
       {/* Conditional bottom troubleText reassurance banner */}
-      {state !== "COMPLETED" && state !== "FAILED" && (
+      {state !== "COMPLETED" && state !== "FAILED" && state !== "PAYMENT_REQUIRED" && (
         <div className="max-w-[840px] mx-auto w-full text-center mt-4 px-2">
           <p className="text-[12px] text-fk-text-subtle font-medium leading-relaxed">
             {t("workspace.troubleText")}
