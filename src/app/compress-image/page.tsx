@@ -1,0 +1,235 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import AppHeader from "@/components/layout/AppHeader";
+import AppFooter from "@/components/layout/AppFooter";
+import TrustPanel from "@/components/layout/TrustPanel";
+import { useLanguage } from "@/components/layout/LanguageContext";
+import { ImageOptimizationEngine } from "@/utils/image-engine/ImageOptimizationEngine";
+import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
+
+export default function CompressImagePage() {
+  const { t } = useLanguage();
+  const [file, setFile] = useState<File | null>(null);
+  const [preflight, setPreflight] = useState<ImagePreflightReport | null>(null);
+  const [targetSize, setTargetSize] = useState<string>("500KB");
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [result, setResult] = useState<ImageVerificationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+
+    setError(null);
+    setResult(null);
+    setFile(selected);
+
+    try {
+      const buf = await selected.arrayBuffer();
+      const report = await ImageOptimizationEngine.compress(buf, selected.size, undefined);
+      // Perform initial preflight inspection
+      setPreflight({
+        format: report.inputMimeType.includes("jpeg") ? "jpeg" : report.inputMimeType.includes("png") ? "png" : "webp",
+        mimeType: report.inputMimeType,
+        width: report.widthBefore,
+        height: report.heightBefore,
+        hasAlpha: report.alphaPreserved,
+        isAnimated: false,
+        exifOrientation: report.orientationCorrected ? 6 : 1,
+        decodedMemoryBytes: report.widthBefore * report.heightBefore * 4,
+        headerValid: true
+      });
+    } catch (err: any) {
+      setError(err.message || "Failed to inspect selected image.");
+    }
+  };
+
+  const handleCompress = async () => {
+    if (!file) return;
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const buf = await file.arrayBuffer();
+      let targetBytes = parseInt(targetSize, 10);
+      if (isNaN(targetBytes)) {
+        if (targetSize === "200KB") targetBytes = 200 * 1024;
+        else if (targetSize === "500KB") targetBytes = 500 * 1024;
+        else if (targetSize === "1MB") targetBytes = 1024 * 1024;
+        else targetBytes = Math.round(file.size * 0.5);
+      }
+
+      const res = await ImageOptimizationEngine.compress(buf, targetBytes, undefined);
+      setResult(res);
+
+      if (typeof window !== "undefined") {
+        (window as any).__LAST_IMAGE_RESULT__ = res;
+      }
+    } catch (err: any) {
+      setError(err.message || "Image compression failed.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!result || !result.outputBuffer || !file) return;
+    const blob = new Blob([result.outputBuffer], { type: result.outputMimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `compressed_${file.name.replace(/\.[^/.]+$/, "")}.${result.outputMimeType.split("/")[1] || "jpg"}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen bg-fk-bg">
+      <AppHeader />
+
+      <main className="flex-1 flex flex-col gap-6 md:gap-10 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-12 py-6 md:py-12">
+        <section className="flex flex-col gap-1.5 max-w-[840px] mx-auto w-full text-left ltr:text-left rtl:text-right px-2">
+          <h1 className="text-[clamp(1.75rem,7vw,2.25rem)] font-black text-fk-text leading-[1.1] tracking-tight">
+            Compress Image Files (JPG, PNG, WebP)
+          </h1>
+          <p className="text-[13px] md:text-[15px] font-medium text-fk-text-muted leading-relaxed">
+            Reduce image file size locally in your browser without quality loss or server uploads.
+          </p>
+        </section>
+
+        <section className="w-full max-w-[840px] mx-auto bg-white border border-fk-border rounded-fk-xl p-6 md:p-8 shadow-sm">
+          {!file && (
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-fk-border rounded-fk-lg p-10 text-center hover:border-fk-primary transition-colors cursor-pointer relative">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFileSelect}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+              <svg className="w-12 h-12 text-fk-primary mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+              <p className="text-[15px] font-bold text-fk-text">Drop your image here or browse</p>
+              <p className="text-[12px] font-medium text-fk-text-subtle mt-1">Supports JPG, PNG, and WebP (up to 500 MB decoded memory)</p>
+            </div>
+          )}
+
+          {file && !result && (
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center justify-between p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
+                <div className="flex flex-col">
+                  <span className="text-[14px] font-bold text-fk-text">{file.name}</span>
+                  <span className="text-[12px] font-mono text-fk-text-subtle mt-0.5">{formatBytes(file.size)}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setFile(null); setPreflight(null); setError(null); }}
+                  className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text"
+                >
+                  Change File
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-bold text-fk-text">Target File Size</label>
+                <div className="flex gap-3">
+                  {["200KB", "500KB", "1MB"].map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setTargetSize(opt)}
+                      className={`flex-1 h-[44px] rounded-fk-md text-[13px] font-bold border transition-colors ${
+                        targetSize === opt
+                          ? "bg-fk-primary text-white border-fk-primary"
+                          : "bg-white text-fk-text border-fk-border hover:bg-fk-surface-muted"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCompress}
+                disabled={isProcessing}
+                className="w-full h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
+              >
+                {isProcessing ? "Processing Image Locally..." : "Compress Image"}
+              </button>
+            </div>
+          )}
+
+          {result && file && (
+            <div className="flex flex-col items-center gap-6 animate-in fade-in duration-200">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-fk-success-bg border border-[#BBF7D0] text-fk-success text-[14px] font-bold">
+                ✓ Image compressed successfully
+              </div>
+
+              <div className="flex items-center justify-center gap-6 w-full max-w-[460px] p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
+                <div className="flex flex-col items-center">
+                  <span className="text-[11px] font-bold text-fk-text-subtle uppercase">Original</span>
+                  <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(result.originalSizeBytes)}</span>
+                </div>
+                <div className="text-[22px] font-light text-fk-text-subtle">→</div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[11px] font-bold text-fk-primary uppercase">New Size</span>
+                  <span className="text-[20px] font-black text-fk-primary mt-1">{formatBytes(result.outputSizeBytes)}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1 text-center text-[13px]">
+                <p className="font-bold text-fk-text">
+                  {result.reductionPercentage.toFixed(1)}% smaller  •  {result.widthAfter} × {result.heightAfter} px
+                </p>
+                <span className="text-[11px] text-fk-text-subtle">
+                  Processed privately in your browser ({result.processingDurationMs} ms)
+                </span>
+              </div>
+
+              <div className="flex gap-3 w-full max-w-[500px]">
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors"
+                >
+                  Download Compressed Image
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setResult(null); setFile(null); }}
+                  className="h-[50px] px-6 border border-fk-border hover:bg-fk-surface-muted text-fk-text-muted rounded-fk-md text-[13px] font-bold transition-colors"
+                >
+                  Process Another
+                </button>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 text-[13px] rounded-fk-md font-medium">
+              ⚠️ {error}
+            </div>
+          )}
+        </section>
+
+        <TrustPanel />
+      </main>
+
+      <AppFooter />
+    </div>
+  );
+}
