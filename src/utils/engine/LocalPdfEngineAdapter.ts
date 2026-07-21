@@ -2,13 +2,30 @@ import { CompressionEngine, ProcessingJob, VerificationResult } from "./types";
 import { LocalPdfCompressionEngine } from "./LocalPdfCompressionEngine";
 import { PDFDocument } from "pdf-lib";
 
+function parseTargetSizeBytes(targetSizeStr: string, originalSizeBytes: number): number {
+  if (!targetSizeStr) return Math.max(100 * 1024, Math.round(originalSizeBytes * 0.5));
+  const trimmed = targetSizeStr.trim().toLowerCase();
+  if (/^\d+$/.test(trimmed)) {
+    return parseInt(trimmed, 10);
+  }
+  const mbMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*mb/);
+  if (mbMatch) {
+    return Math.round(parseFloat(mbMatch[1]) * 1024 * 1024);
+  }
+  const kbMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*kb/);
+  if (kbMatch) {
+    return Math.round(parseFloat(kbMatch[1]) * 1024);
+  }
+  return Math.max(100 * 1024, Math.round(originalSizeBytes * 0.5));
+}
+
 export class LocalPdfEngineAdapter implements CompressionEngine {
   id = "local-pdf-engine";
 
   async compress(file: File, targetSizeStr: string, job: ProcessingJob): Promise<void> {
     const arrayBuffer = await file.arrayBuffer();
     const originalSizeBytes = arrayBuffer.byteLength;
-    const targetSizeBytes = Math.max(100 * 1024, Math.round(originalSizeBytes * 0.5));
+    const targetSizeBytes = parseTargetSizeBytes(targetSizeStr, originalSizeBytes);
 
     job.onProgress({ stage: "READING_FILE", message: "Reading local PDF file...", timestamp: Date.now() });
 

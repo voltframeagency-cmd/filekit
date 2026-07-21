@@ -68,7 +68,23 @@ export function selectCompressionResult(params: {
     };
   }
 
-  // 3. Genuine growth case (no candidates smaller than original): return immutable original buffer
+  // 3. Original already within target size (no candidates smaller than original needed/found)
+  if (originalBytes <= targetSizeBytes) {
+    return {
+      buffer: originalBuffer,
+      imagesDiscovered,
+      imagesSupported,
+      replacedCount: 0,
+      status: "SUCCESS",
+      outcome: "TARGET_ACHIEVED",
+      targetAchieved: true,
+      attemptsRun,
+      selectedProfile: "LOSSLESS",
+      stopReason: "NO_COMPRESSIBLE_IMAGES",
+    };
+  }
+
+  // 4. Genuine growth case (original > targetSizeBytes, but no candidates smaller than original)
   return {
     buffer: originalBuffer,
     imagesDiscovered,
@@ -76,7 +92,7 @@ export function selectCompressionResult(params: {
     replacedCount: 0,
     status: "NO_BENEFICIAL_REDUCTION",
     outcome: "NO_BENEFICIAL_REDUCTION",
-    targetAchieved: originalBytes <= targetSizeBytes,
+    targetAchieved: false,
     attemptsRun,
     selectedProfile: "LOSSLESS",
     stopReason: "OUTPUT_GROWTH",

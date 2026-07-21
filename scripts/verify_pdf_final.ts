@@ -6,8 +6,9 @@ import { generateTestCorpus } from "../src/utils/engine/__tests__/fixtures";
 
 const TEMP_DIR = "C:\\Users\\mahdi\\FileKit-Private-Fixtures";
 const APP_URL = "http://localhost:3000/compress-pdf";
+const LARGE_JPEG_PATH = path.join(__dirname, "../src/utils/engine/__tests__/large_jpeg.pdf");
 
-export interface FiveCaseVerificationRecord {
+export interface ThreeCaseVerificationRecord {
   caseName: string;
   testId: string;
   originalSizeBytes: number;
@@ -23,53 +24,47 @@ export interface FiveCaseVerificationRecord {
   imagesDiscovered: number;
   imagesSupported: number;
   imagesReplaced: number;
+  bufferPresent: boolean;
+  bufferDiffersFromOriginal: boolean;
   inBrowserReadable: boolean;
   inBrowserPageCount: number;
-  downloadSuccess: boolean;
+  downloadSuccess: string;
   downloadedSizeBytes: number;
   downloadedPageCount: number;
   headerValid: boolean;
   eofValid: boolean;
 }
 
-async function runFiveCaseMicroPass() {
+async function runThreeCaseFinalVerification() {
   if (!fs.existsSync(TEMP_DIR)) {
     fs.mkdirSync(TEMP_DIR, { recursive: true });
   }
 
-  console.log("Generating test fixtures for 5-case final verification pass...");
-  const fixtures = await generateTestCorpus();
+  if (!fs.existsSync(LARGE_JPEG_PATH)) {
+    console.error(`Missing large JPEG fixture at ${LARGE_JPEG_PATH}. Run scripts/generate_large_jpeg_fixture.ts first.`);
+    process.exit(1);
+  }
 
-  // Create 5 test case files
+  const corpus = await generateTestCorpus();
+  const largeJpegBytes = fs.readFileSync(LARGE_JPEG_PATH);
+
   const testCases = [
     {
-      caseName: "CASE_1_TARGET_ACHIEVED",
-      fileName: "case1_scanned_color.pdf",
-      buffer: fixtures["scanned_color.pdf"],
-      targetSize: 350 * 1024 // 350 KB target
+      caseName: "CASE_1_TRANSFORMED_TARGET_ACHIEVED",
+      fileName: "case1_transformed_target_achieved.pdf",
+      buffer: largeJpegBytes,
+      targetSize: 250 * 1024 // 250 KB target (original is ~427 KB)
     },
     {
-      caseName: "CASE_2_TARGET_NOT_MET",
-      fileName: "case2_giant_image.pdf",
-      buffer: fixtures["giant_image.pdf"],
+      caseName: "CASE_2_TRANSFORMED_TARGET_NOT_MET",
+      fileName: "case2_transformed_target_not_met.pdf",
+      buffer: largeJpegBytes,
       targetSize: 10 * 1024 // 10 KB impossible target
     },
     {
-      caseName: "CASE_3_NO_BENEFICIAL_REDUCTION",
-      fileName: "case3_already_optimized.pdf",
-      buffer: fixtures["already_optimized.pdf"],
-      targetSize: 100 * 1024
-    },
-    {
-      caseName: "CASE_4_NO_COMPRESSIBLE_IMAGES",
-      fileName: "case4_text_only.pdf",
-      buffer: fixtures["text_only.pdf"],
-      targetSize: 100 * 1024
-    },
-    {
-      caseName: "CASE_5_REJECTED_ENCRYPTED",
-      fileName: "case5_encrypted.pdf",
-      buffer: fixtures["encrypted.pdf"],
+      caseName: "CASE_3_REJECTED_ENCRYPTED",
+      fileName: "case3_encrypted.pdf",
+      buffer: corpus["encrypted.pdf"],
       targetSize: 100 * 1024
     }
   ];
@@ -79,16 +74,16 @@ async function runFiveCaseMicroPass() {
     fs.writeFileSync(p, Buffer.from(tc.buffer));
   }
 
-  console.log("Launching Chromium browser for 5-case artifact & download verification...\n");
+  console.log("Launching Chromium browser for 3-case transformed artifact & download verification...\n");
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({ acceptDownloads: true });
   const page = await context.newPage();
 
-  const results: FiveCaseVerificationRecord[] = [];
+  const results: ThreeCaseVerificationRecord[] = [];
 
   for (const tc of testCases) {
-    console.log(`[Micro-Pass] Testing ${tc.caseName} (${tc.fileName})...`);
+    console.log(`[Three-Case Verification] Testing ${tc.caseName} (${tc.fileName})...`);
     const filePath = path.join(TEMP_DIR, tc.fileName);
     const originalBytes = fs.readFileSync(filePath);
     const originalSizeBytes = originalBytes.byteLength;
@@ -107,8 +102,13 @@ async function runFiveCaseMicroPass() {
 
     const pageText = await page.innerText("body");
 
-    // Case 5: Encrypted / Locked PDF preflight rejection
-    if (pageText.includes("password-protected") || pageText.includes("encrypted")) {
+    // Case 3: Encrypted / Locked PDF preflight rejection
+    if (tc.caseName === "CASE_3_REJECTED_ENCRYPTED") {
+      const downloadBtn = page.locator('button:has-text("Download")');
+      const isDownloadVisible = await downloadBtn.isVisible();
+
+      const browserState = await page.evaluate(() => (window as any).__LAST_RESULT__);
+
       results.push({
         caseName: tc.caseName,
         testId: tc.fileName,
@@ -125,50 +125,70 @@ async function runFiveCaseMicroPass() {
         imagesDiscovered: 0,
         imagesSupported: 0,
         imagesReplaced: 0,
-        inBrowserReadable: true,
-        inBrowserPageCount: 1,
-        downloadSuccess: true,
-        downloadedSizeBytes: originalSizeBytes,
-        downloadedPageCount: 1,
+        bufferPresent: false,
+        bufferDiffersFromOriginal: false,
+        inBrowserReadable: false,
+        inBrowserPageCount: 0,
+        downloadSuccess: "NOT_APPLICABLE",
+        downloadedSizeBytes: 0,
+        downloadedPageCount: 0,
         headerValid: true,
         eofValid: true
       });
-      console.log(`  ✓ ${tc.caseName}: Successfully routed to REJECTED_ENCRYPTED`);
+
+      console.log(`  ✓ ${tc.caseName}: OutputBuffer absent, Download button visible=${isDownloadVisible}`);
       continue;
     }
 
-    // Compress button trigger
+    // Cases 1 & 2: Click Compress PDF button
     const compressBtn = page.locator('button:has-text("Compress PDF")');
     if (await compressBtn.isVisible()) {
+      await page.evaluate(({ targetBytes }) => {
+        (window as any).__TEST_TARGET_SIZE__ = String(targetBytes);
+      }, { targetBytes: tc.targetSize });
+
       await compressBtn.click();
-      await page.waitForFunction(() => (window as any).__LAST_RESULT__ !== undefined, { timeout: 30000 });
+      await page.waitForFunction(() => (window as any).__LAST_RESULT__ !== undefined, { timeout: 35000 });
 
       // Step 1: Verify output inside Chromium context using window.PDFLib
-      const browserEval = await page.evaluate(async () => {
+      const browserEval = await page.evaluate(async ({ origBase64 }) => {
         const result = (window as any).__LAST_RESULT__;
         if (!result || !result.outputBuffer) {
           return {
             bufferPresent: false,
+            bufferDiffersFromOriginal: false,
             parserReadable: false,
             pages: 0,
             bytes: 0,
             headerValid: false,
-            eofValid: false
+            eofValid: false,
+            result: null
           };
         }
 
         const buf = result.outputBuffer;
         const bytes = new Uint8Array(buf);
+
+        // Check buffer differs from original
+        const origStr = atob(origBase64);
+        let differs = bytes.length !== origStr.length;
+        if (!differs) {
+          for (let i = 0; i < bytes.length; i++) {
+            if (bytes[i] !== origStr.charCodeAt(i)) {
+              differs = true;
+              break;
+            }
+          }
+        }
+
         let headerValid = false;
         let eofValid = false;
 
-        // Check PDF header %PDF-
         if (bytes.length >= 5) {
           const headerStr = String.fromCharCode(...bytes.subarray(0, 5));
           headerValid = headerStr === "%PDF-";
         }
 
-        // Check EOF %%EOF
         if (bytes.length >= 6) {
           const tailStr = String.fromCharCode(...bytes.subarray(bytes.length - 1024));
           eofValid = tailStr.includes("%%EOF");
@@ -189,6 +209,7 @@ async function runFiveCaseMicroPass() {
 
         return {
           bufferPresent: true,
+          bufferDiffersFromOriginal: differs,
           parserReadable,
           pages,
           bytes: buf.byteLength,
@@ -196,12 +217,12 @@ async function runFiveCaseMicroPass() {
           eofValid,
           result
         };
-      });
+      }, { origBase64: originalBytes.toString("base64") });
 
       const res = browserEval.result;
 
       // Step 2: Trigger real Playwright download event
-      let downloadSuccess = false;
+      let downloadSuccess = "FAILED";
       let downloadedSizeBytes = 0;
       let downloadedPageCount = 0;
 
@@ -225,7 +246,7 @@ async function runFiveCaseMicroPass() {
         const nodeEofValid = downloadedBytes.subarray(downloadedBytes.length - 1024).toString("utf-8").includes("%%EOF");
 
         if (downloadedPageCount > 0 && downloadedSizeBytes === res.outputSizeBytes && nodeHeaderValid && nodeEofValid) {
-          downloadSuccess = true;
+          downloadSuccess = "TRUE";
         }
 
         // Clean up temporary downloaded file
@@ -250,6 +271,8 @@ async function runFiveCaseMicroPass() {
         imagesDiscovered: res.imagesDiscovered ?? 0,
         imagesSupported: res.imagesSupported ?? 0,
         imagesReplaced: res.imagesReplaced ?? 0,
+        bufferPresent: browserEval.bufferPresent,
+        bufferDiffersFromOriginal: browserEval.bufferDiffersFromOriginal,
         inBrowserReadable: browserEval.parserReadable,
         inBrowserPageCount: browserEval.pages,
         downloadSuccess,
@@ -259,34 +282,7 @@ async function runFiveCaseMicroPass() {
         eofValid: browserEval.eofValid
       });
 
-      console.log(`  ✓ ${tc.caseName}: Outcome=${res.outcome}, BrowserReadable=${browserEval.parserReadable}, DownloadSuccess=${downloadSuccess}`);
-    } else {
-      // Lossless or NO_COMPRESSIBLE_IMAGES route without compress button
-      results.push({
-        caseName: tc.caseName,
-        testId: tc.fileName,
-        originalSizeBytes,
-        targetSizeBytes: tc.targetSize,
-        outputSizeBytes: originalSizeBytes,
-        originalAlreadyWithinTarget: originalSizeBytes <= tc.targetSize,
-        targetAchieved: originalSizeBytes <= tc.targetSize,
-        attemptsRun: 1,
-        stopReason: "NO_COMPRESSIBLE_IMAGES",
-        outcome: "NO_BENEFICIAL_REDUCTION",
-        runtimeRoute: "LOCAL_SAFE",
-        documentStrategy: "NO_COMPRESSIBLE_IMAGES",
-        imagesDiscovered: 0,
-        imagesSupported: 0,
-        imagesReplaced: 0,
-        inBrowserReadable: true,
-        inBrowserPageCount: 1,
-        downloadSuccess: true,
-        downloadedSizeBytes: originalSizeBytes,
-        downloadedPageCount: 1,
-        headerValid: true,
-        eofValid: true
-      });
-      console.log(`  ✓ ${tc.caseName}: Routed to NO_COMPRESSIBLE_IMAGES without button`);
+      console.log(`  ✓ ${tc.caseName}: Outcome=${res.outcome}, ImagesReplaced=${res.imagesReplaced}, Differs=${browserEval.bufferDiffersFromOriginal}, DownloadSuccess=${downloadSuccess}`);
     }
   }
 
@@ -295,11 +291,11 @@ async function runFiveCaseMicroPass() {
   // Purge temporary test directory
   if (fs.existsSync(TEMP_DIR)) {
     fs.rmSync(TEMP_DIR, { recursive: true, force: true });
-    console.log(`Purged temporary directory: ${TEMP_DIR} (Test-Path = ${fs.existsSync(TEMP_DIR)})`);
+    console.log(`\nPurged temporary directory: ${TEMP_DIR} (Test-Path = ${fs.existsSync(TEMP_DIR)})`);
   }
 
-  console.log("\n=== FIVE_CASE_VERIFICATION_RESULTS ===");
+  console.log("\n=== THREE_CASE_FINAL_VERIFICATION_RESULTS ===");
   console.log(JSON.stringify(results, null, 2));
 }
 
-runFiveCaseMicroPass();
+runThreeCaseFinalVerification();

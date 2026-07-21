@@ -287,7 +287,8 @@ export function useWorkspaceState(initialFile: File | null = null) {
     };
 
     try {
-      await engine.compress(file, targetSize, job);
+      const activeTarget = (typeof window !== "undefined" && (window as any).__TEST_TARGET_SIZE__) || targetSize;
+      await engine.compress(file, activeTarget, job);
     } catch (e: any) {
       if (controller.signal.aborted) return;
       setFailure({
