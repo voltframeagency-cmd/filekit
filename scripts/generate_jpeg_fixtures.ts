@@ -3,7 +3,7 @@ import * as path from "path";
 import * as https from "https";
 import { PDFDocument, degrees } from "pdf-lib";
 
-const TARGET_DIR = path.join(__dirname, "../public/test-fixtures");
+const TARGET_DIR = path.join(__dirname, "../test-fixtures");
 const SAMPLE_IMAGE_URL = "https://picsum.photos/id/10/2500/1667"; // ~1.5 MB high-res JPEG
 const SAMPLE_IMAGE_PATH = path.join(TARGET_DIR, "sample_photo.jpg");
 

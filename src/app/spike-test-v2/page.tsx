@@ -110,7 +110,13 @@ const EXTERNAL_FIXTURES = [
   "external/py_pdf_pdflatex_image.pdf",
 ];
 
+import { notFound } from "next/navigation";
+
 export default function SpikeTestV2Page() {
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   const [results, setResults] = useState<SpikeResultV2[]>([]);
   const [running, setRunning] = useState(false);
   const [currentFile, setCurrentFile] = useState("");

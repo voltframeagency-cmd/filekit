@@ -1,12 +1,59 @@
 import { PDFDocument, PDFName, PDFRawStream, PDFDict } from "pdf-lib";
 
+export type SignatureStatus =
+  | "NONE"
+  | "UNSIGNED_SIGNATURE_FIELD"
+  | "SIGNED_DOCUMENT"
+  | "SIGNATURE_STATUS_UNKNOWN";
+
 export interface PreflightReport {
   pageCount: number;
   imageCount: number;
   estimatedDecodedMemoryMB: number;
+  signatureStatus: SignatureStatus;
 }
 
 export class PdfPreflightInspector {
+  /**
+   * Evaluates the digital signature status of a loaded PDF document.
+   */
+  static detectSignatureStatus(pdfDoc: PDFDocument): SignatureStatus {
+    const indirectObjects = pdfDoc.context.enumerateIndirectObjects();
+    let foundUnsignedField = false;
+
+    for (const [, obj] of indirectObjects) {
+      if (obj instanceof PDFRawStream || obj instanceof PDFDict) {
+        const dict = obj instanceof PDFRawStream ? obj.dict : obj;
+        const type = dict.get(PDFName.of("Type"));
+        const ft = dict.get(PDFName.of("FT"));
+
+        if (type === PDFName.of("Sig") || ft === PDFName.of("Sig")) {
+          const v = dict.get(PDFName.of("V"));
+          if (!v) {
+            foundUnsignedField = true;
+            continue;
+          }
+
+          // Resolve indirect reference if needed
+          const vObj = pdfDoc.context.lookup(v);
+          if (vObj instanceof PDFDict || vObj instanceof PDFRawStream) {
+            const vDict = vObj instanceof PDFRawStream ? vObj.dict : vObj;
+            const byteRange = vDict.get(PDFName.of("ByteRange"));
+            const contents = vDict.get(PDFName.of("Contents"));
+
+            if (byteRange && contents) {
+              return "SIGNED_DOCUMENT";
+            }
+            return "SIGNATURE_STATUS_UNKNOWN";
+          }
+          foundUnsignedField = true;
+        }
+      }
+    }
+
+    return foundUnsignedField ? "UNSIGNED_SIGNATURE_FIELD" : "NONE";
+  }
+
   /**
    * Performs preflight checks to validate a PDF file before compression.
    * Throws classified errors on failure:
@@ -36,18 +83,19 @@ export class PdfPreflightInspector {
       throw new Error("INVALID_PDF_STRUCTURE");
     }
 
-    // 3. Scan indirect objects for cryptographic signatures and estimate memory
+    // 3. Detect digital signature status
+    const sigStatus = this.detectSignatureStatus(pdfDoc);
+    if (sigStatus === "SIGNED_DOCUMENT") {
+      throw new Error("UNSUPPORTED_SIGNED_DOCUMENT");
+    }
+
+    // 4. Scan indirect objects for image objects and estimate memory
     let imageCount = 0;
     let totalImageDecodedBytes = 0;
     const indirectObjects = pdfDoc.context.enumerateIndirectObjects();
     for (const [, obj] of indirectObjects) {
       if (obj instanceof PDFRawStream || obj instanceof PDFDict) {
         const dict = obj instanceof PDFRawStream ? obj.dict : obj;
-        const type = dict.get(PDFName.of("Type"));
-        if (type === PDFName.of("Sig")) {
-          throw new Error("UNSUPPORTED_SIGNED_DOCUMENT");
-        }
-
         const subtype = dict.get(PDFName.of("Subtype"));
         if (subtype === PDFName.of("Image")) {
           imageCount++;
@@ -56,7 +104,6 @@ export class PdfPreflightInspector {
           let w = 1000;
           let h = 1000;
           
-          // Using typescript checks since these are pdflib types
           if (width && typeof (width as any).asNumber === "function") {
             w = (width as any).asNumber();
           }
@@ -75,7 +122,8 @@ export class PdfPreflightInspector {
     return {
       pageCount: pdfDoc.getPageCount(),
       imageCount,
-      estimatedDecodedMemoryMB
+      estimatedDecodedMemoryMB,
+      signatureStatus: sigStatus
     };
   }
 }

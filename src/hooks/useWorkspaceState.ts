@@ -221,6 +221,11 @@ export function useWorkspaceState(initialFile: File | null = null) {
 
           setVerificationResult({
             ...result,
+            targetSizeBytes: result.targetSizeBytes ?? 2 * 1024 * 1024,
+            targetAchieved: result.targetAchieved ?? false,
+            attemptsRun: result.attemptsRun ?? 1,
+            selectedProfile: result.selectedProfile ?? "BALANCED",
+            stopReason: result.stopReason ?? (outcome === "TARGET_ACHIEVED" ? "TARGET_REACHED" : outcome === "NO_BENEFICIAL_REDUCTION" ? "OUTPUT_GROWTH" : "MAX_ATTEMPTS"),
             outcome,
             processingLocation: isServerRoute ? "server" : "local",
           });

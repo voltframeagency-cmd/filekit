@@ -87,7 +87,7 @@ export default function TargetNotMetCard({
       </div>
 
       <p className="text-[13px] text-fk-text-muted leading-relaxed font-semibold">
-        The PDF structure could not be compressed below your requested target size of <span className="font-bold text-fk-text"><bdi>{result.targetRequested}</bdi></span> locally without degrading text or image readability.
+        The PDF structure could not be compressed below your requested target size of <span className="font-bold text-fk-text"><bdi>{formatBytes(result.targetSizeBytes)}</bdi></span> locally without degrading text or image readability.
       </p>
 
       {/* Actual achieved metrics comparison */}

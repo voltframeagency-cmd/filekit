@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";
 
-const TARGET_DIR = path.join(__dirname, "../public/test-fixtures");
+const TARGET_DIR = path.join(__dirname, "../test-fixtures");
 
 if (!fs.existsSync(TARGET_DIR)) {
   fs.mkdirSync(TARGET_DIR, { recursive: true });

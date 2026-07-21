@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { PDFDocument, rgb, degrees } from "pdf-lib";
 
-const TARGET_DIR = path.join(__dirname, "../public/test-fixtures");
+const TARGET_DIR = path.join(__dirname, "../test-fixtures");
 const SAMPLE_IMAGE_PATH = path.join(TARGET_DIR, "sample_photo.jpg");
 
 if (!fs.existsSync(TARGET_DIR)) {

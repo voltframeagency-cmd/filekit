@@ -1,4 +1,5 @@
 import { PDFDocument, PDFName, PDFRawStream, PDFDict } from "pdf-lib";
+import { PdfPreflightInspector } from "./PdfPreflightInspector";
 
 export type CompressionStrategy =
   | "SAFE_LOCAL_COMPRESSION"
@@ -16,9 +17,13 @@ export class CompressionStrategySelector {
    */
   static async select(arrayBuffer: ArrayBuffer): Promise<CompressionStrategy> {
     const pdfDoc = await PDFDocument.load(arrayBuffer);
-    const indirectObjects = pdfDoc.context.enumerateIndirectObjects();
     
-    let hasSig = false;
+    const sigStatus = PdfPreflightInspector.detectSignatureStatus(pdfDoc);
+    if (sigStatus === "SIGNED_DOCUMENT") {
+      return "UNSUPPORTED_SIGNED_DOCUMENT";
+    }
+
+    const indirectObjects = pdfDoc.context.enumerateIndirectObjects();
     let imageCount = 0;
     let hasUnsupported = false;
 
@@ -28,13 +33,7 @@ export class CompressionStrategySelector {
 
       if (isDict || isStream) {
         const dict = isStream ? obj.dict : obj;
-        const type = dict.get(PDFName.of("Type"));
         const subtype = dict.get(PDFName.of("Subtype"));
-
-        if (type === PDFName.of("Sig")) {
-          hasSig = true;
-          break;
-        }
 
         if (subtype === PDFName.of("Image")) {
           imageCount++;
@@ -55,10 +54,6 @@ export class CompressionStrategySelector {
           }
         }
       }
-    }
-
-    if (hasSig) {
-      return "UNSUPPORTED_SIGNED_DOCUMENT";
     }
 
     if (imageCount === 0) {

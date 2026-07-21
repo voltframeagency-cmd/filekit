@@ -36,7 +36,13 @@ const FIXTURES = [
   "password_protected.pdf"
 ];
 
+import { notFound } from "next/navigation";
+
 export default function SpikeTestPage() {
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   const [results, setResults] = useState<SpikeResult[]>([]);
   const [running, setRunning] = useState(false);
   const [currentFile, setCurrentFile] = useState("");

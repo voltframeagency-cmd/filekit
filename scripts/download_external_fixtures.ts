@@ -14,7 +14,7 @@ import * as https from "https";
 import * as http from "http";
 import * as crypto from "crypto";
 
-const OUTPUT_DIR = path.join(__dirname, "../public/test-fixtures/external");
+const OUTPUT_DIR = path.join(__dirname, "../test-fixtures/external");
 
 export interface ExternalFixtureManifest {
   filename: string;

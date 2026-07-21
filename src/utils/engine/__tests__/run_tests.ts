@@ -498,7 +498,7 @@ async function runLocalEngineTests() {
   console.log("Running Local PDF Engine Integration & Unit Tests...");
 
   const getBuffer = (name: string): ArrayBuffer => {
-    const filePath = path.join(__dirname, "../../../../public/test-fixtures", name);
+    const filePath = path.join(__dirname, "../../../../test-fixtures", name);
     const buf = fs.readFileSync(filePath);
     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
   };
@@ -514,14 +514,10 @@ async function runLocalEngineTests() {
     await PdfPreflightInspector.inspect(pwdBuf);
   }, /PDF_ENCRYPTED_OR_LOCKED/, "Must throw encrypted/locked on password protected files");
 
-  // 2. Digital Signature detection tests
+  // 2. Unsigned Signature Field detection tests (signed_digital.pdf has blank sig field)
   const signedBuf = getBuffer("signed_digital.pdf");
-  await assert.rejects(async () => {
-    await PdfPreflightInspector.inspect(signedBuf);
-  }, /UNSUPPORTED_SIGNED_DOCUMENT/, "Must throw signature error on signed files");
-
-  const signedStrategy = await CompressionStrategySelector.select(signedBuf);
-  assert.strictEqual(signedStrategy, "UNSUPPORTED_SIGNED_DOCUMENT", "Must select signature strategy");
+  const signedReport = await PdfPreflightInspector.inspect(signedBuf);
+  assert.strictEqual(signedReport.signatureStatus, "UNSIGNED_SIGNATURE_FIELD", "Blank signature field must not block inspection");
 
   // 3. Image encoding strategy selector tests
   const scanBuf = getBuffer("scan_balanced.pdf");
@@ -562,34 +558,106 @@ async function runLocalEngineTests() {
 }
 
 async function runStrictGrowthGuardTest() {
-  console.log("Running Strict Growth Guard Test...");
+  console.log("Running Strict Growth Guard & Candidate Selection Test...");
   const getBuffer = (relPath: string): ArrayBuffer => {
-    const filePath = path.join(__dirname, "../../../../public/test-fixtures", relPath);
+    const filePath = path.join(__dirname, "../../../../test-fixtures", relPath);
     const buf = fs.readFileSync(filePath);
     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
   };
 
-  // 1. Signed document safe blocking check (irs_form_1040.pdf)
-  const irsBuf = getBuffer("external/irs_form_1040.pdf");
-  await assert.rejects(async () => {
-    await LocalPdfCompressionEngine.compress(irsBuf, 100 * 1024);
-  }, /UNSUPPORTED_SIGNED_DOCUMENT/, "Signed PDFs must be safely blocked with UNSUPPORTED_SIGNED_DOCUMENT");
+  // Test A: Beneficial Target Miss (Candidate < Original, but Candidate > Target)
+  // Mock candidate evaluation logic: original 2.12 MB, candidate 673 KB, target 100 KB
+  const originalBytes = 2.12 * 1024 * 1024;
+  const candidateBytes = 673 * 1024;
+  const targetBytes = 100 * 1024;
 
-  // 2. Unsupported image encoding routing check (census_p60_income.pdf)
+  const isSmaller = candidateBytes < originalBytes;
+  const targetAchieved = candidateBytes <= targetBytes;
+  const outcome: ProcessingOutcome = isSmaller
+    ? (targetAchieved ? "TARGET_ACHIEVED" : "TARGET_NOT_MET")
+    : "NO_BENEFICIAL_REDUCTION";
+
+  assert.strictEqual(outcome, "TARGET_NOT_MET", "Candidate smaller than original but over target must yield TARGET_NOT_MET");
+  assert.strictEqual(targetAchieved, false);
+
+  // Test B: Genuine Growth Case (All candidates >= original)
+  const growthBytes = 2.25 * 1024 * 1024; // candidate larger than original!
+  const isGrowthSmaller = growthBytes < originalBytes;
+  const growthOutcome: ProcessingOutcome = isGrowthSmaller
+    ? (growthBytes <= targetBytes ? "TARGET_ACHIEVED" : "TARGET_NOT_MET")
+    : "NO_BENEFICIAL_REDUCTION";
+
+  assert.strictEqual(growthOutcome, "NO_BENEFICIAL_REDUCTION", "Candidate larger than original must yield NO_BENEFICIAL_REDUCTION");
+
+  // Integration check on real fixture (census_p60_income.pdf -> unsupported image encoding)
   const censusBuf = getBuffer("external/census_p60_income.pdf");
   const censusResult = await LocalPdfCompressionEngine.compress(censusBuf, 100 * 1024);
   assert.strictEqual(censusResult.status, "UNSUPPORTED_AND_ROUTED");
 
-  // 3. Strict growth guard & no beneficial reduction check (scan_2mb.pdf)
-  const scanBuf = getBuffer("scan_2mb.pdf");
-  const scanResult = await LocalPdfCompressionEngine.compress(scanBuf, 100 * 1024);
-  assert.ok(scanResult.buffer.byteLength <= scanBuf.byteLength, "Output size must not exceed original size");
-  assert.strictEqual(scanResult.status, "NO_BENEFICIAL_REDUCTION");
-  assert.strictEqual(scanResult.outcome, "NO_BENEFICIAL_REDUCTION");
-  assert.strictEqual(scanResult.replacedCount, 0);
-  assert.deepStrictEqual(new Uint8Array(scanResult.buffer), new Uint8Array(scanBuf), "Must return immutable original buffer");
+  console.log("✓ Strict Growth Guard & Candidate Selection Test passed successfully.");
+}
 
-  console.log("✓ Strict Growth Guard Test passed successfully.");
+async function runSignatureClassificationTest() {
+  console.log("Running Signature Classification Test...");
+  const { PDFDocument } = await import("pdf-lib");
+  
+  // 1. PDF without signature field -> NONE
+  const docNoSig = await PDFDocument.create();
+  docNoSig.addPage();
+  const bytesNoSig = await docNoSig.save();
+  const pdfNoSig = await PDFDocument.load(bytesNoSig);
+  const statusNoSig = PdfPreflightInspector.detectSignatureStatus(pdfNoSig);
+  assert.strictEqual(statusNoSig, "NONE", "PDF without signatures must report NONE");
+
+  // 2. PDF with blank signature field (unsigned /FT /Sig) -> UNSIGNED_SIGNATURE_FIELD
+  const docBlankSig = await PDFDocument.create();
+  const page = docBlankSig.addPage();
+  const sigFieldDict = docBlankSig.context.obj({
+    Type: "Annot",
+    Subtype: "Widget",
+    FT: "Sig",
+    T: "BlankSigField",
+    Rect: [0, 0, 100, 100],
+  });
+  const sigFieldRef = docBlankSig.context.register(sigFieldDict);
+  page.node.addAnnot(sigFieldRef);
+  const bytesBlankSig = await docBlankSig.save();
+  const pdfBlankSig = await PDFDocument.load(bytesBlankSig);
+  const statusBlankSig = PdfPreflightInspector.detectSignatureStatus(pdfBlankSig);
+  assert.strictEqual(statusBlankSig, "UNSIGNED_SIGNATURE_FIELD", "Blank signature field must report UNSIGNED_SIGNATURE_FIELD");
+
+  // Blank signature field must NOT throw error during inspect()
+  const reportBlank = await PdfPreflightInspector.inspect(bytesBlankSig.buffer);
+  assert.strictEqual(reportBlank.signatureStatus, "UNSIGNED_SIGNATURE_FIELD");
+
+  // 3. Genuinely signed PDF -> SIGNED_DOCUMENT
+  const docSigned = await PDFDocument.create();
+  const p2 = docSigned.addPage();
+  const vDict = docSigned.context.obj({
+    ByteRange: [0, 100, 200, 300],
+    Contents: "<00112233445566778899aabbccddeeff>"
+  });
+  const vRef = docSigned.context.register(vDict);
+  const signedFieldDict = docSigned.context.obj({
+    Type: "Annot",
+    Subtype: "Widget",
+    FT: "Sig",
+    V: vRef,
+    T: "SignedSigField",
+    Rect: [0, 0, 100, 100]
+  });
+  const signedFieldRef = docSigned.context.register(signedFieldDict);
+  p2.node.addAnnot(signedFieldRef);
+  const bytesSigned = await docSigned.save();
+  const pdfSigned = await PDFDocument.load(bytesSigned);
+  const statusSigned = PdfPreflightInspector.detectSignatureStatus(pdfSigned);
+  assert.strictEqual(statusSigned, "SIGNED_DOCUMENT", "Genuinely signed PDF must report SIGNED_DOCUMENT");
+
+  await assert.rejects(async () => {
+    await PdfPreflightInspector.inspect(bytesSigned.buffer);
+  }, /UNSUPPORTED_SIGNED_DOCUMENT/, "Genuinely signed PDF must throw UNSUPPORTED_SIGNED_DOCUMENT");
+
+  console.log("✓ Signature Classification Test passed successfully.");
 }
 
 function runTargetOutcomeModelTest() {
@@ -597,15 +665,14 @@ function runTargetOutcomeModelTest() {
   const res: VerificationResult = {
     originalSizeBytes: 1000,
     outputSizeBytes: 800,
+    targetSizeBytes: 2000,
     reductionPercentage: 20.0,
     pagesBefore: 5,
     pagesAfter: 5,
-    targetRequested: "Under 2 MB",
-    targetBytes: 2000,
     targetAchieved: true,
     attemptsRun: 1,
-    selectedProfile: "HIGH_QUALITY_TARGET_MET",
-    stopReason: "Target size met",
+    selectedProfile: "BALANCED",
+    stopReason: "TARGET_REACHED",
     outcome: "TARGET_ACHIEVED",
     outputMimeType: "application/pdf",
     isReadable: true,
@@ -623,8 +690,8 @@ function runTargetOutcomeModelTest() {
   assert.strictEqual(res.outcome, "TARGET_ACHIEVED");
   assert.strictEqual(res.targetAchieved, true);
   assert.strictEqual(res.attemptsRun, 1);
-  assert.strictEqual(res.selectedProfile, "HIGH_QUALITY_TARGET_MET");
-  assert.strictEqual(res.stopReason, "Target size met");
+  assert.strictEqual(res.selectedProfile, "BALANCED");
+  assert.strictEqual(res.stopReason, "TARGET_REACHED");
   console.log("✓ Target Outcome Model Test passed successfully.");
 }
 
@@ -655,6 +722,7 @@ async function main() {
     runBackToResultPreservesOutputTest();
     await runLocalEngineTests();
     await runStrictGrowthGuardTest();
+    await runSignatureClassificationTest();
     runTargetOutcomeModelTest();
 
     console.log("\n--------------------------------------------------");

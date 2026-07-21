@@ -45,20 +45,37 @@ export interface ProcessingProgressEvent {
   timestamp: number;
 }
 
+export type ProcessingOutcome =
+  | "TARGET_ACHIEVED"
+  | "TARGET_NOT_MET"
+  | "NO_BENEFICIAL_REDUCTION";
+
+export type CompressionProfile =
+  | "SHARPER"
+  | "BALANCED"
+  | "SMALLER_FILE"
+  | "LOSSLESS";
+
+export type StopReason =
+  | "TARGET_REACHED"
+  | "MAX_ATTEMPTS"
+  | "QUALITY_FLOOR"
+  | "NEGLIGIBLE_IMPROVEMENT"
+  | "OUTPUT_GROWTH"
+  | "NO_COMPRESSIBLE_IMAGES";
+
 export interface VerificationResult {
   originalSizeBytes: number;
   outputSizeBytes: number;
+  targetSizeBytes: number;
   reductionPercentage: number;
   pagesBefore: number;
   pagesAfter: number;
-  targetRequested: string;
-  targetBytes?: number;
-  outputBytes?: number;
   targetAchieved: boolean;
-  attemptsRun?: number;
-  selectedProfile?: string;
-  stopReason?: string;
-  outcome?: "TARGET_ACHIEVED" | "TARGET_NOT_MET" | "NO_BENEFICIAL_REDUCTION";
+  attemptsRun: number;
+  selectedProfile: CompressionProfile;
+  stopReason: StopReason;
+  outcome: ProcessingOutcome;
   outputMimeType: string;
   isReadable: boolean;
   processingLocation: "local" | "server";

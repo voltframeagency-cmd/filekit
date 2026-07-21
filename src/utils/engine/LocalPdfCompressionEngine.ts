@@ -2,16 +2,17 @@ import { PDFDocument } from "pdf-lib";
 import { PdfPreflightInspector } from "./PdfPreflightInspector";
 import { CompressionStrategySelector } from "./CompressionStrategySelector";
 import { TargetSizeController } from "./TargetSizeController";
+import { ProcessingOutcome, CompressionProfile, StopReason } from "./types";
 
 export interface CompressionResult {
   buffer: ArrayBuffer;
   replacedCount: number;
   status: "SUCCESS" | "TARGET_NOT_MET" | "NO_BENEFICIAL_REDUCTION" | "UNSUPPORTED_AND_ROUTED";
-  outcome: "TARGET_ACHIEVED" | "TARGET_NOT_MET" | "NO_BENEFICIAL_REDUCTION";
+  outcome: ProcessingOutcome;
   targetAchieved: boolean;
   attemptsRun: number;
-  selectedProfile?: string;
-  stopReason?: string;
+  selectedProfile: CompressionProfile;
+  stopReason: StopReason;
   timingLoadMs?: number;
   timingCompressMs?: number;
   timingSaveMs?: number;
@@ -45,8 +46,8 @@ export class LocalPdfCompressionEngine {
         outcome: "NO_BENEFICIAL_REDUCTION",
         targetAchieved: arrayBuffer.byteLength <= targetSize,
         attemptsRun: 0,
-        selectedProfile: "UNSUPPORTED_IMAGE_ENCODING",
-        stopReason: "Unsupported image encoding strategy"
+        selectedProfile: "LOSSLESS",
+        stopReason: "NO_COMPRESSIBLE_IMAGES"
       };
     }
 
@@ -119,15 +120,15 @@ export class LocalPdfCompressionEngine {
         outcome: "TARGET_ACHIEVED",
         targetAchieved: true,
         attemptsRun,
-        selectedProfile: "HIGH_QUALITY_TARGET_MET",
-        stopReason: "Target size met",
+        selectedProfile: "BALANCED",
+        stopReason: "TARGET_REACHED",
         timingLoadMs: belowTarget.timingLoadMs,
         timingCompressMs: belowTarget.timingCompressMs,
         timingSaveMs: belowTarget.timingSaveMs
       };
     }
 
-    // 2. Smallest candidate strictly smaller than original
+    // 2. Smallest candidate strictly smaller than original (even if target not met)
     if (candidates.length > 0) {
       const smallest = candidates.reduce((prev, curr) => prev.size < curr.size ? prev : curr);
       if (smallest.size < originalBytes) {
@@ -138,8 +139,8 @@ export class LocalPdfCompressionEngine {
           outcome: "TARGET_NOT_MET",
           targetAchieved: false,
           attemptsRun,
-          selectedProfile: "BALANCED_BEST_ATTEMPT",
-          stopReason: "Attempt limit reached without hitting target",
+          selectedProfile: "BALANCED",
+          stopReason: "MAX_ATTEMPTS",
           timingLoadMs: smallest.timingLoadMs,
           timingCompressMs: smallest.timingCompressMs,
           timingSaveMs: smallest.timingSaveMs
@@ -155,8 +156,8 @@ export class LocalPdfCompressionEngine {
       outcome: "NO_BENEFICIAL_REDUCTION",
       targetAchieved: originalBytes <= targetSize,
       attemptsRun,
-      selectedProfile: "IMMUTABLE_ORIGINAL",
-      stopReason: "No beneficial reduction (growth guard enforced)"
+      selectedProfile: "LOSSLESS",
+      stopReason: "OUTPUT_GROWTH"
     };
   }
 
