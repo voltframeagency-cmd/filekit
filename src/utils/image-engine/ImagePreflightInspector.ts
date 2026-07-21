@@ -2,8 +2,10 @@ import { ImageFormat, ImagePreflightReport } from "./types";
 import { ImageCapabilityRouter } from "./ImageCapabilityRouter";
 
 export class ImagePreflightInspector {
-  static async inspect(buffer: ArrayBuffer): Promise<ImagePreflightReport> {
-    const bytes = new Uint8Array(buffer);
+  static async inspect(input: ArrayBuffer | Uint8Array): Promise<ImagePreflightReport> {
+    const bytes = ArrayBuffer.isView(input)
+      ? new Uint8Array(input.buffer, input.byteOffset, input.byteLength)
+      : new Uint8Array(input);
     if (bytes.length < 12) {
       throw new Error("UNSUPPORTED_FORMAT: File buffer is too small to contain valid image headers.");
     }
@@ -129,19 +131,24 @@ export class ImagePreflightInspector {
     let orientation = 1;
 
     while (offset < bytes.length) {
-      if (bytes[offset] !== 0xff) break;
+      if (bytes[offset] !== 0xff) {
+        // Find next 0xFF marker byte if unaligned
+        const nextMarker = bytes.indexOf(0xff, offset);
+        if (nextMarker === -1) break;
+        offset = nextMarker;
+      }
       const marker = bytes[offset + 1];
       offset += 2;
 
-      // End of image
-      if (marker === 0xd9) break;
+      // End of image or Start of Scan (SOS)
+      if (marker === 0xd9 || marker === 0xda) break;
 
       // Read chunk length
       if (offset + 2 > bytes.length) break;
       const length = (bytes[offset] << 8) | bytes[offset + 1];
 
-      // SOF markers (SOF0, SOF1, SOF2)
-      if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
+      // SOF markers (SOF0..SOF15 except Huffman tables 0xC4, 0xC8, 0xCC)
+      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
         if (offset + 7 <= bytes.length) {
           height = (bytes[offset + 3] << 8) | bytes[offset + 4];
           width = (bytes[offset + 5] << 8) | bytes[offset + 6];
