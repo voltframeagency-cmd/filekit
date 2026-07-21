@@ -5,7 +5,155 @@ import { MockCompressionEngine } from "../mockEngine";
 import { VerificationResult, ProcessingFailure } from "../types";
 import { PdfPreflightInspector } from "../PdfPreflightInspector";
 import { CompressionStrategySelector } from "../CompressionStrategySelector";
-import { TargetSizeController } from "../TargetSizeController";
+import { TargetSizeController, selectCompressionResult } from "../TargetSizeController";
+
+async function runStrictGrowthGuardTest() {
+  console.log("Running Strict Growth Guard & Candidate Selection Test...");
+  const getBuffer = (relPath: string): ArrayBuffer => {
+    const filePath = path.join(__dirname, "../../../../test-fixtures", relPath);
+    const buf = fs.readFileSync(filePath);
+    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+  };
+
+  // Test A: Beneficial Target Miss (Candidate < Original, but Candidate > Target)
+  // Calls pure selectCompressionResult function
+  const origBufA = new ArrayBuffer(2120000); // ~2.12 MB
+  const candBufA = new ArrayBuffer(673000);  // ~673 KB
+  const targetSizeBytesA = 100000;            // 100 KB
+
+  const resA = selectCompressionResult({
+    originalBuffer: origBufA,
+    candidates: [{ buffer: candBufA, size: candBufA.byteLength, replacedCount: 5 }],
+    targetSizeBytes: targetSizeBytesA,
+    attemptsRun: 3
+  });
+
+  assert.strictEqual(resA.outcome, "TARGET_NOT_MET", "Candidate smaller than original but over target must yield TARGET_NOT_MET");
+  assert.strictEqual(resA.targetAchieved, false);
+  assert.strictEqual(resA.buffer, candBufA, "Returned buffer must be candidate buffer");
+  assert.strictEqual(resA.buffer !== origBufA, true, "Returned buffer must not be original buffer");
+  assert.strictEqual(resA.replacedCount, 5);
+  assert.strictEqual(resA.attemptsRun, 3);
+  assert.strictEqual(resA.stopReason, "MAX_ATTEMPTS");
+
+  // Test B: Genuine Growth Case (All candidates >= original)
+  // Calls pure selectCompressionResult function
+  const origBufB = new ArrayBuffer(220000); // 220 KB
+  const candBufB1 = new ArrayBuffer(221000); // 221 KB
+  const candBufB2 = new ArrayBuffer(228000); // 228 KB
+
+  const resB = selectCompressionResult({
+    originalBuffer: origBufB,
+    candidates: [
+      { buffer: candBufB1, size: candBufB1.byteLength, replacedCount: 3 },
+      { buffer: candBufB2, size: candBufB2.byteLength, replacedCount: 3 }
+    ],
+    targetSizeBytes: targetSizeBytesA,
+    attemptsRun: 3
+  });
+
+  assert.strictEqual(resB.outcome, "NO_BENEFICIAL_REDUCTION", "All candidates larger than original must yield NO_BENEFICIAL_REDUCTION");
+  assert.strictEqual(resB.buffer, origBufB, "Returned buffer must be immutable original buffer");
+  assert.strictEqual(resB.replacedCount, 0);
+  assert.strictEqual(resB.stopReason, "OUTPUT_GROWTH");
+
+  // Engine Integration Check on real fixture
+  const censusBuf = getBuffer("external/census_p60_income.pdf");
+  const censusResult = await LocalPdfCompressionEngine.compress(censusBuf, 100 * 1024);
+  assert.strictEqual(censusResult.status, "UNSUPPORTED_AND_ROUTED");
+
+  console.log("✓ Strict Growth Guard & Candidate Selection Test passed successfully.");
+}
+
+async function runSignatureClassificationTest() {
+  console.log("Running Signature Classification Test...");
+  const { PDFDocument } = await import("pdf-lib");
+  
+  // 1. PDF without signature field -> NONE
+  const docNoSig = await PDFDocument.create();
+  docNoSig.addPage();
+  const bytesNoSig = await docNoSig.save();
+  const pdfNoSig = await PDFDocument.load(bytesNoSig);
+  const statusNoSig = PdfPreflightInspector.detectSignatureStatus(pdfNoSig);
+  assert.strictEqual(statusNoSig, "NONE", "PDF without signatures must report NONE");
+
+  // 2. PDF with blank signature field (unsigned /FT /Sig) -> UNSIGNED_SIGNATURE_FIELD
+  const docBlankSig = await PDFDocument.create();
+  const page = docBlankSig.addPage();
+  const sigFieldDict = docBlankSig.context.obj({
+    Type: "Annot",
+    Subtype: "Widget",
+    FT: "Sig",
+    T: "BlankSigField",
+    Rect: [0, 0, 100, 100],
+  });
+  const sigFieldRef = docBlankSig.context.register(sigFieldDict);
+  page.node.addAnnot(sigFieldRef);
+  const bytesBlankSig = await docBlankSig.save();
+  const pdfBlankSig = await PDFDocument.load(bytesBlankSig);
+  const statusBlankSig = PdfPreflightInspector.detectSignatureStatus(pdfBlankSig);
+  assert.strictEqual(statusBlankSig, "UNSIGNED_SIGNATURE_FIELD", "Blank signature field must report UNSIGNED_SIGNATURE_FIELD");
+
+  // Blank signature field must NOT throw error during inspect()
+  const reportBlank = await PdfPreflightInspector.inspect(bytesBlankSig.buffer);
+  assert.strictEqual(reportBlank.signatureStatus, "UNSIGNED_SIGNATURE_FIELD");
+
+  // 3. Structurally signed PDF (synthetic /ByteRange + /Contents) -> STRUCTURALLY_SIGNED_DOCUMENT
+  const docStructural = await PDFDocument.create();
+  const p2 = docStructural.addPage();
+  const vDictStruct = docStructural.context.obj({
+    ByteRange: [0, 100, 200, 300],
+    Contents: "<00112233445566778899aabbccddeeff>"
+  });
+  const vRefStruct = docStructural.context.register(vDictStruct);
+  const structFieldDict = docStructural.context.obj({
+    Type: "Annot",
+    Subtype: "Widget",
+    FT: "Sig",
+    V: vRefStruct,
+    T: "StructuralSigField",
+    Rect: [0, 0, 100, 100]
+  });
+  p2.node.addAnnot(docStructural.context.register(structFieldDict));
+  const bytesStruct = await docStructural.save();
+  const pdfStruct = await PDFDocument.load(bytesStruct);
+  const statusStruct = PdfPreflightInspector.detectSignatureStatus(pdfStruct);
+  assert.strictEqual(statusStruct, "STRUCTURALLY_SIGNED_DOCUMENT", "Synthetic ByteRange/Contents must report STRUCTURALLY_SIGNED_DOCUMENT");
+
+  await assert.rejects(async () => {
+    await PdfPreflightInspector.inspect(bytesStruct.buffer);
+  }, /UNSUPPORTED_SIGNED_DOCUMENT/, "Structurally signed PDF must throw UNSUPPORTED_SIGNED_DOCUMENT");
+
+  // 4. Confirmed Cryptographically Signed PDF (Adobe.PPKLite filter) -> SIGNED_DOCUMENT_CONFIRMED
+  const docConfirmed = await PDFDocument.create();
+  const p3 = docConfirmed.addPage();
+  const vDictConfirmed = docConfirmed.context.obj({
+    Filter: "Adobe.PPKLite",
+    SubFilter: "adbe.pkcs7.detached",
+    ByteRange: [0, 500, 1500, 3000],
+    Contents: `<${"308204".padEnd(300, "0")}>`
+  });
+  const vRefConfirmed = docConfirmed.context.register(vDictConfirmed);
+  const confirmedFieldDict = docConfirmed.context.obj({
+    Type: "Annot",
+    Subtype: "Widget",
+    FT: "Sig",
+    V: vRefConfirmed,
+    T: "ConfirmedSigField",
+    Rect: [0, 0, 100, 100]
+  });
+  p3.node.addAnnot(docConfirmed.context.register(confirmedFieldDict));
+  const bytesConfirmed = await docConfirmed.save();
+  const pdfConfirmed = await PDFDocument.load(bytesConfirmed);
+  const statusConfirmed = PdfPreflightInspector.detectSignatureStatus(pdfConfirmed);
+  assert.strictEqual(statusConfirmed, "SIGNED_DOCUMENT_CONFIRMED", "Genuine signature stream must report SIGNED_DOCUMENT_CONFIRMED");
+
+  await assert.rejects(async () => {
+    await PdfPreflightInspector.inspect(bytesConfirmed.buffer);
+  }, /UNSUPPORTED_SIGNED_DOCUMENT/, "Confirmed signed PDF must throw UNSUPPORTED_SIGNED_DOCUMENT");
+
+  console.log("✓ Signature Classification Test passed successfully.");
+}
 import { LocalPdfCompressionEngine } from "../LocalPdfCompressionEngine";
 import * as fs from "fs";
 import * as path from "path";
@@ -555,109 +703,6 @@ async function runLocalEngineTests() {
   assert.deepStrictEqual(bestBuf, orig, "Growth guard must return original buffer");
 
   console.log("✓ Local PDF Engine Integration & Unit Tests passed successfully.");
-}
-
-async function runStrictGrowthGuardTest() {
-  console.log("Running Strict Growth Guard & Candidate Selection Test...");
-  const getBuffer = (relPath: string): ArrayBuffer => {
-    const filePath = path.join(__dirname, "../../../../test-fixtures", relPath);
-    const buf = fs.readFileSync(filePath);
-    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
-  };
-
-  // Test A: Beneficial Target Miss (Candidate < Original, but Candidate > Target)
-  // Mock candidate evaluation logic: original 2.12 MB, candidate 673 KB, target 100 KB
-  const originalBytes = 2.12 * 1024 * 1024;
-  const candidateBytes = 673 * 1024;
-  const targetBytes = 100 * 1024;
-
-  const isSmaller = candidateBytes < originalBytes;
-  const targetAchieved = candidateBytes <= targetBytes;
-  const outcome: ProcessingOutcome = isSmaller
-    ? (targetAchieved ? "TARGET_ACHIEVED" : "TARGET_NOT_MET")
-    : "NO_BENEFICIAL_REDUCTION";
-
-  assert.strictEqual(outcome, "TARGET_NOT_MET", "Candidate smaller than original but over target must yield TARGET_NOT_MET");
-  assert.strictEqual(targetAchieved, false);
-
-  // Test B: Genuine Growth Case (All candidates >= original)
-  const growthBytes = 2.25 * 1024 * 1024; // candidate larger than original!
-  const isGrowthSmaller = growthBytes < originalBytes;
-  const growthOutcome: ProcessingOutcome = isGrowthSmaller
-    ? (growthBytes <= targetBytes ? "TARGET_ACHIEVED" : "TARGET_NOT_MET")
-    : "NO_BENEFICIAL_REDUCTION";
-
-  assert.strictEqual(growthOutcome, "NO_BENEFICIAL_REDUCTION", "Candidate larger than original must yield NO_BENEFICIAL_REDUCTION");
-
-  // Integration check on real fixture (census_p60_income.pdf -> unsupported image encoding)
-  const censusBuf = getBuffer("external/census_p60_income.pdf");
-  const censusResult = await LocalPdfCompressionEngine.compress(censusBuf, 100 * 1024);
-  assert.strictEqual(censusResult.status, "UNSUPPORTED_AND_ROUTED");
-
-  console.log("✓ Strict Growth Guard & Candidate Selection Test passed successfully.");
-}
-
-async function runSignatureClassificationTest() {
-  console.log("Running Signature Classification Test...");
-  const { PDFDocument } = await import("pdf-lib");
-  
-  // 1. PDF without signature field -> NONE
-  const docNoSig = await PDFDocument.create();
-  docNoSig.addPage();
-  const bytesNoSig = await docNoSig.save();
-  const pdfNoSig = await PDFDocument.load(bytesNoSig);
-  const statusNoSig = PdfPreflightInspector.detectSignatureStatus(pdfNoSig);
-  assert.strictEqual(statusNoSig, "NONE", "PDF without signatures must report NONE");
-
-  // 2. PDF with blank signature field (unsigned /FT /Sig) -> UNSIGNED_SIGNATURE_FIELD
-  const docBlankSig = await PDFDocument.create();
-  const page = docBlankSig.addPage();
-  const sigFieldDict = docBlankSig.context.obj({
-    Type: "Annot",
-    Subtype: "Widget",
-    FT: "Sig",
-    T: "BlankSigField",
-    Rect: [0, 0, 100, 100],
-  });
-  const sigFieldRef = docBlankSig.context.register(sigFieldDict);
-  page.node.addAnnot(sigFieldRef);
-  const bytesBlankSig = await docBlankSig.save();
-  const pdfBlankSig = await PDFDocument.load(bytesBlankSig);
-  const statusBlankSig = PdfPreflightInspector.detectSignatureStatus(pdfBlankSig);
-  assert.strictEqual(statusBlankSig, "UNSIGNED_SIGNATURE_FIELD", "Blank signature field must report UNSIGNED_SIGNATURE_FIELD");
-
-  // Blank signature field must NOT throw error during inspect()
-  const reportBlank = await PdfPreflightInspector.inspect(bytesBlankSig.buffer);
-  assert.strictEqual(reportBlank.signatureStatus, "UNSIGNED_SIGNATURE_FIELD");
-
-  // 3. Genuinely signed PDF -> SIGNED_DOCUMENT
-  const docSigned = await PDFDocument.create();
-  const p2 = docSigned.addPage();
-  const vDict = docSigned.context.obj({
-    ByteRange: [0, 100, 200, 300],
-    Contents: "<00112233445566778899aabbccddeeff>"
-  });
-  const vRef = docSigned.context.register(vDict);
-  const signedFieldDict = docSigned.context.obj({
-    Type: "Annot",
-    Subtype: "Widget",
-    FT: "Sig",
-    V: vRef,
-    T: "SignedSigField",
-    Rect: [0, 0, 100, 100]
-  });
-  const signedFieldRef = docSigned.context.register(signedFieldDict);
-  p2.node.addAnnot(signedFieldRef);
-  const bytesSigned = await docSigned.save();
-  const pdfSigned = await PDFDocument.load(bytesSigned);
-  const statusSigned = PdfPreflightInspector.detectSignatureStatus(pdfSigned);
-  assert.strictEqual(statusSigned, "SIGNED_DOCUMENT", "Genuinely signed PDF must report SIGNED_DOCUMENT");
-
-  await assert.rejects(async () => {
-    await PdfPreflightInspector.inspect(bytesSigned.buffer);
-  }, /UNSUPPORTED_SIGNED_DOCUMENT/, "Genuinely signed PDF must throw UNSUPPORTED_SIGNED_DOCUMENT");
-
-  console.log("✓ Signature Classification Test passed successfully.");
 }
 
 function runTargetOutcomeModelTest() {

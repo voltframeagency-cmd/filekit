@@ -19,7 +19,10 @@ export class CompressionStrategySelector {
     const pdfDoc = await PDFDocument.load(arrayBuffer);
     
     const sigStatus = PdfPreflightInspector.detectSignatureStatus(pdfDoc);
-    if (sigStatus === "SIGNED_DOCUMENT") {
+    if (
+      sigStatus === "STRUCTURALLY_SIGNED_DOCUMENT" ||
+      sigStatus === "SIGNED_DOCUMENT_CONFIRMED"
+    ) {
       return "UNSUPPORTED_SIGNED_DOCUMENT";
     }
 

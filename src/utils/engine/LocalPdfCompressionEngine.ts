@@ -1,7 +1,7 @@
 import { PDFDocument } from "pdf-lib";
 import { PdfPreflightInspector } from "./PdfPreflightInspector";
 import { CompressionStrategySelector } from "./CompressionStrategySelector";
-import { TargetSizeController } from "./TargetSizeController";
+import { TargetSizeController, selectCompressionResult } from "./TargetSizeController";
 import { ProcessingOutcome, CompressionProfile, StopReason } from "./types";
 
 export interface CompressionResult {
@@ -109,56 +109,13 @@ export class LocalPdfCompressionEngine {
       onProgress(100);
     }
 
-    // Selection Logic:
-    // 1. Highest-quality candidate below target
-    const belowTarget = candidates.find(c => c.size <= targetSize);
-    if (belowTarget) {
-      return {
-        buffer: belowTarget.buffer,
-        replacedCount: belowTarget.replacedCount,
-        status: "SUCCESS",
-        outcome: "TARGET_ACHIEVED",
-        targetAchieved: true,
-        attemptsRun,
-        selectedProfile: "BALANCED",
-        stopReason: "TARGET_REACHED",
-        timingLoadMs: belowTarget.timingLoadMs,
-        timingCompressMs: belowTarget.timingCompressMs,
-        timingSaveMs: belowTarget.timingSaveMs
-      };
-    }
-
-    // 2. Smallest candidate strictly smaller than original (even if target not met)
-    if (candidates.length > 0) {
-      const smallest = candidates.reduce((prev, curr) => prev.size < curr.size ? prev : curr);
-      if (smallest.size < originalBytes) {
-        return {
-          buffer: smallest.buffer,
-          replacedCount: smallest.replacedCount,
-          status: "TARGET_NOT_MET",
-          outcome: "TARGET_NOT_MET",
-          targetAchieved: false,
-          attemptsRun,
-          selectedProfile: "BALANCED",
-          stopReason: "MAX_ATTEMPTS",
-          timingLoadMs: smallest.timingLoadMs,
-          timingCompressMs: smallest.timingCompressMs,
-          timingSaveMs: smallest.timingSaveMs
-        };
-      }
-    }
-
-    // 3. No beneficial reduction: return immutable original buffer
-    return {
-      buffer: arrayBuffer,
-      replacedCount: 0,
-      status: "NO_BENEFICIAL_REDUCTION",
-      outcome: "NO_BENEFICIAL_REDUCTION",
-      targetAchieved: originalBytes <= targetSize,
-      attemptsRun,
-      selectedProfile: "LOSSLESS",
-      stopReason: "OUTPUT_GROWTH"
-    };
+    // Delegate result selection to pure selector
+    return selectCompressionResult({
+      originalBuffer: arrayBuffer,
+      candidates,
+      targetSizeBytes: targetSize,
+      attemptsRun
+    });
   }
 
   /**

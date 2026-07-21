@@ -3,7 +3,8 @@ import { PDFDocument, PDFName, PDFRawStream, PDFDict } from "pdf-lib";
 export type SignatureStatus =
   | "NONE"
   | "UNSIGNED_SIGNATURE_FIELD"
-  | "SIGNED_DOCUMENT"
+  | "STRUCTURALLY_SIGNED_DOCUMENT"
+  | "SIGNED_DOCUMENT_CONFIRMED"
   | "SIGNATURE_STATUS_UNKNOWN";
 
 export interface PreflightReport {
@@ -16,6 +17,7 @@ export interface PreflightReport {
 export class PdfPreflightInspector {
   /**
    * Evaluates the digital signature status of a loaded PDF document.
+   * Distinguishes blank signature fields, synthetic structural signature streams, and confirmed cryptographic signatures.
    */
   static detectSignatureStatus(pdfDoc: PDFDocument): SignatureStatus {
     const indirectObjects = pdfDoc.context.enumerateIndirectObjects();
@@ -40,9 +42,24 @@ export class PdfPreflightInspector {
             const vDict = vObj instanceof PDFRawStream ? vObj.dict : vObj;
             const byteRange = vDict.get(PDFName.of("ByteRange"));
             const contents = vDict.get(PDFName.of("Contents"));
+            const subFilter = vDict.get(PDFName.of("SubFilter"));
+            const filter = vDict.get(PDFName.of("Filter"));
 
             if (byteRange && contents) {
-              return "SIGNED_DOCUMENT";
+              // Check if signature contains genuine PKCS7/CMS filter or substantial signature payload
+              const isConfirmedFilter =
+                filter === PDFName.of("Adobe.PPKLite") ||
+                subFilter === PDFName.of("adbe.pkcs7.detached") ||
+                subFilter === PDFName.of("ETSI.CAdES.detached") ||
+                subFilter === PDFName.of("adbe.pkcs7.sha1");
+
+              const contentsStr = contents.toString();
+              const isSubstantialPayload = contentsStr.length > 100;
+
+              if (isConfirmedFilter || isSubstantialPayload) {
+                return "SIGNED_DOCUMENT_CONFIRMED";
+              }
+              return "STRUCTURALLY_SIGNED_DOCUMENT";
             }
             return "SIGNATURE_STATUS_UNKNOWN";
           }
@@ -59,7 +76,7 @@ export class PdfPreflightInspector {
    * Throws classified errors on failure:
    * - INVALID_PDF_STRUCTURE: If the header is missing or parsing fails.
    * - PDF_ENCRYPTED_OR_LOCKED: If the document is password-protected or encrypted.
-   * - UNSUPPORTED_SIGNED_DOCUMENT: If the document contains a cryptographic digital signature.
+   * - UNSUPPORTED_SIGNED_DOCUMENT: If the document contains a cryptographic or structural digital signature.
    */
   static async inspect(arrayBuffer: ArrayBuffer): Promise<PreflightReport> {
     // 1. Verify basic PDF header signature
@@ -85,7 +102,10 @@ export class PdfPreflightInspector {
 
     // 3. Detect digital signature status
     const sigStatus = this.detectSignatureStatus(pdfDoc);
-    if (sigStatus === "SIGNED_DOCUMENT") {
+    if (
+      sigStatus === "STRUCTURALLY_SIGNED_DOCUMENT" ||
+      sigStatus === "SIGNED_DOCUMENT_CONFIRMED"
+    ) {
       throw new Error("UNSUPPORTED_SIGNED_DOCUMENT");
     }
 
