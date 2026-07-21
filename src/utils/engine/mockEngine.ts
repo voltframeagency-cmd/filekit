@@ -59,7 +59,6 @@ export class MockCompressionEngine implements CompressionEngine {
       // Mock target-not-met trigger
       if (fileNameLower.includes("not-met") || fileNameLower === "not-met.pdf") {
         const originalBytes = file.size;
-        // In visual audit we want realistic values: e.g. 4.8MB original size
         const visualOriginal = originalBytes < 1000 ? 4.8 * 1024 * 1024 : originalBytes;
         const visualOutput = Math.round(3.2 * 1024 * 1024);
         
@@ -73,7 +72,12 @@ export class MockCompressionEngine implements CompressionEngine {
           pagesBefore: 24,
           pagesAfter: 24,
           targetRequested: targetSize,
+          targetBytes: 2 * 1024 * 1024,
           targetAchieved: false,
+          attemptsRun: 3,
+          selectedProfile: "BALANCED_BEST_ATTEMPT",
+          stopReason: "Attempt limit reached without hitting target",
+          outcome: "TARGET_NOT_MET",
           outputMimeType: "application/pdf",
           isReadable: true,
           processingLocation: "local",
@@ -90,29 +94,32 @@ export class MockCompressionEngine implements CompressionEngine {
         return;
       }
 
-      // Mock output larger than input trigger
+      // Mock output larger than input trigger (Growth Guard Enforced: Returns original buffer, 0% reduction, NO_BENEFICIAL_REDUCTION)
       if (fileNameLower.includes("larger") || fileNameLower === "larger.pdf") {
         const originalBytes = file.size;
         const visualOriginal = originalBytes < 1000 ? 1.2 * 1024 * 1024 : originalBytes;
-        const visualOutput = Math.round(1.5 * 1024 * 1024); // Output is larger!
-        
-        const delta = visualOutput - visualOriginal;
-        const pct = parseFloat((Math.abs(delta / visualOriginal) * 100).toFixed(1));
+        // Growth guard returns immutable original buffer, output = original size
+        const visualOutput = visualOriginal;
 
         const result: VerificationResult = {
           originalSizeBytes: visualOriginal,
           outputSizeBytes: visualOutput,
-          reductionPercentage: pct,
+          reductionPercentage: 0,
           pagesBefore: 24,
           pagesAfter: 24,
           targetRequested: targetSize,
-          targetAchieved: false,
+          targetBytes: 1 * 1024 * 1024,
+          targetAchieved: visualOriginal <= (1 * 1024 * 1024),
+          attemptsRun: 3,
+          selectedProfile: "IMMUTABLE_ORIGINAL",
+          stopReason: "No beneficial reduction (growth guard enforced)",
+          outcome: "NO_BENEFICIAL_REDUCTION",
           outputMimeType: "application/pdf",
           isReadable: true,
           processingLocation: "local",
           engineIdentifier: this.id,
           completionTimestamp: Date.now(),
-          warnings: ["Embedded font expansion occurred during restructuring."],
+          warnings: ["No beneficial reduction. Returned unchanged original file."],
           headerValid: true,
           parserReadable: true,
           eofStructureValid: true,
@@ -138,7 +145,12 @@ export class MockCompressionEngine implements CompressionEngine {
         pagesBefore: 24,
         pagesAfter: 24,
         targetRequested: targetSize,
+        targetBytes: 2 * 1024 * 1024,
         targetAchieved: true,
+        attemptsRun: 1,
+        selectedProfile: "HIGH_QUALITY_TARGET_MET",
+        stopReason: "Target size met",
+        outcome: "TARGET_ACHIEVED",
         outputMimeType: "application/pdf",
         isReadable: true,
         processingLocation: "local",

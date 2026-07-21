@@ -6,6 +6,7 @@ import { VerificationResult, ProcessingFailure } from "../types";
 import { PdfPreflightInspector } from "../PdfPreflightInspector";
 import { CompressionStrategySelector } from "../CompressionStrategySelector";
 import { TargetSizeController } from "../TargetSizeController";
+import { LocalPdfCompressionEngine } from "../LocalPdfCompressionEngine";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -95,7 +96,7 @@ function runRoutingMatrixTests() {
   });
   assert.strictEqual(stateHuge, "SERVER_REQUIRED", "Files > 100MB must require server");
 
-  // Server Recommended due to size (> 50MB)
+  // Server Required due to size (> 50MB) and LOW_OR_UNKNOWN memory budget (160 MB ceiling)
   const recFile = createMockFile("medium.pdf", 60 * 1024 * 1024);
   const stateRec = FileCapabilityRouter.evaluate({
     file: recFile,
@@ -104,7 +105,7 @@ function runRoutingMatrixTests() {
     hasWebWorker: true,
     hasWasmSupport: true,
   });
-  assert.strictEqual(stateRec, "SERVER_RECOMMENDED", "Files > 50MB should recommend server");
+  assert.strictEqual(stateRec, "SERVER_REQUIRED", "Files > 50MB with unknown memory class should require server");
 
   // Server Recommended due to missing Web Workers
   const noWorkerFile = createMockFile("simple.pdf", 10 * 1024 * 1024);
@@ -560,6 +561,73 @@ async function runLocalEngineTests() {
   console.log("✓ Local PDF Engine Integration & Unit Tests passed successfully.");
 }
 
+async function runStrictGrowthGuardTest() {
+  console.log("Running Strict Growth Guard Test...");
+  const getBuffer = (relPath: string): ArrayBuffer => {
+    const filePath = path.join(__dirname, "../../../../public/test-fixtures", relPath);
+    const buf = fs.readFileSync(filePath);
+    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+  };
+
+  // 1. Signed document safe blocking check (irs_form_1040.pdf)
+  const irsBuf = getBuffer("external/irs_form_1040.pdf");
+  await assert.rejects(async () => {
+    await LocalPdfCompressionEngine.compress(irsBuf, 100 * 1024);
+  }, /UNSUPPORTED_SIGNED_DOCUMENT/, "Signed PDFs must be safely blocked with UNSUPPORTED_SIGNED_DOCUMENT");
+
+  // 2. Unsupported image encoding routing check (census_p60_income.pdf)
+  const censusBuf = getBuffer("external/census_p60_income.pdf");
+  const censusResult = await LocalPdfCompressionEngine.compress(censusBuf, 100 * 1024);
+  assert.strictEqual(censusResult.status, "UNSUPPORTED_AND_ROUTED");
+
+  // 3. Strict growth guard & no beneficial reduction check (scan_2mb.pdf)
+  const scanBuf = getBuffer("scan_2mb.pdf");
+  const scanResult = await LocalPdfCompressionEngine.compress(scanBuf, 100 * 1024);
+  assert.ok(scanResult.buffer.byteLength <= scanBuf.byteLength, "Output size must not exceed original size");
+  assert.strictEqual(scanResult.status, "NO_BENEFICIAL_REDUCTION");
+  assert.strictEqual(scanResult.outcome, "NO_BENEFICIAL_REDUCTION");
+  assert.strictEqual(scanResult.replacedCount, 0);
+  assert.deepStrictEqual(new Uint8Array(scanResult.buffer), new Uint8Array(scanBuf), "Must return immutable original buffer");
+
+  console.log("✓ Strict Growth Guard Test passed successfully.");
+}
+
+function runTargetOutcomeModelTest() {
+  console.log("Running Target Outcome Model Test...");
+  const res: VerificationResult = {
+    originalSizeBytes: 1000,
+    outputSizeBytes: 800,
+    reductionPercentage: 20.0,
+    pagesBefore: 5,
+    pagesAfter: 5,
+    targetRequested: "Under 2 MB",
+    targetBytes: 2000,
+    targetAchieved: true,
+    attemptsRun: 1,
+    selectedProfile: "HIGH_QUALITY_TARGET_MET",
+    stopReason: "Target size met",
+    outcome: "TARGET_ACHIEVED",
+    outputMimeType: "application/pdf",
+    isReadable: true,
+    processingLocation: "local",
+    engineIdentifier: "test-engine",
+    completionTimestamp: Date.now(),
+    warnings: [],
+    headerValid: true,
+    parserReadable: true,
+    eofStructureValid: true,
+    mimeValid: true,
+    fatalErrors: []
+  };
+
+  assert.strictEqual(res.outcome, "TARGET_ACHIEVED");
+  assert.strictEqual(res.targetAchieved, true);
+  assert.strictEqual(res.attemptsRun, 1);
+  assert.strictEqual(res.selectedProfile, "HIGH_QUALITY_TARGET_MET");
+  assert.strictEqual(res.stopReason, "Target size met");
+  console.log("✓ Target Outcome Model Test passed successfully.");
+}
+
 // Execute all test runner cases
 async function main() {
   try {
@@ -586,6 +654,8 @@ async function main() {
     runRouteSpecificTrustCopyTest();
     runBackToResultPreservesOutputTest();
     await runLocalEngineTests();
+    await runStrictGrowthGuardTest();
+    runTargetOutcomeModelTest();
 
     console.log("\n--------------------------------------------------");
     console.log("ALL TESTS COMPLETED SUCCESSFULLY!");

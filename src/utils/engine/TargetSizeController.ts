@@ -41,12 +41,11 @@ export class TargetSizeController {
 
   /**
    * Safeguards against file size growth.
-   * If the compressed file size exceeds the original size by more than 2% tolerance,
+   * If the compressed file size is greater than or equal to the original size,
    * returns the original unchanged document.
    */
   static getBestBuffer(original: Uint8Array, compressed: Uint8Array): Uint8Array {
-    const growthLimit = original.length * 1.02;
-    if (compressed.length > growthLimit) {
+    if (compressed.length >= original.length) {
       return original;
     }
     return compressed;

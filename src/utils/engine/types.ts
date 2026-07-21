@@ -13,11 +13,23 @@ export type WorkspaceState =
   | "FAILED"
   | "UNSUPPORTED";
 
+export interface LocalPdfRuntimeCapabilities {
+  worker: boolean;
+  offscreenCanvas: boolean;
+  createImageBitmap: boolean;
+  canvasJpegEncoding: boolean;
+  transferableArrayBuffer: boolean;
+  pdfWorkerBoot: boolean;
+}
+
 export interface FileMetadata {
   name: string;
   size: string;
   sizeBytes: number;
   pages: number;
+  imageCount?: number;
+  estimatedDecodedMemoryMB?: number;
+  routingReason?: string;
 }
 
 export type ProcessingStage = 
@@ -40,7 +52,13 @@ export interface VerificationResult {
   pagesBefore: number;
   pagesAfter: number;
   targetRequested: string;
+  targetBytes?: number;
+  outputBytes?: number;
   targetAchieved: boolean;
+  attemptsRun?: number;
+  selectedProfile?: string;
+  stopReason?: string;
+  outcome?: "TARGET_ACHIEVED" | "TARGET_NOT_MET" | "NO_BENEFICIAL_REDUCTION";
   outputMimeType: string;
   isReadable: boolean;
   processingLocation: "local" | "server";
@@ -65,6 +83,8 @@ export type FailureCategory =
   | 'SERVER_PROCESSING_FAILED'
   | 'NETWORK_INTERRUPTED'
   | 'OUTPUT_VERIFICATION_FAILED'
+  | 'PDF_ENCRYPTED_OR_LOCKED'
+  | 'UNSUPPORTED_SIGNED_DOCUMENT'
   | 'UNKNOWN';
 
 export interface ProcessingFailure {

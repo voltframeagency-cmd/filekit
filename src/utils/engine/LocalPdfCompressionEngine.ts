@@ -1,3 +1,4 @@
+import { PDFDocument } from "pdf-lib";
 import { PdfPreflightInspector } from "./PdfPreflightInspector";
 import { CompressionStrategySelector } from "./CompressionStrategySelector";
 import { TargetSizeController } from "./TargetSizeController";
@@ -5,7 +6,15 @@ import { TargetSizeController } from "./TargetSizeController";
 export interface CompressionResult {
   buffer: ArrayBuffer;
   replacedCount: number;
-  status: "SUCCESS" | "TARGET_NOT_MET" | "UNSUPPORTED_AND_ROUTED";
+  status: "SUCCESS" | "TARGET_NOT_MET" | "NO_BENEFICIAL_REDUCTION" | "UNSUPPORTED_AND_ROUTED";
+  outcome: "TARGET_ACHIEVED" | "TARGET_NOT_MET" | "NO_BENEFICIAL_REDUCTION";
+  targetAchieved: boolean;
+  attemptsRun: number;
+  selectedProfile?: string;
+  stopReason?: string;
+  timingLoadMs?: number;
+  timingCompressMs?: number;
+  timingSaveMs?: number;
 }
 
 export class LocalPdfCompressionEngine {
@@ -32,17 +41,32 @@ export class LocalPdfCompressionEngine {
       return {
         buffer: arrayBuffer,
         replacedCount: 0,
-        status: "UNSUPPORTED_AND_ROUTED"
+        status: "UNSUPPORTED_AND_ROUTED",
+        outcome: "NO_BENEFICIAL_REDUCTION",
+        targetAchieved: arrayBuffer.byteLength <= targetSize,
+        attemptsRun: 0,
+        selectedProfile: "UNSUPPORTED_IMAGE_ENCODING",
+        stopReason: "Unsupported image encoding strategy"
       };
     }
 
     // 3. Iteratively compress using TargetSizeController quality steps
     const originalUint8 = new Uint8Array(arrayBuffer);
-    let bestUint8 = originalUint8;
-    let replacedCount = 0;
+    const originalBytes = originalUint8.length;
     const maxIterations = 3;
+    let attemptsRun = 0;
+
+    const candidates: Array<{
+      buffer: ArrayBuffer;
+      size: number;
+      replacedCount: number;
+      timingLoadMs?: number;
+      timingCompressMs?: number;
+      timingSaveMs?: number;
+    }> = [];
 
     for (let iteration = 0; iteration < maxIterations; iteration++) {
+      attemptsRun++;
       if (onProgress) {
         onProgress(Math.round((iteration / maxIterations) * 100));
       }
@@ -53,26 +77,30 @@ export class LocalPdfCompressionEngine {
         // Slice to get a fresh array buffer for transfer, keeping original untouched
         const sliceToTransfer = originalUint8.slice(0).buffer;
         const result = await this.runWorkerPass(sliceToTransfer, step.scale, step.quality);
-        const compressedUint8 = new Uint8Array(result.buffer);
-        replacedCount = result.replacedCount;
+        
+        // Verify PDF structure
+        await PDFDocument.load(result.buffer);
 
-        // Guard growth using TargetSizeController (rejects if output is larger than original + 2%)
-        bestUint8 = TargetSizeController.getBestBuffer(bestUint8, compressedUint8);
+        const outputSize = result.buffer.byteLength;
 
-        // Break early if we hit the size target
-        if (
-          TargetSizeController.shouldStop({
-            iteration,
-            maxIterations,
-            outputSize: bestUint8.length,
-            targetSize
-          })
-        ) {
-          break;
+        // Strict growth guard during candidate collection: output must be strictly smaller than original
+        if (outputSize < originalBytes) {
+          candidates.push({
+            buffer: result.buffer,
+            size: outputSize,
+            replacedCount: result.replacedCount,
+            timingLoadMs: result.timingLoadMs,
+            timingCompressMs: result.timingCompressMs,
+            timingSaveMs: result.timingSaveMs
+          });
+
+          // Break early if we hit the size target
+          if (outputSize <= targetSize) {
+            break;
+          }
         }
       } catch (err) {
         console.warn(`Worker iteration ${iteration} failed:`, err);
-        // Continue to next quality step or break if final
       }
     }
 
@@ -80,11 +108,55 @@ export class LocalPdfCompressionEngine {
       onProgress(100);
     }
 
-    const hitTarget = bestUint8.length <= targetSize;
+    // Selection Logic:
+    // 1. Highest-quality candidate below target
+    const belowTarget = candidates.find(c => c.size <= targetSize);
+    if (belowTarget) {
+      return {
+        buffer: belowTarget.buffer,
+        replacedCount: belowTarget.replacedCount,
+        status: "SUCCESS",
+        outcome: "TARGET_ACHIEVED",
+        targetAchieved: true,
+        attemptsRun,
+        selectedProfile: "HIGH_QUALITY_TARGET_MET",
+        stopReason: "Target size met",
+        timingLoadMs: belowTarget.timingLoadMs,
+        timingCompressMs: belowTarget.timingCompressMs,
+        timingSaveMs: belowTarget.timingSaveMs
+      };
+    }
+
+    // 2. Smallest candidate strictly smaller than original
+    if (candidates.length > 0) {
+      const smallest = candidates.reduce((prev, curr) => prev.size < curr.size ? prev : curr);
+      if (smallest.size < originalBytes) {
+        return {
+          buffer: smallest.buffer,
+          replacedCount: smallest.replacedCount,
+          status: "TARGET_NOT_MET",
+          outcome: "TARGET_NOT_MET",
+          targetAchieved: false,
+          attemptsRun,
+          selectedProfile: "BALANCED_BEST_ATTEMPT",
+          stopReason: "Attempt limit reached without hitting target",
+          timingLoadMs: smallest.timingLoadMs,
+          timingCompressMs: smallest.timingCompressMs,
+          timingSaveMs: smallest.timingSaveMs
+        };
+      }
+    }
+
+    // 3. No beneficial reduction: return immutable original buffer
     return {
-      buffer: bestUint8.buffer,
-      replacedCount,
-      status: hitTarget ? "SUCCESS" : "TARGET_NOT_MET"
+      buffer: arrayBuffer,
+      replacedCount: 0,
+      status: "NO_BENEFICIAL_REDUCTION",
+      outcome: "NO_BENEFICIAL_REDUCTION",
+      targetAchieved: originalBytes <= targetSize,
+      attemptsRun,
+      selectedProfile: "IMMUTABLE_ORIGINAL",
+      stopReason: "No beneficial reduction (growth guard enforced)"
     };
   }
 
@@ -95,17 +167,37 @@ export class LocalPdfCompressionEngine {
     buffer: ArrayBuffer,
     scale: number,
     quality: number
-  ): Promise<{ buffer: ArrayBuffer; replacedCount: number }> {
+  ): Promise<{
+    buffer: ArrayBuffer;
+    replacedCount: number;
+    timingLoadMs?: number;
+    timingCompressMs?: number;
+    timingSaveMs?: number;
+  }> {
     return new Promise((resolve, reject) => {
       // Instantiate worker using Next.js Turbopack standard syntax
       const worker = new Worker(new URL("./pdf.worker.ts", import.meta.url));
 
       worker.onmessage = (e) => {
-        const { status, buffer: outBuffer, replacedCount, errorMsg } = e.data;
+        const {
+          status,
+          buffer: outBuffer,
+          replacedCount,
+          errorMsg,
+          timingLoadMs,
+          timingCompressMs,
+          timingSaveMs
+        } = e.data;
         worker.terminate();
 
         if (status === "success") {
-          resolve({ buffer: outBuffer, replacedCount });
+          resolve({
+            buffer: outBuffer,
+            replacedCount,
+            timingLoadMs,
+            timingCompressMs,
+            timingSaveMs
+          });
         } else {
           reject(new Error(errorMsg || "Worker execution failed"));
         }

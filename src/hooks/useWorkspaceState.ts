@@ -10,8 +10,11 @@ import {
   ProcessingFailure,
   ServerConsentRecord,
   ProcessingJob,
-  EntitlementStatus
+  EntitlementStatus,
+  LocalPdfRuntimeCapabilities
 } from "@/utils/engine/types";
+import { runtimeCapabilityService } from "@/utils/engine/runtimeCapabilities";
+import { PdfPreflightInspector } from "@/utils/engine/PdfPreflightInspector";
 import { engineRegistry } from "@/utils/engine/engineRegistry";
 import { entitlementService, checkoutAdapter } from "@/utils/engine/entitlements";
 
@@ -19,6 +22,7 @@ export function useWorkspaceState(initialFile: File | null = null) {
   const [state, setState] = useState<WorkspaceState>("EMPTY");
   const [file, setFile] = useState<File | null>(null);
   const [metadata, setMetadata] = useState<FileMetadata | null>(null);
+  const [detectedCapabilities, setDetectedCapabilities] = useState<LocalPdfRuntimeCapabilities | null>(null);
   
   // Phase 1B/1C States
   const [progressEvent, setProgressEvent] = useState<ProcessingProgressEvent | null>(null);
@@ -59,7 +63,7 @@ export function useWorkspaceState(initialFile: File | null = null) {
     }
   };
 
-  const loadFile = (selectedFile: File) => {
+  const loadFile = async (selectedFile: File) => {
     revokeActiveDownload();
     setFile(selectedFile);
     setState("INSPECTING");
@@ -71,12 +75,37 @@ export function useWorkspaceState(initialFile: File | null = null) {
     setPaymentError(null);
     setEntitlement("NONE");
 
-    // Simulate preflight inspection delay (1.2s)
-    setTimeout(() => {
+    try {
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      
+      // Run preflight check (checks structure, signature, password-protection, cryptographic sigs)
+      const report = await PdfPreflightInspector.inspect(arrayBuffer);
+
+      // Feature-based capability probing via decoupled runtime service
+      const caps = await runtimeCapabilityService.detect();
+      setDetectedCapabilities(caps);
+
+      // Determine browser memory class (navigator.deviceMemory is optional per MDN, treat missing as unknown/low)
+      const browserMemoryClassGB: number | undefined = (navigator as any).deviceMemory ?? undefined;
+
       const evaluatedState = FileCapabilityRouter.evaluate({
         file: selectedFile,
-        pages: 24, // Mock page count or extract in future
+        pages: report.pageCount,
         requestedOperation: "compress",
+        estimatedDecodedMemoryMB: report.estimatedDecodedMemoryMB,
+        browserMemoryClassGB,
+        hasPdfSignature: true,
+        capabilities: caps
+      });
+
+      const routingReason = FileCapabilityRouter.getRoutingReason({
+        file: selectedFile,
+        pages: report.pageCount,
+        requestedOperation: "compress",
+        estimatedDecodedMemoryMB: report.estimatedDecodedMemoryMB,
+        browserMemoryClassGB,
+        hasPdfSignature: true,
+        capabilities: caps
       });
 
       if (evaluatedState === "UNSUPPORTED") {
@@ -88,10 +117,35 @@ export function useWorkspaceState(initialFile: File | null = null) {
         name: selectedFile.name,
         size: formatBytes(selectedFile.size),
         sizeBytes: selectedFile.size,
-        pages: 24,
+        pages: report.pageCount,
+        imageCount: report.imageCount,
+        estimatedDecodedMemoryMB: report.estimatedDecodedMemoryMB,
+        routingReason: routingReason as any
       });
       setState(evaluatedState);
-    }, 1200);
+
+      if (evaluatedState === "LOCAL_SAFE" || evaluatedState === "LOCAL_WITH_WARNING") {
+        logEvent("local_engine_eligible");
+      } else if (evaluatedState === "SERVER_RECOMMENDED") {
+        logEvent("server_fallback_shown");
+      }
+    } catch (err: any) {
+      console.error("Preflight inspection failed:", err);
+      if (err.message === "PDF_ENCRYPTED_OR_LOCKED" || err.message === "UNSUPPORTED_SIGNED_DOCUMENT") {
+        setFailure({
+          category: err.message as any,
+          message: err.message === "PDF_ENCRYPTED_OR_LOCKED"
+            ? "This PDF is password-protected or encrypted."
+            : "This PDF contains a cryptographic digital signature.",
+          recoverable: false,
+          recommendedAction: "Use server-side secure processing instead.",
+          diagnosticCode: err.message
+        });
+        setState("FAILED");
+      } else {
+        setState("UNSUPPORTED");
+      }
+    }
   };
 
   const removeFile = () => {
@@ -159,14 +213,27 @@ export function useWorkspaceState(initialFile: File | null = null) {
               diagnosticCode: "ERR_VERIFICATION_FAILED: " + errors.join(", ")
             });
             setState("FAILED");
+            logEvent("local_engine_failed");
             return;
           }
 
+          const outcome = result.outcome ?? (result.targetAchieved ? "TARGET_ACHIEVED" : result.reductionPercentage <= 0 ? "NO_BENEFICIAL_REDUCTION" : "TARGET_NOT_MET");
+
           setVerificationResult({
             ...result,
+            outcome,
             processingLocation: isServerRoute ? "server" : "local",
           });
           
+          logEvent("local_engine_completed");
+          if (outcome === "TARGET_ACHIEVED") {
+            logEvent("target_achieved");
+          } else if (outcome === "NO_BENEFICIAL_REDUCTION") {
+            logEvent("no_beneficial_reduction");
+          } else {
+            logEvent("target_not_achieved");
+          }
+
           // PHASE 1C: Gating and Entitlement checking
           setState("VERIFYING"); // Maintain visual verification during check
           
@@ -201,6 +268,7 @@ export function useWorkspaceState(initialFile: File | null = null) {
         if (controller.signal.aborted) return;
         setFailure(err);
         setState("FAILED");
+        logEvent("local_engine_failed");
       }
     };
 
@@ -251,6 +319,7 @@ export function useWorkspaceState(initialFile: File | null = null) {
     });
 
     setState("AWAITING_SERVER_CONSENT");
+    logEvent("server_fallback_accepted");
   };
 
   const startServerProcessing = () => {

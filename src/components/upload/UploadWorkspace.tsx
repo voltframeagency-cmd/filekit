@@ -151,15 +151,23 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
             </button>
             <LocalProcessingBanner />
           </div>
-        )}
-
-        {/* Server Recommended option */}
+        )}        {/* Server Recommended option */}
         {state === "SERVER_RECOMMENDED" && metadata && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 text-left ltr:text-left rtl:text-right">
             <div className="p-4 bg-fk-server-bg border border-[#BFDBFE] rounded-fk-md text-fk-server">
-              <h4 className="text-[14px] font-bold">Secure server processing recommended</h4>
+              <h4 className="text-[14px] font-bold">
+                {metadata.routingReason === "browser_limit" 
+                  ? "Local compression not supported in this browser" 
+                  : metadata.routingReason === "memory_budget"
+                  ? "High memory usage detected"
+                  : "Secure server processing recommended"}
+              </h4>
               <p className="text-[12px] text-fk-server/80 mt-1">
-                This file exceeds 50 MB. Processing locally in the browser is possible but might slow down your browser tab.
+                {metadata.routingReason === "browser_limit"
+                  ? "Local compression is not available in this browser for this document. Secure temporary processing is available with your consent."
+                  : metadata.routingReason === "memory_budget"
+                  ? `This file is estimated to require ${metadata.estimatedDecodedMemoryMB} MB of decoded memory, which exceeds your browser's memory class. We recommend secure server-side compression.`
+                  : "This file exceeds 50 MB. Processing locally in the browser is possible but might slow down your browser tab."}
               </p>
             </div>
             <FileSummaryCard metadata={metadata} onRemove={removeFile} />
@@ -186,9 +194,19 @@ export default function UploadWorkspace({ initialFile = null }: UploadWorkspaceP
         {state === "SERVER_REQUIRED" && metadata && (
           <div className="flex flex-col gap-6 animate-in fade-in duration-200 text-left ltr:text-left rtl:text-right">
             <div className="p-4 bg-fk-danger-bg border border-fk-danger/20 rounded-fk-md text-fk-danger">
-              <h4 className="text-[14px] font-bold">Secure server processing required</h4>
+              <h4 className="text-[14px] font-bold">
+                {metadata.routingReason === "browser_limit"
+                  ? "Local compression unsupported"
+                  : metadata.routingReason === "hard_ceiling" || metadata.routingReason === "memory_budget"
+                  ? "Memory capacity exceeded"
+                  : "Secure server processing required"}
+              </h4>
               <p className="text-[12px] text-fk-danger/80 mt-1">
-                This file exceeds 100 MB, which is too large for local browser memory.
+                {metadata.routingReason === "browser_limit"
+                  ? "Local compression is not available in this browser for this document. Secure temporary processing is available with your consent."
+                  : metadata.routingReason === "hard_ceiling" || metadata.routingReason === "memory_budget"
+                  ? `This file requires ${metadata.estimatedDecodedMemoryMB} MB of decoded memory, which exceeds local browser capacity limits. Secure server-side processing is required.`
+                  : "This file exceeds 100 MB, which is too large for local browser memory."}
               </p>
             </div>
             <FileSummaryCard metadata={metadata} onRemove={removeFile} />

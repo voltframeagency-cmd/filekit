@@ -2,10 +2,22 @@ import { PDFDocument, PDFName, PDFRawStream } from "pdf-lib";
 
 self.onmessage = async (e: MessageEvent) => {
   const { action, buffer, scale, quality } = e.data;
+  if (action === "CAPABILITY_PROBE") {
+    const isGenuineWorker = typeof window === "undefined" && typeof self !== "undefined";
+    (self as any).postMessage({
+      status: "CAPABILITY_READY",
+      pdfWorkerBoot: true,
+      workerConfirmed: isGenuineWorker
+    });
+    return;
+  }
   if (action !== "compress") return;
 
   try {
+    const t0 = performance.now();
     const doc = await PDFDocument.load(buffer);
+    const t1 = performance.now();
+    
     const objects = doc.context.enumerateIndirectObjects();
     let replacedCount = 0;
 
@@ -19,8 +31,9 @@ self.onmessage = async (e: MessageEvent) => {
 
           const isDCT = filter === PDFName.of("DCTDecode");
           const isRGB = colorSpace === PDFName.of("DeviceRGB");
+          const isGray = colorSpace === PDFName.of("DeviceGray");
 
-          if ((!filter || isDCT) && (!colorSpace || isRGB)) {
+          if ((!filter || isDCT) && (!colorSpace || isRGB || isGray)) {
             try {
               const rawBytes = obj.contents;
               const blob = new Blob([rawBytes as any], { type: "image/jpeg" });
@@ -38,15 +51,16 @@ self.onmessage = async (e: MessageEvent) => {
                 });
                 const compressedBytes = new Uint8Array(await compressedBlob.arrayBuffer());
 
-                const newStream = doc.context.flateStream(compressedBytes, {
+                const imgDict = doc.context.obj({
                   Type: PDFName.of("XObject"),
                   Subtype: PDFName.of("Image"),
                   Width: width,
                   Height: height,
                   BitsPerComponent: 8,
-                  ColorSpace: PDFName.of("DeviceRGB"),
+                  ColorSpace: colorSpace || PDFName.of("DeviceRGB"),
                   Filter: PDFName.of("DCTDecode")
                 });
+                const newStream = PDFRawStream.of(imgDict, compressedBytes);
                 doc.context.assign(ref, newStream);
                 replacedCount++;
               }
@@ -59,21 +73,31 @@ self.onmessage = async (e: MessageEvent) => {
       }
     }
 
+    const t2 = performance.now();
+
     // Strip metadata lossless strip optimization pass
     doc.catalog.delete(PDFName.of("Metadata"));
     const outputBytes = await doc.save({ useObjectStreams: true });
+    const t3 = performance.now();
+
+    const isGenuineWorker = typeof window === "undefined" && typeof self !== "undefined";
 
     // Post back success response with transferable buffer
-    self.postMessage({
+    (self as any).postMessage({
       status: "success",
       buffer: outputBytes.buffer,
-      replacedCount
+      replacedCount,
+      workerConfirmed: isGenuineWorker,
+      timingLoadMs: Math.round(t1 - t0),
+      timingCompressMs: Math.round(t2 - t1),
+      timingSaveMs: Math.round(t3 - t2)
     }, [outputBytes.buffer]);
 
   } catch (err: any) {
-    self.postMessage({
+    (self as any).postMessage({
       status: "error",
-      errorMsg: err.message
+      errorMsg: err.message,
+      workerConfirmed: typeof window === "undefined"
     });
   }
 };

@@ -1,4 +1,4 @@
-import { WorkspaceState } from "@/utils/engine/types";
+import { WorkspaceState, LocalPdfRuntimeCapabilities } from "@/utils/engine/types";
 
 export interface CapabilityInput {
   file: File;
@@ -8,10 +8,11 @@ export interface CapabilityInput {
   requestedOperation: string;
   hasPdfSignature?: boolean;
   estimatedDecodedMemoryMB?: number;
-  browserMemoryClassGB?: number; // navigator.deviceMemory or estimate
+  browserMemoryClassGB?: number; // navigator.deviceMemory or undefined
   hasWebWorker?: boolean;
   hasWasmSupport?: boolean;
   priorLocalFailureCount?: number;
+  capabilities?: LocalPdfRuntimeCapabilities;
 }
 
 export interface RouterThresholds {
@@ -55,10 +56,11 @@ export class FileCapabilityRouter {
       requestedOperation,
       hasPdfSignature = true,
       estimatedDecodedMemoryMB,
-      browserMemoryClassGB = 4,
+      browserMemoryClassGB,
       hasWebWorker = typeof window !== "undefined" && typeof window.Worker !== "undefined",
       hasWasmSupport = typeof window !== "undefined" && typeof (window as any).WebAssembly !== "undefined",
       priorLocalFailureCount = 0,
+      capabilities,
     } = input;
 
     const t = this.thresholds;
@@ -80,12 +82,11 @@ export class FileCapabilityRouter {
 
     // 3. Signature & Parser Verification
     if (!hasPdfSignature || isCorrupted) {
-      return "UNSUPPORTED"; // Or FAILED/UNSUPPORTED depending on policy
+      return "UNSUPPORTED";
     }
 
     // 4. Security Check (Encryption / Password protection)
     if (isPasswordProtected) {
-      // Password protected files cannot be parsed locally without user inputting password
       return "UNSUPPORTED";
     }
 
@@ -94,28 +95,44 @@ export class FileCapabilityRouter {
       return "UNSUPPORTED";
     }
 
-    // 6. Check environment capability (WASM and Worker requirements)
-    if (t.requireWasm && !hasWasmSupport) {
-      return "SERVER_REQUIRED"; // Missing WASM fallback to server processing
-    }
-    if (t.requireWorker && !hasWebWorker) {
-      return "SERVER_RECOMMENDED"; // Lack of multi-threading makes local operation slow
-    }
-
-    // 7. Decoded Memory Estimation & Browser Memory limits
-    const ONE_MB = 1024 * 1024;
-    const fileSizeMB = file.size / ONE_MB;
-    const estMemoryMB = estimatedDecodedMemoryMB ?? (pages * 3.5 + fileSizeMB);
-
-    // If browser is running low-end device profile
-    if (browserMemoryClassGB < t.minMemoryClassGB) {
-      if (fileSizeMB > t.recommendedLocalFileSizeMB / 2) {
+    // 6. Check detailed feature capabilities if provided
+    if (capabilities) {
+      if (!capabilities.worker || !capabilities.pdfWorkerBoot) {
         return "SERVER_REQUIRED";
+      }
+      if (!capabilities.offscreenCanvas || !capabilities.createImageBitmap || !capabilities.canvasJpegEncoding || !capabilities.transferableArrayBuffer) {
+        return "SERVER_RECOMMENDED";
+      }
+    } else {
+      // Fallback checks for environments without full probing (e.g. CLI tests)
+      if (t.requireWasm && !hasWasmSupport) {
+        return "SERVER_REQUIRED";
+      }
+      if (t.requireWorker && !hasWebWorker) {
+        return "SERVER_RECOMMENDED";
       }
     }
 
-    // 8. Size and complexity decision matrix
+    // 7. Hard Size and complexity limits
+    const ONE_MB = 1024 * 1024;
+    const fileSizeMB = file.size / ONE_MB;
     if (fileSizeMB > t.maxLocalFileSizeMB || pages > t.maxLocalPageCount) {
+      return "SERVER_REQUIRED";
+    }
+
+    // 8. Decoded Memory Estimation & Browser Memory limits
+    const estMemoryMB = estimatedDecodedMemoryMB ?? (pages * 3.5 + fileSizeMB);
+
+    // Determine budget based on browser device memory class (LOW_OR_UNKNOWN = 160MB, MEDIUM = 256MB, HIGH = 384MB)
+    let memoryBudgetMB = 160; 
+    if (browserMemoryClassGB === 4) {
+      memoryBudgetMB = 256;
+    } else if (browserMemoryClassGB && browserMemoryClassGB >= 8) {
+      memoryBudgetMB = 384;
+    }
+
+    // Route based on memory class budgets (exceeding budget routes away immediately)
+    if (estMemoryMB > memoryBudgetMB) {
       return "SERVER_REQUIRED";
     }
 
@@ -134,5 +151,50 @@ export class FileCapabilityRouter {
     }
 
     return "LOCAL_SAFE";
+  }
+
+  static getRoutingReason(input: CapabilityInput): string {
+    const {
+      file,
+      pages = 24,
+      isPasswordProtected = false,
+      estimatedDecodedMemoryMB,
+      browserMemoryClassGB,
+      hasWebWorker = typeof window !== "undefined" && typeof window.Worker !== "undefined",
+      hasWasmSupport = typeof window !== "undefined" && typeof (window as any).WebAssembly !== "undefined",
+      capabilities,
+    } = input;
+
+    const t = this.thresholds;
+    const ONE_MB = 1024 * 1024;
+    const fileSizeMB = file.size / ONE_MB;
+    const estMemoryMB = estimatedDecodedMemoryMB ?? (pages * 3.5 + fileSizeMB);
+
+    if (isPasswordProtected) return "password_protected";
+
+    // Route reason based on detailed feature capabilities if provided
+    if (capabilities) {
+      if (!capabilities.worker || !capabilities.pdfWorkerBoot) {
+        return "browser_limit";
+      }
+      if (!capabilities.offscreenCanvas || !capabilities.createImageBitmap || !capabilities.canvasJpegEncoding || !capabilities.transferableArrayBuffer) {
+        return "browser_limit";
+      }
+    } else {
+      if (!hasWasmSupport || !hasWebWorker) return "browser_limit";
+    }
+    
+    let memoryBudgetMB = 160; 
+    if (browserMemoryClassGB === 4) {
+      memoryBudgetMB = 256;
+    } else if (browserMemoryClassGB && browserMemoryClassGB >= 8) {
+      memoryBudgetMB = 384;
+    }
+    
+    if (estMemoryMB > memoryBudgetMB) return "memory_budget";
+    if (fileSizeMB > t.maxLocalFileSizeMB || pages > t.maxLocalPageCount) return "size_limit";
+    if (fileSizeMB > t.recommendedLocalFileSizeMB) return "recommended_limit";
+
+    return "none";
   }
 }
