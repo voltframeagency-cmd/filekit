@@ -105,6 +105,10 @@ export class ImageOptimizationEngine {
     });
 
     finalResult.processingDurationMs = Date.now() - startTime;
+    finalResult.rgbaBytes = report.rgbaBytes;
+    finalResult.estimatedPeakBytes = report.estimatedPeakBytes;
+    finalResult.activeBudgetBytes = report.activeBudgetBytes;
+    finalResult.routeReason = route.reason;
     return finalResult;
   }
 

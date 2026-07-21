@@ -1,4 +1,5 @@
 import { ImageFormat, ImagePreflightReport } from "./types";
+import { ImageCapabilityRouter } from "./ImageCapabilityRouter";
 
 export class ImagePreflightInspector {
   static async inspect(buffer: ArrayBuffer): Promise<ImagePreflightReport> {
@@ -48,7 +49,12 @@ export class ImagePreflightInspector {
       throw new Error("CORRUPT_HEADER: Failed to parse image dimensions from header.");
     }
 
-    const decodedMemoryBytes = width * height * 4;
+    const { rgbaBytes, operationMultiplier, estimatedPeakBytes } = ImageCapabilityRouter.calculatePeakMemory({
+      width,
+      height,
+      inputSizeBytes: bytes.byteLength,
+      operation: "ITERATIVE_TARGET"
+    });
 
     return {
       format,
@@ -58,7 +64,11 @@ export class ImagePreflightInspector {
       hasAlpha,
       isAnimated,
       exifOrientation,
-      decodedMemoryBytes,
+      rgbaBytes,
+      operationMultiplier,
+      estimatedPeakBytes,
+      activeBudgetBytes: ImageCapabilityRouter.HIGH_BUDGET_BYTES,
+      decodedMemoryBytes: rgbaBytes,
       headerValid: true
     };
   }

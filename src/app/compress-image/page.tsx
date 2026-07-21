@@ -6,6 +6,8 @@ import AppFooter from "@/components/layout/AppFooter";
 import TrustPanel from "@/components/layout/TrustPanel";
 import { useLanguage } from "@/components/layout/LanguageContext";
 import { ImageOptimizationEngine } from "@/utils/image-engine/ImageOptimizationEngine";
+import { ImagePreflightInspector } from "@/utils/image-engine/ImagePreflightInspector";
+import { ImageCapabilityRouter } from "@/utils/image-engine/ImageCapabilityRouter";
 import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
 
 export default function CompressImagePage() {
@@ -27,19 +29,13 @@ export default function CompressImagePage() {
 
     try {
       const buf = await selected.arrayBuffer();
-      const report = await ImageOptimizationEngine.compress(buf, selected.size, undefined);
-      // Perform initial preflight inspection
-      setPreflight({
-        format: report.inputMimeType.includes("jpeg") ? "jpeg" : report.inputMimeType.includes("png") ? "png" : "webp",
-        mimeType: report.inputMimeType,
-        width: report.widthBefore,
-        height: report.heightBefore,
-        hasAlpha: report.alphaPreserved,
-        isAnimated: false,
-        exifOrientation: report.orientationCorrected ? 6 : 1,
-        decodedMemoryBytes: report.widthBefore * report.heightBefore * 4,
-        headerValid: true
-      });
+      const report = await ImagePreflightInspector.inspect(buf);
+      const route = ImageCapabilityRouter.evaluate(report, selected.size);
+      if (route.decision === "UNSUPPORTED") {
+        setError(route.reason || "UNSUPPORTED: Image processing rejected.");
+        return;
+      }
+      setPreflight(report);
     } catch (err: any) {
       setError(err.message || "Failed to inspect selected image.");
     }
@@ -53,13 +49,8 @@ export default function CompressImagePage() {
 
     try {
       const buf = await file.arrayBuffer();
-      let targetBytes = parseInt(targetSize, 10);
-      if (isNaN(targetBytes)) {
-        if (targetSize === "200KB") targetBytes = 200 * 1024;
-        else if (targetSize === "500KB") targetBytes = 500 * 1024;
-        else if (targetSize === "1MB") targetBytes = 1024 * 1024;
-        else targetBytes = Math.round(file.size * 0.5);
-      }
+      const override = (typeof window !== "undefined" && (window as any).__TEST_TARGET_SIZE__) ? parseInt((window as any).__TEST_TARGET_SIZE__, 10) : null;
+      const targetBytes = override || (targetSize === "200KB" ? 200 * 1024 : targetSize === "1MB" ? 1024 * 1024 : 500 * 1024);
 
       const res = await ImageOptimizationEngine.compress(buf, targetBytes, undefined);
       setResult(res);
@@ -102,10 +93,10 @@ export default function CompressImagePage() {
       <main className="flex-1 flex flex-col gap-6 md:gap-10 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-12 py-6 md:py-12">
         <section className="flex flex-col gap-1.5 max-w-[840px] mx-auto w-full text-left ltr:text-left rtl:text-right px-2">
           <h1 className="text-[clamp(1.75rem,7vw,2.25rem)] font-black text-fk-text leading-[1.1] tracking-tight">
-            Compress Image Files (JPG, PNG, WebP)
+            Compress Image — Beta
           </h1>
           <p className="text-[13px] md:text-[15px] font-medium text-fk-text-muted leading-relaxed">
-            Reduce image file size locally in your browser without quality loss or server uploads.
+            Compress JPEG, PNG, and static WebP images locally in supported Chromium browsers.
           </p>
         </section>
 

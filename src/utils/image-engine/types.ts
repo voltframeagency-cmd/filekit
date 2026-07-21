@@ -29,6 +29,10 @@ export interface ImagePreflightReport {
   hasAlpha: boolean;
   isAnimated: boolean;
   exifOrientation: number; // 1..8
+  rgbaBytes: number;
+  operationMultiplier: number;
+  estimatedPeakBytes: number;
+  activeBudgetBytes: number;
   decodedMemoryBytes: number;
   headerValid: boolean;
 }
@@ -56,6 +60,10 @@ export interface ImageVerificationResult {
   processingDurationMs: number;
   engineIdentifier: string;
   isReadable: boolean;
+  rgbaBytes?: number;
+  estimatedPeakBytes?: number;
+  activeBudgetBytes?: number;
+  routeReason?: string;
 }
 
 export interface ImageProcessingProgressEvent {
