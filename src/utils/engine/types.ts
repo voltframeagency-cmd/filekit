@@ -67,6 +67,7 @@ export type StopReason =
 export interface VerificationResult {
   originalSizeBytes: number;
   outputSizeBytes: number;
+  outputBuffer?: ArrayBuffer;
   targetSizeBytes: number;
   reductionPercentage: number;
   pagesBefore: number;
@@ -87,6 +88,12 @@ export interface VerificationResult {
   eofStructureValid: boolean;
   mimeValid: boolean;
   fatalErrors: string[];
+  imagesDiscovered?: number;
+  imagesSupported?: number;
+  imagesReplaced?: number;
+  originalAlreadyWithinTarget?: boolean;
+  runtimeRoute?: "LOCAL_SAFE" | "LOCAL_WITH_WARNING" | "SERVER_RECOMMENDED" | "SERVER_REQUIRED" | "UNSUPPORTED";
+  documentStrategy?: "IMAGE_XOBJECT_RECOMPRESS" | "LOSSLESS_OPTIMIZER" | "NO_COMPRESSIBLE_IMAGES" | "UNSUPPORTED_ENCODING" | "REJECTED_ENCRYPTED" | "REJECTED_SIGNED";
 }
 
 export type FailureCategory =

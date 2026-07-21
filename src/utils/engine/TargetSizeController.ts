@@ -19,8 +19,10 @@ export function selectCompressionResult(params: {
   candidates: CompressionCandidate[];
   targetSizeBytes: number;
   attemptsRun: number;
+  imagesDiscovered?: number;
+  imagesSupported?: number;
 }): CompressionResult {
-  const { originalBuffer, candidates, targetSizeBytes, attemptsRun } = params;
+  const { originalBuffer, candidates, targetSizeBytes, attemptsRun, imagesDiscovered = 0, imagesSupported = 0 } = params;
   const originalBytes = originalBuffer.byteLength;
 
   // Filter candidates strictly smaller than original
@@ -31,6 +33,8 @@ export function selectCompressionResult(params: {
   if (belowTarget) {
     return {
       buffer: belowTarget.buffer,
+      imagesDiscovered,
+      imagesSupported,
       replacedCount: belowTarget.replacedCount,
       status: "SUCCESS",
       outcome: "TARGET_ACHIEVED",
@@ -49,6 +53,8 @@ export function selectCompressionResult(params: {
     const smallest = validCandidates.reduce((prev, curr) => (prev.size < curr.size ? prev : curr));
     return {
       buffer: smallest.buffer,
+      imagesDiscovered,
+      imagesSupported,
       replacedCount: smallest.replacedCount,
       status: "TARGET_NOT_MET",
       outcome: "TARGET_NOT_MET",
@@ -65,6 +71,8 @@ export function selectCompressionResult(params: {
   // 3. Genuine growth case (no candidates smaller than original): return immutable original buffer
   return {
     buffer: originalBuffer,
+    imagesDiscovered,
+    imagesSupported,
     replacedCount: 0,
     status: "NO_BENEFICIAL_REDUCTION",
     outcome: "NO_BENEFICIAL_REDUCTION",

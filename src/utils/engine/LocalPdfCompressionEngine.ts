@@ -6,6 +6,8 @@ import { ProcessingOutcome, CompressionProfile, StopReason } from "./types";
 
 export interface CompressionResult {
   buffer: ArrayBuffer;
+  imagesDiscovered: number;
+  imagesSupported: number;
   replacedCount: number;
   status: "SUCCESS" | "TARGET_NOT_MET" | "NO_BENEFICIAL_REDUCTION" | "UNSUPPORTED_AND_ROUTED";
   outcome: ProcessingOutcome;
@@ -29,7 +31,8 @@ export class LocalPdfCompressionEngine {
     onProgress?: (progress: number) => void
   ): Promise<CompressionResult> {
     // 1. Run Preflight check (checks header signature, encryption, signatures)
-    await PdfPreflightInspector.inspect(arrayBuffer);
+    const report = await PdfPreflightInspector.inspect(arrayBuffer);
+    const imagesDiscovered = report.imageCount;
 
     // 2. Select compression strategy
     const strategy = await CompressionStrategySelector.select(arrayBuffer);
@@ -41,6 +44,8 @@ export class LocalPdfCompressionEngine {
     if (strategy === "UNSUPPORTED_IMAGE_ENCODING") {
       return {
         buffer: arrayBuffer,
+        imagesDiscovered,
+        imagesSupported: 0,
         replacedCount: 0,
         status: "UNSUPPORTED_AND_ROUTED",
         outcome: "NO_BENEFICIAL_REDUCTION",
@@ -114,7 +119,9 @@ export class LocalPdfCompressionEngine {
       originalBuffer: arrayBuffer,
       candidates,
       targetSizeBytes: targetSize,
-      attemptsRun
+      attemptsRun,
+      imagesDiscovered,
+      imagesSupported: imagesDiscovered
     });
   }
 

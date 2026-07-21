@@ -8,11 +8,16 @@ import UploadWorkspace from "@/components/upload/UploadWorkspace";
 import { fileManager } from "@/utils/fileManager";
 import { useLanguage } from "@/components/layout/LanguageContext";
 
+import * as PDFLib from "pdf-lib";
+
 export default function CompressPdfPage() {
   const { t } = useLanguage();
   const [initialFile, setInitialFile] = useState<File | null>(null);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).PDFLib = PDFLib;
+    }
     const file = fileManager.getActiveFile();
     if (file) {
       setInitialFile(file);

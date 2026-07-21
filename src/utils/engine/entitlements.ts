@@ -118,5 +118,51 @@ export class DevelopmentCheckoutAdapter implements CheckoutAdapter {
   }
 }
 
-export const entitlementService = new DevelopmentEntitlementService();
+export class ProductionEntitlementService implements EntitlementService {
+  async check(_input: EntitlementCheckInput): Promise<EntitlementResult> {
+    const betaFreeDownloadsEnabled =
+      typeof process !== "undefined" &&
+      process.env &&
+      process.env.NEXT_PUBLIC_BETA_FREE_DOWNLOADS === "true";
+
+    if (betaFreeDownloadsEnabled) {
+      return {
+        status: "FREE_DOWNLOAD",
+        isEligible: true,
+        reason: "FREE_BETA_DOWNLOAD"
+      };
+    }
+
+    return {
+      status: "NONE",
+      isEligible: false,
+      reason: "PRODUCTION_PAYWALL_REQUIRED"
+    };
+  }
+
+  async grant(_input: PaymentConfirmation): Promise<DownloadGrant> {
+    const betaFreeDownloadsEnabled =
+      typeof process !== "undefined" &&
+      process.env &&
+      process.env.NEXT_PUBLIC_BETA_FREE_DOWNLOADS === "true";
+
+    if (betaFreeDownloadsEnabled) {
+      return {
+        grantId: `beta-grant-${Math.random().toString(36).substr(2, 9)}`,
+        objectUrl: "",
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000
+      };
+    }
+
+    throw new Error("Entitlement Error: Payment verification service unavailable.");
+  }
+
+  registerMockGrant() {}
+  clearMockGrants() {}
+}
+
+const isProductionEnv = typeof process !== "undefined" && process.env && process.env.NODE_ENV === "production";
+export const entitlementService: EntitlementService = isProductionEnv
+  ? new ProductionEntitlementService()
+  : new DevelopmentEntitlementService();
 export const checkoutAdapter = new DevelopmentCheckoutAdapter();

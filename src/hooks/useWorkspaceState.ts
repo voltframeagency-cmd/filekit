@@ -174,7 +174,7 @@ export function useWorkspaceState(initialFile: File | null = null) {
     setProgressEvent(null);
     setFailure(null);
 
-    const engine = engineRegistry.getEngine("mock-wasm-retained-engine");
+    const engine = engineRegistry.getEngine("local-pdf-engine");
     const isServerRoute = forceServer || state === "SERVER_REQUIRED" || (state === "SERVER_RECOMMENDED" && consentRecord?.consentGranted);
     
     const job: ProcessingJob = {
@@ -255,10 +255,11 @@ export function useWorkspaceState(initialFile: File | null = null) {
             // Entitled (FREE_DOWNLOAD or active subscription)
             setEntitlement(checkResult.status);
             
-            // Create Download Grant
+            // Create Download Grant using real compressed buffer
             if (typeof window !== "undefined" && window.URL) {
-              const mockBlob = new Blob(["%PDF-1.4\n%mock output content"], { type: "application/pdf" });
-              downloadUrlRef.current = window.URL.createObjectURL(mockBlob);
+              const buf = result.outputBuffer || new ArrayBuffer(0);
+              const realBlob = new Blob([buf], { type: "application/pdf" });
+              downloadUrlRef.current = window.URL.createObjectURL(realBlob);
             }
             
             setState("COMPLETED");
@@ -266,6 +267,14 @@ export function useWorkspaceState(initialFile: File | null = null) {
             // Requires payment / paywall - show results card first!
             setEntitlement("NONE");
             setState("COMPLETED");
+          }
+
+          if (typeof window !== "undefined") {
+            (window as any).__LAST_RESULT__ = {
+              ...result,
+              outcome,
+              state: "COMPLETED"
+            };
           }
         }, 800);
       },

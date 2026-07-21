@@ -1,8 +1,13 @@
 import { CompressionEngine } from "./types";
 import { MockCompressionEngine } from "./mockEngine";
+import { LocalPdfEngineAdapter } from "./LocalPdfEngineAdapter";
 
 class EngineRegistry {
   private engines: Map<string, CompressionEngine> = new Map();
+
+  constructor() {
+    this.register(new LocalPdfEngineAdapter());
+  }
 
   register(engine: CompressionEngine) {
     this.engines.set(engine.id, engine);
