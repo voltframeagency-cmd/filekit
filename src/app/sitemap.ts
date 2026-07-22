@@ -7,12 +7,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     "",
     "/compress-pdf",
+    "/compress-pdf-to-size",
+    "/compress-pdf-to-2mb",
     "/compress-image",
+    "/compress-image-to-size",
     "/compress-image-to-100kb",
     "/compress-image-to-200kb",
     "/compress-image-to-500kb",
-    "/compress-image-to-1mb",
-    "/compress-image-to-size"
+    "/compress-image-to-1mb"
   ];
 
   return routes.map((route) => ({

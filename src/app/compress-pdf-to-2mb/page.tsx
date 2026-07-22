@@ -9,8 +9,8 @@ import { buildCanonicalUrl } from "@/utils/siteUrl";
 
 import * as PDFLib from "pdf-lib";
 
-export default function CompressPdfPage() {
-  const routeConfig = PDF_COMPRESSION_ROUTES["/compress-pdf"];
+export default function CompressPdf2MbPage() {
+  const routeConfig = PDF_COMPRESSION_ROUTES["/compress-pdf-to-2mb"];
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -38,6 +38,7 @@ export default function CompressPdfPage() {
 
       <main className="flex-1 flex flex-col gap-6 md:gap-10 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-12 py-6 md:py-12">
         <section className="flex flex-col gap-1.5 max-w-[840px] mx-auto w-full text-left ltr:text-left rtl:text-right px-2">
+          <span className="text-[12px] font-bold uppercase tracking-wider text-fk-primary">PDF Compressor</span>
           <h1 className="text-[clamp(1.75rem,7vw,2.25rem)] font-black text-fk-text leading-[1.1] tracking-tight">
             {routeConfig.h1}
           </h1>

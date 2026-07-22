@@ -68,7 +68,19 @@ export const MAIN_NAVIGATION: TopNavItem[] = [
             label: "PDF Compressor",
             href: "/compress-pdf",
             isPrimary: true
-          }
+          },
+          secondaryLink: {
+            label: "Compress to a Specific Size",
+            href: "/compress-pdf-to-size"
+          },
+          subgroups: [
+            {
+              label: "Popular target sizes",
+              items: [
+                { label: "2 MB", href: "/compress-pdf-to-2mb" }
+              ]
+            }
+          ]
         }
       ]
     }
