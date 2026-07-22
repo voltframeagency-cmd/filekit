@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AppHeader from "@/components/layout/AppHeader";
 import AppFooter from "@/components/layout/AppFooter";
 import TrustPanel from "@/components/layout/TrustPanel";
+import ImageComparisonSlider from "@/components/image-tools/ImageComparisonSlider";
 import { useLanguage } from "@/components/layout/LanguageContext";
 import { ImageOptimizationEngine } from "@/utils/image-engine/ImageOptimizationEngine";
 import { ImagePreflightInspector } from "@/utils/image-engine/ImagePreflightInspector";
@@ -40,6 +41,41 @@ export default function CompressImageTo200kbPage() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [result, setResult] = useState<ImageVerificationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [originalPreviewUrl, setOriginalPreviewUrl] = useState<string | null>(null);
+  const [outputPreviewUrl, setOutputPreviewUrl] = useState<string | null>(null);
+
+  // Manage preview object URLs safely
+  useEffect(() => {
+    if (!file) {
+      if (originalPreviewUrl) URL.revokeObjectURL(originalPreviewUrl);
+      setOriginalPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setOriginalPreviewUrl(url);
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [file]);
+
+  useEffect(() => {
+    if (!result || !result.outputBuffer) {
+      if (outputPreviewUrl) URL.revokeObjectURL(outputPreviewUrl);
+      setOutputPreviewUrl(null);
+      return;
+    }
+    const blob = new Blob([result.outputBuffer], { type: result.outputMimeType });
+    const url = URL.createObjectURL(blob);
+    setOutputPreviewUrl(url);
+    trackEvent("comparison_viewed", {
+      outcome: result.outcome,
+      formatClass: result.outputMimeType
+    });
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [result]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -277,6 +313,17 @@ export default function CompressImageTo200kbPage() {
                   </div>
                 );
               })()}
+
+              {/* Visual Comparison Slider */}
+              {originalPreviewUrl && outputPreviewUrl && (
+                <ImageComparisonSlider
+                  originalUrl={originalPreviewUrl}
+                  outputUrl={outputPreviewUrl}
+                  originalLabel="Original"
+                  outputLabel="Optimized"
+                  onSliderUsed={() => trackEvent("comparison_slider_used")}
+                />
+              )}
 
               <div className="flex items-center justify-center gap-6 w-full max-w-[460px] p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
                 <div className="flex flex-col items-center">

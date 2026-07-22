@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import AppHeader from "@/components/layout/AppHeader";
 import AppFooter from "@/components/layout/AppFooter";
 import TrustPanel from "@/components/layout/TrustPanel";
+import ImageComparisonSlider from "@/components/image-tools/ImageComparisonSlider";
 import { useLanguage } from "@/components/layout/LanguageContext";
 import { ImageOptimizationEngine } from "@/utils/image-engine/ImageOptimizationEngine";
 import { ImagePreflightInspector } from "@/utils/image-engine/ImagePreflightInspector";
@@ -18,6 +19,37 @@ export default function CompressImagePage() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [result, setResult] = useState<ImageVerificationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [originalPreviewUrl, setOriginalPreviewUrl] = useState<string | null>(null);
+  const [outputPreviewUrl, setOutputPreviewUrl] = useState<string | null>(null);
+
+  // Manage preview object URLs safely
+  useEffect(() => {
+    if (!file) {
+      if (originalPreviewUrl) URL.revokeObjectURL(originalPreviewUrl);
+      setOriginalPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setOriginalPreviewUrl(url);
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [file]);
+
+  useEffect(() => {
+    if (!result || !result.outputBuffer) {
+      if (outputPreviewUrl) URL.revokeObjectURL(outputPreviewUrl);
+      setOutputPreviewUrl(null);
+      return;
+    }
+    const blob = new Blob([result.outputBuffer], { type: result.outputMimeType });
+    const url = URL.createObjectURL(blob);
+    setOutputPreviewUrl(url);
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [result]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -79,11 +111,12 @@ export default function CompressImagePage() {
   };
 
   const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return "\u20660 Bytes\u2069";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+    const formatted = parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+    return `\u2066${formatted}\u2069`;
   };
 
   return (
@@ -121,7 +154,7 @@ export default function CompressImagePage() {
             <div className="flex flex-col gap-6">
               <div className="flex items-center justify-between p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                 <div className="flex flex-col">
-                  <span className="text-[14px] font-bold text-fk-text">{file.name}</span>
+                  <span className="text-[14px] font-bold text-fk-text dir-auto">{file.name}</span>
                   <span className="text-[12px] font-mono text-fk-text-subtle mt-0.5">{formatBytes(file.size)}</span>
                 </div>
                 <button
@@ -170,12 +203,22 @@ export default function CompressImagePage() {
                 ✓ Image compressed successfully
               </div>
 
+              {/* Visual Comparison Slider */}
+              {originalPreviewUrl && outputPreviewUrl && (
+                <ImageComparisonSlider
+                  originalUrl={originalPreviewUrl}
+                  outputUrl={outputPreviewUrl}
+                  originalLabel="Original"
+                  outputLabel="Optimized"
+                />
+              )}
+
               <div className="flex items-center justify-center gap-6 w-full max-w-[460px] p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
                 <div className="flex flex-col items-center">
                   <span className="text-[11px] font-bold text-fk-text-subtle uppercase">Original</span>
                   <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(result.originalSizeBytes)}</span>
                 </div>
-                <div className="text-[22px] font-light text-fk-text-subtle">→</div>
+                <div className="text-[22px] font-light text-fk-text-subtle ltr:rotate-0 rtl:rotate-180">→</div>
                 <div className="flex flex-col items-center">
                   <span className="text-[11px] font-bold text-fk-primary uppercase">New Size</span>
                   <span className="text-[20px] font-black text-fk-primary mt-1">{formatBytes(result.outputSizeBytes)}</span>
@@ -184,10 +227,10 @@ export default function CompressImagePage() {
 
               <div className="flex flex-col gap-1 text-center text-[13px]">
                 <p className="font-bold text-fk-text">
-                  {result.reductionPercentage.toFixed(1)}% smaller  •  {result.widthAfter} × {result.heightAfter} px
+                  {"\u2066"}{result.reductionPercentage.toFixed(1)}% smaller{"\u2069"}  •  {"\u2066"}{result.widthAfter} × {result.heightAfter} px{"\u2069"}
                 </p>
                 <span className="text-[11px] text-fk-text-subtle">
-                  Processed privately in your browser ({result.processingDurationMs} ms)
+                  Processed privately in your browser ({"\u2066"}{result.processingDurationMs} ms{"\u2069"})
                 </span>
               </div>
 
