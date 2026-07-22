@@ -12,6 +12,8 @@ import { ImageCapabilityRouter } from "@/utils/image-engine/ImageCapabilityRoute
 import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
 import { ExactImageRouteConfig } from "@/config/exactImageRoutes";
 
+import { buildCanonicalUrl } from "@/utils/siteUrl";
+
 export interface ExactImageTargetPageProps {
   config: ExactImageRouteConfig;
 }
@@ -217,8 +219,7 @@ export default function ExactImageTargetPage({ config }: ExactImageTargetPagePro
     }
   };
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://filekit.com";
-  const canonicalUrl = `${siteUrl}/${config.slug}`;
+  const canonicalUrl = buildCanonicalUrl(`/${config.slug}`);
 
   const jsonLd = {
     "@context": "https://schema.org",

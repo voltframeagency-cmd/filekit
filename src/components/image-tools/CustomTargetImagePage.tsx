@@ -10,6 +10,7 @@ import { ImageOptimizationEngine } from "@/utils/image-engine/ImageOptimizationE
 import { ImagePreflightInspector } from "@/utils/image-engine/ImagePreflightInspector";
 import { ImageCapabilityRouter } from "@/utils/image-engine/ImageCapabilityRouter";
 import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
+import { buildCanonicalUrl } from "@/utils/siteUrl";
 
 const MIN_BYTES = 20 * 1024; // 20 KB (20,480 Bytes)
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB (52,428,800 Bytes)
@@ -248,8 +249,7 @@ export default function CustomTargetImagePage() {
     return `\u2066${formatted}\u2069`;
   };
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://filekit.com";
-  const canonicalUrl = `${siteUrl}/compress-image-to-size`;
+  const canonicalUrl = buildCanonicalUrl("/compress-image-to-size");
 
   const jsonLd = {
     "@context": "https://schema.org",

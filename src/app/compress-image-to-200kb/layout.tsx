@@ -1,19 +1,19 @@
 import { Metadata } from "next";
 import { EXACT_IMAGE_ROUTES } from "@/config/exactImageRoutes";
+import { buildCanonicalUrl } from "@/utils/siteUrl";
 
 const cfg = EXACT_IMAGE_ROUTES["200kb"];
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://filekit.com";
 
 export const metadata: Metadata = {
   title: cfg.title,
   description: cfg.description,
   alternates: {
-    canonical: `${siteUrl}/${cfg.slug}`
+    canonical: buildCanonicalUrl(`/${cfg.slug}`)
   },
   openGraph: {
     title: cfg.title,
     description: cfg.description,
-    url: `${siteUrl}/${cfg.slug}`,
+    url: buildCanonicalUrl(`/${cfg.slug}`),
     type: "website"
   }
 };

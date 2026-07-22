@@ -1,19 +1,18 @@
 import { Metadata } from "next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://filekit.com";
+import { buildCanonicalUrl } from "@/utils/siteUrl";
 
 export const metadata: Metadata = {
   title: "Image Compressor — Compress JPEG, PNG, WebP Online | FileKit",
   description:
     "Free client-side Image Compressor. Compress JPEG, PNG, and static WebP images locally in your browser memory without quality loss or file uploads.",
   alternates: {
-    canonical: `${siteUrl}/compress-image`
+    canonical: buildCanonicalUrl("/compress-image")
   },
   openGraph: {
     title: "Image Compressor — Compress JPEG, PNG, WebP Online | FileKit",
     description:
       "Free client-side Image Compressor. Compress JPEG, PNG, and static WebP images locally in your browser memory.",
-    url: `${siteUrl}/compress-image`,
+    url: buildCanonicalUrl("/compress-image"),
     type: "website"
   }
 };

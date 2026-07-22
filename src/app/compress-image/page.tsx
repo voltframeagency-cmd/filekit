@@ -10,6 +10,7 @@ import { ImageOptimizationEngine } from "@/utils/image-engine/ImageOptimizationE
 import { ImagePreflightInspector } from "@/utils/image-engine/ImagePreflightInspector";
 import { ImageCapabilityRouter } from "@/utils/image-engine/ImageCapabilityRouter";
 import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
+import { buildCanonicalUrl } from "@/utils/siteUrl";
 
 export default function CompressImagePage() {
   const { t } = useLanguage();
@@ -119,8 +120,22 @@ export default function CompressImagePage() {
     return `\u2066${formatted}\u2069`;
   };
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "FileKit Image Compressor",
+    "url": buildCanonicalUrl("/compress-image"),
+    "description": "Compress JPEG, PNG, and static WebP images locally in your browser memory.",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "All"
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-fk-bg">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <AppHeader />
 
       <main className="flex-1 flex flex-col gap-6 md:gap-10 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-12 py-6 md:py-12">

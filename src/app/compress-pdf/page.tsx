@@ -10,6 +10,8 @@ import { useLanguage } from "@/components/layout/LanguageContext";
 
 import * as PDFLib from "pdf-lib";
 
+import { buildCanonicalUrl } from "@/utils/siteUrl";
+
 export default function CompressPdfPage() {
   const { t } = useLanguage();
   const [initialFile, setInitialFile] = useState<File | null>(null);
@@ -26,8 +28,22 @@ export default function CompressPdfPage() {
     }
   }, []);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "FileKit Compress PDF below 2 MB",
+    "url": buildCanonicalUrl("/compress-pdf"),
+    "description": "Compress PDF files below 2 MB locally in your browser.",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "All"
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-fk-bg">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Header */}
       <AppHeader />
 
