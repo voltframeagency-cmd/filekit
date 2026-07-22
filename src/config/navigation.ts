@@ -58,6 +58,17 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "WebP to JPG", href: "/webp-to-jpg" },
       { label: "WebP to PNG", href: "/webp-to-png" }
     ]
+  },
+  {
+    id: "pdf-to-image-conversion",
+    label: "CONVERT FROM PDF",
+    compactLabel: "FROM PDF",
+    accessibleLabel: "PDF rasterization and image conversion tools",
+    links: [
+      { label: "PDF to Image", href: "/pdf-to-image" },
+      { label: "PDF to JPG", href: "/pdf-to-jpg" },
+      { label: "PDF to PNG", href: "/pdf-to-png" }
+    ]
   }
 ];
 

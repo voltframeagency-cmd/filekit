@@ -21,7 +21,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/jpg-to-webp",
     "/png-to-webp",
     "/webp-to-jpg",
-    "/webp-to-png"
+    "/webp-to-png",
+    "/pdf-to-image",
+    "/pdf-to-jpg",
+    "/pdf-to-png"
   ];
 
   return routes.map((route) => ({
