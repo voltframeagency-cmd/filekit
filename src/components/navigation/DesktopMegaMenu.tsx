@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { TopNavItem } from "@/config/navigation";
+import { TopNavItem, CONVERTER_NAVIGATION_GROUPS } from "@/config/navigation";
 
 export interface DesktopMegaMenuProps {
   navItem: TopNavItem;
@@ -24,7 +24,7 @@ export default function DesktopMegaMenu({
   const megaMenu = navItem.megaMenu;
 
   useEffect(() => {
-    if (!isOpen || !megaMenu) return;
+    if (!isOpen || (!megaMenu && navItem.id !== "convert")) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -37,12 +37,10 @@ export default function DesktopMegaMenu({
       const target = e.target as Node | null;
       if (!target) return;
 
-      // Ignore clicks on trigger button (delegated to SiteHeader toggle)
       if (triggerRef.current && triggerRef.current.contains(target)) {
         return;
       }
 
-      // Ignore clicks inside mega menu itself
       if (menuRef.current && menuRef.current.contains(target)) {
         return;
       }
@@ -60,20 +58,59 @@ export default function DesktopMegaMenu({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen, onClose, triggerRef, megaMenu]);
+  }, [isOpen, onClose, triggerRef, megaMenu, navItem.id]);
 
-  if (!megaMenu || !isOpen) return null;
+  if (!isOpen) return null;
+
+  if (navItem.id === "convert") {
+    return (
+      <div
+        id="convert-menu"
+        ref={menuRef}
+        role="region"
+        aria-label="Convert Tools"
+        className="absolute top-full ltr:left-0 rtl:right-0 mt-2 w-[320px] bg-white border border-fk-border rounded-fk-xl p-6 shadow-md z-50 animate-in fade-in zoom-in-95 duration-150"
+      >
+        <div className="flex flex-col gap-4">
+          {CONVERTER_NAVIGATION_GROUPS.map((group) => (
+            <div key={group.id} className="flex flex-col gap-2">
+              <span className="text-[11px] font-bold text-fk-text-subtle uppercase tracking-wider">
+                {group.label}
+              </span>
+              <div className="flex flex-col gap-1">
+                {group.links.map((link, lIdx) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={lIdx}
+                      href={link.href}
+                      onClick={onClose}
+                      className={`px-3 py-2 text-[13px] font-bold rounded-fk-md transition-colors hover:bg-fk-surface-muted ${
+                        isActive ? "text-fk-primary bg-fk-surface-muted font-bold" : "text-fk-text"
+                      }`}
+                    >
+                      {"\u2066"}{link.label}{"\u2069"}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
-      id={megaMenu.id}
+      id={megaMenu?.id || "mega-menu"}
       ref={menuRef}
       role="region"
-      aria-label={megaMenu.label}
+      aria-label={megaMenu?.label || "Mega Menu"}
       className="absolute top-full ltr:left-0 rtl:right-0 mt-2 w-[540px] bg-white border border-fk-border rounded-fk-xl p-6 shadow-md z-50 animate-in fade-in zoom-in-95 duration-150"
     >
       <div className="grid grid-cols-2 gap-8">
-        {megaMenu.groups.map((group, gIdx) => (
+        {megaMenu?.groups?.map((group, gIdx) => (
           <div key={gIdx} className="flex flex-col gap-3">
             <span className="text-[11px] font-bold text-fk-text-subtle uppercase tracking-wider">
               {group.title}

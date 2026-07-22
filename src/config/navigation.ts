@@ -31,6 +31,35 @@ export interface TopNavItem {
   megaMenu?: MegaMenuConfig;
 }
 
+export interface ConverterNavigationGroup {
+  id: string;
+  label: string;
+  accessibleLabel: string;
+  links: Array<{
+    label: string;
+    href: string;
+    accessibleLabel?: string;
+  }>;
+}
+
+export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
+  {
+    id: "image-conversion",
+    label: "IMAGE CONVERSION",
+    accessibleLabel: "Image format conversion tools",
+    links: [
+      { label: "Image Converter", href: "/convert-image" },
+      { label: "JPG to PNG", href: "/jpg-to-png" },
+      { label: "PNG to JPG", href: "/png-to-jpg" },
+      { label: "JPG to WebP", href: "/jpg-to-webp" },
+      { label: "PNG to WebP", href: "/png-to-webp" },
+      { label: "WebP to JPG", href: "/webp-to-jpg" },
+      { label: "WebP to PNG", href: "/webp-to-png" }
+    ]
+  }
+  // Future groups like "convert-from-pdf" and "convert-to-pdf" will be added here once routes exist.
+];
+
 export const MAIN_NAVIGATION: TopNavItem[] = [
   {
     id: "compress",
