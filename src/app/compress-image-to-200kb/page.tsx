@@ -11,6 +11,27 @@ import { ImageCapabilityRouter } from "@/utils/image-engine/ImageCapabilityRoute
 import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
 
 export const TARGET_SIZE_BYTES = 200 * 1024; // 204,800 bytes
+const OPERATION_NAME = "compress_image_to_200kb";
+
+// Privacy-compliant analytics tracker
+function trackEvent(eventName: string, payload?: Record<string, any>) {
+  if (typeof window === "undefined") return;
+  const safePayload: Record<string, any> = {
+    operation: OPERATION_NAME,
+    timestamp: Date.now(),
+    ...payload
+  };
+  // Ensure forbidden fields are strictly excluded
+  delete safePayload.filename;
+  delete safePayload.imageData;
+  delete safePayload.filePath;
+  delete safePayload.exif;
+  delete safePayload.hash;
+
+  if ((window as any).__FILEKIT_ANALYTICS__) {
+    (window as any).__FILEKIT_ANALYTICS__.push({ event: eventName, ...safePayload });
+  }
+}
 
 export default function CompressImageTo200kbPage() {
   const { t } = useLanguage();
@@ -28,6 +49,11 @@ export default function CompressImageTo200kbPage() {
     setResult(null);
     setFile(selected);
 
+    trackEvent("image_selected", {
+      formatClass: selected.type,
+      fileSizeBucket: selected.size > 1024 * 1024 ? ">1MB" : "<1MB"
+    });
+
     try {
       const buf = await selected.arrayBuffer();
       const report = await ImagePreflightInspector.inspect(buf);
@@ -36,8 +62,10 @@ export default function CompressImageTo200kbPage() {
         let msg = route.reason || "UNSUPPORTED: Image processing rejected.";
         if (msg.includes("UNSUPPORTED_ANIMATION")) {
           msg = "Animated images are not supported yet.";
+          trackEvent("unsupported_format", { reason: "UNSUPPORTED_ANIMATION" });
         } else if (msg.includes("MEMORY_LIMIT_EXCEEDED")) {
           msg = "This image is too large to process safely in your browser.";
+          trackEvent("memory_limit_exceeded", { estimatedPeakMB: route.decodedMemoryMB });
         }
         setError(msg);
         return;
@@ -47,6 +75,7 @@ export default function CompressImageTo200kbPage() {
       let msg = err.message || "Failed to inspect selected image.";
       if (msg.includes("UNSUPPORTED_FORMAT")) {
         msg = "Unsupported format. Please select a valid JPEG, PNG, or WebP file.";
+        trackEvent("unsupported_format", { reason: "UNSUPPORTED_FORMAT" });
       }
       setError(msg);
     }
@@ -57,11 +86,19 @@ export default function CompressImageTo200kbPage() {
 
     setIsProcessing(true);
     setError(null);
+    trackEvent("exact_target_processing_started", { targetSizeBytes: TARGET_SIZE_BYTES });
 
     try {
       const buf = await file.arrayBuffer();
       const res = await ImageOptimizationEngine.compress(buf, TARGET_SIZE_BYTES, undefined);
       setResult(res);
+
+      trackEvent(res.outcome.toLowerCase(), {
+        originalSizeBytes: res.originalSizeBytes,
+        outputSizeBytes: res.outputSizeBytes,
+        attemptsRun: res.attemptsRun,
+        durationMs: res.processingDurationMs
+      });
 
       if (typeof window !== "undefined") {
         (window as any).__LAST_200KB_RESULT__ = res;
@@ -70,8 +107,13 @@ export default function CompressImageTo200kbPage() {
       let msg = err.message || "Image compression failed.";
       if (msg.includes("UNSUPPORTED_ANIMATION")) {
         msg = "Animated images are not supported yet.";
+        trackEvent("unsupported_format", { reason: "UNSUPPORTED_ANIMATION" });
       } else if (msg.includes("MEMORY_LIMIT_EXCEEDED")) {
         msg = "This image is too large to process safely in your browser.";
+        trackEvent("memory_limit_exceeded");
+      } else if (msg.includes("ABORT_SIGNAL") || msg.includes("CANCELLED")) {
+        msg = "Compression pass cancelled.";
+        trackEvent("processing_cancelled");
       }
       setError(msg);
     } finally {
@@ -90,14 +132,16 @@ export default function CompressImageTo200kbPage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    trackEvent("output_downloaded", { downloadedSizeBytes: result.outputSizeBytes });
   };
 
   const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return "\u20660 Bytes\u2069";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+    const formatted = parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+    return `\u2066${formatted}\u2069`;
   };
 
   const getStatusMessage = (res: ImageVerificationResult) => {
@@ -135,8 +179,22 @@ export default function CompressImageTo200kbPage() {
     }
   };
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "FileKit Compress Image to 200 KB",
+    "url": "https://filekit.com/compress-image-to-200kb",
+    "description": "Compress JPEG, PNG, or WebP images below 200 KB locally in your browser.",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "All"
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-fk-bg">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <AppHeader />
 
       <main className="flex-1 flex flex-col gap-6 md:gap-10 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-12 py-6 md:py-12">
@@ -163,7 +221,7 @@ export default function CompressImageTo200kbPage() {
               </svg>
               <p className="text-[15px] font-bold text-fk-text">Drop your image here or browse</p>
               <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
-                Target: 200 KB max • Supports JPG, PNG, and static WebP
+                Target: {"\u2066200 KB max\u2069"} • Supports JPG, PNG, and static WebP
               </p>
               <p className="text-[11px] font-medium text-fk-text-subtle mt-2 bg-fk-surface-muted px-3 py-1 rounded-full border border-fk-border">
                 🔒 Your image is processed locally in your browser and is not uploaded.
@@ -175,7 +233,7 @@ export default function CompressImageTo200kbPage() {
             <div className="flex flex-col gap-6">
               <div className="flex items-center justify-between p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                 <div className="flex flex-col">
-                  <span className="text-[14px] font-bold text-fk-text">{file.name}</span>
+                  <span className="text-[14px] font-bold text-fk-text dir-auto">{file.name}</span>
                   <span className="text-[12px] font-mono text-fk-text-subtle mt-0.5">Original: {formatBytes(file.size)}</span>
                 </div>
                 <button
@@ -194,7 +252,7 @@ export default function CompressImageTo200kbPage() {
               )}
 
               <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-fk-md text-[13px] text-blue-900 font-medium">
-                <span>Target Size Limit: <strong>200 KB (204,800 Bytes)</strong></span>
+                <span>Target Size Limit: <strong>{"\u2066200 KB (204,800 Bytes)\u2069"}</strong></span>
               </div>
 
               <button
@@ -225,7 +283,7 @@ export default function CompressImageTo200kbPage() {
                   <span className="text-[11px] font-bold text-fk-text-subtle uppercase">Original</span>
                   <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(result.originalSizeBytes)}</span>
                 </div>
-                <div className="text-[22px] font-light text-fk-text-subtle">→</div>
+                <div className="text-[22px] font-light text-fk-text-subtle ltr:rotate-0 rtl:rotate-180">→</div>
                 <div className="flex flex-col items-center">
                   <span className="text-[11px] font-bold text-fk-primary uppercase">New Size</span>
                   <span className="text-[20px] font-black text-fk-primary mt-1">{formatBytes(result.outputSizeBytes)}</span>
@@ -234,10 +292,10 @@ export default function CompressImageTo200kbPage() {
 
               <div className="flex flex-col gap-1 text-center text-[13px]">
                 <p className="font-bold text-fk-text">
-                  {result.reductionPercentage.toFixed(1)}% smaller • {result.widthAfter} × {result.heightAfter} px
+                  {"\u2066"}{result.reductionPercentage.toFixed(1)}% smaller{"\u2069"} • {"\u2066"}{result.widthAfter} × {result.heightAfter} px{"\u2069"}
                 </p>
                 <span className="text-[11px] text-fk-text-subtle">
-                  Processed locally in browser ({result.processingDurationMs} ms)
+                  Processed locally in browser ({"\u2066"}{result.processingDurationMs} ms{"\u2069"})
                 </span>
               </div>
 
