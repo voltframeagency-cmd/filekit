@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import TrustPanel from "@/components/layout/TrustPanel";
 import ImageComparisonSlider from "@/components/image-tools/ImageComparisonSlider";
 import { ImageOptimizationEngine } from "@/utils/image-engine/ImageOptimizationEngine";
@@ -47,13 +47,13 @@ export default function ImageCompressionWorkspace({
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [result, setResult] = useState<ImageVerificationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [settingsDirty, setSettingsDirty] = useState<boolean>(false);
 
   // Object URLs
   const [originalPreviewUrl, setOriginalPreviewUrl] = useState<string | null>(null);
   const [outputPreviewUrl, setOutputPreviewUrl] = useState<string | null>(null);
 
-  // DOM Refs for accessibility focus
+  // Request versioning & cancellation refs
+  const requestIdRef = useRef<number>(0);
   const settingsSectionRef = useRef<HTMLDivElement | null>(null);
   const resultHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
@@ -112,7 +112,6 @@ export default function ImageCompressionWorkspace({
 
     setError(null);
     setResult(null);
-    setSettingsDirty(false);
     setFile(selected);
 
     trackEvent("file_selected", {
@@ -147,7 +146,7 @@ export default function ImageCompressionWorkspace({
     }
   };
 
-  const calculateTargetBytes = (): number => {
+  const calculateTargetBytes = useCallback((): number => {
     if (!file) return 200 * 1024;
 
     if (mode === "BALANCED") {
@@ -183,61 +182,43 @@ export default function ImageCompressionWorkspace({
 
     const estimatedBytes = Math.round(file.size * qFactor * scaleFactor);
     return Math.min(MAX_BYTES, Math.max(MIN_BYTES, estimatedBytes));
-  };
+  }, [file, mode, qualityPriority, targetValue, targetUnit, qualitySlider, dimensionPreset, customWidth, preflight]);
 
-  const handleCompress = async () => {
+  const runLiveCompressionPass = useCallback(async () => {
     if (!file) return;
 
-    // Validate TARGET_SIZE inputs
     if (mode === "TARGET_SIZE") {
       const num = parseFloat(targetValue);
       const decimalCount = (targetValue.split(".")[1] || "").length;
-      if (isNaN(num) || num <= 0) {
-        setError("Please enter a valid numeric target size.");
-        return;
-      }
-      if (decimalCount > 2) {
-        setError("Target size supports at most 2 decimal places (e.g. 1.5 MB).");
-        return;
-      }
+      if (isNaN(num) || num <= 0 || decimalCount > 2) return;
       const bytes = targetUnit === "mb" ? Math.round(num * 1024 * 1024) : Math.round(num * 1024);
-      if (bytes < MIN_BYTES) {
-        setError("Minimum target size limit is 20 KB.");
-        return;
-      }
-      if (bytes > MAX_BYTES) {
-        setError("Maximum target size limit is 50 MB.");
-        return;
-      }
+      if (bytes < MIN_BYTES || bytes > MAX_BYTES) return;
     }
 
+    const currentReqId = ++requestIdRef.current;
     setIsProcessing(true);
     setError(null);
-
-    const computedBytes = calculateTargetBytes();
-    trackEvent("compression_settings_submitted", {
-      targetSizeBytes: computedBytes,
-      qualityPriority: mode === "BALANCED" ? qualityPriority : undefined,
-      qualitySlider: mode === "MANUAL" ? qualitySlider : undefined,
-      dimensionPreset: mode === "MANUAL" ? dimensionPreset : undefined
-    });
+    trackEvent("live_preview_started");
 
     try {
+      const computedBytes = calculateTargetBytes();
       const buf = await file.arrayBuffer();
       const res = await ImageOptimizationEngine.compress(buf, computedBytes);
+
+      // Ignore stale completion
+      if (requestIdRef.current !== currentReqId) {
+        trackEvent("live_preview_cancelled");
+        return;
+      }
+
       setResult(res);
-      setSettingsDirty(false);
-
-      trackEvent(res.outcome.toLowerCase(), {
-        originalSizeBytes: res.originalSizeBytes,
-        outputSizeBytes: res.outputSizeBytes,
-        processingDurationMs: res.processingDurationMs
+      trackEvent("live_preview_completed", {
+        outcome: res.outcome,
+        outputSizeBytes: res.outputSizeBytes
       });
-
-      setTimeout(() => {
-        resultHeadingRef.current?.focus();
-      }, 100);
     } catch (err: any) {
+      if (requestIdRef.current !== currentReqId) return;
+
       let msg = err.message || "Image compression failed.";
       if (msg.includes("UNSUPPORTED_ANIMATION")) {
         msg = "Animated images are not supported yet.";
@@ -245,10 +226,41 @@ export default function ImageCompressionWorkspace({
         msg = "This image is too large to process safely in your browser.";
       }
       setError(msg);
+      trackEvent("live_preview_failed");
     } finally {
-      setIsProcessing(false);
+      if (requestIdRef.current === currentReqId) {
+        setIsProcessing(false);
+      }
     }
-  };
+  }, [file, mode, targetValue, targetUnit, calculateTargetBytes]);
+
+  // Initial trigger when file is loaded
+  useEffect(() => {
+    if (file) {
+      runLiveCompressionPass();
+    }
+  }, [file]);
+
+  // Debounced live recompression watcher when settings change after initial load
+  useEffect(() => {
+    if (!file) return;
+
+    let delay = 180; // Default quality slider debounce
+    if (mode === "BALANCED" || dimensionPreset !== "CUSTOM") {
+      delay = 150;
+    }
+    if (mode === "TARGET_SIZE" || (mode === "MANUAL" && dimensionPreset === "CUSTOM")) {
+      delay = 400;
+    }
+
+    const timer = setTimeout(() => {
+      runLiveCompressionPass();
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [file, mode, qualityPriority, targetValue, targetUnit, qualitySlider, dimensionPreset, customWidth, runLiveCompressionPass]);
 
   const handleDownload = () => {
     if (!result || !result.outputBuffer || !file) return;
@@ -272,11 +284,11 @@ export default function ImageCompressionWorkspace({
   };
 
   const handleResetWorkspace = () => {
+    requestIdRef.current++;
     setFile(null);
     setPreflight(null);
     setResult(null);
     setError(null);
-    setSettingsDirty(false);
   };
 
   const formatBytes = (bytes: number): string => {
@@ -342,8 +354,13 @@ export default function ImageCompressionWorkspace({
               </div>
 
               {/* Status Header Badge */}
-              {result && (
-                <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2">
+                {isProcessing ? (
+                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-blue-50 border-blue-200 text-blue-800 w-fit animate-pulse">
+                    <span>⚡</span>
+                    <span>Updating Preview...</span>
+                  </div>
+                ) : result ? (
                   <div
                     ref={resultHeadingRef as any}
                     tabIndex={-1}
@@ -366,14 +383,14 @@ export default function ImageCompressionWorkspace({
                         : "Image compressed successfully"}
                     </span>
                   </div>
+                ) : null}
 
-                  {isNoReduction && (
-                    <p className="text-[13px] text-fk-text-muted leading-relaxed">
-                      This image is already efficiently compressed with the selected settings. The original file has been preserved.
-                    </p>
-                  )}
-                </div>
-              )}
+                {!isProcessing && isNoReduction && (
+                  <p className="text-[13px] text-fk-text-muted leading-relaxed">
+                    This image is already efficiently compressed with the selected settings. The original file has been preserved.
+                  </p>
+                )}
+              </div>
 
               {/* Before/After Comparison Slider */}
               {originalPreviewUrl && (
@@ -382,52 +399,54 @@ export default function ImageCompressionWorkspace({
                     originalUrl={originalPreviewUrl}
                     outputUrl={outputPreviewUrl || originalPreviewUrl}
                     originalLabel="Original"
-                    outputLabel={result ? "Optimized" : "Preview"}
+                    outputLabel={result && !isProcessing ? "Optimized" : "Preview"}
                     onSliderUsed={() => trackEvent("comparison_slider_used")}
                   />
                 </div>
               )}
 
               {/* Metrics Display */}
-              {result && (
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-center gap-6 w-full p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
-                    <div className="flex flex-col items-center">
-                      <span className="text-[11px] font-bold text-fk-text-subtle uppercase">Original</span>
-                      <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(result.originalSizeBytes)}</span>
-                    </div>
-                    <div className="text-[22px] font-light text-fk-text-subtle ltr:rotate-0 rtl:rotate-180">→</div>
-                    <div className="flex flex-col items-center">
-                      <span className="text-[11px] font-bold text-fk-primary uppercase">New Size</span>
-                      <span className="text-[20px] font-black text-fk-primary mt-1">{formatBytes(result.outputSizeBytes)}</span>
-                    </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-center gap-6 w-full p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[11px] font-bold text-fk-text-subtle uppercase">Original</span>
+                    <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(file.size)}</span>
                   </div>
-
-                  {/* Primary Download Action Bar */}
-                  <div className="flex flex-col sm:flex-row gap-3 mt-2">
-                    <button
-                      type="button"
-                      onClick={handleDownload}
-                      disabled={isProcessing}
-                      className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
-                    >
-                      {isNoReduction || result.outcome === "ALREADY_WITHIN_TARGET"
-                        ? "Download Original Image"
-                        : result.outcome === "TARGET_NOT_MET"
-                        ? "Download Best Result"
-                        : "Download Compressed Image"}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleAdjustSettings}
-                      className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
-                    >
-                      Adjust Settings
-                    </button>
+                  <div className="text-[22px] font-light text-fk-text-subtle ltr:rotate-0 rtl:rotate-180">→</div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-[11px] font-bold text-fk-primary uppercase">New Size</span>
+                    <span className="text-[20px] font-black text-fk-primary mt-1">
+                      {isProcessing ? "Calculating..." : result ? formatBytes(result.outputSizeBytes) : "..."}
+                    </span>
                   </div>
                 </div>
-              )}
+
+                {/* Primary Download Action Bar */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-2">
+                  <button
+                    type="button"
+                    onClick={handleDownload}
+                    disabled={isProcessing || !result}
+                    className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
+                  >
+                    {isProcessing
+                      ? "Updating Preview..."
+                      : isNoReduction || (result && result.outcome === "ALREADY_WITHIN_TARGET")
+                      ? "Download Original Image"
+                      : result && result.outcome === "TARGET_NOT_MET"
+                      ? "Download Best Result"
+                      : "Download Compressed Image"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleAdjustSettings}
+                    className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
+                  >
+                    Adjust Settings
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -447,7 +466,6 @@ export default function ImageCompressionWorkspace({
                     type="button"
                     onClick={() => {
                       setMode("BALANCED");
-                      setSettingsDirty(true);
                       trackEvent("compression_mode_selected", { mode: "BALANCED" });
                     }}
                     className={`py-2 text-[12px] font-bold rounded-fk-sm transition-colors ${
@@ -461,7 +479,6 @@ export default function ImageCompressionWorkspace({
                     type="button"
                     onClick={() => {
                       setMode("TARGET_SIZE");
-                      setSettingsDirty(true);
                       trackEvent("compression_mode_selected", { mode: "TARGET_SIZE" });
                     }}
                     className={`py-2 text-[12px] font-bold rounded-fk-sm transition-colors ${
@@ -475,7 +492,6 @@ export default function ImageCompressionWorkspace({
                     type="button"
                     onClick={() => {
                       setMode("MANUAL");
-                      setSettingsDirty(true);
                       trackEvent("compression_mode_selected", { mode: "MANUAL" });
                     }}
                     className={`py-2 text-[12px] font-bold rounded-fk-sm transition-colors ${
@@ -502,7 +518,6 @@ export default function ImageCompressionWorkspace({
                         type="button"
                         onClick={() => {
                           setQualityPriority(item.key as QualityPriority);
-                          setSettingsDirty(true);
                         }}
                         className={`flex flex-col p-3 rounded-fk-md border text-left ltr:text-left rtl:text-right transition-colors ${
                           qualityPriority === item.key
@@ -531,7 +546,6 @@ export default function ImageCompressionWorkspace({
                       value={targetValue}
                       onChange={(e) => {
                         setTargetValue(e.target.value);
-                        setSettingsDirty(true);
                         setError(null);
                       }}
                       className="w-full h-10 px-3 border border-fk-border rounded-fk-md font-mono text-[14px] font-bold text-fk-text focus:outline-none focus:border-fk-primary"
@@ -541,7 +555,6 @@ export default function ImageCompressionWorkspace({
                       value={targetUnit}
                       onChange={(e) => {
                         setTargetUnit(e.target.value as "kb" | "mb");
-                        setSettingsDirty(true);
                         setError(null);
                       }}
                       className="h-10 px-3 border border-fk-border rounded-fk-md font-bold text-[13px] text-fk-text bg-white focus:outline-none focus:border-fk-primary"
@@ -567,7 +580,6 @@ export default function ImageCompressionWorkspace({
                           onClick={() => {
                             setTargetValue(chip.val);
                             setTargetUnit(chip.unit as "kb" | "mb");
-                            setSettingsDirty(true);
                           }}
                           className="px-2 py-1.5 text-[11px] font-bold border border-fk-border rounded-fk-md bg-white hover:border-fk-primary hover:text-fk-primary transition-colors text-center"
                         >
@@ -595,7 +607,6 @@ export default function ImageCompressionWorkspace({
                       value={qualitySlider}
                       onChange={(e) => {
                         setQualitySlider(Number(e.target.value));
-                        setSettingsDirty(true);
                       }}
                       aria-valuetext={`${qualitySlider}% quality`}
                       className="w-full h-2 bg-fk-border rounded-lg appearance-none cursor-pointer accent-fk-primary"
@@ -623,7 +634,6 @@ export default function ImageCompressionWorkspace({
                           type="button"
                           onClick={() => {
                             setDimensionPreset(preset.key as DimensionPreset);
-                            setSettingsDirty(true);
                           }}
                           className={`px-2.5 py-2 text-[12px] font-bold rounded-fk-md border transition-colors ${
                             dimensionPreset === preset.key
@@ -646,7 +656,6 @@ export default function ImageCompressionWorkspace({
                           value={customWidth}
                           onChange={(e) => {
                             setCustomWidth(e.target.value);
-                            setSettingsDirty(true);
                           }}
                           className="w-full h-9 px-3 border border-fk-border rounded-fk-md text-[13px] font-mono font-bold text-fk-text focus:outline-none focus:border-fk-primary"
                           placeholder="1000"
@@ -657,18 +666,14 @@ export default function ImageCompressionWorkspace({
                 </div>
               )}
 
-              {/* Submit Button */}
+              {/* Fallback Action Button */}
               <button
                 type="button"
-                onClick={handleCompress}
+                onClick={runLiveCompressionPass}
                 disabled={isProcessing}
-                className="w-full h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
+                className="w-full h-[46px] border border-fk-border hover:bg-fk-surface-muted text-fk-text rounded-fk-md text-[13px] font-bold transition-colors disabled:opacity-50"
               >
-                {isProcessing
-                  ? "Optimizing image locally..."
-                  : result && settingsDirty
-                  ? "Recompress Image"
-                  : "Compress Image"}
+                {isProcessing ? "Updating Preview..." : "Update Preview"}
               </button>
 
               {error && (
