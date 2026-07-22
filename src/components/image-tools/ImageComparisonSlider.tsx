@@ -38,7 +38,7 @@ export default function ImageComparisonSlider({
     }
     setSliderPosition(Math.max(0, Math.min(100, pct)));
 
-    if (!hasLoggedUsedRef.current) {
+    if (!hasLoggedUsedRef.current && Math.abs(pct - 50) >= 5) {
       hasLoggedUsedRef.current = true;
       if (onSliderUsed) onSliderUsed();
     }
