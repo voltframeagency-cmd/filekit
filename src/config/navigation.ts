@@ -69,6 +69,17 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "PDF to JPG", href: "/pdf-to-jpg" },
       { label: "PDF to PNG", href: "/pdf-to-png" }
     ]
+  },
+  {
+    id: "image-to-pdf-conversion",
+    label: "CONVERT TO PDF",
+    compactLabel: "TO PDF",
+    accessibleLabel: "Image to PDF document conversion tools",
+    links: [
+      { label: "Image to PDF", href: "/image-to-pdf" },
+      { label: "JPG to PDF", href: "/jpg-to-pdf" },
+      { label: "PNG to PDF", href: "/png-to-pdf" }
+    ]
   }
 ];
 
@@ -150,6 +161,40 @@ export const MAIN_NAVIGATION: TopNavItem[] = [
                 { label: "PNG to WebP", href: "/png-to-webp" },
                 { label: "WebP to JPG", href: "/webp-to-jpg" },
                 { label: "WebP to PNG", href: "/webp-to-png" }
+              ]
+            }
+          ]
+        },
+        {
+          title: "FROM PDF",
+          primaryLink: {
+            label: "PDF to Image",
+            href: "/pdf-to-image",
+            isPrimary: true
+          },
+          subgroups: [
+            {
+              label: "Formats",
+              items: [
+                { label: "PDF to JPG", href: "/pdf-to-jpg" },
+                { label: "PDF to PNG", href: "/pdf-to-png" }
+              ]
+            }
+          ]
+        },
+        {
+          title: "TO PDF",
+          primaryLink: {
+            label: "Image to PDF",
+            href: "/image-to-pdf",
+            isPrimary: true
+          },
+          subgroups: [
+            {
+              label: "Formats",
+              items: [
+                { label: "JPG to PDF", href: "/jpg-to-pdf" },
+                { label: "PNG to PDF", href: "/png-to-pdf" }
               ]
             }
           ]

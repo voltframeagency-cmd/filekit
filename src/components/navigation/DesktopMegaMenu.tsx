@@ -120,9 +120,9 @@ export default function DesktopMegaMenu({
         ref={menuRef}
         role="region"
         aria-label="Convert Tools"
-        className="absolute top-full ltr:left-0 rtl:right-0 mt-2 w-[320px] bg-white border border-fk-border rounded-fk-xl p-6 shadow-md z-50 animate-in fade-in zoom-in-95 duration-150"
+        className="absolute top-full ltr:left-0 rtl:right-0 mt-2 w-[640px] bg-white border border-fk-border rounded-fk-xl p-6 shadow-md z-50 animate-in fade-in zoom-in-95 duration-150"
       >
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-3 gap-6">
           {CONVERTER_NAVIGATION_GROUPS.map((group) => (
             <div key={group.id} className="flex flex-col gap-2">
               <span className="text-[11px] font-bold text-fk-text-subtle uppercase tracking-wider">
