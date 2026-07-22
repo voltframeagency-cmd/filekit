@@ -8,6 +8,8 @@ import DesktopMegaMenu from "./DesktopMegaMenu";
 import MobileNavigation from "./MobileNavigation";
 import { useLanguage } from "@/components/layout/LanguageContext";
 
+import FileKitLogo from "../common/FileKitLogo";
+
 export default function SiteHeader() {
   const pathname = usePathname();
   const { language, setLanguage } = useLanguage();
@@ -45,11 +47,8 @@ export default function SiteHeader() {
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-fk-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-fk-md bg-fk-primary flex items-center justify-center text-white font-black text-sm transition-transform group-hover:scale-105">
-            FK
-          </div>
-          <span className="font-black text-xl text-fk-text tracking-tight">FileKit</span>
+        <Link href="/" className="flex items-center group">
+          <FileKitLogo variant="horizontal" />
         </Link>
 
         {/* Desktop Navigation */}
@@ -133,6 +132,7 @@ export default function SiteHeader() {
           {/* Mobile Menu Trigger */}
           <button
             type="button"
+            ref={(el) => { triggerRefs.current["mobile-burger"] = el; }}
             onClick={() => setIsMobileOpen(true)}
             aria-label="Open navigation menu"
             className="md:hidden p-2 text-fk-text hover:bg-fk-surface-muted rounded-fk-md"
@@ -145,7 +145,11 @@ export default function SiteHeader() {
       </div>
 
       {/* Mobile Drawer */}
-      <MobileNavigation isOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)} />
+      <MobileNavigation
+        isOpen={isMobileOpen}
+        onClose={() => setIsMobileOpen(false)}
+        triggerRef={{ current: triggerRefs.current["mobile-burger"] }}
+      />
     </header>
   );
 }

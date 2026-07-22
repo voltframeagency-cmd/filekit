@@ -11,19 +11,41 @@ import { ImagePreflightInspector } from "@/utils/image-engine/ImagePreflightInsp
 import { ImageCapabilityRouter } from "@/utils/image-engine/ImageCapabilityRouter";
 import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
 
+const MIN_BYTES = 20 * 1024; // 20 KB (20,480 Bytes)
+const MAX_BYTES = 50 * 1024 * 1024; // 50 MB (52,428,800 Bytes)
+
+function getTargetBucket(bytes: number): string {
+  if (bytes < 100 * 1024) return "20–99 KB";
+  if (bytes < 500 * 1024) return "100–499 KB";
+  if (bytes < 1024 * 1024) return "500–999 KB";
+  if (bytes < 5 * 1024 * 1024) return "1–4.99 MB";
+  if (bytes < 20 * 1024 * 1024) return "5–19.99 MB";
+  return "20–50 MB";
+}
+
 export default function CustomTargetImagePage() {
   const searchParams = useSearchParams();
 
-  // Query parameter defaults: ?target=3&unit=mb or default 200 KB
-  const initialTargetStr = searchParams.get("target");
-  const initialUnitStr = searchParams.get("unit")?.toLowerCase();
+  // Query parameter parsing with boundary sanitization
+  const queryTarget = searchParams.get("target");
+  const queryUnit = searchParams.get("unit")?.toLowerCase();
 
-  const [targetValue, setTargetValue] = useState<string>(
-    initialTargetStr && !isNaN(Number(initialTargetStr)) ? initialTargetStr : "200"
-  );
-  const [targetUnit, setTargetUnit] = useState<"kb" | "mb">(
-    initialUnitStr === "mb" ? "mb" : "kb"
-  );
+  let initialVal = "200";
+  let initialUnit: "kb" | "mb" = "kb";
+
+  if (queryTarget && !isNaN(Number(queryTarget))) {
+    const num = parseFloat(queryTarget);
+    const unit = queryUnit === "mb" ? "mb" : "kb";
+    const bytes = unit === "mb" ? Math.round(num * 1024 * 1024) : Math.round(num * 1024);
+
+    if (bytes >= MIN_BYTES && bytes <= MAX_BYTES) {
+      initialVal = num.toString();
+      initialUnit = unit;
+    }
+  }
+
+  const [targetValue, setTargetValue] = useState<string>(initialVal);
+  const [targetUnit, setTargetUnit] = useState<"kb" | "mb">(initialUnit);
 
   const [file, setFile] = useState<File | null>(null);
   const [preflight, setPreflight] = useState<ImagePreflightReport | null>(null);
@@ -34,21 +56,25 @@ export default function CustomTargetImagePage() {
   const [originalPreviewUrl, setOriginalPreviewUrl] = useState<string | null>(null);
   const [outputPreviewUrl, setOutputPreviewUrl] = useState<string | null>(null);
 
-  // Compute exact target bytes
-  const numericVal = Math.max(0.01, parseFloat(targetValue) || 200);
-  const targetBytes =
-    targetUnit === "mb"
-      ? Math.round(numericVal * 1024 * 1024)
-      : Math.round(numericVal * 1024);
+  // Compute exact target bytes & decimal places validation
+  const rawNum = parseFloat(targetValue);
+  const isValidNum = !isNaN(rawNum) && isFinite(rawNum) && rawNum > 0;
+  const decimalCount = (targetValue.split(".")[1] || "").length;
 
-  const targetLabel = `${numericVal} ${targetUnit.toUpperCase()}`;
+  const computedBytes = isValidNum
+    ? targetUnit === "mb"
+      ? Math.round(rawNum * 1024 * 1024)
+      : Math.round(rawNum * 1024)
+    : 200 * 1024;
+
+  const targetLabel = isValidNum ? `${rawNum} ${targetUnit.toUpperCase()}` : "200 KB";
 
   // Privacy-compliant analytics tracker
   const trackEvent = (eventName: string, payload?: Record<string, any>) => {
     if (typeof window === "undefined") return;
     const safePayload: Record<string, any> = {
-      operation: "compress_image_custom_target",
-      targetBytes,
+      operation: "compress_image_to_custom_size",
+      targetSizeBucket: getTargetBucket(computedBytes),
       targetUnit,
       timestamp: Date.now(),
       ...payload
@@ -96,6 +122,26 @@ export default function CustomTargetImagePage() {
     };
   }, [result]);
 
+  const validateInput = (): boolean => {
+    if (!isValidNum) {
+      setError("Please enter a valid numeric target size.");
+      return false;
+    }
+    if (decimalCount > 2) {
+      setError("Target size supports at most 2 decimal places (e.g. 1.5 MB).");
+      return false;
+    }
+    if (computedBytes < MIN_BYTES) {
+      setError("Minimum target size limit is 20 KB.");
+      return false;
+    }
+    if (computedBytes > MAX_BYTES) {
+      setError("Maximum target size limit is 50 MB.");
+      return false;
+    }
+    return true;
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
@@ -104,7 +150,7 @@ export default function CustomTargetImagePage() {
     setResult(null);
     setFile(selected);
 
-    trackEvent("image_selected", {
+    trackEvent("file_selected", {
       formatClass: selected.type,
       fileSizeBucket: selected.size > 1024 * 1024 ? ">1MB" : "<1MB"
     });
@@ -139,18 +185,16 @@ export default function CustomTargetImagePage() {
   const handleCompress = async () => {
     if (!file) return;
 
-    if (targetBytes < 20 * 1024) {
-      setError("Minimum target size is 20 KB to prevent severe visual degradation.");
-      return;
-    }
+    if (!validateInput()) return;
 
     setIsProcessing(true);
     setError(null);
-    trackEvent("custom_target_processing_started", { targetSizeBytes: targetBytes });
+    trackEvent("custom_target_submitted", { targetSizeBytes: computedBytes });
+    trackEvent("processing_started", { targetSizeBytes: computedBytes });
 
     try {
       const buf = await file.arrayBuffer();
-      const res = await ImageOptimizationEngine.compress(buf, targetBytes, undefined);
+      const res = await ImageOptimizationEngine.compress(buf, computedBytes, undefined);
       setResult(res);
 
       trackEvent(res.outcome.toLowerCase(), {
@@ -192,7 +236,7 @@ export default function CustomTargetImagePage() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    trackEvent("output_downloaded", { downloadedSizeBytes: result.outputSizeBytes });
+    trackEvent("download_completed", { downloadedSizeBytes: result.outputSizeBytes });
   };
 
   const formatBytes = (bytes: number): string => {
@@ -212,7 +256,7 @@ export default function CustomTargetImagePage() {
     "@type": "WebApplication",
     "name": "FileKit Compress an Image to a Specific Size",
     "url": canonicalUrl,
-    "description": "Compress JPEG, PNG, or WebP images to any custom file size limit (KB or MB) locally in your browser memory.",
+    "description": "Compress JPEG, PNG, or WebP images to any custom target size (between 20 KB and 50 MB) locally in your browser memory.",
     "applicationCategory": "MultimediaApplication",
     "operatingSystem": "All"
   };
@@ -232,7 +276,7 @@ export default function CustomTargetImagePage() {
             Compress an Image to a Specific Size
           </h1>
           <p className="text-[13px] md:text-[15px] font-medium text-fk-text-muted leading-relaxed">
-            Enter your target size in KB or MB. FileKit optimizes your JPEG, PNG, or WebP image locally inside your browser memory.
+            Enter any target size between 20 KB and 50 MB. FileKit optimizes your JPEG, PNG, or WebP image locally inside your browser memory.
           </p>
         </section>
 
@@ -247,21 +291,28 @@ export default function CustomTargetImagePage() {
                 type="number"
                 step="any"
                 min="20"
+                max="52428800"
                 value={targetValue}
-                onChange={(e) => setTargetValue(e.target.value)}
+                onChange={(e) => {
+                  setTargetValue(e.target.value);
+                  setError(null);
+                }}
                 className="w-28 h-10 px-3 border border-fk-border rounded-fk-md font-mono text-[14px] font-bold text-fk-text focus:outline-none focus:border-fk-primary"
                 placeholder="200"
               />
               <select
                 value={targetUnit}
-                onChange={(e) => setTargetUnit(e.target.value as "kb" | "mb")}
+                onChange={(e) => {
+                  setTargetUnit(e.target.value as "kb" | "mb");
+                  setError(null);
+                }}
                 className="h-10 px-3 border border-fk-border rounded-fk-md font-bold text-[13px] text-fk-text bg-white focus:outline-none focus:border-fk-primary"
               >
                 <option value="kb">KB</option>
                 <option value="mb">MB</option>
               </select>
               <span className="text-[12px] font-mono text-fk-text-subtle">
-                ({"Wait: \u2066"}{targetBytes.toLocaleString()} Bytes{"\u2069"})
+                ({"Wait: \u2066"}{computedBytes.toLocaleString()} Bytes{"\u2069"})
               </span>
             </div>
           </div>
@@ -279,7 +330,7 @@ export default function CustomTargetImagePage() {
               </svg>
               <p className="text-[15px] font-bold text-fk-text">Drop your image here or browse</p>
               <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
-                Target: {"\u2066"}{targetLabel} max{"\u2069"} • Supports JPG, PNG, and static WebP
+                Target: {"\u2066"}{targetLabel} max{"\u2069"} (Range: 20 KB – 50 MB) • Supports JPG, PNG, and static WebP
               </p>
               <p className="text-[11px] font-medium text-fk-text-subtle mt-2 bg-fk-surface-muted px-3 py-1 rounded-full border border-fk-border">
                 🔒 Your image is processed locally in your browser and is not uploaded.

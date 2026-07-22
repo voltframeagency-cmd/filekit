@@ -1,22 +1,30 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MAIN_NAVIGATION } from "@/config/navigation";
+import FileKitLogo from "../common/FileKitLogo";
 
 export interface MobileNavigationProps {
   isOpen: boolean;
   onClose: () => void;
+  triggerRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
-export default function MobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
+export default function MobileNavigation({ isOpen, onClose, triggerRef }: MobileNavigationProps) {
   const pathname = usePathname();
   const [openAccordion, setOpenAccordion] = useState<string | null>("compress");
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      // Auto-focus close button inside drawer
+      setTimeout(() => {
+        closeBtnRef.current?.focus();
+      }, 50);
     } else {
       document.body.style.overflow = "";
     }
@@ -26,31 +34,70 @@ export default function MobileNavigation({ isOpen, onClose }: MobileNavigationPr
   }, [isOpen]);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
+      if (e.key === "Escape") {
         onClose();
+        triggerRef?.current?.focus();
+        return;
+      }
+
+      if (e.key === "Tab" && drawerRef.current) {
+        const focusables = drawerRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusables.length === 0) return;
+
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
+
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, triggerRef]);
+
+  const handleLinkClick = () => {
+    onClose();
+    triggerRef?.current?.focus();
+  };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white animate-in slide-in-from-right duration-200 overflow-y-auto">
+    <div
+      ref={drawerRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Mobile Navigation Menu"
+      className="fixed inset-0 z-50 flex flex-col bg-white animate-in slide-in-from-right duration-200 overflow-y-auto"
+    >
       {/* Header Bar */}
       <div className="flex items-center justify-between p-4 border-b border-fk-border">
-        <Link href="/" onClick={onClose} className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-fk-md bg-fk-primary flex items-center justify-center text-white font-black text-sm">
-            FK
-          </div>
-          <span className="font-black text-lg text-fk-text tracking-tight">FileKit</span>
+        <Link href="/" onClick={handleLinkClick} className="flex items-center">
+          <FileKitLogo variant="horizontal" />
         </Link>
 
         <button
           type="button"
-          onClick={onClose}
+          ref={closeBtnRef}
+          onClick={() => {
+            onClose();
+            triggerRef?.current?.focus();
+          }}
           aria-label="Close navigation menu"
           className="p-2 text-fk-text-muted hover:text-fk-text rounded-fk-md focus:outline-none focus:ring-2 focus:ring-fk-primary"
         >
@@ -68,7 +115,7 @@ export default function MobileNavigation({ isOpen, onClose }: MobileNavigationPr
               <Link
                 key={item.id}
                 href={item.href || "/"}
-                onClick={onClose}
+                onClick={handleLinkClick}
                 className="text-[16px] font-bold text-fk-text py-2 border-b border-fk-border"
               >
                 {item.label}
@@ -103,7 +150,7 @@ export default function MobileNavigation({ isOpen, onClose }: MobileNavigationPr
                       {group.primaryLink && (
                         <Link
                           href={group.primaryLink.href}
-                          onClick={onClose}
+                          onClick={handleLinkClick}
                           className={`text-[14px] font-bold py-1 ${
                             pathname === group.primaryLink.href ? "text-fk-primary" : "text-fk-text"
                           }`}
@@ -115,7 +162,7 @@ export default function MobileNavigation({ isOpen, onClose }: MobileNavigationPr
                       {group.secondaryLink && (
                         <Link
                           href={group.secondaryLink.href}
-                          onClick={onClose}
+                          onClick={handleLinkClick}
                           className={`text-[13px] font-medium py-1 ${
                             pathname === group.secondaryLink.href ? "text-fk-primary" : "text-fk-text-muted"
                           }`}
@@ -134,7 +181,7 @@ export default function MobileNavigation({ isOpen, onClose }: MobileNavigationPr
                               <Link
                                 key={iIdx}
                                 href={subItem.href}
-                                onClick={onClose}
+                                onClick={handleLinkClick}
                                 className={`px-3 py-2 rounded-fk-md text-[12px] font-bold text-center border ${
                                   pathname === subItem.href
                                     ? "bg-fk-primary text-white border-fk-primary"

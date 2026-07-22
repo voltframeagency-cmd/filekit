@@ -126,10 +126,10 @@ export default function CompressImagePage() {
       <main className="flex-1 flex flex-col gap-6 md:gap-10 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-12 py-6 md:py-12">
         <section className="flex flex-col gap-1.5 max-w-[840px] mx-auto w-full text-left ltr:text-left rtl:text-right px-2">
           <h1 className="text-[clamp(1.75rem,7vw,2.25rem)] font-black text-fk-text leading-[1.1] tracking-tight">
-            Compress Image — Beta
+            Image Compressor
           </h1>
           <p className="text-[13px] md:text-[15px] font-medium text-fk-text-muted leading-relaxed">
-            Compress JPEG, PNG, and static WebP images locally in supported Chromium browsers.
+            Compress JPEG, PNG, and static WebP images locally in your browser memory.
           </p>
         </section>
 

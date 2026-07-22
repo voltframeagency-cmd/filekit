@@ -32,7 +32,7 @@ export const EXACT_IMAGE_ROUTES: Record<string, ExactImageRouteConfig> = {
     title: "Compress Image to 100 KB Online | FileKit",
     description:
       "Compress JPEG, PNG, or WebP images below 100 KB locally in your browser. Perfect for application photos, signatures, and identity portals.",
-    h1: "Compress Image to 100 KB",
+    h1: "Compress an Image to 100 KB",
     supportingCopy: "Make your image fit a strict 100 KB upload limit for forms, job applications, and identity portals.",
     analyticsOperation: "compress_image_to_100kb",
     successCopy: "Your image is ready and below 100 KB.",
@@ -69,7 +69,7 @@ export const EXACT_IMAGE_ROUTES: Record<string, ExactImageRouteConfig> = {
     title: "Compress Image to 200 KB Online | FileKit",
     description:
       "Compress JPEG, PNG, or WebP images below 200 KB locally in your browser. Fast, private, and no installation required.",
-    h1: "Compress Image to 200 KB",
+    h1: "Compress an Image to 200 KB",
     supportingCopy: "Make your image fit a 200 KB upload limit. Ideal for official forms, resume photos, and document portals.",
     analyticsOperation: "compress_image_to_200kb",
     successCopy: "Your image is ready and below 200 KB.",
@@ -106,7 +106,7 @@ export const EXACT_IMAGE_ROUTES: Record<string, ExactImageRouteConfig> = {
     title: "Compress Image to 500 KB Online | FileKit",
     description:
       "Compress JPEG, PNG, or WebP images below 500 KB locally in your browser. Great for email attachments, product photos, and web listings.",
-    h1: "Compress Image to 500 KB",
+    h1: "Compress an Image to 500 KB",
     supportingCopy: "Shrink your image below 500 KB for fast email delivery, ecommerce catalogs, and business forms.",
     analyticsOperation: "compress_image_to_500kb",
     successCopy: "Your image is ready and below 500 KB.",
@@ -143,7 +143,7 @@ export const EXACT_IMAGE_ROUTES: Record<string, ExactImageRouteConfig> = {
     title: "Compress Image to 1 MB Online | FileKit",
     description:
       "Compress JPEG, PNG, or WebP images below 1 MB locally in your browser. Ideal for job boards, marketplace listings, and web uploads.",
-    h1: "Compress Image to 1 MB",
+    h1: "Compress an Image to 1 MB",
     supportingCopy: "Optimize large photographs below 1 MB for marketplace uploads, portfolios, and website performance.",
     analyticsOperation: "compress_image_to_1mb",
     successCopy: "Your image is ready and below 1 MB.",
