@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { PdfToImageRouteConfig } from "@/config/pdfToImageRoutes";
-import { PdfPreflightInfo, PdfRasterizationResult, PdfToImageOutputFormat, ResolutionPreset } from "@/utils/pdf-to-image/types";
+import { PdfPreflightInfo, PdfRasterizationResult, PdfToImageOutputFormat, ResolutionPreset, RenderedPageResult } from "@/utils/pdf-to-image/types";
 import { PdfRasterizationPreflight } from "@/utils/pdf-to-image/PdfRasterizationPreflight";
 import { PdfRasterizationEngine } from "@/utils/pdf-to-image/PdfRasterizationEngine";
 import { PageSelectionParser } from "@/utils/pdf-to-image/pageSelection";
@@ -34,6 +34,22 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
 
   const requestIdRef = useRef<number>(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const createdUrlsRef = useRef<string[]>([]);
+
+  const revokeAllUrls = () => {
+    createdUrlsRef.current.forEach((url) => {
+      if (url && typeof window !== "undefined") {
+        URL.revokeObjectURL(url);
+      }
+    });
+    createdUrlsRef.current = [];
+  };
+
+  useEffect(() => {
+    return () => {
+      revokeAllUrls();
+    };
+  }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -42,6 +58,7 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
+    revokeAllUrls();
 
     setFile(selected);
     setResult(null);
@@ -65,7 +82,6 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
   const handleConvert = async () => {
     if (!file || !preflightInfo || !preflightInfo.isValid) return;
 
-    // Parse page selection
     let selectedPages: number[] = [];
     if (pageSelectionMode === "ALL") {
       selectedPages = Array.from({ length: preflightInfo.pageCount }, (_, i) => i + 1);
@@ -81,6 +97,7 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
+    revokeAllUrls();
 
     const currentReqId = ++requestIdRef.current;
     const controller = new AbortController();
@@ -109,6 +126,11 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
       });
 
       if (requestIdRef.current === currentReqId) {
+        res.renderedPages.forEach((p) => {
+          if (p.previewUrl) createdUrlsRef.current.push(p.previewUrl);
+        });
+        if (res.zipUrl) createdUrlsRef.current.push(res.zipUrl);
+
         setResult(res);
       }
     } catch (err: any) {
@@ -122,9 +144,9 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
     }
   };
 
-  const handleDownloadSingle = (page: { dataUrl: string; filename: string }) => {
+  const handleDownloadSingle = (page: RenderedPageResult) => {
     const a = document.createElement("a");
-    a.href = page.dataUrl;
+    a.href = page.previewUrl;
     a.download = page.filename;
     document.body.appendChild(a);
     a.click();
@@ -132,22 +154,20 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
   };
 
   const handleDownloadZip = () => {
-    if (!result?.zipBuffer || !result?.zipFilename) return;
-    const blob = new Blob([result.zipBuffer], { type: "application/zip" });
-    const url = URL.createObjectURL(blob);
+    if (!result?.zipUrl || !result?.zipFilename) return;
     const a = document.createElement("a");
-    a.href = url;
+    a.href = result.zipUrl;
     a.download = result.zipFilename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
   const handleReset = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
+    revokeAllUrls();
     setFile(null);
     setPreflightInfo(null);
     setResult(null);
@@ -358,13 +378,22 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
         <div className="bg-white border border-fk-border rounded-fk-xl p-6 shadow-sm flex flex-col gap-6">
           <div className="flex flex-wrap items-center justify-between border-b border-fk-border pb-4 gap-4">
             <div>
-              <h2 className="text-[18px] font-extrabold text-fk-text">Conversion Completed</h2>
+              <h2 className="text-[18px] font-extrabold text-fk-text">
+                {result.outcome === "PARTIAL_CONVERSION_FAILED"
+                  ? "Partial Conversion Completed"
+                  : "Conversion Completed"}
+              </h2>
               <span className="text-[13px] text-fk-text-muted">
                 {result.renderedPages.length} {result.renderedPages.length === 1 ? "image" : "images"} generated • Total size: {(result.totalSizeBytes / 1024).toFixed(0)} KB
+                {result.failedPageNumbers && result.failedPageNumbers.length > 0 && (
+                  <span className="text-red-600 font-bold ml-2">
+                    ({result.failedPageNumbers.length} failed: pages {result.failedPageNumbers.join(", ")})
+                  </span>
+                )}
               </span>
             </div>
             <div className="flex items-center gap-3">
-              {result.renderedPages.length > 1 && result.zipBuffer ? (
+              {result.outcome === "CONVERSION_COMPLETED" && result.renderedPages.length > 1 && result.zipUrl ? (
                 <button
                   type="button"
                   onClick={handleDownloadZip}
@@ -385,7 +414,10 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
               )}
               <button
                 type="button"
-                onClick={() => setResult(null)}
+                onClick={() => {
+                  revokeAllUrls();
+                  setResult(null);
+                }}
                 className="px-4 h-10 border border-fk-border hover:bg-fk-surface-muted text-fk-text rounded-fk-md text-[13px] font-bold transition-colors"
               >
                 Adjust Settings
@@ -398,7 +430,7 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
             {result.renderedPages.map((page) => (
               <div key={page.pageNumber} className="border border-fk-border rounded-fk-md p-3 flex flex-col gap-2 bg-fk-surface-muted">
                 <div className="aspect-[4/3] bg-white rounded flex items-center justify-center overflow-hidden border border-fk-border">
-                  <img src={page.dataUrl} alt={`Page ${page.pageNumber}`} className="max-h-full max-w-full object-contain" />
+                  <img src={page.previewUrl} alt={`Page ${page.pageNumber}`} className="max-h-full max-w-full object-contain" />
                 </div>
                 <div className="flex items-center justify-between text-[12px]">
                   <span className="font-bold text-fk-text">Page {page.pageNumber}</span>

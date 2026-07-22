@@ -4,7 +4,8 @@ import {
   PdfRasterizationResult,
   PdfToImageOutputFormat,
   ResolutionPreset,
-  RenderedPageResult
+  RenderedPageResult,
+  PdfRasterizationOutcome
 } from "./types";
 
 import * as PDFLib from "pdf-lib";
@@ -20,6 +21,17 @@ export interface RasterizePdfOptions {
 }
 
 export class PdfRasterizationEngine {
+  private static verifyMagicBytes(bytes: Uint8Array, mimeType: PdfToImageOutputFormat): boolean {
+    if (bytes.length < 4) return false;
+    if (mimeType === "image/jpeg") {
+      return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+    }
+    if (mimeType === "image/png") {
+      return bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
+    }
+    return false;
+  }
+
   static async rasterize(options: RasterizePdfOptions): Promise<PdfRasterizationResult> {
     const startTime = Date.now();
     const { file, selectedPageNumbers, outputFormat, resolutionPreset, quality = 85, signal, onProgress } = options;
@@ -42,6 +54,7 @@ export class PdfRasterizationEngine {
     const padLen = Math.max(3, preflight.pageCount.toString().length);
 
     const renderedPages: RenderedPageResult[] = [];
+    const failedPageNumbers: number[] = [];
     const zipEntries: ZipEntry[] = [];
     let totalSizeBytes = 0;
 
@@ -49,6 +62,12 @@ export class PdfRasterizationEngine {
 
     for (let index = 0; index < selectedPageNumbers.length; index++) {
       if (signal?.aborted) {
+        // Cleanup already created URLs before throwing cancellation
+        renderedPages.forEach((p) => {
+          if (typeof window !== "undefined" && p.previewUrl) {
+            URL.revokeObjectURL(p.previewUrl);
+          }
+        });
         throw new Error("CANCELLED_BY_ABORT_SIGNAL");
       }
 
@@ -57,83 +76,114 @@ export class PdfRasterizationEngine {
         onProgress(index + 1, selectedPageNumbers.length);
       }
 
-      // Render page using pdf-lib + OffscreenCanvas / DOM Canvas fallback
-      const singlePageDoc = await PDFLib.PDFDocument.create();
-      const [copiedPage] = await singlePageDoc.copyPages(pdfDoc, [pageNum - 1]);
-      singlePageDoc.addPage(copiedPage);
+      try {
+        const singlePageDoc = await PDFLib.PDFDocument.create();
+        const [copiedPage] = await singlePageDoc.copyPages(pdfDoc, [pageNum - 1]);
+        singlePageDoc.addPage(copiedPage);
 
-      const pageWidth = copiedPage.getWidth();
-      const pageHeight = copiedPage.getHeight();
+        const pageWidth = copiedPage.getWidth();
+        const pageHeight = copiedPage.getHeight();
 
-      const outWidth = Math.round(pageWidth * scale);
-      const outHeight = Math.round(pageHeight * scale);
+        const outWidth = Math.round(pageWidth * scale);
+        const outHeight = Math.round(pageHeight * scale);
 
-      let pageBuffer: ArrayBuffer;
-      let dataUrl = "";
+        let pageBuffer: ArrayBuffer;
+        let blob: Blob;
+        let previewUrl = "";
 
-      if (typeof document !== "undefined") {
-        const canvas = document.createElement("canvas");
-        canvas.width = outWidth;
-        canvas.height = outHeight;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) throw new Error("Canvas context null");
+        if (typeof document !== "undefined") {
+          const canvas = document.createElement("canvas");
+          canvas.width = outWidth;
+          canvas.height = outHeight;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("Canvas context null");
 
-        // White background filling
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(0, 0, outWidth, outHeight);
+          // Fill white background for transparency safety
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, outWidth, outHeight);
 
-        // Draw page representation text & border cleanly
-        ctx.fillStyle = "#1e293b";
-        ctx.font = `bold ${Math.round(18 * scale)}px sans-serif`;
-        ctx.fillText(`PDF Page ${pageNum}`, Math.round(20 * scale), Math.round(40 * scale));
-        ctx.font = `${Math.round(12 * scale)}px sans-serif`;
-        ctx.fillStyle = "#64748b";
-        ctx.fillText(`${file.name} • ${pageWidth.toFixed(0)} × ${pageHeight.toFixed(0)} pt`, Math.round(20 * scale), Math.round(70 * scale));
+          // Render clean canvas representation
+          ctx.fillStyle = "#1e293b";
+          ctx.font = `bold ${Math.round(18 * scale)}px sans-serif`;
+          ctx.fillText(`PDF Page ${pageNum}`, Math.round(20 * scale), Math.round(40 * scale));
+          ctx.font = `${Math.round(12 * scale)}px sans-serif`;
+          ctx.fillStyle = "#64748b";
+          ctx.fillText(`${file.name} • ${pageWidth.toFixed(0)} × ${pageHeight.toFixed(0)} pt`, Math.round(20 * scale), Math.round(70 * scale));
 
-        dataUrl = canvas.toDataURL(outputFormat, targetQuality);
-        const base64 = dataUrl.split(",")[1];
-        const binaryStr = atob(base64);
-        const uint8 = new Uint8Array(binaryStr.length);
-        for (let i = 0; i < binaryStr.length; i++) {
-          uint8[i] = binaryStr.charCodeAt(i);
+          const dataUrl = canvas.toDataURL(outputFormat, targetQuality);
+          // Immediately release canvas memory
+          canvas.width = 0;
+          canvas.height = 0;
+
+          const base64 = dataUrl.split(",")[1];
+          const binaryStr = atob(base64);
+          const uint8 = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            uint8[i] = binaryStr.charCodeAt(i);
+          }
+
+          // Verify Magic Bytes
+          if (!PdfRasterizationEngine.verifyMagicBytes(uint8, outputFormat)) {
+            throw new Error(`OUTPUT_VERIFICATION_FAILED: Magic bytes verification failed for page ${pageNum}`);
+          }
+
+          pageBuffer = uint8.buffer;
+          blob = new Blob([pageBuffer], { type: outputFormat });
+          previewUrl = URL.createObjectURL(blob);
+        } else {
+          throw new Error("Canvas rendering environment unavailable.");
         }
-        pageBuffer = uint8.buffer;
-      } else {
-        throw new Error("Canvas rendering environment unavailable.");
+
+        const pagePadStr = pageNum.toString().padStart(padLen, "0");
+        const pageFilename = `${baseName}-page-${pagePadStr}.${ext}`;
+
+        const renderedPage: RenderedPageResult = {
+          pageNumber: pageNum,
+          width: outWidth,
+          height: outHeight,
+          sizeBytes: pageBuffer.byteLength,
+          mimeType: outputFormat,
+          buffer: pageBuffer,
+          blob,
+          previewUrl,
+          filename: pageFilename
+        };
+
+        renderedPages.push(renderedPage);
+        totalSizeBytes += pageBuffer.byteLength;
+
+        zipEntries.push({
+          filename: pageFilename,
+          data: new Uint8Array(pageBuffer)
+        });
+      } catch (err) {
+        failedPageNumbers.push(pageNum);
       }
-
-      const pagePadStr = pageNum.toString().padStart(padLen, "0");
-      const pageFilename = `${baseName}-page-${pagePadStr}.${ext}`;
-
-      const renderedPage: RenderedPageResult = {
-        pageNumber: pageNum,
-        width: outWidth,
-        height: outHeight,
-        sizeBytes: pageBuffer.byteLength,
-        mimeType: outputFormat,
-        buffer: pageBuffer,
-        dataUrl,
-        filename: pageFilename
-      };
-
-      renderedPages.push(renderedPage);
-      totalSizeBytes += pageBuffer.byteLength;
-
-      zipEntries.push({
-        filename: pageFilename,
-        data: new Uint8Array(pageBuffer)
-      });
     }
 
     if (signal?.aborted) {
+      renderedPages.forEach((p) => {
+        if (typeof window !== "undefined" && p.previewUrl) {
+          URL.revokeObjectURL(p.previewUrl);
+        }
+      });
       throw new Error("CANCELLED_BY_ABORT_SIGNAL");
     }
 
-    let zipBuffer: ArrayBuffer | undefined;
+    let zipBlob: Blob | undefined;
+    let zipUrl: string | undefined;
     let zipFilename: string | undefined;
 
-    if (renderedPages.length > 1) {
-      zipBuffer = ZipWriter.createZip(zipEntries);
+    let outcome: PdfRasterizationOutcome = "CONVERSION_COMPLETED";
+    if (failedPageNumbers.length > 0) {
+      outcome = "PARTIAL_CONVERSION_FAILED";
+    }
+
+    // Generate ZIP archive only if full conversion succeeded and > 1 pages were rendered
+    if (outcome === "CONVERSION_COMPLETED" && renderedPages.length > 1) {
+      const zipBuffer = ZipWriter.createZip(zipEntries);
+      zipBlob = new Blob([zipBuffer], { type: "application/zip" });
+      zipUrl = typeof window !== "undefined" ? URL.createObjectURL(zipBlob) : undefined;
       zipFilename = `${baseName}-images.zip`;
     }
 
@@ -141,12 +191,14 @@ export class PdfRasterizationEngine {
       totalPages: preflight.pageCount,
       selectedPageNumbers,
       renderedPages,
+      failedPageNumbers,
       totalSizeBytes,
       outputFormat,
       resolutionPreset,
-      zipBuffer,
+      zipBlob,
+      zipUrl,
       zipFilename,
-      outcome: "CONVERSION_COMPLETED",
+      outcome,
       processingDurationMs: Date.now() - startTime,
       warnings: preflight.isSigned ? ["DOCUMENT_SIGNED: Rendered pages from digitally signed PDF."] : []
     };

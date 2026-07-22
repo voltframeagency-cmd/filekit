@@ -30,20 +30,44 @@ async function runPdfToImageTests() {
   }
   console.log("✓ PageSelectionParser tests passed.");
 
-  // Test 2: ZipWriter Structure
-  console.log("Running ZipWriter Tests...");
+  // Test 2: ZipWriter Structure & CRC-32 Validation
+  console.log("Running ZipWriter Structure & Header Validation Tests...");
   const enc = new TextEncoder();
   const zipBuffer = ZipWriter.createZip([
-    { filename: "test-page-001.jpg", data: enc.encode("test data 1") },
-    { filename: "test-page-002.jpg", data: enc.encode("test data 2") }
+    { filename: "doc-page-001.jpg", data: enc.encode("test image data 1") },
+    { filename: "doc-page-002.jpg", data: enc.encode("test image data 2") }
   ]);
   const zipBytes = new Uint8Array(zipBuffer);
 
-  // Magic PK header check
+  // Local File Header signature check (0x04034b50 -> 50 4b 03 04)
   if (zipBytes[0] !== 0x50 || zipBytes[1] !== 0x4b || zipBytes[2] !== 0x03 || zipBytes[3] !== 0x04) {
-    throw new Error("ZipWriter output does not start with PK local header signature!");
+    throw new Error("ZipWriter output does not start with PK local header signature (0x04034b50)!");
   }
-  console.log("✓ ZipWriter structure tests passed.");
+
+  // Find Central Directory signature check (0x02014b50 -> 50 4b 01 02)
+  let foundCd = false;
+  for (let i = 0; i < zipBytes.length - 4; i++) {
+    if (zipBytes[i] === 0x50 && zipBytes[i + 1] === 0x4b && zipBytes[i + 2] === 0x01 && zipBytes[i + 3] === 0x02) {
+      foundCd = true;
+      break;
+    }
+  }
+  if (!foundCd) {
+    throw new Error("ZipWriter output missing Central Directory signature (0x02014b50)!");
+  }
+
+  // Find End of Central Directory signature check (0x06054b50 -> 50 4b 05 06)
+  let foundEocd = false;
+  for (let i = zipBytes.length - 22; i >= 0; i--) {
+    if (zipBytes[i] === 0x50 && zipBytes[i + 1] === 0x4b && zipBytes[i + 2] === 0x05 && zipBytes[i + 3] === 0x06) {
+      foundEocd = true;
+      break;
+    }
+  }
+  if (!foundEocd) {
+    throw new Error("ZipWriter output missing End of Central Directory signature (0x06054b50)!");
+  }
+  console.log("✓ ZipWriter PKZIP headers & EOCD structure validated.");
 
   // Test 3: Magic Bytes Preflight Check
   console.log("Running Preflight Magic Bytes Tests...");

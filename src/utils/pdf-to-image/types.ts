@@ -29,7 +29,8 @@ export interface RenderedPageResult {
   sizeBytes: number;
   mimeType: PdfToImageOutputFormat;
   buffer: ArrayBuffer;
-  dataUrl: string;
+  blob: Blob;
+  previewUrl: string;
   filename: string;
 }
 
@@ -37,10 +38,12 @@ export interface PdfRasterizationResult {
   totalPages: number;
   selectedPageNumbers: number[];
   renderedPages: RenderedPageResult[];
+  failedPageNumbers?: number[];
   totalSizeBytes: number;
   outputFormat: PdfToImageOutputFormat;
   resolutionPreset: ResolutionPreset;
-  zipBuffer?: ArrayBuffer;
+  zipBlob?: Blob;
+  zipUrl?: string;
   zipFilename?: string;
   outcome: PdfRasterizationOutcome;
   processingDurationMs: number;
