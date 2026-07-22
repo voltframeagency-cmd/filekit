@@ -227,7 +227,7 @@ export default function ExactImageTargetPage({ config }: ExactImageTargetPagePro
     "name": `FileKit ${config.h1}`,
     "url": canonicalUrl,
     "description": config.description,
-    "applicationCategory": "MultimediaApplication",
+    "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "All"
   };
 

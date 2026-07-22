@@ -34,7 +34,7 @@ export default function CompressPdfPage() {
     "name": "FileKit Compress PDF below 2 MB",
     "url": buildCanonicalUrl("/compress-pdf"),
     "description": "Compress PDF files below 2 MB locally in your browser.",
-    "applicationCategory": "MultimediaApplication",
+    "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "All"
   };
 

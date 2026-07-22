@@ -257,7 +257,7 @@ export default function CustomTargetImagePage() {
     "name": "FileKit Compress an Image to a Specific Size",
     "url": canonicalUrl,
     "description": "Compress JPEG, PNG, or WebP images to any custom target size (between 20 KB and 50 MB) locally in your browser memory.",
-    "applicationCategory": "MultimediaApplication",
+    "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "All"
   };
 

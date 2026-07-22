@@ -126,7 +126,7 @@ export default function CompressImagePage() {
     "name": "FileKit Image Compressor",
     "url": buildCanonicalUrl("/compress-image"),
     "description": "Compress JPEG, PNG, and static WebP images locally in your browser memory.",
-    "applicationCategory": "MultimediaApplication",
+    "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "All"
   };
 
