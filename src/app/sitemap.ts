@@ -1,10 +1,11 @@
 import { MetadataRoute } from "next";
 import { getSiteUrl } from "@/utils/siteUrl";
+import { getSitemapRoutes as getCatalogSitemapRoutes } from "@/config/conversionCatalog";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = getSiteUrl();
 
-  const routes = [
+  const coreAndCompressorRoutes = [
     "",
     "/compress-pdf",
     "/compress-pdf-to-size",
@@ -14,23 +15,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/compress-image-to-100kb",
     "/compress-image-to-200kb",
     "/compress-image-to-500kb",
-    "/compress-image-to-1mb",
-    "/convert-image",
-    "/jpg-to-png",
-    "/png-to-jpg",
-    "/jpg-to-webp",
-    "/png-to-webp",
-    "/webp-to-jpg",
-    "/webp-to-png",
-    "/pdf-to-image",
-    "/pdf-to-jpg",
-    "/pdf-to-png",
-    "/image-to-pdf",
-    "/jpg-to-pdf",
-    "/png-to-pdf"
+    "/compress-image-to-1mb"
   ];
 
-  return routes.map((route) => ({
+  const conversionRoutes = getCatalogSitemapRoutes();
+
+  // Combine core routes and catalog indexable conversion routes (guaranteeing 0 planned/alias routes)
+  const allRoutes = [...coreAndCompressorRoutes, ...conversionRoutes];
+
+  return allRoutes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: "weekly",
