@@ -17,12 +17,28 @@ export class PdfRasterizationPreflight {
     }
 
     try {
-      const pdfDoc = await PDFLib.PDFDocument.load(buffer, { ignoreEncryption: true });
-      const pageCount = pdfDoc.getPageCount();
+      // First try loading without ignoreEncryption to catch encrypted PDFs directly
+      let isEncrypted = false;
+      let pdfDoc: PDFLib.PDFDocument;
 
-      // Check encryption flag
-      const isEncrypted = pdfDoc.isEncrypted;
-      if (isEncrypted) {
+      try {
+        pdfDoc = await PDFLib.PDFDocument.load(buffer);
+      } catch (err: any) {
+        if (err?.message?.toLowerCase().includes("encrypt") || err?.message?.toLowerCase().includes("password")) {
+          return {
+            pageCount: 0,
+            isEncrypted: true,
+            isSigned: false,
+            isValid: false,
+            error: "ENCRYPTED_PDF: Password-protected or encrypted PDFs cannot be converted locally."
+          };
+        }
+        // Fall back to loading with ignoreEncryption to inspect catalog
+        pdfDoc = await PDFLib.PDFDocument.load(buffer, { ignoreEncryption: true });
+        isEncrypted = true;
+      }
+
+      if (isEncrypted || pdfDoc.isEncrypted || pdfDoc.catalog.has(PDFLib.PDFName.of("Encrypt"))) {
         return {
           pageCount: 0,
           isEncrypted: true,
@@ -31,6 +47,8 @@ export class PdfRasterizationPreflight {
           error: "ENCRYPTED_PDF: Password-protected or encrypted PDFs cannot be converted locally."
         };
       }
+
+      const pageCount = pdfDoc.getPageCount();
 
       // Check digital signatures (Sig fields in Catalog)
       let isSigned = false;
