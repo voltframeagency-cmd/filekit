@@ -1,0 +1,276 @@
+"use client";
+
+import React, { useState } from "react";
+import AppHeader from "@/components/layout/AppHeader";
+import AppFooter from "@/components/layout/AppFooter";
+import TrustPanel from "@/components/layout/TrustPanel";
+import { useLanguage } from "@/components/layout/LanguageContext";
+import { ImageOptimizationEngine } from "@/utils/image-engine/ImageOptimizationEngine";
+import { ImagePreflightInspector } from "@/utils/image-engine/ImagePreflightInspector";
+import { ImageCapabilityRouter } from "@/utils/image-engine/ImageCapabilityRouter";
+import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
+
+export const TARGET_SIZE_BYTES = 200 * 1024; // 204,800 bytes
+
+export default function CompressImageTo200kbPage() {
+  const { t } = useLanguage();
+  const [file, setFile] = useState<File | null>(null);
+  const [preflight, setPreflight] = useState<ImagePreflightReport | null>(null);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [result, setResult] = useState<ImageVerificationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+
+    setError(null);
+    setResult(null);
+    setFile(selected);
+
+    try {
+      const buf = await selected.arrayBuffer();
+      const report = await ImagePreflightInspector.inspect(buf);
+      const route = ImageCapabilityRouter.evaluate(report, selected.size);
+      if (route.decision === "UNSUPPORTED") {
+        let msg = route.reason || "UNSUPPORTED: Image processing rejected.";
+        if (msg.includes("UNSUPPORTED_ANIMATION")) {
+          msg = "Animated images are not supported yet.";
+        } else if (msg.includes("MEMORY_LIMIT_EXCEEDED")) {
+          msg = "This image is too large to process safely in your browser.";
+        }
+        setError(msg);
+        return;
+      }
+      setPreflight(report);
+    } catch (err: any) {
+      let msg = err.message || "Failed to inspect selected image.";
+      if (msg.includes("UNSUPPORTED_FORMAT")) {
+        msg = "Unsupported format. Please select a valid JPEG, PNG, or WebP file.";
+      }
+      setError(msg);
+    }
+  };
+
+  const handleCompress = async () => {
+    if (!file) return;
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const buf = await file.arrayBuffer();
+      const res = await ImageOptimizationEngine.compress(buf, TARGET_SIZE_BYTES, undefined);
+      setResult(res);
+
+      if (typeof window !== "undefined") {
+        (window as any).__LAST_200KB_RESULT__ = res;
+      }
+    } catch (err: any) {
+      let msg = err.message || "Image compression failed.";
+      if (msg.includes("UNSUPPORTED_ANIMATION")) {
+        msg = "Animated images are not supported yet.";
+      } else if (msg.includes("MEMORY_LIMIT_EXCEEDED")) {
+        msg = "This image is too large to process safely in your browser.";
+      }
+      setError(msg);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!result || !result.outputBuffer || !file) return;
+    const blob = new Blob([result.outputBuffer], { type: result.outputMimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `compressed_200kb_${file.name.replace(/\.[^/.]+$/, "")}.${result.outputMimeType.split("/")[1] || "jpg"}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+  };
+
+  const getStatusMessage = (res: ImageVerificationResult) => {
+    switch (res.outcome) {
+      case "TARGET_ACHIEVED":
+        return {
+          title: "Your image is ready and below 200 KB.",
+          badgeBg: "bg-fk-success-bg border-[#BBF7D0] text-fk-success",
+          icon: "✓"
+        };
+      case "TARGET_NOT_MET":
+        return {
+          title: "We reduced the image, but could not reach 200 KB safely.",
+          badgeBg: "bg-amber-50 border-amber-200 text-amber-800",
+          icon: "ℹ"
+        };
+      case "ALREADY_WITHIN_TARGET":
+        return {
+          title: "Your image is already below 200 KB.",
+          badgeBg: "bg-blue-50 border-blue-200 text-blue-800",
+          icon: "✓"
+        };
+      case "NO_BENEFICIAL_REDUCTION":
+        return {
+          title: "This image is already efficiently compressed.",
+          badgeBg: "bg-gray-100 border-gray-300 text-gray-800",
+          icon: "ℹ"
+        };
+      default:
+        return {
+          title: "Compression pass completed.",
+          badgeBg: "bg-gray-100 border-gray-300 text-gray-800",
+          icon: "✓"
+        };
+    }
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen bg-fk-bg">
+      <AppHeader />
+
+      <main className="flex-1 flex flex-col gap-6 md:gap-10 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-12 py-6 md:py-12">
+        <section className="flex flex-col gap-1.5 max-w-[840px] mx-auto w-full text-left ltr:text-left rtl:text-right px-2">
+          <h1 className="text-[clamp(1.75rem,7vw,2.25rem)] font-black text-fk-text leading-[1.1] tracking-tight">
+            Compress Image to 200 KB
+          </h1>
+          <p className="text-[13px] md:text-[15px] font-medium text-fk-text-muted leading-relaxed">
+            Make your image fit a 200 KB upload limit. Compress JPG, PNG, or WebP images locally in your browser.
+          </p>
+        </section>
+
+        <section className="w-full max-w-[840px] mx-auto bg-white border border-fk-border rounded-fk-xl p-6 md:p-8 shadow-sm">
+          {!file && (
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-fk-border rounded-fk-lg p-10 text-center hover:border-fk-primary transition-colors cursor-pointer relative">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFileSelect}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+              <svg className="w-12 h-12 text-fk-primary mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+              <p className="text-[15px] font-bold text-fk-text">Drop your image here or browse</p>
+              <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
+                Target: 200 KB max • Supports JPG, PNG, and static WebP
+              </p>
+              <p className="text-[11px] font-medium text-fk-text-subtle mt-2 bg-fk-surface-muted px-3 py-1 rounded-full border border-fk-border">
+                🔒 Your image is processed locally in your browser and is not uploaded.
+              </p>
+            </div>
+          )}
+
+          {file && !result && (
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center justify-between p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
+                <div className="flex flex-col">
+                  <span className="text-[14px] font-bold text-fk-text">{file.name}</span>
+                  <span className="text-[12px] font-mono text-fk-text-subtle mt-0.5">Original: {formatBytes(file.size)}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setFile(null); setPreflight(null); setError(null); }}
+                  className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text"
+                >
+                  Change File
+                </button>
+              </div>
+
+              {file.type === "image/png" && (
+                <p className="text-[12px] text-fk-text-muted italic bg-amber-50 p-3 rounded-fk-md border border-amber-200">
+                  ℹ PNG files are processed safely, but some optimized PNGs may not become smaller.
+                </p>
+              )}
+
+              <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-fk-md text-[13px] text-blue-900 font-medium">
+                <span>Target Size Limit: <strong>200 KB (204,800 Bytes)</strong></span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCompress}
+                disabled={isProcessing}
+                className="w-full h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
+              >
+                {isProcessing ? "Compressing below 200 KB..." : "Compress to 200 KB"}
+              </button>
+            </div>
+          )}
+
+          {result && file && (
+            <div className="flex flex-col items-center gap-6 animate-in fade-in duration-200">
+              {(() => {
+                const status = getStatusMessage(result);
+                return (
+                  <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[14px] font-bold ${status.badgeBg}`}>
+                    <span>{status.icon}</span>
+                    <span>{status.title}</span>
+                  </div>
+                );
+              })()}
+
+              <div className="flex items-center justify-center gap-6 w-full max-w-[460px] p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
+                <div className="flex flex-col items-center">
+                  <span className="text-[11px] font-bold text-fk-text-subtle uppercase">Original</span>
+                  <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(result.originalSizeBytes)}</span>
+                </div>
+                <div className="text-[22px] font-light text-fk-text-subtle">→</div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[11px] font-bold text-fk-primary uppercase">New Size</span>
+                  <span className="text-[20px] font-black text-fk-primary mt-1">{formatBytes(result.outputSizeBytes)}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1 text-center text-[13px]">
+                <p className="font-bold text-fk-text">
+                  {result.reductionPercentage.toFixed(1)}% smaller • {result.widthAfter} × {result.heightAfter} px
+                </p>
+                <span className="text-[11px] text-fk-text-subtle">
+                  Processed locally in browser ({result.processingDurationMs} ms)
+                </span>
+              </div>
+
+              <div className="flex gap-3 w-full max-w-[500px]">
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors"
+                >
+                  {"Download Image (< 200 KB)"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setResult(null); setFile(null); }}
+                  className="h-[50px] px-6 border border-fk-border hover:bg-fk-surface-muted text-fk-text-muted rounded-fk-md text-[13px] font-bold transition-colors"
+                >
+                  Process Another
+                </button>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 text-[13px] rounded-fk-md font-medium">
+              ⚠️ {error}
+            </div>
+          )}
+        </section>
+
+        <TrustPanel />
+      </main>
+
+      <AppFooter />
+    </div>
+  );
+}
