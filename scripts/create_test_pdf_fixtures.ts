@@ -49,7 +49,7 @@ async function createFixtures() {
     SigFlags: 3
   });
   docSig.catalog.set(PDFLib.PDFName.of("AcroForm"), acroForm);
-  const pdfBytesSig = await docSig.save();
+  const pdfBytesSig = await docSig.save({ useObjectStreams: false });
   fs.writeFileSync(path.join(fixtureDir, "digitally-signed.pdf"), pdfBytesSig);
 
   // 4. Authentic Password-Encrypted PDF (Standard Security Handler dictionary)
@@ -67,7 +67,7 @@ async function createFixtures() {
   });
 
   docEnc.catalog.set(PDFLib.PDFName.of("Encrypt"), encryptDict);
-  const pdfBytesEnc = await docEnc.save();
+  const pdfBytesEnc = await docEnc.save({ useObjectStreams: false });
   fs.writeFileSync(path.join(fixtureDir, "password-encrypted.pdf"), pdfBytesEnc);
 
   // 5. Malformed PDF (invalid non-PDF binary data)
