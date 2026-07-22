@@ -22,9 +22,10 @@ export default function DesktopMegaMenu({
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const megaMenu = navItem.megaMenu;
-  if (!megaMenu || !isOpen) return null;
 
   useEffect(() => {
+    if (!isOpen || !megaMenu) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
@@ -36,18 +37,20 @@ export default function DesktopMegaMenu({
       const target = e.target as Node | null;
       if (!target) return;
 
-      // Ignore clicks on trigger button or its children
-      if (target instanceof Element && target.closest(`[aria-controls="${megaMenu.id}"]`)) {
+      // Ignore clicks on trigger button (delegated to SiteHeader toggle)
+      if (triggerRef.current && triggerRef.current.contains(target)) {
         return;
       }
 
-      if (menuRef.current && !menuRef.current.contains(target)) {
-        onClose();
+      // Ignore clicks inside mega menu itself
+      if (menuRef.current && menuRef.current.contains(target)) {
+        return;
       }
+
+      onClose();
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    // Use setTimeout so the current click/mousedown that opened the menu does not trigger close
     const timer = setTimeout(() => {
       document.addEventListener("mousedown", handleClickOutside);
     }, 50);
@@ -57,7 +60,9 @@ export default function DesktopMegaMenu({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [onClose, triggerRef, megaMenu.id]);
+  }, [isOpen, onClose, triggerRef, megaMenu]);
+
+  if (!megaMenu || !isOpen) return null;
 
   return (
     <div

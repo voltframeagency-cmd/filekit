@@ -1,23 +1,30 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MAIN_NAVIGATION, TopNavItem } from "@/config/navigation";
 import DesktopMegaMenu from "./DesktopMegaMenu";
 import MobileNavigation from "./MobileNavigation";
 import { useLanguage } from "@/components/layout/LanguageContext";
-
 import FileKitLogo from "../common/FileKitLogo";
+
+const LANGUAGES = [
+  { code: "en", label: "English", flag: "🌐" },
+  { code: "ar", label: "العربية", flag: "🇸🇦" },
+  { code: "tr", label: "Türkçe", flag: "🇹🇷" }
+] as const;
 
 export default function SiteHeader() {
   const pathname = usePathname();
   const { language, setLanguage } = useLanguage();
 
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [isLangOpen, setIsLangOpen] = useState<boolean>(false);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
 
   const triggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const langMenuRef = useRef<HTMLDivElement | null>(null);
 
   const trackNavEvent = (eventName: string, payload?: Record<string, any>) => {
     if (typeof window === "undefined") return;
@@ -35,6 +42,7 @@ export default function SiteHeader() {
   };
 
   const handleToggleMenu = (id: string) => {
+    setIsLangOpen(false);
     if (activeMenuId === id) {
       setActiveMenuId(null);
     } else {
@@ -42,6 +50,18 @@ export default function SiteHeader() {
       trackNavEvent("navigation_menu_opened", { menuCategory: id });
     }
   };
+
+  // Close language dropdown on outside click
+  useEffect(() => {
+    if (!isLangOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setIsLangOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isLangOpen]);
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur border-b border-fk-border">
@@ -101,7 +121,7 @@ export default function SiteHeader() {
           })}
         </nav>
 
-        {/* Right Controls: Search, Language, All Tools */}
+        {/* Right Controls: Search, Language Dropdown, All Tools */}
         <div className="flex items-center gap-3">
           <div className="relative hidden sm:block">
             <input
@@ -114,13 +134,44 @@ export default function SiteHeader() {
             </svg>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setLanguage(language === "en" ? "ar" : "en")}
-            className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-2 py-1 border border-fk-border rounded-fk-md"
-          >
-            🌐 {language.toUpperCase()}
-          </button>
+          {/* Interactive Language Dropdown */}
+          <div className="relative" ref={langMenuRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveMenuId(null);
+                setIsLangOpen(!isLangOpen);
+              }}
+              aria-expanded={isLangOpen}
+              aria-haspopup="true"
+              className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-2.5 py-1.5 border border-fk-border rounded-fk-md flex items-center gap-1.5 bg-white transition-colors"
+            >
+              <span>🌐</span>
+              <span>{language.toUpperCase()}</span>
+              <span className={`text-[9px] transition-transform duration-150 ${isLangOpen ? "rotate-180" : ""}`}>▼</span>
+            </button>
+
+            {isLangOpen && (
+              <div className="absolute top-full ltr:right-0 rtl:left-0 mt-1 w-36 bg-white border border-fk-border rounded-fk-md shadow-md py-1 z-50 animate-in fade-in duration-100">
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => {
+                      setLanguage(lang.code as any);
+                      setIsLangOpen(false);
+                    }}
+                    className={`w-full text-left ltr:text-left rtl:text-right px-3 py-2 text-[13px] font-bold flex items-center gap-2 transition-colors hover:bg-fk-surface-muted ${
+                      language === lang.code ? "text-fk-primary bg-fk-surface-muted" : "text-fk-text"
+                    }`}
+                  >
+                    <span>{lang.flag}</span>
+                    <span>{lang.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <Link
             href="/#all-tools"
