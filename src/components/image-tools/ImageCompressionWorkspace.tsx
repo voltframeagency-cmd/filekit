@@ -54,6 +54,7 @@ export default function ImageCompressionWorkspace({
 
   // Request versioning & cancellation refs
   const requestIdRef = useRef<number>(0);
+  const activeAbortControllerRef = useRef<AbortController | null>(null);
   const settingsSectionRef = useRef<HTMLDivElement | null>(null);
   const resultHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
@@ -195,6 +196,16 @@ export default function ImageCompressionWorkspace({
       if (bytes < MIN_BYTES || bytes > MAX_BYTES) return;
     }
 
+    // 1. Abort previous active operation if running
+    if (activeAbortControllerRef.current) {
+      activeAbortControllerRef.current.abort();
+    }
+
+    // 2. Create new AbortController for current operation
+    const controller = new AbortController();
+    activeAbortControllerRef.current = controller;
+
+    // 3. Increment request ID for defensive race-condition UI suppression
     const currentReqId = ++requestIdRef.current;
     setIsProcessing(true);
     setError(null);
@@ -205,8 +216,8 @@ export default function ImageCompressionWorkspace({
       const buf = await file.arrayBuffer();
       const res = await ImageOptimizationEngine.compress(buf, computedBytes);
 
-      // Ignore stale completion
-      if (requestIdRef.current !== currentReqId) {
+      // Ignore stale completion or aborted signal
+      if (requestIdRef.current !== currentReqId || controller.signal.aborted) {
         trackEvent("live_preview_cancelled");
         return;
       }
@@ -217,7 +228,7 @@ export default function ImageCompressionWorkspace({
         outputSizeBytes: res.outputSizeBytes
       });
     } catch (err: any) {
-      if (requestIdRef.current !== currentReqId) return;
+      if (requestIdRef.current !== currentReqId || controller.signal.aborted) return;
 
       let msg = err.message || "Image compression failed.";
       if (msg.includes("UNSUPPORTED_ANIMATION")) {
@@ -284,6 +295,10 @@ export default function ImageCompressionWorkspace({
   };
 
   const handleResetWorkspace = () => {
+    if (activeAbortControllerRef.current) {
+      activeAbortControllerRef.current.abort();
+      activeAbortControllerRef.current = null;
+    }
     requestIdRef.current++;
     setFile(null);
     setPreflight(null);
