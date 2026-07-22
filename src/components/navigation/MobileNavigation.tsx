@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MAIN_NAVIGATION } from "@/config/navigation";
+import { MAIN_NAVIGATION, CONVERTER_NAVIGATION_GROUPS } from "@/config/navigation";
 import FileKitLogo from "../common/FileKitLogo";
 
 export interface MobileNavigationProps {
@@ -141,61 +141,95 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
 
               {isExpanded && (
                 <div className="flex flex-col gap-6 mt-3 ltr:pl-4 rtl:pr-4 border-l-2 ltr:border-l-fk-primary rtl:border-r-2 rtl:border-r-fk-primary rtl:border-l-0">
-                  {item.megaMenu.groups.map((group, gIdx) => (
-                    <div key={gIdx} className="flex flex-col gap-2">
-                      <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
-                        {group.title}
-                      </span>
-
-                      {group.primaryLink && (
-                        <Link
-                          href={group.primaryLink.href}
-                          onClick={handleLinkClick}
-                          className={`text-[14px] font-bold py-1 ${
-                            pathname === group.primaryLink.href ? "text-fk-primary" : "text-fk-text"
-                          }`}
-                        >
-                          {group.primaryLink.label}
-                        </Link>
-                      )}
-
-                      {group.secondaryLink && (
-                        <Link
-                          href={group.secondaryLink.href}
-                          onClick={handleLinkClick}
-                          className={`text-[13px] font-medium py-1 ${
-                            pathname === group.secondaryLink.href ? "text-fk-primary" : "text-fk-text-muted"
-                          }`}
-                        >
-                          {group.secondaryLink.label}
-                        </Link>
-                      )}
-
-                      {group.subgroups?.map((sg, sIdx) => (
-                        <div key={sIdx} className="flex flex-col gap-2 mt-2">
-                          <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
-                            {sg.label}
-                          </span>
-                          <div className="grid grid-cols-2 gap-2">
-                            {sg.items.map((subItem, iIdx) => (
+                  {item.id === "convert" ? (
+                    CONVERTER_NAVIGATION_GROUPS.map((group) => (
+                      <div key={group.id} className="flex flex-col gap-2">
+                        <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
+                          {group.compactLabel || group.label}
+                        </span>
+                        <div className="flex flex-col gap-1.5">
+                          {group.links.map((subLink, sIdx) => {
+                            const isActive = pathname === subLink.href;
+                            return (
                               <Link
-                                key={iIdx}
-                                href={subItem.href}
+                                key={sIdx}
+                                href={subLink.href}
                                 onClick={handleLinkClick}
-                                className={`px-3 py-2 rounded-fk-md text-[12px] font-bold text-center border ${
-                                  pathname === subItem.href
-                                    ? "bg-fk-primary text-white border-fk-primary"
-                                    : "bg-fk-surface-muted text-fk-text border-fk-border"
+                                aria-current={isActive ? "page" : undefined}
+                                className={`text-[13px] font-bold py-1 ${
+                                  isActive ? "text-fk-primary" : "text-fk-text"
                                 }`}
                               >
-                                {"\u2066"}{subItem.label}{"\u2069"}
+                                {"\u2066"}{subLink.label}{"\u2069"}
                               </Link>
-                            ))}
-                          </div>
+                            );
+                          })}
                         </div>
-                      ))}
-                    </div>
-                  ))}
+                      </div>
+                    ))
+                  ) : (
+                    item.megaMenu.groups.map((group, gIdx) => (
+                      <div key={gIdx} className="flex flex-col gap-2">
+                        <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
+                          {group.title}
+                        </span>
+
+                        {group.primaryLink && (
+                          <Link
+                            href={group.primaryLink.href}
+                            onClick={handleLinkClick}
+                            aria-current={pathname === group.primaryLink.href ? "page" : undefined}
+                            className={`text-[14px] font-bold py-1 ${
+                              pathname === group.primaryLink.href ? "text-fk-primary" : "text-fk-text"
+                            }`}
+                          >
+                            {group.primaryLink.label}
+                          </Link>
+                        )}
+
+                        {group.secondaryLink && (
+                          <Link
+                            href={group.secondaryLink.href}
+                            onClick={handleLinkClick}
+                            aria-current={pathname === group.secondaryLink.href ? "page" : undefined}
+                            className={`text-[13px] font-medium py-1 ${
+                              pathname === group.secondaryLink.href ? "text-fk-primary" : "text-fk-text-muted"
+                            }`}
+                          >
+                            {group.secondaryLink.label}
+                          </Link>
+                        )}
+
+                        {group.subgroups?.map((sg, sIdx) => (
+                          <div key={sIdx} className="flex flex-col gap-2 mt-2">
+                            <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
+                              {sg.label}
+                            </span>
+                            <div className="grid grid-cols-2 gap-2">
+                              {sg.items.map((subItem, iIdx) => {
+                                const isActive = pathname === subItem.href;
+                                return (
+                                  <Link
+                                    key={iIdx}
+                                    href={subItem.href}
+                                    onClick={handleLinkClick}
+                                    aria-current={isActive ? "page" : undefined}
+                                    className={`px-3 py-2 rounded-fk-md text-[12px] font-bold text-center border ${
+                                      isActive
+                                        ? "bg-fk-primary text-white border-fk-primary"
+                                        : "bg-fk-surface-muted text-fk-text border-fk-border"
+                                    }`}
+                                  >
+                                    {"\u2066"}{subItem.label}{"\u2069"}
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>

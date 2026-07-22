@@ -34,6 +34,7 @@ export interface TopNavItem {
 export interface ConverterNavigationGroup {
   id: string;
   label: string;
+  compactLabel?: string;
   accessibleLabel: string;
   links: Array<{
     label: string;
@@ -46,6 +47,7 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
   {
     id: "image-conversion",
     label: "IMAGE CONVERSION",
+    compactLabel: "IMAGE",
     accessibleLabel: "Image format conversion tools",
     links: [
       { label: "Image Converter", href: "/convert-image" },
@@ -57,7 +59,6 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "WebP to PNG", href: "/webp-to-png" }
     ]
   }
-  // Future groups like "convert-from-pdf" and "convert-to-pdf" will be added here once routes exist.
 ];
 
 export const MAIN_NAVIGATION: TopNavItem[] = [

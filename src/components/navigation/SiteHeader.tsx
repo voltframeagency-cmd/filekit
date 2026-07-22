@@ -20,6 +20,7 @@ export default function SiteHeader() {
   const { language, setLanguage } = useLanguage();
 
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [initialFocus, setInitialFocus] = useState<"FIRST" | "LAST" | undefined>(undefined);
   const [isLangOpen, setIsLangOpen] = useState<boolean>(false);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
 
@@ -41,12 +42,14 @@ export default function SiteHeader() {
     }
   };
 
-  const handleToggleMenu = (id: string) => {
+  const handleToggleMenu = (id: string, focusDirection?: "FIRST" | "LAST") => {
     setIsLangOpen(false);
-    if (activeMenuId === id) {
+    if (activeMenuId === id && !focusDirection) {
       setActiveMenuId(null);
+      setInitialFocus(undefined);
     } else {
       setActiveMenuId(id);
+      setInitialFocus(focusDirection);
       trackNavEvent("navigation_menu_opened", { menuCategory: id });
     }
   };
@@ -95,11 +98,20 @@ export default function SiteHeader() {
                   type="button"
                   ref={(el) => { triggerRefs.current[item.id] = el; }}
                   onClick={() => handleToggleMenu(item.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleToggleMenu(item.id, "FIRST");
+                    } else if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      handleToggleMenu(item.id, "LAST");
+                    }
+                  }}
                   aria-expanded={isOpen}
-                  aria-controls={item.megaMenu?.id}
+                  aria-controls={item.megaMenu?.id || "convert-menu"}
                   aria-haspopup="true"
                   className={`px-3.5 py-2 rounded-fk-md text-[14px] font-bold transition-colors flex items-center gap-1.5 ${
-                    isOpen || pathname.startsWith("/compress")
+                    isOpen || pathname.startsWith("/compress") || pathname.startsWith("/convert")
                       ? "text-fk-primary bg-fk-surface-muted"
                       : "text-fk-text-muted hover:text-fk-text hover:bg-fk-surface-muted"
                   }`}
@@ -113,7 +125,11 @@ export default function SiteHeader() {
                 <DesktopMegaMenu
                   navItem={item}
                   isOpen={isOpen}
-                  onClose={() => setActiveMenuId(null)}
+                  initialFocus={initialFocus}
+                  onClose={() => {
+                    setActiveMenuId(null);
+                    setInitialFocus(undefined);
+                  }}
                   triggerRef={{ current: triggerRefs.current[item.id] }}
                 />
               </div>
