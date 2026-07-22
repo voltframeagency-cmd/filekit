@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { EXACT_IMAGE_ROUTES } from "@/config/exactImageRoutes";
 
-const cfg = EXACT_IMAGE_ROUTES["200kb"];
+const cfg = EXACT_IMAGE_ROUTES["100kb"];
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://filekit.com";
 
 export const metadata: Metadata = {
