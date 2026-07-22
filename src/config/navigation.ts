@@ -88,7 +88,33 @@ export const MAIN_NAVIGATION: TopNavItem[] = [
   {
     id: "convert",
     label: "Convert",
-    href: "/#convert"
+    megaMenu: {
+      id: "convert-menu",
+      label: "Convert Tools",
+      groups: [
+        {
+          title: "IMAGE",
+          primaryLink: {
+            label: "Image Converter",
+            href: "/convert-image",
+            isPrimary: true
+          },
+          subgroups: [
+            {
+              label: "Format pairs",
+              items: [
+                { label: "JPG to PNG", href: "/jpg-to-png" },
+                { label: "PNG to JPG", href: "/png-to-jpg" },
+                { label: "JPG to WebP", href: "/jpg-to-webp" },
+                { label: "PNG to WebP", href: "/png-to-webp" },
+                { label: "WebP to JPG", href: "/webp-to-jpg" },
+                { label: "WebP to PNG", href: "/webp-to-png" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     id: "resize",
