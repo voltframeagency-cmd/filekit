@@ -21,15 +21,6 @@ export interface ImageCompressionWorkspaceProps {
 const MIN_BYTES = 20 * 1024; // 20 KB
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 
-function getTargetBucket(bytes: number): string {
-  if (bytes < 100 * 1024) return "20–99 KB";
-  if (bytes < 500 * 1024) return "100–499 KB";
-  if (bytes < 1024 * 1024) return "500–999 KB";
-  if (bytes < 5 * 1024 * 1024) return "1–4.99 MB";
-  if (bytes < 20 * 1024 * 1024) return "5–19.99 MB";
-  return "20–50 MB";
-}
-
 export default function ImageCompressionWorkspace({
   initialMode = "BALANCED",
   initialTargetValue = "200",
@@ -301,381 +292,392 @@ export default function ImageCompressionWorkspace({
   const isNoReduction = result ? result.outcome === "NO_BENEFICIAL_REDUCTION" || result.outputSizeBytes >= result.originalSizeBytes : false;
 
   return (
-    <div className="w-full max-w-[840px] mx-auto bg-white border border-fk-border rounded-fk-xl p-6 md:p-8 shadow-sm">
+    <div className="w-full max-w-6xl mx-auto flex flex-col gap-8">
       {/* File Upload Zone (when no file selected) */}
       {!file && (
-        <div className="flex flex-col items-center justify-center border-2 border-dashed border-fk-border rounded-fk-lg p-10 text-center hover:border-fk-primary transition-colors cursor-pointer relative">
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={handleFileSelect}
-            className="absolute inset-0 opacity-0 cursor-pointer"
-          />
-          <svg className="w-12 h-12 text-fk-primary mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-          </svg>
-          <p className="text-[15px] font-bold text-fk-text">Drop your image here or browse</p>
-          <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
-            Supports JPG, PNG, and static WebP up to 50 MB
-          </p>
-          <p className="text-[11px] font-medium text-fk-text-subtle mt-2 bg-fk-surface-muted px-3 py-1 rounded-full border border-fk-border">
-            🔒 Your image is processed locally in your browser and is not uploaded.
-          </p>
+        <div className="w-full max-w-[840px] mx-auto bg-white border border-fk-border rounded-fk-xl p-8 md:p-12 shadow-sm">
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-fk-border rounded-fk-lg p-10 text-center hover:border-fk-primary transition-colors cursor-pointer relative">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleFileSelect}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+            <svg className="w-12 h-12 text-fk-primary mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
+            <p className="text-[15px] font-bold text-fk-text">Drop your image here or browse</p>
+            <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
+              Supports JPG, PNG, and static WebP up to 50 MB
+            </p>
+            <p className="text-[11px] font-medium text-fk-text-subtle mt-2 bg-fk-surface-muted px-3 py-1 rounded-full border border-fk-border">
+              🔒 Your image is processed locally in your browser and is not uploaded.
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Workspace Controls (when file selected) */}
+      {/* Main Workspace (Side-by-Side Grid on Desktop) */}
       {file && (
-        <div className="flex flex-col gap-6" ref={settingsSectionRef}>
-          {/* File Header Bar */}
-          <div className="flex items-center justify-between p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold text-fk-text dir-auto">{file.name}</span>
-              <span className="text-[12px] font-mono text-fk-text-subtle mt-0.5">
-                Original: {formatBytes(file.size)} {preflight && preflight.width > 0 ? `• ${preflight.width} × ${preflight.height} px` : ""}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={handleResetWorkspace}
-              className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-2 py-1 border border-fk-border rounded-fk-md bg-white transition-colors"
-            >
-              Choose Another File
-            </button>
-          </div>
-
-          {/* Compression Goal Mode Selection */}
-          <fieldset className="flex flex-col gap-2">
-            <legend className="text-[13px] font-bold text-fk-text">Compression Goal</legend>
-            <div className="grid grid-cols-3 gap-2 p-1 bg-fk-surface-muted border border-fk-border rounded-fk-md">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("BALANCED");
-                  setSettingsDirty(true);
-                  trackEvent("compression_mode_selected", { mode: "BALANCED" });
-                }}
-                className={`py-2 text-[13px] font-bold rounded-fk-sm transition-colors ${
-                  mode === "BALANCED" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
-                }`}
-              >
-                Balanced
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("TARGET_SIZE");
-                  setSettingsDirty(true);
-                  trackEvent("compression_mode_selected", { mode: "TARGET_SIZE" });
-                }}
-                className={`py-2 text-[13px] font-bold rounded-fk-sm transition-colors ${
-                  mode === "TARGET_SIZE" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
-                }`}
-              >
-                Target Size
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("MANUAL");
-                  setSettingsDirty(true);
-                  trackEvent("compression_mode_selected", { mode: "MANUAL" });
-                }}
-                className={`py-2 text-[13px] font-bold rounded-fk-sm transition-colors ${
-                  mode === "MANUAL" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
-                }`}
-              >
-                Manual
-              </button>
-            </div>
-          </fieldset>
-
-          {/* MODE 1: BALANCED */}
-          {mode === "BALANCED" && (
-            <div className="flex flex-col gap-3 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
-              <label className="text-[13px] font-bold text-fk-text">Quality Priority</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {[
-                  { key: "BETTER_QUALITY", label: "Better quality", desc: "Preserves more visual detail" },
-                  { key: "BALANCED", label: "Balanced", desc: "Recommended balance of clarity & size" },
-                  { key: "SMALLER_FILE", label: "Smaller file", desc: "Prioritizes maximum reduction" }
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => {
-                      setQualityPriority(item.key as QualityPriority);
-                      setSettingsDirty(true);
-                    }}
-                    className={`flex flex-col p-3 rounded-fk-md border text-left ltr:text-left rtl:text-right transition-colors ${
-                      qualityPriority === item.key
-                        ? "bg-white border-fk-primary ring-1 ring-fk-primary text-fk-text"
-                        : "bg-white border-fk-border text-fk-text-muted hover:border-fk-text-subtle"
-                    }`}
-                  >
-                    <span className="text-[13px] font-bold text-fk-text">{item.label}</span>
-                    <span className="text-[11px] font-medium text-fk-text-subtle mt-0.5">{item.desc}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* MODE 2: TARGET_SIZE */}
-          {mode === "TARGET_SIZE" && (
-            <div className="flex flex-col gap-4 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
-              <label className="text-[13px] font-bold text-fk-text">Target File Size</label>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <div className="flex items-center gap-2 flex-1">
-                  <input
-                    type="number"
-                    step="any"
-                    min="20"
-                    max="52428800"
-                    value={targetValue}
-                    onChange={(e) => {
-                      setTargetValue(e.target.value);
-                      setSettingsDirty(true);
-                      setError(null);
-                    }}
-                    className="w-28 h-10 px-3 border border-fk-border rounded-fk-md font-mono text-[14px] font-bold text-fk-text focus:outline-none focus:border-fk-primary"
-                    placeholder="200"
-                  />
-                  <select
-                    value={targetUnit}
-                    onChange={(e) => {
-                      setTargetUnit(e.target.value as "kb" | "mb");
-                      setSettingsDirty(true);
-                      setError(null);
-                    }}
-                    className="h-10 px-3 border border-fk-border rounded-fk-md font-bold text-[13px] text-fk-text bg-white focus:outline-none focus:border-fk-primary"
-                  >
-                    <option value="kb">KB</option>
-                    <option value="mb">MB</option>
-                  </select>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* LEFT PANEL: Preview & Results (Col Span 7 on Desktop) */}
+          <div className="lg:col-span-7 flex flex-col gap-6 order-2 lg:order-1">
+            {/* Status & Preview Box */}
+            <div className="bg-white border border-fk-border rounded-fk-xl p-6 shadow-sm flex flex-col gap-6">
+              {/* File Info Bar */}
+              <div className="flex items-center justify-between pb-4 border-b border-fk-border">
+                <div className="flex flex-col">
+                  <span className="text-[14px] font-bold text-fk-text dir-auto truncate max-w-[280px] sm:max-w-[400px]">{file.name}</span>
+                  <span className="text-[12px] font-mono text-fk-text-subtle mt-0.5">
+                    Original: {formatBytes(file.size)} {preflight && preflight.width > 0 ? `• ${preflight.width} × ${preflight.height} px` : ""}
+                  </span>
                 </div>
-
-                {/* Quick-fill Chips */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[11px] font-bold text-fk-text-subtle mr-1">Quick:</span>
-                  {[
-                    { label: "100 KB", val: "100", unit: "kb" },
-                    { label: "200 KB", val: "200", unit: "kb" },
-                    { label: "500 KB", val: "500", unit: "kb" },
-                    { label: "1 MB", val: "1", unit: "mb" }
-                  ].map((chip) => (
-                    <button
-                      key={chip.label}
-                      type="button"
-                      onClick={() => {
-                        setTargetValue(chip.val);
-                        setTargetUnit(chip.unit as "kb" | "mb");
-                        setSettingsDirty(true);
-                      }}
-                      className="px-2.5 py-1 text-[11px] font-bold border border-fk-border rounded-full bg-white hover:border-fk-primary hover:text-fk-primary transition-colors"
-                    >
-                      {chip.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* MODE 3: MANUAL */}
-          {mode === "MANUAL" && (
-            <div className="flex flex-col gap-5 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
-              {/* Quality Slider */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-[13px] font-bold text-fk-text">Quality</label>
-                  <span className="text-[13px] font-mono font-bold text-fk-primary">{qualitySlider}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value={qualitySlider}
-                  onChange={(e) => {
-                    setQualitySlider(Number(e.target.value));
-                    setSettingsDirty(true);
-                  }}
-                  aria-valuetext={`${qualitySlider}% quality`}
-                  className="w-full h-2 bg-fk-border rounded-lg appearance-none cursor-pointer accent-fk-primary"
-                />
-                <div className="flex items-center justify-between text-[11px] font-medium text-fk-text-subtle">
-                  <span>Low</span>
-                  <span>Balanced</span>
-                  <span>High</span>
-                </div>
-              </div>
-
-              {/* Dimension Presets */}
-              <div className="flex flex-col gap-2 border-t border-fk-border pt-4">
-                <label className="text-[13px] font-bold text-fk-text">Dimensions</label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                  {[
-                    { key: "ORIGINAL", label: "Keep original" },
-                    { key: "1920", label: "1920 px" },
-                    { key: "1024", label: "1024 px" },
-                    { key: "640", label: "640 px" },
-                    { key: "CUSTOM", label: "Custom width" }
-                  ].map((preset) => (
-                    <button
-                      key={preset.key}
-                      type="button"
-                      onClick={() => {
-                        setDimensionPreset(preset.key as DimensionPreset);
-                        setSettingsDirty(true);
-                      }}
-                      className={`px-3 py-2 text-[12px] font-bold rounded-fk-md border transition-colors ${
-                        dimensionPreset === preset.key
-                          ? "bg-fk-primary text-white border-fk-primary"
-                          : "bg-white text-fk-text border-fk-border hover:border-fk-text-subtle"
-                      }`}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-
-                {dimensionPreset === "CUSTOM" && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <label className="text-[12px] font-bold text-fk-text">Target Width (px):</label>
-                    <input
-                      type="number"
-                      min="50"
-                      max={preflight?.width || 8000}
-                      value={customWidth}
-                      onChange={(e) => {
-                        setCustomWidth(e.target.value);
-                        setSettingsDirty(true);
-                      }}
-                      className="w-28 h-9 px-3 border border-fk-border rounded-fk-md text-[13px] font-mono font-bold text-fk-text focus:outline-none focus:border-fk-primary"
-                      placeholder="1000"
-                    />
-                    {preflight && preflight.width > 0 && (
-                      <span className="text-[11px] font-medium text-fk-text-subtle">
-                        (Max: {preflight.width} px)
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Compress / Recompress Submit Button */}
-          <button
-            type="button"
-            onClick={handleCompress}
-            disabled={isProcessing}
-            className="w-full h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
-          >
-            {isProcessing
-              ? "Optimizing image locally..."
-              : result && settingsDirty
-              ? "Recompress Image"
-              : "Compress Image"}
-          </button>
-
-          {error && (
-            <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-[13px] rounded-fk-md font-medium">
-              ⚠️ {error}
-            </div>
-          )}
-
-          {/* Result Section */}
-          {result && (
-            <div className="flex flex-col items-center gap-6 mt-4 pt-6 border-t border-fk-border animate-in fade-in duration-200">
-              {/* Honest Outcome Badge */}
-              <div
-                ref={resultHeadingRef as any}
-                tabIndex={-1}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[14px] font-bold focus:outline-none ${
-                  isNoReduction
-                    ? "bg-amber-50 border-amber-200 text-amber-800"
-                    : result.outcome === "TARGET_NOT_MET"
-                    ? "bg-blue-50 border-blue-200 text-blue-800"
-                    : "bg-fk-success-bg border-[#BBF7D0] text-fk-success"
-                }`}
-              >
-                <span>{isNoReduction ? "ℹ️" : result.outcome === "TARGET_NOT_MET" ? "⚠️" : "✓"}</span>
-                <span>
-                  {isNoReduction
-                    ? "No beneficial reduction"
-                    : result.outcome === "TARGET_NOT_MET"
-                    ? "We reduced the image, but could not reach requested size safely"
-                    : result.outcome === "ALREADY_WITHIN_TARGET"
-                    ? "Your image is already below requested size"
-                    : "Image compressed successfully"}
-                </span>
-              </div>
-
-              {isNoReduction && (
-                <p className="text-[13px] text-fk-text-muted text-center max-w-[500px]">
-                  This image is already efficiently compressed with the selected settings. The original file has been preserved.
-                </p>
-              )}
-
-              {/* Before/After Comparison Slider */}
-              {originalPreviewUrl && outputPreviewUrl && (
-                <ImageComparisonSlider
-                  originalUrl={originalPreviewUrl}
-                  outputUrl={outputPreviewUrl}
-                  originalLabel="Original"
-                  outputLabel="Optimized"
-                  onSliderUsed={() => trackEvent("comparison_slider_used")}
-                />
-              )}
-
-              {/* Metrics Display */}
-              <div className="flex items-center justify-center gap-6 w-full max-w-[460px] p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
-                <div className="flex flex-col items-center">
-                  <span className="text-[11px] font-bold text-fk-text-subtle uppercase">Original</span>
-                  <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(result.originalSizeBytes)}</span>
-                </div>
-                <div className="text-[22px] font-light text-fk-text-subtle ltr:rotate-0 rtl:rotate-180">→</div>
-                <div className="flex flex-col items-center">
-                  <span className="text-[11px] font-bold text-fk-primary uppercase">New Size</span>
-                  <span className="text-[20px] font-black text-fk-primary mt-1">{formatBytes(result.outputSizeBytes)}</span>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 w-full max-w-[540px]">
-                <button
-                  type="button"
-                  onClick={handleDownload}
-                  className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors"
-                >
-                  {isNoReduction || result.outcome === "ALREADY_WITHIN_TARGET"
-                    ? "Download Original Image"
-                    : result.outcome === "TARGET_NOT_MET"
-                    ? "Download Best Result"
-                    : "Download Compressed Image"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleAdjustSettings}
-                  className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
-                >
-                  Adjust Settings
-                </button>
-
                 <button
                   type="button"
                   onClick={handleResetWorkspace}
-                  className="h-[50px] px-4 border border-fk-border hover:bg-fk-surface-muted text-fk-text-subtle rounded-fk-md text-[13px] font-bold transition-colors"
+                  className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-3 py-1.5 border border-fk-border rounded-fk-md bg-white hover:bg-fk-surface-muted transition-colors shrink-0"
                 >
                   Choose Another
                 </button>
               </div>
+
+              {/* Status Header Badge */}
+              {result && (
+                <div className="flex flex-col gap-2">
+                  <div
+                    ref={resultHeadingRef as any}
+                    tabIndex={-1}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold focus:outline-none w-fit ${
+                      isNoReduction
+                        ? "bg-amber-50 border-amber-200 text-amber-800"
+                        : result.outcome === "TARGET_NOT_MET"
+                        ? "bg-blue-50 border-blue-200 text-blue-800"
+                        : "bg-fk-success-bg border-[#BBF7D0] text-fk-success"
+                    }`}
+                  >
+                    <span>{isNoReduction ? "ℹ️" : result.outcome === "TARGET_NOT_MET" ? "⚠️" : "✓"}</span>
+                    <span>
+                      {isNoReduction
+                        ? "No beneficial reduction"
+                        : result.outcome === "TARGET_NOT_MET"
+                        ? "We reduced the image, but could not reach requested size safely"
+                        : result.outcome === "ALREADY_WITHIN_TARGET"
+                        ? "Your image is already below requested size"
+                        : "Image compressed successfully"}
+                    </span>
+                  </div>
+
+                  {isNoReduction && (
+                    <p className="text-[13px] text-fk-text-muted leading-relaxed">
+                      This image is already efficiently compressed with the selected settings. The original file has been preserved.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Before/After Comparison Slider */}
+              {originalPreviewUrl && (
+                <div className="w-full flex flex-col items-center">
+                  <ImageComparisonSlider
+                    originalUrl={originalPreviewUrl}
+                    outputUrl={outputPreviewUrl || originalPreviewUrl}
+                    originalLabel="Original"
+                    outputLabel={result ? "Optimized" : "Preview"}
+                    onSliderUsed={() => trackEvent("comparison_slider_used")}
+                  />
+                </div>
+              )}
+
+              {/* Metrics Display */}
+              {result && (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-center gap-6 w-full p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
+                    <div className="flex flex-col items-center">
+                      <span className="text-[11px] font-bold text-fk-text-subtle uppercase">Original</span>
+                      <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(result.originalSizeBytes)}</span>
+                    </div>
+                    <div className="text-[22px] font-light text-fk-text-subtle ltr:rotate-0 rtl:rotate-180">→</div>
+                    <div className="flex flex-col items-center">
+                      <span className="text-[11px] font-bold text-fk-primary uppercase">New Size</span>
+                      <span className="text-[20px] font-black text-fk-primary mt-1">{formatBytes(result.outputSizeBytes)}</span>
+                    </div>
+                  </div>
+
+                  {/* Primary Download Action Bar */}
+                  <div className="flex flex-col sm:flex-row gap-3 mt-2">
+                    <button
+                      type="button"
+                      onClick={handleDownload}
+                      disabled={isProcessing}
+                      className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
+                    >
+                      {isNoReduction || result.outcome === "ALREADY_WITHIN_TARGET"
+                        ? "Download Original Image"
+                        : result.outcome === "TARGET_NOT_MET"
+                        ? "Download Best Result"
+                        : "Download Compressed Image"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleAdjustSettings}
+                      className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
+                    >
+                      Adjust Settings
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
+
+          {/* RIGHT PANEL: Settings Controls (Col Span 5 on Desktop, Sticky Top) */}
+          <div className="lg:col-span-5 flex flex-col gap-6 order-1 lg:order-2 lg:sticky lg:top-20" ref={settingsSectionRef}>
+            <div className="bg-white border border-fk-border rounded-fk-xl p-6 shadow-sm flex flex-col gap-6">
+              <h2 className="text-[16px] font-black text-fk-text flex items-center gap-2 border-b border-fk-border pb-3">
+                <span>⚙️</span>
+                <span>Compression Settings</span>
+              </h2>
+
+              {/* Compression Goal Mode Selection */}
+              <fieldset className="flex flex-col gap-2">
+                <legend className="text-[13px] font-bold text-fk-text">Compression Goal</legend>
+                <div className="grid grid-cols-3 gap-1.5 p-1 bg-fk-surface-muted border border-fk-border rounded-fk-md">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("BALANCED");
+                      setSettingsDirty(true);
+                      trackEvent("compression_mode_selected", { mode: "BALANCED" });
+                    }}
+                    className={`py-2 text-[12px] font-bold rounded-fk-sm transition-colors ${
+                      mode === "BALANCED" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
+                    }`}
+                  >
+                    Balanced
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("TARGET_SIZE");
+                      setSettingsDirty(true);
+                      trackEvent("compression_mode_selected", { mode: "TARGET_SIZE" });
+                    }}
+                    className={`py-2 text-[12px] font-bold rounded-fk-sm transition-colors ${
+                      mode === "TARGET_SIZE" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
+                    }`}
+                  >
+                    Target Size
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("MANUAL");
+                      setSettingsDirty(true);
+                      trackEvent("compression_mode_selected", { mode: "MANUAL" });
+                    }}
+                    className={`py-2 text-[12px] font-bold rounded-fk-sm transition-colors ${
+                      mode === "MANUAL" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
+                    }`}
+                  >
+                    Manual
+                  </button>
+                </div>
+              </fieldset>
+
+              {/* MODE 1: BALANCED */}
+              {mode === "BALANCED" && (
+                <div className="flex flex-col gap-3 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
+                  <label className="text-[13px] font-bold text-fk-text">Quality Priority</label>
+                  <div className="flex flex-col gap-2">
+                    {[
+                      { key: "BETTER_QUALITY", label: "Better quality", desc: "Preserves more visual detail" },
+                      { key: "BALANCED", label: "Balanced", desc: "Recommended balance of clarity & size" },
+                      { key: "SMALLER_FILE", label: "Smaller file", desc: "Prioritizes maximum reduction" }
+                    ].map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => {
+                          setQualityPriority(item.key as QualityPriority);
+                          setSettingsDirty(true);
+                        }}
+                        className={`flex flex-col p-3 rounded-fk-md border text-left ltr:text-left rtl:text-right transition-colors ${
+                          qualityPriority === item.key
+                            ? "bg-white border-fk-primary ring-1 ring-fk-primary text-fk-text"
+                            : "bg-white border-fk-border text-fk-text-muted hover:border-fk-text-subtle"
+                        }`}
+                      >
+                        <span className="text-[13px] font-bold text-fk-text">{item.label}</span>
+                        <span className="text-[11px] font-medium text-fk-text-subtle mt-0.5">{item.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* MODE 2: TARGET_SIZE */}
+              {mode === "TARGET_SIZE" && (
+                <div className="flex flex-col gap-4 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
+                  <label className="text-[13px] font-bold text-fk-text">Target File Size</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      step="any"
+                      min="20"
+                      max="52428800"
+                      value={targetValue}
+                      onChange={(e) => {
+                        setTargetValue(e.target.value);
+                        setSettingsDirty(true);
+                        setError(null);
+                      }}
+                      className="w-full h-10 px-3 border border-fk-border rounded-fk-md font-mono text-[14px] font-bold text-fk-text focus:outline-none focus:border-fk-primary"
+                      placeholder="200"
+                    />
+                    <select
+                      value={targetUnit}
+                      onChange={(e) => {
+                        setTargetUnit(e.target.value as "kb" | "mb");
+                        setSettingsDirty(true);
+                        setError(null);
+                      }}
+                      className="h-10 px-3 border border-fk-border rounded-fk-md font-bold text-[13px] text-fk-text bg-white focus:outline-none focus:border-fk-primary"
+                    >
+                      <option value="kb">KB</option>
+                      <option value="mb">MB</option>
+                    </select>
+                  </div>
+
+                  {/* Quick-fill Chips */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[11px] font-bold text-fk-text-subtle">Quick Targets:</span>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {[
+                        { label: "100 KB", val: "100", unit: "kb" },
+                        { label: "200 KB", val: "200", unit: "kb" },
+                        { label: "500 KB", val: "500", unit: "kb" },
+                        { label: "1 MB", val: "1", unit: "mb" }
+                      ].map((chip) => (
+                        <button
+                          key={chip.label}
+                          type="button"
+                          onClick={() => {
+                            setTargetValue(chip.val);
+                            setTargetUnit(chip.unit as "kb" | "mb");
+                            setSettingsDirty(true);
+                          }}
+                          className="px-2 py-1.5 text-[11px] font-bold border border-fk-border rounded-fk-md bg-white hover:border-fk-primary hover:text-fk-primary transition-colors text-center"
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* MODE 3: MANUAL */}
+              {mode === "MANUAL" && (
+                <div className="flex flex-col gap-5 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
+                  {/* Quality Slider */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[13px] font-bold text-fk-text">Quality</label>
+                      <span className="text-[13px] font-mono font-bold text-fk-primary">{qualitySlider}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      value={qualitySlider}
+                      onChange={(e) => {
+                        setQualitySlider(Number(e.target.value));
+                        setSettingsDirty(true);
+                      }}
+                      aria-valuetext={`${qualitySlider}% quality`}
+                      className="w-full h-2 bg-fk-border rounded-lg appearance-none cursor-pointer accent-fk-primary"
+                    />
+                    <div className="flex items-center justify-between text-[11px] font-medium text-fk-text-subtle">
+                      <span>Low</span>
+                      <span>Balanced</span>
+                      <span>High</span>
+                    </div>
+                  </div>
+
+                  {/* Dimension Presets */}
+                  <div className="flex flex-col gap-2 border-t border-fk-border pt-4">
+                    <label className="text-[13px] font-bold text-fk-text">Dimensions</label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[
+                        { key: "ORIGINAL", label: "Keep original" },
+                        { key: "1920", label: "1920 px" },
+                        { key: "1024", label: "1024 px" },
+                        { key: "640", label: "640 px" },
+                        { key: "CUSTOM", label: "Custom width" }
+                      ].map((preset) => (
+                        <button
+                          key={preset.key}
+                          type="button"
+                          onClick={() => {
+                            setDimensionPreset(preset.key as DimensionPreset);
+                            setSettingsDirty(true);
+                          }}
+                          className={`px-2.5 py-2 text-[12px] font-bold rounded-fk-md border transition-colors ${
+                            dimensionPreset === preset.key
+                              ? "bg-fk-primary text-white border-fk-primary"
+                              : "bg-white text-fk-text border-fk-border hover:border-fk-text-subtle"
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {dimensionPreset === "CUSTOM" && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <label className="text-[12px] font-bold text-fk-text whitespace-nowrap">Width (px):</label>
+                        <input
+                          type="number"
+                          min="50"
+                          max={preflight?.width || 8000}
+                          value={customWidth}
+                          onChange={(e) => {
+                            setCustomWidth(e.target.value);
+                            setSettingsDirty(true);
+                          }}
+                          className="w-full h-9 px-3 border border-fk-border rounded-fk-md text-[13px] font-mono font-bold text-fk-text focus:outline-none focus:border-fk-primary"
+                          placeholder="1000"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="button"
+                onClick={handleCompress}
+                disabled={isProcessing}
+                className="w-full h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
+              >
+                {isProcessing
+                  ? "Optimizing image locally..."
+                  : result && settingsDirty
+                  ? "Recompress Image"
+                  : "Compress Image"}
+              </button>
+
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-[13px] rounded-fk-md font-medium">
+                  ⚠️ {error}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

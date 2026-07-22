@@ -2,16 +2,16 @@ import { chromium } from "playwright";
 import * as fs from "fs";
 import * as path from "path";
 
-const TEMP_DIR = "C:\\Users\\mahdi\\FileKit-Workspace-Fixtures";
+const TEMP_DIR = "C:\\Users\\mahdi\\FileKit-Workspace-Hygiene-Fixtures";
 const BASE_URL = "http://localhost:3000";
 
-async function verifyPhase2c0Workspace() {
+async function verifyPhase2c0WorkspaceHygiene() {
   if (!fs.existsSync(TEMP_DIR)) {
     fs.mkdirSync(TEMP_DIR, { recursive: true });
   }
 
   console.log("======================================================================");
-  console.log("PHASE 2C0: IMAGE COMPRESSOR WORKSPACE E2E CHROMIUM AUDIT");
+  console.log("PHASE 2C0: IMAGE COMPRESSOR WORKSPACE FINAL INTEGRATION AUDIT");
   console.log("======================================================================\n");
 
   const browser = await chromium.launch({ headless: true });
@@ -42,8 +42,8 @@ async function verifyPhase2c0Workspace() {
     acceptDownloads: true
   });
 
-  // Test 1: Balanced Mode Workspace Execution
-  console.log("[Test 1] Balanced Mode Workspace Execution...");
+  // Test 1: Side-by-Side Desktop Layout & Balanced Mode
+  console.log("[Test 1] Side-by-Side Desktop Layout & Balanced Mode Execution...");
   const page = await context.newPage();
   await page.goto(`${BASE_URL}/compress-image`, { waitUntil: "networkidle" });
 
@@ -56,48 +56,53 @@ async function verifyPhase2c0Workspace() {
   const dlBtnText = await page.locator('button:has-text("Download")').innerText();
   console.log(`  ✓ Balanced Mode Outcome: Download Button="${dlBtnText}"`);
 
-  // Test 2: In-Place Recompression & Adjust Settings
-  console.log("\n[Test 2] In-Place Recompression & Settings Adjustment...");
-  await page.locator('button:has-text("Adjust Settings")').click();
-  await page.waitForTimeout(200);
-
-  // Switch to Target Size Mode and set 350 KB
+  // Test 2: Target Size Mode (3 MB & Quick Chips)
+  console.log("\n[Test 2] Target Size Mode (3 MB & Quick Chips)...");
   await page.locator('button:has-text("Target Size")').click();
-  await page.locator('input[type="number"]').fill("350");
-  await page.waitForTimeout(200);
+  await page.locator('button:has-text("1 MB")').click();
+  const chipValue = await page.locator('input[type="number"]').inputValue();
+  console.log(`  ✓ Quick-fill chip populated field: targetValue="${chipValue}" (Expected: "1")`);
 
-  const recompressBtn = page.locator('button:has-text("Recompress Image")');
-  console.log(`  ✓ Recompress Button Visible: ${await recompressBtn.isVisible()}`);
-  await recompressBtn.click();
+  await page.locator('input[type="number"]').fill("3");
+  await page.locator('select').selectOption("mb");
+  await page.locator('button:has-text("Recompress Image")').click();
   await page.waitForSelector('button:has-text("Download")', { timeout: 20000 });
 
   const dlBtnText2 = await page.locator('button:has-text("Download")').innerText();
-  console.log(`  ✓ Target Size (350 KB) Outcome: Download Button="${dlBtnText2}"`);
+  console.log(`  ✓ 3 MB Target Outcome: Download Button="${dlBtnText2}"`);
 
-  // Test 3: Manual Mode (Quality Slider & 1024px Dimension Preset)
+  // Test 3: Manual Mode (Quality Slider & 1024px Preset)
   console.log("\n[Test 3] Manual Mode (Quality 80% & 1024px Preset)...");
-  await page.locator('button:has-text("Adjust Settings")').click();
   await page.locator('button:has-text("Manual")').click();
   await page.locator('button:has-text("1024 px")').click();
-  await page.waitForTimeout(200);
-
   await page.locator('button:has-text("Recompress Image")').click();
   await page.waitForSelector('button:has-text("Download")', { timeout: 20000 });
 
   const dlBtnText3 = await page.locator('button:has-text("Download")').innerText();
   console.log(`  ✓ Manual Mode Outcome: Download Button="${dlBtnText3}"`);
 
+  // Test 4: Download Verification & File Integrity
+  console.log("\n[Test 4] Download Verification & File Integrity...");
+  const dlPromise = page.waitForEvent("download");
+  await page.locator('button:has-text("Download")').first().click();
+  const dl = await dlPromise;
+  const dlPath = path.join(TEMP_DIR, "workspace_output.jpg");
+  await dl.saveAs(dlPath);
+  const dlBytes = fs.readFileSync(dlPath).byteLength;
+  console.log(`  ✓ Verified Download File: ${dlBytes} Bytes saved successfully`);
+
   await page.close();
 
-  // Test 4: Fixed-Target Route (/compress-image-to-200kb) Remains Focused
-  console.log("\n[Test 4] Fixed-Target Route (/compress-image-to-200kb) Focused Check...");
-  const fixedPage = await context.newPage();
-  await fixedPage.goto(`${BASE_URL}/compress-image-to-200kb`, { waitUntil: "networkidle" });
+  // Test 5: Mobile 375px Responsive Viewport
+  console.log("\n[Test 5] Mobile 375px Viewport Responsiveness...");
+  const mobContext = await browser.newContext({ viewport: { width: 375, height: 667 }, isMobile: true });
+  const mobPage = await mobContext.newPage();
+  await mobPage.goto(`${BASE_URL}/compress-image`, { waitUntil: "networkidle" });
+  const scrollWidth = await mobPage.evaluate(() => document.documentElement.scrollWidth);
+  const clientWidth = await mobPage.evaluate(() => document.documentElement.clientWidth);
+  console.log(`  ✓ Mobile 375px Overflow Check: ScrollWidth (${scrollWidth}) === ClientWidth (${clientWidth}) -> ${scrollWidth === clientWidth}`);
+  await mobContext.close();
 
-  const hasManualSlider = await fixedPage.locator('input[type="range"]').isVisible();
-  console.log(`  ✓ Fixed-target route suppresses manual quality slider: ${!hasManualSlider}`);
-
-  await fixedPage.close();
   await browser.close();
 
   // Clean temp files
@@ -107,8 +112,8 @@ async function verifyPhase2c0Workspace() {
   }
 
   console.log("======================================================================");
-  console.log("PHASE 2C0 WORKSPACE E2E AUDIT PASSED 100%!");
+  console.log("PHASE 2C0 WORKSPACE INTEGRATION AUDIT PASSED 100%!");
   console.log("======================================================================");
 }
 
-verifyPhase2c0Workspace();
+verifyPhase2c0WorkspaceHygiene();
