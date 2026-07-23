@@ -1,3 +1,21 @@
+const BLOCKED_HOSTS = new Set([
+  "filekit.app",
+  "filekit.com",
+  "filekit.dev",
+  "test-filekit-compressor.org"
+]);
+
+export function isBlockedHostname(hostname: string): boolean {
+  const normalized = hostname.toLowerCase();
+
+  return (
+    BLOCKED_HOSTS.has(normalized) ||
+    normalized.endsWith(".filekit.app") ||
+    normalized.endsWith(".filekit.com") ||
+    normalized.endsWith(".filekit.dev")
+  );
+}
+
 export function getSiteUrl(): URL {
   const raw = process.env.NEXT_PUBLIC_SITE_URL;
 
@@ -24,12 +42,8 @@ export function getSiteUrl(): URL {
       throw new Error("Production site URL cannot use a local or preview deployment host");
     }
 
-    if (
-      url.hostname === "filekit.app" ||
-      url.hostname === "filekit.com" ||
-      url.hostname === "test-filekit-compressor.org"
-    ) {
-      throw new Error("Production site URL cannot use unowned placeholder domains (filekit.app / filekit.com / test-filekit-compressor.org)");
+    if (isBlockedHostname(url.hostname)) {
+      throw new Error(`Production site URL cannot use conflicted or unowned domain/subdomain: "${url.hostname}"`);
     }
   }
 

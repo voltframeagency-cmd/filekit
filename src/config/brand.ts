@@ -3,10 +3,12 @@ export interface BrandConfig {
   tagline: string;
   description: string;
   copyrightNotice: string;
-  supportEmail: string;
+  supportEmail: string | null;
+  brandClearance: "pending" | "cleared";
+  ownedDomainStatus: "pending" | "verified";
   socials: {
-    github: string;
-    twitter: string;
+    github: string | null;
+    twitter: string | null;
   };
   colors: {
     primary: string;
@@ -23,12 +25,14 @@ export const BRAND_CONFIG: BrandConfig = {
   name: "FileKit",
   tagline: "Private, Local-First File Tools in Your Browser",
   description:
-    "Fast, private PDF compression, image compression, and format conversion powered directly by WebAssembly & Web Workers in your browser.",
+    "Supported operations run locally in your browser using browser-native APIs, Canvas or OffscreenCanvas, PDF.js, pdf-lib, and Web Workers where supported. Your files are not uploaded for supported local operations.",
   copyrightNotice: `© ${new Date().getFullYear()} FileKit. All rights reserved. Zero file uploads.`,
-  supportEmail: "support@filekit.dev",
+  supportEmail: null, // Pending final owned domain verification
+  brandClearance: "pending",
+  ownedDomainStatus: "pending",
   socials: {
-    github: "https://github.com/filekit-dev/filekit",
-    twitter: "https://x.com/filekit_dev"
+    github: null,
+    twitter: null
   },
   colors: {
     primary: "#2563EB",

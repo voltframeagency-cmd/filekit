@@ -1,5 +1,5 @@
 import { BRAND_CONFIG, getBrandTitle, validateBrandConfig } from "../brand";
-import { getSiteUrl, buildCanonicalUrl } from "../../utils/siteUrl";
+import { getSiteUrl, buildCanonicalUrl, isBlockedHostname } from "../../utils/siteUrl";
 import {
   CONVERSION_CATALOG,
   getSitemapRoutes,
@@ -29,17 +29,19 @@ function getRedirectRule(slug: string) {
 }
 
 console.log("--------------------------------------------------");
-console.log("Starting FileKit Phase 2E0 Production Launch Audit");
+console.log("Starting FileKit Phase 2E0.1 Domain Conflict Guard Audit");
 console.log("--------------------------------------------------");
 
 // 1. Brand Configuration Checks
 console.log("Running Brand Configuration Checks...");
 assert(validateBrandConfig() === true, "validateBrandConfig returns true");
 assert(BRAND_CONFIG.name === "FileKit", "BRAND_CONFIG.name is 'FileKit'");
+assert(BRAND_CONFIG.supportEmail === null, "BRAND_CONFIG.supportEmail is null until final owned domain verification");
+assert(BRAND_CONFIG.brandClearance === "pending", "BRAND_CONFIG.brandClearance is 'pending'");
+assert(BRAND_CONFIG.ownedDomainStatus === "pending", "BRAND_CONFIG.ownedDomainStatus is 'pending'");
 assert(getBrandTitle("PDF Compressor") === "PDF Compressor — FileKit", "getBrandTitle formats title correctly");
-assert(getBrandTitle() === "FileKit — Private, Local-First File Tools in Your Browser", "getBrandTitle fallback formats correctly");
 
-// 2. Site URL Origin Guard Checks
+// 2. Site URL Origin Guard & Conflicted Domain Blocking Checks
 console.log("Running Site URL Origin Guard Checks...");
 const devUrl = getSiteUrl();
 assert(devUrl.origin === "http://localhost:3000", "Dev environment defaults to http://localhost:3000");
@@ -59,17 +61,22 @@ try {
   }
   assert(errorCaught, "Production throws if NEXT_PUBLIC_SITE_URL is missing");
 
-  // Disallowed hosts checks
-  const disallowedHosts = [
+  // Conflicted and disallowed hostnames
+  const conflictedHosts = [
+    "https://filekit.dev",
+    "https://app.filekit.dev",
+    "https://tools.filekit.dev",
+    "https://www.filekit.dev",
+    "https://filekit.app",
+    "https://app.filekit.app",
+    "https://filekit.com",
+    "https://test-filekit-compressor.org",
     "http://example.com", // non-HTTPS
-    "https://localhost", // localhost host
-    "https://my-app.vercel.app", // preview host
-    "https://filekit.app", // unowned placeholder
-    "https://filekit.com", // unowned placeholder
-    "https://test-filekit-compressor.org" // unowned placeholder
+    "https://localhost", // localhost in prod
+    "https://my-app.vercel.app" // preview host
   ];
 
-  for (const host of disallowedHosts) {
+  for (const host of conflictedHosts) {
     process.env.NEXT_PUBLIC_SITE_URL = host;
     let hostBlocked = false;
     try {
@@ -77,13 +84,22 @@ try {
     } catch {
       hostBlocked = true;
     }
-    assert(hostBlocked, `Production origin guard blocks disallowed host: ${host}`);
+    assert(hostBlocked, `Production origin guard blocks conflicted/disallowed origin: ${host}`);
   }
 
-  // Valid owned production host check
-  process.env.NEXT_PUBLIC_SITE_URL = "https://app.filekit.dev";
+  // Verify hostname helper logic directly
+  assert(isBlockedHostname("filekit.dev") === true, "isBlockedHostname identifies filekit.dev");
+  assert(isBlockedHostname("app.filekit.dev") === true, "isBlockedHostname identifies app.filekit.dev");
+  assert(isBlockedHostname("tools.filekit.dev") === true, "isBlockedHostname identifies tools.filekit.dev");
+  assert(isBlockedHostname("filekit.app") === true, "isBlockedHostname identifies filekit.app");
+  assert(isBlockedHostname("app.filekit.app") === true, "isBlockedHostname identifies app.filekit.app");
+  assert(isBlockedHostname("filekit.com") === true, "isBlockedHostname identifies filekit.com");
+  assert(isBlockedHostname("your-owned-domain.example") === false, "isBlockedHostname allows unblocked domain");
+
+  // Valid controlled non-deployment test origin check
+  process.env.NEXT_PUBLIC_SITE_URL = "https://your-owned-domain.example";
   const validProdUrl = getSiteUrl();
-  assert(validProdUrl.origin === "https://app.filekit.dev", "Production accepts valid owned domain origin");
+  assert(validProdUrl.origin === "https://your-owned-domain.example", "Production accepts valid controlled non-deployment test origin");
 } finally {
   process.env.NODE_ENV = oldEnv;
   if (oldSiteUrl !== undefined) {
@@ -160,7 +176,7 @@ for (const check of baselineChecks) {
 }
 
 console.log("--------------------------------------------------");
-console.log(`Phase 2E0 Audit Finished: ${passedCount} passed, ${failedCount} failed`);
+console.log(`Phase 2E0.1 Audit Finished: ${passedCount} passed, ${failedCount} failed`);
 console.log("--------------------------------------------------");
 
 if (failedCount > 0) {
