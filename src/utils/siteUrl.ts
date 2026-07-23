@@ -24,8 +24,12 @@ export function getSiteUrl(): URL {
       throw new Error("Production site URL cannot use a local or preview deployment host");
     }
 
-    if (url.hostname === "filekit.app" || url.hostname === "filekit.com") {
-      throw new Error("Production site URL cannot use unowned placeholder domains (filekit.app / filekit.com)");
+    if (
+      url.hostname === "filekit.app" ||
+      url.hostname === "filekit.com" ||
+      url.hostname === "test-filekit-compressor.org"
+    ) {
+      throw new Error("Production site URL cannot use unowned placeholder domains (filekit.app / filekit.com / test-filekit-compressor.org)");
     }
   }
 
