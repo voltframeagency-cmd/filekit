@@ -1,0 +1,14 @@
+competitor,accessed,profiled,workflowVerified,toolTested,landingCaptured,uploadCaptured,fileSelectedCaptured,settingsCaptured,processingCaptured,resultCaptured,downloadCaptured,mobileCaptured,errorCaptured,monetizationCaptured,componentsCaptured,svgGraphicsCaptured,screenshotCount,missingStates,completionClassification
+Squoosh,yes,yes,yes,Image Compression,yes,yes,yes,yes,yes,yes,yes,no,no,no,yes,yes,1,"mobile, error",WORKFLOW_VERIFIED
+PDF24 Tools,yes,yes,yes,Merge & Compress PDF,yes,yes,yes,yes,yes,yes,yes,no,no,yes,yes,yes,1,"mobile, error",WORKFLOW_VERIFIED
+Sejda,yes,yes,yes,PDF Page Grid,yes,yes,yes,yes,yes,yes,yes,no,no,yes,yes,yes,1,"mobile, error",WORKFLOW_VERIFIED
+iLovePDF,yes,yes,no,PDF Tools,yes,yes,no,yes,no,no,no,no,no,yes,yes,yes,2,"fileSelected, processing, result, download, mobile, error",PROFILED
+Smallpdf,yes,yes,no,PDF Tools,yes,yes,no,no,no,no,no,no,no,yes,yes,yes,2,"fileSelected, processing, result, download, mobile, error",PROFILED
+Adobe Acrobat,yes,yes,no,PDF Tools,yes,yes,no,no,no,no,no,no,no,yes,yes,yes,3,"fileSelected, processing, result, download, mobile, error",PROFILED
+CloudConvert,yes,yes,no,Format Conversion,yes,yes,no,yes,no,no,no,no,no,no,yes,yes,2,"fileSelected, processing, result, download, mobile, error",PROFILED
+FreeConvert,yes,yes,no,Format Conversion,yes,yes,no,no,no,no,no,no,no,yes,yes,yes,2,"fileSelected, processing, result, download, mobile, error",PROFILED
+TinyWow,yes,yes,no,Micro Tools,yes,yes,no,no,no,no,no,no,no,yes,yes,yes,2,"fileSelected, processing, result, download, mobile, error",PROFILED
+OptiPic,yes,yes,no,Image Optimization,yes,yes,no,no,no,no,no,no,no,no,yes,yes,1,"workflow, mobile, error",PROFILED
+Convertio,yes,yes,no,Format Conversion,yes,yes,no,no,no,no,no,no,no,no,yes,yes,1,"workflow, mobile, error",PROFILED
+ZenDocs,yes,yes,no,PDF Editor,yes,yes,no,no,no,no,no,no,no,yes,yes,yes,3,"fileSelected, processing, result, download, mobile, error",PROFILED
+PDFAid,yes,yes,no,PDF Converter,yes,yes,no,no,no,no,no,no,no,yes,yes,yes,3,"fileSelected, processing, result, download, mobile, error",PROFILED

@@ -1,79 +1,48 @@
-# FileKit Prioritized UX Recommendation Backlog
+# FileKit Reconciled UX Backlog & Source Retention Audit
 
-## 1. Classification Methodology
+## 1. Source Retention Workspace Audit
 
-- **ADOPT**: High usability gain, low implementation risk, 100% compliant with local-first principles.
-- **ADAPT**: Proven competitor pattern adapted specifically for FileKit's local architecture.
-- **AVOID**: Dark patterns, forced signups, fake progress counters, ad clickbait, silent server uploads.
-- **TEST**: Promising interaction concepts requiring user evidence after live deployment.
+All 5 core FileKit workspaces were audited for source buffer retention behavior during parameter adjustments, after output generation, and upon workspace reset:
 
----
+| Workspace | Source Retained During Adjustment | Source Retained After Output | Re-Upload Required for Setting Change | Full Reset Behavior | Status / Classification |
+|---|---|---|---|---|---|
+| **ImageCompressionWorkspace** | Yes | Yes | No | Intentionally clears source | Intentional & Correct |
+| **PdfCompressionWorkspace** | Yes | Yes | No | Intentionally clears source | Intentional & Correct |
+| **ImageConverterWorkspace** | Yes | Yes | No | Intentionally clears source | Intentional & Correct |
+| **PdfToImageWorkspace** | Yes | Yes | No | Intentionally clears source | Intentional & Correct |
+| **ImageToPdfWorkspace** | Yes | Yes | No | Intentionally clears source | Intentional & Correct |
 
-## 2. Prioritized Action Backlog
-
-### P0 (Critical Usability & Task Completion)
-
-1. **Retain Source File Buffer in Local Workspace Memory [ADOPT]**
-   - *Problem*: Changing compression quality or format targets currently forces file re-selection.
-   - *Solution*: Keep original `ArrayBuffer` / `File` handle in React state until workspace explicit reset.
-   - *Affected Components*: `useWorkspaceState.ts`, `UploadWorkspace.tsx`.
-   - *Engine Impact*: None (Zero engine changes required).
-
-2. **In-Place Workspace Retry & Adjustment Action [ADOPT]**
-   - *Problem*: Result card only offered "Download" or "Cancel/Reset".
-   - *Solution*: Add non-destructive "Adjust Settings" button that preserves the generated result while unlocking setting controls for instant re-execution.
-   - *Affected Components*: `VerifiedResultCard.tsx`, `UploadWorkspace.tsx`.
-   - *Engine Impact*: None.
+* **Finding**: FileKit's existing 5 workspaces already retain source buffers during setting tuning. The "Choose Different File" action intentionally clears the workspace for a clean new task. No source-retention defects were identified in existing workspaces.
 
 ---
 
-### P1 (High Impact UX & Trust Polish)
+## 2. Reconciled Backlog
 
-3. **Visual Thumbnail Page Grid for PDF Organization Suite [ADAPT]**
-   - *Problem*: Text-only page inputs (e.g. `"1-5"`) create uncertainty when selecting, splitting, or deleting pages.
-   - *Solution*: Render low-res PDF page thumbnails using local PDF.js canvas renderer in a responsive visual grid. Support drag-to-reorder, click-to-delete, and hover-to-rotate.
-   - *Affected Components*: `PdfOrganizationWorkspace.tsx`, `PdfPageThumbnailGrid.tsx`.
-   - *Engine Impact*: None (Uses standard `pdf-lib` manipulation methods).
-
-4. **Next-Step Cross-Tool Action Prompt [ADAPT]**
-   - *Problem*: User completes PDF compression and wants to convert it to images or split pages, but must manually download and navigate away.
-   - *Solution*: Add contextual "Next Action" links on `VerifiedResultCard` (e.g. *"Convert to JPG"*, *"Split Pages"*).
-   - *Affected Components*: `VerifiedResultCard.tsx`.
-   - *Engine Impact*: None.
+### P0 — Critical Usability Improvements
+* **P0-1: Audit Existing Image Comparison Slider [AUDIT]**:
+  - *Context*: FileKit already contains a frozen `ImageComparisonSlider.tsx` (Commit: `5a721d4`, Tag: `phase2b2-image-comparison-final`).
+  - *Recommendation*: Audit and refine `ImageComparisonSlider.tsx` against Squoosh for accessibility, mobile touch response, interaction clarity, and visual precision. Do NOT build a duplicate slider.
 
 ---
 
-### P2 (Useful Polish)
+### P1 — High-Impact UX & Trust Polish
+* **P1-1: Visual Thumbnail Grid for PDF Organization Suite [ADAPT]**:
+  - *Priority*: P1 research-backed interaction pattern.
+  - *Requires*: New PDF Organization engine family.
+  - *Frozen engine modifications*: No.
+  - *New engine and workspace work*: Yes.
+  - *Proposed Components*: `PdfPageThumbnailGrid.tsx` rendering 150px PDF.js canvas thumbnails with hover rotate/delete buttons and drag-reordering for `/merge-pdf`, `/split-pdf`, `/extract-pdf-pages`, `/delete-pdf-pages`, `/reorder-pdf-pages`, and `/rotate-pdf-pages`.
 
-5. **Split-Screen Quality Comparison Inspector for Image Compression [TEST]**
-   - *Problem*: Users cannot visually verify if image quality degraded slightly after compression without downloading.
-   - *Solution*: Squoosh-style interactive image comparison slider for single-image compression.
-   - *Affected Components*: `ImageCompressionWorkspace.tsx`.
-   - *Engine Impact*: None.
+* **P1-2: Multi-Stage Status Indicator [ADOPT]**:
+  - *Recommendation*: Stage labels (`1. Inspecting File` → `2. Processing Locally` → `3. Verifying Artifact`) to improve progress feedback.
 
----
-
-## 3. DO NOT BUILD (Explicit Anti-Patterns)
-
-- ❌ **Forced Account Creation / Sign-In Walls** (Adobe Acrobat pattern) — Conflicts with local-first privacy.
-- ❌ **Fake Animated Percentage Counters** — FileKit uses true, deterministic progress stages.
-- ❌ **Aggressive Hourly / Daily Task Ceilings** (Sejda / Smallpdf walls) — Degrades tool utility.
-- ❌ **Deceptive Ad Banner Placement** (FreeConvert / TinyWow pattern) — Harms user trust.
-- ❌ **Silent Server Fallback** — Local processing failures must present clear recovery choices, never silent file uploads.
+* **P1-3: Next-Step Contextual Links [ADAPT]**:
+  - *Recommendation*: Contextual next-tool suggestions on `VerifiedResultCard` (e.g. *"Convert to JPG"*, *"Split Pages"*).
 
 ---
 
-## 4. Proposed PDF Organization Workspace Specification
-
-For Track B (`/merge-pdf`, `/split-pdf`, `/extract-pdf-pages`, `/delete-pdf-pages`, `/reorder-pdf-pages`, `/rotate-pdf-pages`):
-
-- **Shared Visual Component**: `PdfOrganizationWorkspace.tsx`
-- **Interaction Flow**:
-  1. `Drag & Drop PDF(s)` into local dropzone.
-  2. `Local PDF.js Renderer` generates fast 150px page thumbnails.
-  3. `Interactive Page Grid`:
-     - Hover page: Show ↺ Rotate Left, ↻ Rotate Right, 🗑 Delete.
-     - Drag handle: Smooth reordering within grid.
-     - Select mode: Checkboxes for Range Split / Page Extraction.
-  4. `Action Button`: "Download Merged PDF", "Download Selected Pages", "Download Rotated PDF".
-  5. `Processing`: Executes locally via `pdf-lib` in background worker / micro-task loop.
+### DO NOT BUILD (Explicit Anti-Patterns)
+* ❌ Mandatory account creation or sign-in gates before download.
+* ❌ Deceptive $1 auto-renewing trial traps.
+* ❌ Fake animated progress percentages.
+* ❌ Deceptive banner ad placement next to CTAs.
