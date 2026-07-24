@@ -12,6 +12,9 @@ interface PdfWatermarkControlsProps {
   config: WatermarkConfig;
   onChange: (updated: Partial<WatermarkConfig>) => void;
   onImageFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onApplyWatermark: () => void;
+  onResetWorkspace: () => void;
+  isProcessing?: boolean;
   validationError?: string | null;
 }
 
@@ -29,9 +32,13 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
   config,
   onChange,
   onImageFileChange,
+  onApplyWatermark,
+  onResetWorkspace,
+  isProcessing = false,
   validationError,
 }) => {
   const isWinAnsiValid = config.type === "text" ? isWinAnsiSupported(config.text || "") : true;
+  const isApplyDisabled = isProcessing || !!validationError;
 
   return (
     <div className="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-5">
@@ -99,11 +106,6 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
                 !isWinAnsiValid ? "border-amber-600 focus:ring-amber-500" : "border-slate-800 focus:ring-blue-500"
               }`}
             />
-            {!isWinAnsiValid && (
-              <p className="text-[11px] text-amber-400 mt-1">
-                Standard PDF fonts support Latin characters (A-Z, 0-9, standard symbols).
-              </p>
-            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -114,13 +116,16 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
               <div className="flex items-center gap-2">
                 <input
                   type="color"
-                  value={config.fontColor || "#3B82F6"}
+                  value={config.fontColor || "#EF4444"}
                   onChange={(e) => onChange({ fontColor: e.target.value })}
-                  className="w-8 h-8 rounded border border-slate-700 bg-slate-950 cursor-pointer"
+                  className="w-8 h-8 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer p-0.5"
                 />
-                <span className="text-xs font-mono text-slate-300 uppercase">
-                  {config.fontColor || "#3B82F6"}
-                </span>
+                <input
+                  type="text"
+                  value={config.fontColor || "#EF4444"}
+                  onChange={(e) => onChange({ fontColor: e.target.value })}
+                  className="w-full px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 text-xs font-mono"
+                />
               </div>
             </div>
 
@@ -132,9 +137,10 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
                 type="range"
                 min={12}
                 max={96}
+                step={2}
                 value={config.fontSize || 36}
-                onChange={(e) => onChange({ fontSize: parseInt(e.target.value, 10) })}
-                className="w-full accent-blue-500 cursor-pointer"
+                onChange={(e) => onChange({ fontSize: parseInt(e.target.value) || 36 })}
+                className="w-full accent-blue-500"
               />
             </div>
           </div>
@@ -143,27 +149,22 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
 
       {/* Image Settings */}
       {config.type === "image" && (
-        <div>
-          <label className="block text-xs font-medium text-slate-400 mb-1">
-            Upload Logo / Image Watermark (PNG, JPG)
-          </label>
-          <label className={`cursor-pointer flex items-center justify-center p-3 border border-dashed rounded-xl text-xs font-semibold transition ${
-            config.imageBuffer
-              ? "border-emerald-700/80 bg-emerald-950/40 text-emerald-200"
-              : "border-slate-700 hover:border-blue-500 bg-slate-950 text-slate-300"
-          }`}>
-            <span>{config.imageBuffer ? "✓ Image Uploaded (Click to Change)" : "Select PNG / JPG Logo"}</span>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1">
+              Select Logo Image (PNG / JPEG)
+            </label>
             <input
               type="file"
-              accept="image/png, image/jpeg"
+              accept="image/png,image/jpeg"
               onChange={onImageFileChange}
-              className="hidden"
+              className="w-full text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-950 file:text-blue-300 hover:file:bg-blue-900 cursor-pointer"
             />
-          </label>
+          </div>
         </div>
       )}
 
-      {/* Opacity & Rotation Sliders */}
+      {/* Opacity & Rotation */}
       <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800">
         <div>
           <label className="block text-xs font-medium text-slate-400 mb-1">
@@ -171,30 +172,32 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
           </label>
           <input
             type="range"
-            min={10}
-            max={100}
-            value={Math.round((config.opacity || 0.4) * 100)}
-            onChange={(e) => onChange({ opacity: parseInt(e.target.value, 10) / 100 })}
-            className="w-full accent-blue-500 cursor-pointer"
+            min={0.1}
+            max={1.0}
+            step={0.05}
+            value={config.opacity || 0.4}
+            onChange={(e) => onChange({ opacity: parseFloat(e.target.value) || 0.4 })}
+            className="w-full accent-blue-500"
           />
         </div>
 
         <div>
           <label className="block text-xs font-medium text-slate-400 mb-1">
-            Rotation ({config.rotationAngle || 45}°)
+            Rotation ({config.rotationAngle || 0}°)
           </label>
           <input
             type="range"
-            min={-90}
-            max={90}
-            value={config.rotationAngle || 45}
-            onChange={(e) => onChange({ rotationAngle: parseInt(e.target.value, 10) })}
-            className="w-full accent-blue-500 cursor-pointer"
+            min={-180}
+            max={180}
+            step={5}
+            value={config.rotationAngle || 0}
+            onChange={(e) => onChange({ rotationAngle: parseInt(e.target.value) || 0 })}
+            className="w-full accent-blue-500"
           />
         </div>
       </div>
 
-      {/* Position Preset Selector Grid */}
+      {/* Position Preset */}
       <div className="pt-2 border-t border-slate-800">
         <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
           Position Preset
@@ -282,6 +285,36 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
             className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         )}
+      </div>
+
+      {/* CTA Action Buttons */}
+      <div className="pt-4 border-t border-slate-800 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onApplyWatermark}
+          disabled={isApplyDisabled}
+          className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-bold text-sm shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2"
+        >
+          {isProcessing ? (
+            <>
+              <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Applying Watermark...
+            </>
+          ) : (
+            "Apply Watermark"
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={onResetWorkspace}
+          className="py-3 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-semibold border border-slate-800 transition"
+        >
+          Reset
+        </button>
       </div>
     </div>
   );

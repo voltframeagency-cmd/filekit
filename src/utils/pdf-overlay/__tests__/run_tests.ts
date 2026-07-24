@@ -1,10 +1,11 @@
 import assert from "assert";
 import fs from "fs";
 import path from "path";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, degrees } from "pdf-lib";
 import {
   buildWatermarkPlacementPlan,
   calculateWatermarkCoordinates,
+  convertVisualToRawDrawingAngle,
   generateTileGridCoordinates,
   getRotatedWatermarkBounds,
   getRotatedWatermarkBoundsWithOffsets,
@@ -26,7 +27,7 @@ async function createTestPdfBuffer(pageCount: number, rotationAngle: number = 0)
   for (let i = 0; i < pageCount; i++) {
     const page = doc.addPage([595, 842]); // A4
     if (rotationAngle !== 0) {
-      page.setRotation({ type: "degrees", angle: rotationAngle });
+      page.setRotation(degrees(rotationAngle));
     }
   }
   return await doc.save();
@@ -77,7 +78,7 @@ async function runOverlayTests() {
     assertions += 4;
   }
 
-  // Test 2: Page Rotation Visual-to-Raw Coordinate Transforms (0, 90, 180, 270 deg)
+  // Test 2: Page Rotation Visual-to-Raw Coordinate Transforms & Drawing Angles
   {
     const markW = 100;
     const markH = 50;
@@ -100,7 +101,13 @@ async function runOverlayTests() {
     assert.strictEqual(t270.x, 800 - 20 - markH); // 730
     assert.strictEqual(t270.y, 10);
 
-    assertions += 8;
+    // Visual to raw drawing angle conversion
+    assert.strictEqual(convertVisualToRawDrawingAngle(45, 0), 45);
+    assert.strictEqual(convertVisualToRawDrawingAngle(45, 90), 315);
+    assert.strictEqual(convertVisualToRawDrawingAngle(45, 180), 225);
+    assert.strictEqual(convertVisualToRawDrawingAngle(45, 270), 135);
+
+    assertions += 12;
   }
 
   // Test 3: Unified Placement Plan Parity & Custom Placement
@@ -273,7 +280,7 @@ async function runOverlayTests() {
     assertions += 2;
   }
 
-  // Test 10: Page Box Preservation Fixture
+  // Test 10: Page Box Deep Comparison (MediaBox, CropBox, TrimBox, BleedBox, ArtBox)
   {
     const boxedPdfBuffer = await createBoxedPdfBuffer();
     const result = await executePdfWatermark(
@@ -293,21 +300,55 @@ async function runOverlayTests() {
 
     const reloadedDoc = await PDFDocument.load(result.fileData);
     const reloadedPage = reloadedDoc.getPage(0);
+
+    const media = reloadedPage.getMediaBox();
+    assert.strictEqual(media.x, 0);
+    assert.strictEqual(media.y, 0);
+    assert.strictEqual(media.width, 600);
+    assert.strictEqual(media.height, 800);
+
     const crop = reloadedPage.getCropBox();
     assert.strictEqual(crop.x, 10);
     assert.strictEqual(crop.y, 10);
     assert.strictEqual(crop.width, 580);
     assert.strictEqual(crop.height, 780);
-    assertions += 4;
+
+    const trim = reloadedPage.getTrimBox();
+    assert.strictEqual(trim.x, 20);
+    assert.strictEqual(trim.y, 20);
+    assert.strictEqual(trim.width, 560);
+    assert.strictEqual(trim.height, 760);
+
+    const bleed = reloadedPage.getBleedBox();
+    assert.strictEqual(bleed.x, 5);
+    assert.strictEqual(bleed.y, 5);
+    assert.strictEqual(bleed.width, 590);
+    assert.strictEqual(bleed.height, 790);
+
+    const art = reloadedPage.getArtBox();
+    assert.strictEqual(art.x, 30);
+    assert.strictEqual(art.y, 30);
+    assert.strictEqual(art.width, 540);
+    assert.strictEqual(art.height, 740);
+
+    assertions += 20;
   }
 
-  // Test 11: Output Verification Rejection & Fail-Closed Logic
+  // Test 11: Fail-Closed Production Verification Branch (Structurally Valid PDF with Forced PDF.js Failure)
   {
-    const invalidBuffer = new Uint8Array([0x00, 0x00, 0x00]);
-    const verification = await verifyPdfOverlayOutput(invalidBuffer, 1, false, true);
-    assert.strictEqual(verification.isValid, false);
-    assert.strictEqual(verification.magicBytesValid, false);
-    assertions += 2;
+    const validPdfBuffer = await createTestPdfBuffer(1);
+    const verification = await verifyPdfOverlayOutput(
+      validPdfBuffer,
+      1,
+      false,
+      false, // isNodeTest = false (production browser simulation)
+      true   // forcePdfjsFailure = true
+    );
+
+    assert.strictEqual(verification.isValid, false, "Production verification must fail closed when PDF.js fails");
+    assert.strictEqual(verification.pdfLibReloadStatus, "VERIFIED", "pdf-lib reload must be VERIFIED");
+    assert.strictEqual(verification.pdfjsReloadStatus, "FAILED", "pdfjs-dist reload must be FAILED");
+    assertions += 3;
   }
 
   console.log(`\n✅ All ${assertions} Production-Hardened PDF Watermark Engine assertions passed cleanly!`);

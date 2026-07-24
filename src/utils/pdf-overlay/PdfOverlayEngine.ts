@@ -1,6 +1,7 @@
 import { degrees, PDFDocument, StandardFonts } from "pdf-lib";
 import {
   buildWatermarkPlacementPlan,
+  convertVisualToRawDrawingAngle,
   transformVisualToPdfCoordinates,
 } from "./coordinateTransform";
 import { preflightOverlayPdf } from "./PdfOverlayPreflight";
@@ -143,6 +144,7 @@ export async function executePdfWatermark(
           pageRotation,
           cropBox
         );
+        const rawAngle = convertVisualToRawDrawingAngle(item.rotationDegrees, pageRotation);
 
         page.drawText(text, {
           x: drawCoords.x,
@@ -151,7 +153,7 @@ export async function executePdfWatermark(
           font: embeddedFont,
           color: textColor,
           opacity,
-          rotate: degrees(item.rotationDegrees),
+          rotate: degrees(rawAngle),
         });
       }
     } else if (config.type === "image" && embeddedImage) {
@@ -180,6 +182,7 @@ export async function executePdfWatermark(
           pageRotation,
           cropBox
         );
+        const rawAngle = convertVisualToRawDrawingAngle(item.rotationDegrees, pageRotation);
 
         page.drawImage(embeddedImage, {
           x: drawCoords.x,
@@ -187,7 +190,7 @@ export async function executePdfWatermark(
           width: imgWidth,
           height: imgHeight,
           opacity,
-          rotate: degrees(item.rotationDegrees),
+          rotate: degrees(rawAngle),
         });
       }
     }

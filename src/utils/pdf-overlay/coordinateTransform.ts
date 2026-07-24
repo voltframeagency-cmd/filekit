@@ -74,6 +74,18 @@ export function getRotatedWatermarkBounds(
 }
 
 /**
+ * Converts visual watermark angle to raw PDF stream drawing angle accounting for page rotation (/Rotate 0, 90, 180, 270 deg).
+ */
+export function convertVisualToRawDrawingAngle(
+  visualAngle: number,
+  pageRotationAngle: number
+): number {
+  const normPageRot = ((pageRotationAngle % 360) + 360) % 360;
+  const rawAngle = (visualAngle - normPageRot + 360) % 360;
+  return rawAngle;
+}
+
+/**
  * Maps visual page placement coordinates (xVisual, yVisual) to raw PDF stream coordinates accounting for /Rotate (0, 90, 180, 270 deg) and CropBox origin.
  */
 export function transformVisualToPdfCoordinates(
@@ -87,32 +99,36 @@ export function transformVisualToPdfCoordinates(
   rawH: number,
   rotationAngle: number = 0,
   cropBox: PageCropBox = { x: 0, y: 0, width: pageW, height: pageH }
-): { x: number; y: number } {
+): { x: number; y: number; rawDrawingAngle: number } {
   const normAngle = ((rotationAngle % 360) + 360) % 360;
+  let x = cropBox.x + xVisual;
+  let y = cropBox.y + yVisual;
 
   switch (normAngle) {
     case 90:
-      return {
-        x: cropBox.x + yVisual,
-        y: cropBox.y + (pageW - xVisual - markW),
-      };
+      x = cropBox.x + yVisual;
+      y = cropBox.y + (pageW - xVisual - markW);
+      break;
     case 180:
-      return {
-        x: cropBox.x + (pageW - xVisual - markW),
-        y: cropBox.y + (pageH - yVisual - markH),
-      };
+      x = cropBox.x + (pageW - xVisual - markW);
+      y = cropBox.y + (pageH - yVisual - markH);
+      break;
     case 270:
-      return {
-        x: cropBox.x + (pageH - yVisual - markH),
-        y: cropBox.y + xVisual,
-      };
+      x = cropBox.x + (pageH - yVisual - markH);
+      y = cropBox.y + xVisual;
+      break;
     case 0:
     default:
-      return {
-        x: cropBox.x + xVisual,
-        y: cropBox.y + yVisual,
-      };
+      x = cropBox.x + xVisual;
+      y = cropBox.y + yVisual;
+      break;
   }
+
+  return {
+    x,
+    y,
+    rawDrawingAngle: convertVisualToRawDrawingAngle(0, normAngle),
+  };
 }
 
 /**
