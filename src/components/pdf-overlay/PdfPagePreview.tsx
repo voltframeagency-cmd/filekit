@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import { WatermarkConfig } from "@/utils/pdf-overlay/types";
+import { buildWatermarkPlacementPlan } from "@/utils/pdf-overlay/coordinateTransform";
 import { getTargetPageIndices } from "@/utils/pdf-overlay/watermarkOperations";
 
 if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
@@ -26,8 +27,10 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
   const [renderError, setRenderError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [imageObj, setImageObj] = useState<HTMLImageElement | null>(null);
+  const [pageViewport, setPageViewport] = useState<pdfjsLib.PageViewport | null>(null);
 
   const pdfDocRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null);
+  const loadingTaskRef = useRef<pdfjsLib.PDFDocumentLoadingTask | null>(null);
   const renderTaskRef = useRef<pdfjsLib.RenderTask | null>(null);
 
   // Helper: check if current preview page is targeted
@@ -40,20 +43,32 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
 
   // Load image object for preview when image mode is selected
   useEffect(() => {
-    if (config.type === "image" && config.imageBuffer) {
+    let active = true;
+
+    if (config.type === "image" && config.imageBuffer && config.imageBuffer.length > 0) {
       const blob = new Blob([config.imageBuffer.buffer as ArrayBuffer], {
         type: config.imageMimeType || "image/png",
       });
       const url = URL.createObjectURL(blob);
       const img = new Image();
       img.onload = () => {
-        setImageObj(img);
+        if (active) {
+          setImageObj(img);
+        }
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = () => {
+        if (active) setImageObj(null);
         URL.revokeObjectURL(url);
       };
       img.src = url;
     } else {
       setImageObj(null);
     }
+
+    return () => {
+      active = false;
+    };
   }, [config.type, config.imageBuffer, config.imageMimeType]);
 
   // Load base PDF document page once
@@ -72,11 +87,15 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
         if (pdfDocRef.current) {
           try { await pdfDocRef.current.destroy(); } catch (_) {}
         }
+        if (loadingTaskRef.current) {
+          try { await loadingTaskRef.current.destroy(); } catch (_) {}
+        }
 
         const loadingTask = pdfjsLib.getDocument({
           data: sourceBuffer,
           cMapPacked: true,
         });
+        loadingTaskRef.current = loadingTask;
 
         const pdfDoc = await loadingTask.promise;
         if (isCancelled) return;
@@ -87,6 +106,7 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
         if (isCancelled) return;
 
         const viewport = pdfPage.getViewport({ scale: 0.8 });
+        setPageViewport(viewport);
 
         // Create offscreen base canvas
         const baseCanvas = document.createElement("canvas");
@@ -121,12 +141,15 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
       if (pdfDocRef.current) {
         try { pdfDocRef.current.destroy(); } catch (_) {}
       }
+      if (loadingTaskRef.current) {
+        try { loadingTaskRef.current.destroy(); } catch (_) {}
+      }
     };
   }, [sourceBuffer, pageIndex]);
 
-  // Redraw watermark overlay layer whenever config or base canvas changes
+  // Redraw watermark overlay layer using unified placement plan
   useEffect(() => {
-    if (!canvasRef.current || !baseCanvasRef.current) return;
+    if (!canvasRef.current || !baseCanvasRef.current || !pageViewport) return;
 
     const canvas = canvasRef.current;
     const baseCanvas = baseCanvasRef.current;
@@ -142,71 +165,71 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
     // If current page is excluded by target page range, return base page without watermark
     if (!isPageTargeted) return;
 
-    // Draw Watermark Overlay
+    // PDF point page dimensions (unscaled)
+    const pdfPageWidth = pageViewport.width / pageViewport.scale;
+    const pdfPageHeight = pageViewport.height / pageViewport.scale;
+
+    // Save context for watermark overlay
     ctx.save();
     ctx.globalAlpha = Math.max(0.05, Math.min(1.0, config.opacity));
 
-    const pageW = canvas.width;
-    const pageH = canvas.height;
-    const rotationRad = (- (config.rotationAngle || 0) * Math.PI) / 180;
-
     if (config.type === "text" && config.text) {
       ctx.fillStyle = config.fontColor || "#3B82F6";
-      const fontSize = Math.max(12, (config.fontSize || 36) * 0.8);
-      ctx.font = `bold ${fontSize}px sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+      const fontSizePdf = Math.max(8, config.fontSize || 36);
+      const fontSizeCanvas = fontSizePdf * pageViewport.scale;
+      ctx.font = `bold ${fontSizeCanvas}px sans-serif`;
 
       const text = config.text;
-      const metrics = ctx.measureText(text);
-      const textW = metrics.width;
-      const textH = fontSize;
+      const textMetrics = ctx.measureText(text);
+      const markBoundsPdf = {
+        width: textMetrics.width / pageViewport.scale,
+        height: fontSizePdf,
+      };
 
-      const drawSingleTextMark = (cx: number, cy: number) => {
+      const placementPlan = buildWatermarkPlacementPlan(
+        config,
+        { width: pdfPageWidth, height: pdfPageHeight },
+        markBoundsPdf,
+        36
+      );
+
+      for (const item of placementPlan) {
+        // Convert bottom-left origin PDF point (x, y) to top-left origin canvas pixel
+        const canvasPt = pageViewport.convertToViewportPoint(item.x, item.y);
         ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(rotationRad);
+        ctx.translate(canvasPt[0], canvasPt[1]);
+        ctx.rotate((-item.rotationDegrees * Math.PI) / 180);
         ctx.fillText(text, 0, 0);
         ctx.restore();
-      };
-
-      if (config.positionPreset === "tile") {
-        for (let y = 50; y < pageH; y += 120) {
-          for (let x = 50; x < pageW; x += 160) {
-            drawSingleTextMark(x, y);
-          }
-        }
-      } else {
-        const coords = getPreviewCoordinates(config.positionPreset, pageW, pageH, textW, textH, config.customX, config.customY);
-        drawSingleTextMark(coords.x, coords.y);
       }
     } else if (config.type === "image" && imageObj) {
-      const imgW = Math.min(pageW * 0.6, imageObj.width * 0.4);
-      const scale = imgW / imageObj.width;
-      const imgH = imageObj.height * scale;
+      const imgWidthPdf = Math.min(pdfPageWidth * 0.8, imageObj.width * 0.5);
+      const scale = imgWidthPdf / imageObj.width;
+      const imgHeightPdf = imageObj.height * scale;
+      const markBoundsPdf = { width: imgWidthPdf, height: imgHeightPdf };
 
-      const drawSingleImageMark = (cx: number, cy: number) => {
+      const placementPlan = buildWatermarkPlacementPlan(
+        config,
+        { width: pdfPageWidth, height: pdfPageHeight },
+        markBoundsPdf,
+        36
+      );
+
+      const canvasWidth = imgWidthPdf * pageViewport.scale;
+      const canvasHeight = imgHeightPdf * pageViewport.scale;
+
+      for (const item of placementPlan) {
+        const canvasPt = pageViewport.convertToViewportPoint(item.x, item.y);
         ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(rotationRad);
-        ctx.drawImage(imageObj, -imgW / 2, -imgH / 2, imgW, imgH);
+        ctx.translate(canvasPt[0], canvasPt[1]);
+        ctx.rotate((-item.rotationDegrees * Math.PI) / 180);
+        ctx.drawImage(imageObj, 0, -canvasHeight, canvasWidth, canvasHeight);
         ctx.restore();
-      };
-
-      if (config.positionPreset === "tile") {
-        for (let y = 60; y < pageH; y += imgH + 60) {
-          for (let x = 60; x < pageW; x += imgW + 60) {
-            drawSingleImageMark(x, y);
-          }
-        }
-      } else {
-        const coords = getPreviewCoordinates(config.positionPreset, pageW, pageH, imgW, imgH, config.customX, config.customY);
-        drawSingleImageMark(coords.x, coords.y);
       }
     }
 
     ctx.restore();
-  }, [config, imageObj, isPageTargeted]);
+  }, [config, imageObj, isPageTargeted, pageViewport]);
 
   return (
     <div className="relative flex items-center justify-center min-h-[380px] w-full bg-slate-950 rounded-2xl p-4 border border-slate-800 shadow-2xl overflow-hidden">
@@ -236,33 +259,3 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
     </div>
   );
 };
-
-function getPreviewCoordinates(
-  preset: string,
-  pageW: number,
-  pageH: number,
-  markW: number,
-  markH: number,
-  customX?: number,
-  customY?: number
-): { x: number; y: number } {
-  const margin = 36;
-  switch (preset) {
-    case "top-left":
-      return { x: margin + markW / 2, y: margin + markH / 2 };
-    case "top-right":
-      return { x: pageW - margin - markW / 2, y: margin + markH / 2 };
-    case "bottom-left":
-      return { x: margin + markW / 2, y: pageH - margin - markH / 2 };
-    case "bottom-right":
-      return { x: pageW - margin - markW / 2, y: pageH - margin - markH / 2 };
-    case "custom":
-      return {
-        x: customX !== undefined ? customX : pageW / 2,
-        y: customY !== undefined ? pageH - customY : pageH / 2,
-      };
-    case "center":
-    default:
-      return { x: pageW / 2, y: pageH / 2 };
-  }
-}

@@ -1,4 +1,4 @@
-import { WatermarkPositionPreset } from "./types";
+import { WatermarkConfig, WatermarkPositionPreset } from "./types";
 
 export interface WatermarkBounds {
   width: number;
@@ -10,9 +10,12 @@ export interface PageDimensions {
   height: number;
 }
 
-export interface CalculatedCoordinates {
-  x: number;
-  y: number;
+export interface WatermarkPlacementItem {
+  x: number; // PDF points (bottom-left origin)
+  y: number; // PDF points (bottom-left origin)
+  width: number; // PDF points
+  height: number; // PDF points
+  rotationDegrees: number;
 }
 
 /**
@@ -34,8 +37,96 @@ export function getRotatedWatermarkBounds(
 }
 
 /**
- * Calculates bottom-left origin PDF page coordinates (x, y) for watermark placement.
- * Accounts for rotated watermark bounding box.
+ * Single Unified Placement Algorithm shared between Preview & Export Engine.
+ * Computes exact PDF point placement items for single or tiled positions.
+ */
+export function buildWatermarkPlacementPlan(
+  config: WatermarkConfig,
+  pageDim: PageDimensions,
+  markBounds: WatermarkBounds,
+  margin: number = 36
+): WatermarkPlacementItem[] {
+  const { width: pageW, height: pageH } = pageDim;
+  const rotationDegrees = config.rotationAngle || 0;
+  const rotBounds = getRotatedWatermarkBounds(markBounds.width, markBounds.height, rotationDegrees);
+  const { width: markW, height: markH } = rotBounds;
+
+  if (config.positionPreset === "tile") {
+    const coordsList: Array<{ x: number; y: number }> = [];
+    const stepX = markW + 80;
+    const stepY = markH + 80;
+
+    for (let y = margin; y <= pageH - markH; y += stepY) {
+      for (let x = margin; x <= pageW - markW; x += stepX) {
+        coordsList.push({ x, y });
+      }
+    }
+
+    if (coordsList.length === 0) {
+      coordsList.push({
+        x: Math.max(margin, (pageW - markW) / 2),
+        y: Math.max(margin, (pageH - markH) / 2),
+      });
+    }
+
+    return coordsList.map((c) => ({
+      x: c.x,
+      y: c.y,
+      width: markBounds.width,
+      height: markBounds.height,
+      rotationDegrees,
+    }));
+  }
+
+  let x = Math.max(margin, (pageW - markW) / 2);
+  let y = Math.max(margin, (pageH - markH) / 2);
+
+  switch (config.positionPreset) {
+    case "top-left":
+      x = margin;
+      y = Math.max(margin, pageH - markH - margin);
+      break;
+
+    case "top-right":
+      x = Math.max(margin, pageW - markW - margin);
+      y = Math.max(margin, pageH - markH - margin);
+      break;
+
+    case "bottom-left":
+      x = margin;
+      y = margin;
+      break;
+
+    case "bottom-right":
+      x = Math.max(margin, pageW - markW - margin);
+      y = margin;
+      break;
+
+    case "custom":
+      x = config.customX !== undefined ? config.customX : Math.max(margin, (pageW - markW) / 2);
+      y = config.customY !== undefined ? config.customY : Math.max(margin, (pageH - markH) / 2);
+      break;
+
+    case "center":
+    default:
+      x = Math.max(margin, (pageW - markW) / 2);
+      y = Math.max(margin, (pageH - markH) / 2);
+      break;
+  }
+
+  return [
+    {
+      x,
+      y,
+      width: markBounds.width,
+      height: markBounds.height,
+      rotationDegrees,
+    },
+  ];
+}
+
+/**
+ * Retained for backwards compatibility in existing utility calls.
  */
 export function calculateWatermarkCoordinates(
   positionPreset: WatermarkPositionPreset,
@@ -43,85 +134,30 @@ export function calculateWatermarkCoordinates(
   markBounds: WatermarkBounds,
   customX?: number,
   customY?: number,
-  margin: number = 36, // 0.5 inch margin in points
+  margin: number = 36,
   rotationAngle: number = 0
-): CalculatedCoordinates {
-  const rotBounds = getRotatedWatermarkBounds(markBounds.width, markBounds.height, rotationAngle);
-  const { width: pageW, height: pageH } = pageDim;
-  const { width: markW, height: markH } = rotBounds;
-
-  switch (positionPreset) {
-    case "center":
-      return {
-        x: Math.max(margin, (pageW - markW) / 2),
-        y: Math.max(margin, (pageH - markH) / 2),
-      };
-
-    case "top-left":
-      return {
-        x: margin,
-        y: Math.max(margin, pageH - markH - margin),
-      };
-
-    case "top-right":
-      return {
-        x: Math.max(margin, pageW - markW - margin),
-        y: Math.max(margin, pageH - markH - margin),
-      };
-
-    case "bottom-left":
-      return {
-        x: margin,
-        y: margin,
-      };
-
-    case "bottom-right":
-      return {
-        x: Math.max(margin, pageW - markW - margin),
-        y: margin,
-      };
-
-    case "custom":
-      return {
-        x: customX !== undefined ? customX : Math.max(margin, (pageW - markW) / 2),
-        y: customY !== undefined ? customY : Math.max(margin, (pageH - markH) / 2),
-      };
-
-    default:
-      return {
-        x: Math.max(margin, (pageW - markW) / 2),
-        y: Math.max(margin, (pageH - markH) / 2),
-      };
-  }
+): { x: number; y: number } {
+  const plan = buildWatermarkPlacementPlan(
+    { positionPreset, customX, customY, rotationAngle } as any,
+    pageDim,
+    markBounds,
+    margin
+  );
+  return { x: plan[0].x, y: plan[0].y };
 }
 
-/**
- * Generates tiled grid coordinates across page dimensions for "tile" position preset.
- */
 export function generateTileGridCoordinates(
   pageDim: PageDimensions,
   markBounds: WatermarkBounds,
   paddingX: number = 72,
   paddingY: number = 72,
   rotationAngle: number = 0
-): CalculatedCoordinates[] {
-  const rotBounds = getRotatedWatermarkBounds(markBounds.width, markBounds.height, rotationAngle);
-  const coords: CalculatedCoordinates[] = [];
-  const stepX = rotBounds.width + paddingX;
-  const stepY = rotBounds.height + paddingY;
-
-  for (let y = 36; y < pageDim.height - rotBounds.height; y += stepY) {
-    for (let x = 36; x < pageDim.width - rotBounds.width; x += stepX) {
-      coords.push({ x, y });
-    }
-  }
-
-  if (coords.length === 0) {
-    coords.push({
-      x: Math.max(18, (pageDim.width - rotBounds.width) / 2),
-      y: Math.max(18, (pageDim.height - rotBounds.height) / 2),
-    });
-  }
-
-  return coords;
+): Array<{ x: number; y: number }> {
+  const plan = buildWatermarkPlacementPlan(
+    { positionPreset: "tile", rotationAngle } as any,
+    pageDim,
+    markBounds,
+    36
+  );
+  return plan.map((item) => ({ x: item.x, y: item.y }));
 }

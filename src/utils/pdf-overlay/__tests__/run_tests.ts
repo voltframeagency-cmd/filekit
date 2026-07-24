@@ -1,6 +1,9 @@
 import assert from "assert";
+import fs from "fs";
+import path from "path";
 import { PDFDocument } from "pdf-lib";
 import {
+  buildWatermarkPlacementPlan,
   calculateWatermarkCoordinates,
   generateTileGridCoordinates,
   getRotatedWatermarkBounds,
@@ -41,6 +44,15 @@ async function runOverlayTests() {
   console.log("▶ Running Production-Hardened PDF Watermark & Overlay Engine Unit Tests...\n");
   let assertions = 0;
 
+  // Test 0: Local Asset Presence Verification
+  {
+    const workerPath = path.join(process.cwd(), "public/pdf.worker.min.mjs");
+    assert.ok(fs.existsSync(workerPath), "public/pdf.worker.min.mjs must exist");
+    const stat = fs.statSync(workerPath);
+    assert.ok(stat.size > 100000, "pdf.worker.min.mjs file size must be valid");
+    assertions += 2;
+  }
+
   // Test 1: Rotated Watermark Bounding Box Calculation
   {
     const bounds = getRotatedWatermarkBounds(100, 50, 90);
@@ -52,22 +64,35 @@ async function runOverlayTests() {
     assertions += 3;
   }
 
-  // Test 2: Coordinate Transformations & Custom Placement
+  // Test 2: Unified Placement Plan Parity & Custom Placement
   {
     const pageDim = { width: 600, height: 800 };
     const markBounds = { width: 200, height: 100 };
 
-    const centerCoords = calculateWatermarkCoordinates("center", pageDim, markBounds);
-    assert.strictEqual(centerCoords.x, 200);
-    assert.strictEqual(centerCoords.y, 350);
+    const planCenter = buildWatermarkPlacementPlan(
+      { type: "text", opacity: 0.5, rotationAngle: 0, positionPreset: "center", targetPagesMode: "all" },
+      pageDim,
+      markBounds
+    );
+    assert.strictEqual(planCenter.length, 1);
+    assert.strictEqual(planCenter[0].x, 200);
+    assert.strictEqual(planCenter[0].y, 350);
 
-    const customCoords = calculateWatermarkCoordinates("custom", pageDim, markBounds, 120, 240);
-    assert.strictEqual(customCoords.x, 120);
-    assert.strictEqual(customCoords.y, 240);
+    const planCustom = buildWatermarkPlacementPlan(
+      { type: "text", opacity: 0.5, rotationAngle: 0, positionPreset: "custom", customX: 120, customY: 240, targetPagesMode: "all" },
+      pageDim,
+      markBounds
+    );
+    assert.strictEqual(planCustom[0].x, 120);
+    assert.strictEqual(planCustom[0].y, 240);
 
-    const tiles = generateTileGridCoordinates(pageDim, markBounds, 100, 100);
-    assert.ok(tiles.length > 1, "Tile grid should produce multiple coordinate pairs");
-    assertions += 4;
+    const planTile = buildWatermarkPlacementPlan(
+      { type: "text", opacity: 0.5, rotationAngle: 0, positionPreset: "tile", targetPagesMode: "all" },
+      pageDim,
+      markBounds
+    );
+    assert.ok(planTile.length > 1, "Tile placement plan should produce multiple items");
+    assertions += 6;
   }
 
   // Test 3: Watermark Operations & WinAnsi Character Validation
@@ -113,13 +138,19 @@ async function runOverlayTests() {
     const pdfBuffer = await createTestPdfBuffer(1);
     await assert.rejects(
       async () => {
-        await executePdfWatermark(pdfBuffer, {
-          type: "image",
-          opacity: 0.5,
-          rotationAngle: 0,
-          positionPreset: "center",
-          targetPagesMode: "all",
-        });
+        await executePdfWatermark(
+          pdfBuffer,
+          {
+            type: "image",
+            opacity: 0.5,
+            rotationAngle: 0,
+            positionPreset: "center",
+            targetPagesMode: "all",
+          },
+          "watermarked.pdf",
+          undefined,
+          true
+        );
       },
       (err: any) => err.message.includes("IMAGE_WATERMARK_REQUIRED")
     );
@@ -131,14 +162,20 @@ async function runOverlayTests() {
     const pdfBuffer = await createTestPdfBuffer(1);
     await assert.rejects(
       async () => {
-        await executePdfWatermark(pdfBuffer, {
-          type: "text",
-          text: "   ",
-          opacity: 0.5,
-          rotationAngle: 0,
-          positionPreset: "center",
-          targetPagesMode: "all",
-        });
+        await executePdfWatermark(
+          pdfBuffer,
+          {
+            type: "text",
+            text: "   ",
+            opacity: 0.5,
+            rotationAngle: 0,
+            positionPreset: "center",
+            targetPagesMode: "all",
+          },
+          "watermarked.pdf",
+          undefined,
+          true
+        );
       },
       (err: any) => err.message.includes("EMPTY_TEXT_REQUIRED")
     );
@@ -160,7 +197,9 @@ async function runOverlayTests() {
         positionPreset: "center",
         targetPagesMode: "all",
       },
-      "png_watermarked.pdf"
+      "png_watermarked.pdf",
+      undefined,
+      true
     );
 
     assert.strictEqual(result.pageCount, 2);
@@ -185,7 +224,9 @@ async function runOverlayTests() {
         positionPreset: "top-right",
         targetPagesMode: "all",
       },
-      "rotated_source_watermark.pdf"
+      "rotated_source_watermark.pdf",
+      undefined,
+      true
     );
 
     assert.strictEqual(result.pageCount, 2);
@@ -193,10 +234,10 @@ async function runOverlayTests() {
     assertions += 2;
   }
 
-  // Test 9: Output Verification Rejection
+  // Test 9: Output Verification Rejection & Fail-Closed Logic
   {
     const invalidBuffer = new Uint8Array([0x00, 0x00, 0x00]);
-    const verification = await verifyPdfOverlayOutput(invalidBuffer, 1);
+    const verification = await verifyPdfOverlayOutput(invalidBuffer, 1, false, true);
     assert.strictEqual(verification.isValid, false);
     assert.strictEqual(verification.magicBytesValid, false);
     assertions += 2;

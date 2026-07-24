@@ -2,18 +2,15 @@ import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
 import { PdfOverlayVerificationResult, VerificationReloadStatus } from "./types";
 
-// Configure pdfjs-dist worker location cleanly
-if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-}
-
 /**
  * Validates output watermarked PDF buffer against magic bytes, pdf-lib reload, and pdfjs-dist reload.
+ * Strictly fail-closed in browser/worker environments (requires pdfjsReloadStatus === "VERIFIED").
  */
 export async function verifyPdfOverlayOutput(
   fileData: Uint8Array,
   expectedPageCount: number,
-  signatureDetected: boolean = false
+  signatureDetected: boolean = false,
+  isNodeTest: boolean = false
 ): Promise<PdfOverlayVerificationResult> {
   if (!fileData || fileData.length < 5) {
     return {
@@ -95,6 +92,10 @@ export async function verifyPdfOverlayOutput(
   let jsDoc: pdfjsLib.PDFDocumentProxy | null = null;
 
   try {
+    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+    }
+
     loadingTask = pdfjsLib.getDocument({
       data: fileData,
       cMapPacked: true,
@@ -107,7 +108,7 @@ export async function verifyPdfOverlayOutput(
       pdfjsStatus = "FAILED";
     }
   } catch (err: any) {
-    if (typeof window === "undefined") {
+    if (isNodeTest) {
       pdfjsStatus = "UNAVAILABLE";
     } else {
       pdfjsStatus = "FAILED";
@@ -121,7 +122,10 @@ export async function verifyPdfOverlayOutput(
     }
   }
 
-  const isOverallValid = pdfLibStatus === "VERIFIED" && pdfjsStatus !== "FAILED";
+  // In browser/worker environments, both pdf-lib and pdfjs-dist must be VERIFIED!
+  const isOverallValid =
+    pdfLibStatus === "VERIFIED" &&
+    (isNodeTest ? pdfjsStatus !== "FAILED" : pdfjsStatus === "VERIFIED");
 
   return {
     isValid: isOverallValid,

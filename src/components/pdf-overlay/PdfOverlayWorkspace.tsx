@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   PdfOverlayOutputArtifact,
   PdfOverlayProgress,
@@ -23,6 +23,16 @@ export const PdfOverlayWorkspace: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const workerRef = useRef<Worker | null>(null);
+
+  // Terminate worker on component unmount
+  useEffect(() => {
+    return () => {
+      if (workerRef.current) {
+        try { workerRef.current.terminate(); } catch (_) {}
+        workerRef.current = null;
+      }
+    };
+  }, []);
 
   const [watermarkConfig, setWatermarkConfig] = useState<WatermarkConfig>({
     type: "text",
@@ -184,7 +194,7 @@ export const PdfOverlayWorkspace: React.FC = () => {
 
   const handleCancelWorker = () => {
     if (workerRef.current) {
-      workerRef.current.terminate();
+      try { workerRef.current.terminate(); } catch (_) {}
       workerRef.current = null;
     }
     setIsProcessing(false);
@@ -193,7 +203,7 @@ export const PdfOverlayWorkspace: React.FC = () => {
 
   const handleResetWorkspace = () => {
     if (workerRef.current) {
-      workerRef.current.terminate();
+      try { workerRef.current.terminate(); } catch (_) {}
       workerRef.current = null;
     }
     setSourceFile(null);

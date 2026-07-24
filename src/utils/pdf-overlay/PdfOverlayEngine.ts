@@ -1,8 +1,5 @@
 import { degrees, PDFDocument, StandardFonts } from "pdf-lib";
-import {
-  calculateWatermarkCoordinates,
-  generateTileGridCoordinates,
-} from "./coordinateTransform";
+import { buildWatermarkPlacementPlan } from "./coordinateTransform";
 import { preflightOverlayPdf } from "./PdfOverlayPreflight";
 import { verifyPdfOverlayOutput } from "./outputVerification";
 import {
@@ -27,7 +24,8 @@ export async function executePdfWatermark(
   sourceBuffer: Uint8Array,
   config: WatermarkConfig,
   fileName: string = "watermarked.pdf",
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
+  isNodeTest: boolean = false
 ): Promise<PdfOverlayOutputArtifact> {
   const reportProgress = (
     stage: PdfOverlayProgress["stage"],
@@ -102,10 +100,8 @@ export async function executePdfWatermark(
   const textColor = hexToPdfRgb(config.fontColor || "#3B82F6");
   const fontSize = Math.max(8, config.fontSize || 36);
   const opacity = Math.max(0.05, Math.min(1.0, config.opacity));
-  const rotationAngle = config.rotationAngle || 0;
-  const rotationDegrees = degrees(rotationAngle);
 
-  // Stage 3: Stamping watermark onto target pages
+  // Stage 3: Stamping watermark onto target pages using unified placement plan
   for (let i = 0; i < targetPageIndices.length; i++) {
     const pageIndex = targetPageIndices[i];
     const page = pdfDoc.getPage(pageIndex);
@@ -123,44 +119,22 @@ export async function executePdfWatermark(
       const textHeight = embeddedFont.heightAtSize(fontSize);
       const markBounds = { width: textWidth, height: textHeight };
 
-      if (config.positionPreset === "tile") {
-        const coordsList = generateTileGridCoordinates(
-          { width: pageW, height: pageH },
-          markBounds,
-          100,
-          100,
-          rotationAngle
-        );
-        for (const coords of coordsList) {
-          page.drawText(text, {
-            x: coords.x,
-            y: coords.y,
-            size: fontSize,
-            font: embeddedFont,
-            color: textColor,
-            opacity,
-            rotate: rotationDegrees,
-          });
-        }
-      } else {
-        const coords = calculateWatermarkCoordinates(
-          config.positionPreset,
-          { width: pageW, height: pageH },
-          markBounds,
-          config.customX,
-          config.customY,
-          36,
-          rotationAngle
-        );
+      const placementPlan = buildWatermarkPlacementPlan(
+        config,
+        { width: pageW, height: pageH },
+        markBounds,
+        36
+      );
 
+      for (const item of placementPlan) {
         page.drawText(text, {
-          x: coords.x,
-          y: coords.y,
+          x: item.x,
+          y: item.y,
           size: fontSize,
           font: embeddedFont,
           color: textColor,
           opacity,
-          rotate: rotationDegrees,
+          rotate: degrees(item.rotationDegrees),
         });
       }
     } else if (config.type === "image" && embeddedImage) {
@@ -169,42 +143,21 @@ export async function executePdfWatermark(
       const imgHeight = embeddedImage.height * scaleFactor;
       const markBounds = { width: imgWidth, height: imgHeight };
 
-      if (config.positionPreset === "tile") {
-        const coordsList = generateTileGridCoordinates(
-          { width: pageW, height: pageH },
-          markBounds,
-          80,
-          80,
-          rotationAngle
-        );
-        for (const coords of coordsList) {
-          page.drawImage(embeddedImage, {
-            x: coords.x,
-            y: coords.y,
-            width: imgWidth,
-            height: imgHeight,
-            opacity,
-            rotate: rotationDegrees,
-          });
-        }
-      } else {
-        const coords = calculateWatermarkCoordinates(
-          config.positionPreset,
-          { width: pageW, height: pageH },
-          markBounds,
-          config.customX,
-          config.customY,
-          36,
-          rotationAngle
-        );
+      const placementPlan = buildWatermarkPlacementPlan(
+        config,
+        { width: pageW, height: pageH },
+        markBounds,
+        36
+      );
 
+      for (const item of placementPlan) {
         page.drawImage(embeddedImage, {
-          x: coords.x,
-          y: coords.y,
+          x: item.x,
+          y: item.y,
           width: imgWidth,
           height: imgHeight,
           opacity,
-          rotate: rotationDegrees,
+          rotate: degrees(item.rotationDegrees),
         });
       }
     }
@@ -226,7 +179,8 @@ export async function executePdfWatermark(
   const verification = await verifyPdfOverlayOutput(
     outputBytes,
     totalPages,
-    preflight.signatureDetected
+    preflight.signatureDetected,
+    isNodeTest
   );
 
   if (!verification.isValid) {
