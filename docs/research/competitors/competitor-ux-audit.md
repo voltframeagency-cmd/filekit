@@ -1,48 +1,41 @@
-# FileKit Comprehensive Competitor UI/UX, Graphic Design & Copywriting Audit
+# FileKit Competitor UX, Workflow, Component & Visual-System Audit
 
-## 1. Executive Summary & Audit Coverage
+## 1. Executive Summary & Audit Classifications
 
-This research audit evaluates thirteen online document and image processing competitors. Screenshots and interface observations are recorded across layout structure, visual aesthetics, copywriting, trust signals, and monetization friction.
+This research audit evaluates thirteen online document and image processing competitors. Interface observations, component architecture, trust signals, and monetization mechanics are documented across all thirteen platforms.
+
+### Correct Competitor Audit Totals
+```text
+Competitors accessed:           13 / 13
+Competitors profiled:           13 / 13
+Competitors workflow-verified:  1 / 13 (Squoosh)
+Competitors fully audited:      0 / 13
+Curated workspace screenshots:  29
+Raw brain artifact captures:    70 (unindexed click/media logs)
+```
 
 ### Competitor Audit Classifications
-- **WORKFLOW_VERIFIED**: Squoosh, PDF24 Tools, Sejda.
-- **PROFILED**: iLovePDF, Smallpdf, Adobe Acrobat Online, CloudConvert, FreeConvert, TinyWow, OptiPic, Convertio, ZenDocs, PDFAid.
+- **WORKFLOW_VERIFIED** (1):
+  - **Squoosh**: 5 verified workflow state screenshots (`01-landing-desktop.png`, `02-file-selected-desktop.png`, `03-settings-desktop.png`, `05-result-desktop.png`, `07-mobile-workflow.png`).
+- **PROFILED** (12):
+  - **PDF24 Tools**, **Smallpdf**, **CloudConvert**, **PDFAid**, **Sejda**, **iLovePDF**, **Adobe Acrobat Online**, **FreeConvert**, **TinyWow**, **OptiPic**, **Convertio**, **ZenDocs** (each supported by substantive finding documents under `docs/research/competitors/findings/<slug>.md`).
 
 ---
 
-## 2. Evidence-Based Observations & Hypotheses
+## 2. Screenshot Discrepancy Reconciliation
 
-### A. UI/UX & Interaction Architecture
-* **Upload Targets**: **CloudConvert** and **Squoosh** place the upload target front-and-center in the hero banner, with format selection controls adjacent to the dropzone.
-* **Category Navigation**: **TinyWow** and **iLovePDF** use top category filter pills (`All`, `PDF`, `Image`, `Convert`, `Workflows`) and central search bars to speed up tool discovery.
-* **Progressive Disclosure**: **FreeConvert** and **CloudConvert** present simple defaults initially while concealing advanced parameters (DPI, quality slider, audio bitrates) behind collapsible modals.
+- **Physical Curated Workspace PNGs**: 29 screenshots stored under `docs/research/competitors/screenshots/<competitor>/<tool>/workflow/`.
+- **Raw Brain Execution Captures**: 70 temporary screenshot/media artifacts recorded in `brain/.tempmediaStorage/` during automated subagent execution.
+- **Audit Accounting**: Only curated workspace PNGs are indexed in `screenshot-index.csv` and `audit-coverage-matrix.csv`. Raw brain execution logs are documented in `screenshot-inventory-audit.csv`.
 
-### B. Architecture Wording Standard
+---
+
+## 3. Reconciled Architecture & Backlog Standards
+
+### Approved Local Architecture Wording
 > **Supported local operations run locally using browser-native APIs, Canvas or OffscreenCanvas, PDF.js, pdf-lib, JavaScript or TypeScript, and Web Workers where implemented. Files are not uploaded for supported local operations.**
 
----
-
-## 3. Strict Evidence Language Reclassifications
-
-### Reclassification 1: Trust Checkmarks
-* **OBSERVED**: Trust checkmarks are positioned adjacent to the upload dropzone (PDFAid pattern).
-* **HYPOTHESIS**: Adjacent trust messaging may improve upload confidence.
-* **NOT_VERIFIED**: Conversion impact without FileKit A/B testing.
-
-### Reclassification 2: Pre-Download Account Walls
-* **OBSERVED**: An account wall interrupts the workflow before download (Adobe Acrobat pattern).
-* **INFERRED**: This likely increases workflow abandonment.
-* **NOT_VERIFIED**: Actual competitor abandonment rate.
-
-### Reclassification 3: Trial Subscription Traps
-* **OBSERVED**: $1.00 / €0.50 7-day trial checkouts silently convert into $39 - $49 / month auto-renewing subscriptions (ZenDocs and PDFAid patterns).
-* **INFERRED**: This creates user frustration and refund requests.
-* **NOT_VERIFIED**: Competitor subscriber retention rates.
-
----
-
-## 4. Key Recommendations & Backlog
-
-1. **Source Buffer Retention [P0]**: Retain uploaded `ArrayBuffer` in local React state upon upload so users can adjust settings without re-uploading.
+### Reconciled FileKit Backlog Summary
+1. **Existing Image Comparison Slider [AUDIT]**: FileKit already contains a frozen `ImageComparisonSlider.tsx` (Commit: `5a721d4`, Tag: `phase2b2-image-comparison-final`). Audit and refine existing implementation against Squoosh for accessibility, mobile touch response, and visual precision. Do NOT build a duplicate slider.
 2. **Visual Thumbnail Grid for PDF Organization [P1]**: Research-backed interaction pattern requiring new PDF Organization engine family. Zero modifications to frozen existing engines.
-3. **Multi-Stage Progress Labels [P1]**: Stage labels (`1. Inspecting File` → `2. Processing Locally` → `3. Verifying Artifact`) to improve progress feedback.
+3. **Source Retention**: Audit confirms all 5 core FileKit workspaces (`ImageCompressionWorkspace`, `PdfCompressionWorkspace`, `ImageConverterWorkspace`, `PdfToImageWorkspace`, `ImageToPdfWorkspace`) already retain source buffers during parameter adjustments.

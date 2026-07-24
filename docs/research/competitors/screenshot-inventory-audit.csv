@@ -1,28 +1,20 @@
-﻿filename,relativePath,fileSizeBytes,competitor,tool,workflowState,status
-01-landing-desktop.png,docs/research/competitors/screenshots/adobe-acrobat/pdf-tools/workflow/desktop/01-landing-desktop.png,264801,Adobe Acrobat,PDF/Image Tools,Landing,INDEXED
-02-tools-desktop.png,docs/research/competitors/screenshots/adobe-acrobat/pdf-tools/workflow/desktop/02-tools-desktop.png,118890,Adobe Acrobat,PDF/Image Tools,Features/Settings,INDEXED
-03-trust-desktop.png,docs/research/competitors/screenshots/adobe-acrobat/pdf-tools/workflow/desktop/03-trust-desktop.png,108334,Adobe Acrobat,PDF/Image Tools,Pricing/Grid,INDEXED
-01-landing-desktop.png,docs/research/competitors/screenshots/cloudconvert/format-conversion/workflow/desktop/01-landing-desktop.png,470597,CloudConvert,PDF/Image Tools,Landing,INDEXED
-02-trust-desktop.png,docs/research/competitors/screenshots/cloudconvert/format-conversion/workflow/desktop/02-trust-desktop.png,217441,CloudConvert,PDF/Image Tools,Features/Settings,INDEXED
-01-landing-desktop.png,docs/research/competitors/screenshots/freeconvert/format-conversion/workflow/desktop/01-landing-desktop.png,191605,FreeConvert,PDF/Image Tools,Landing,INDEXED
-02-scrolled-desktop.png,docs/research/competitors/screenshots/freeconvert/format-conversion/workflow/desktop/02-scrolled-desktop.png,165795,FreeConvert,PDF/Image Tools,Features/Settings,INDEXED
-01-landing-desktop.png,docs/research/competitors/screenshots/ilovepdf/pdf-tools/workflow/desktop/01-landing-desktop.png,249783,iLovePDF,PDF/Image Tools,Landing,INDEXED
-02-compress-desktop.png,docs/research/competitors/screenshots/ilovepdf/pdf-tools/workflow/desktop/02-compress-desktop.png,88146,iLovePDF,PDF/Image Tools,Features/Settings,INDEXED
-03-grid-desktop.png,docs/research/competitors/screenshots/ilovepdf/pdf-tools/workflow/desktop/03-grid-desktop.png,262514,iLovePDF,PDF/Image Tools,Pricing/Grid,INDEXED
-01-landing-desktop.png,docs/research/competitors/screenshots/pdf24/organize-pdf/workflow/desktop/01-landing-desktop.png,154694,PDF24 Tools,PDF/Image Tools,Landing,INDEXED
-02-privacy-desktop.png,docs/research/competitors/screenshots/pdf24/organize-pdf/workflow/desktop/02-privacy-desktop.png,136244,PDF24 Tools,PDF/Image Tools,Features/Settings,INDEXED
-03-badges-desktop.png,docs/research/competitors/screenshots/pdf24/organize-pdf/workflow/desktop/03-badges-desktop.png,180451,PDF24 Tools,PDF/Image Tools,Pricing/Grid,INDEXED
-01-landing-desktop.png,docs/research/competitors/screenshots/pdfaid/pdf-tools/workflow/desktop/01-landing-desktop.png,154517,PDFAid,PDF/Image Tools,Landing,INDEXED
-02-features-desktop.png,docs/research/competitors/screenshots/pdfaid/pdf-tools/workflow/desktop/02-features-desktop.png,150558,PDFAid,PDF/Image Tools,Features/Settings,INDEXED
-03-pricing-desktop.png,docs/research/competitors/screenshots/pdfaid/pdf-tools/workflow/desktop/03-pricing-desktop.png,343731,PDFAid,PDF/Image Tools,Pricing/Grid,INDEXED
-04-signup-desktop.png,docs/research/competitors/screenshots/pdfaid/pdf-tools/workflow/desktop/04-signup-desktop.png,135838,PDFAid,PDF/Image Tools,Paywall/Signup,INDEXED
-05-w9-desktop.png,docs/research/competitors/screenshots/pdfaid/pdf-tools/workflow/desktop/05-w9-desktop.png,351101,PDFAid,PDF/Image Tools,W9 Form,INDEXED
-01-landing-desktop.png,docs/research/competitors/screenshots/smallpdf/pdf-tools/workflow/desktop/01-landing-desktop.png,143059,Smallpdf,PDF/Image Tools,Landing,INDEXED
-02-cards-desktop.png,docs/research/competitors/screenshots/smallpdf/pdf-tools/workflow/desktop/02-cards-desktop.png,132349,Smallpdf,PDF/Image Tools,Features/Settings,INDEXED
-01-landing-desktop.png,docs/research/competitors/screenshots/squoosh/image-compression/workflow/desktop/01-landing-desktop.png,181226,Squoosh,PDF/Image Tools,Landing,INDEXED
-01-landing-desktop.png,docs/research/competitors/screenshots/tinywow/micro-tools/workflow/desktop/01-landing-desktop.png,187480,TinyWow,PDF/Image Tools,Landing,INDEXED
-02-footer-desktop.png,docs/research/competitors/screenshots/tinywow/micro-tools/workflow/desktop/02-footer-desktop.png,349951,TinyWow,PDF/Image Tools,Features/Settings,INDEXED
-01-landing-desktop.png,docs/research/competitors/screenshots/zendocs/pdf-tools/workflow/desktop/01-landing-desktop.png,175475,ZenDocs,PDF/Image Tools,Landing,INDEXED
-02-features-desktop.png,docs/research/competitors/screenshots/zendocs/pdf-tools/workflow/desktop/02-features-desktop.png,170470,ZenDocs,PDF/Image Tools,Features/Settings,INDEXED
-03-pricing-desktop.png,docs/research/competitors/screenshots/zendocs/pdf-tools/workflow/desktop/03-pricing-desktop.png,171827,ZenDocs,PDF/Image Tools,Pricing/Grid,INDEXED
-
+artifactId,filePath,competitor,tool,viewport,workflowState,indexedInCSV,discrepancyResolution,notes
+squoosh_01,docs/research/competitors/screenshots/squoosh/image-compression/workflow/desktop/01-landing-desktop.png,Squoosh,Image Compression,1440x1000,Landing,yes,Indexed in workspace,Landing page screenshot
+squoosh_02,docs/research/competitors/screenshots/squoosh/image-compression/workflow/desktop/02-file-selected-desktop.png,Squoosh,Image Compression,1440x1000,File Selected,yes,Indexed in workspace,Loaded image editor view
+squoosh_03,docs/research/competitors/screenshots/squoosh/image-compression/workflow/desktop/03-settings-desktop.png,Squoosh,Image Compression,1440x1000,Settings,yes,Indexed in workspace,WebP format selection and quality slider
+squoosh_05,docs/research/competitors/screenshots/squoosh/image-compression/workflow/desktop/05-result-desktop.png,Squoosh,Image Compression,1440x1000,Result,yes,Indexed in workspace,Compression metric output (862 kB / 704 kB)
+squoosh_07,docs/research/competitors/screenshots/squoosh/image-compression/workflow/mobile/07-mobile-workflow.png,Squoosh,Image Compression,375x812,Mobile,yes,Indexed in workspace,Vertical split slider on 375x812 viewport
+pdf24_01,docs/research/competitors/screenshots/pdf24/organize-pdf/workflow/desktop/01-landing-desktop.png,PDF24 Tools,PDF Organization,1440x1000,Landing,yes,Indexed in workspace,Directory homepage
+pdf24_04,docs/research/competitors/screenshots/pdf24/organize-pdf/workflow/desktop/04-compress-landing.png,PDF24 Tools,PDF Compression,1440x1000,Tool Landing,yes,Indexed in workspace,Compress PDF tool landing
+smallpdf_01,docs/research/competitors/screenshots/smallpdf/pdf-tools/workflow/desktop/01-landing-desktop.png,Smallpdf,PDF Tools,1440x1000,Landing,yes,Indexed in workspace,Homepage
+smallpdf_04,docs/research/competitors/screenshots/smallpdf/pdf-tools/workflow/desktop/04-compress-landing.png,Smallpdf,PDF Compression,1440x1000,Tool Landing,yes,Indexed in workspace,Compress PDF tool landing
+cloudconvert_01,docs/research/competitors/screenshots/cloudconvert/format-conversion/workflow/desktop/01-landing-desktop.png,CloudConvert,Format Conversion,1440x1000,Landing,yes,Indexed in workspace,Homepage format selector node
+cloudconvert_04,docs/research/competitors/screenshots/cloudconvert/format-conversion/workflow/desktop/04-landing.png,CloudConvert,Format Conversion,1440x1000,Tool Landing,yes,Indexed in workspace,PDF to DOCX tool page
+pdfaid_01,docs/research/competitors/screenshots/pdfaid/pdf-tools/workflow/desktop/01-landing-desktop.png,PDFAid,PDF Converter,1440x1000,Landing,yes,Indexed in workspace,Asymmetric 2-column hero
+pdfaid_04,docs/research/competitors/screenshots/pdfaid/pdf-tools/workflow/desktop/04-compress-landing.png,PDFAid,PDF Compression,1440x1000,Tool Landing,yes,Indexed in workspace,Compress PDF tool page
+ilovepdf_01,docs/research/competitors/screenshots/ilovepdf/pdf-tools/workflow/desktop/01-landing-desktop.png,iLovePDF,PDF Tools,1440x1000,Landing,yes,Indexed in workspace,Homepage card grid
+adobe_01,docs/research/competitors/screenshots/adobe-acrobat/pdf-tools/workflow/desktop/01-landing-desktop.png,Adobe Acrobat,PDF Tools,1440x1000,Landing,yes,Indexed in workspace,Corporate red hero
+freeconvert_01,docs/research/competitors/screenshots/freeconvert/format-conversion/workflow/desktop/01-landing-desktop.png,FreeConvert,Format Conversion,1440x1000,Landing,yes,Indexed in workspace,Dropzone flanked by ads
+tinywow_01,docs/research/competitors/screenshots/tinywow/micro-tools/workflow/desktop/01-landing-desktop.png,TinyWow,Micro Tools,1440x1000,Landing,yes,Indexed in workspace,Search hero and portals
+zendocs_01,docs/research/competitors/screenshots/zendocs/pdf-tools/workflow/desktop/01-landing-desktop.png,ZenDocs,PDF Editor,1440x1000,Landing,yes,Indexed in workspace,100MB dropzone hero
+brain_artifacts,brain/.tempmediaStorage/*.png,Various,Raw Browser Capture,Various,Raw State,no,Raw brain artifacts,70 unindexed raw browser click/media captures in brain storage
