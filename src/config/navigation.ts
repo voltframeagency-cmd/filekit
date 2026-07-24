@@ -232,7 +232,8 @@ export const MAIN_NAVIGATION: TopNavItem[] = [
                 { label: "Reorder Pages", href: "/reorder-pdf-pages" },
                 { label: "Rotate Pages", href: "/rotate-pdf-pages" },
                 { label: "Delete Pages", href: "/delete-pdf-pages" },
-                { label: "Extract Pages", href: "/extract-pdf-pages" }
+                { label: "Extract Pages", href: "/extract-pdf-pages" },
+                { label: "Add Watermark", href: "/watermark-pdf" }
               ]
             }
           ]
