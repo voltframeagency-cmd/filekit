@@ -210,7 +210,58 @@ export const MAIN_NAVIGATION: TopNavItem[] = [
   {
     id: "pdf-tools",
     label: "PDF Tools",
-    href: "/compress-pdf"
+    megaMenu: {
+      id: "pdf-tools-menu",
+      label: "PDF Tools",
+      groups: [
+        {
+          title: "PAGE EDITING & ORGANIZATION",
+          primaryLink: {
+            label: "Merge PDF Files",
+            href: "/merge-pdf",
+            isPrimary: true
+          },
+          secondaryLink: {
+            label: "Split PDF Document",
+            href: "/split-pdf"
+          },
+          subgroups: [
+            {
+              label: "Page Manipulation",
+              items: [
+                { label: "Reorder Pages", href: "/reorder-pdf-pages" },
+                { label: "Rotate Pages", href: "/rotate-pdf-pages" },
+                { label: "Delete Pages", href: "/delete-pdf-pages" },
+                { label: "Extract Pages", href: "/extract-pdf-pages" }
+              ]
+            }
+          ]
+        },
+        {
+          title: "COMPRESS & CONVERT",
+          primaryLink: {
+            label: "PDF Compressor",
+            href: "/compress-pdf",
+            isPrimary: true
+          },
+          secondaryLink: {
+            label: "Compress to Specific Size",
+            href: "/compress-pdf-to-size"
+          },
+          subgroups: [
+            {
+              label: "PDF Conversions",
+              items: [
+                { label: "PDF to Image", href: "/pdf-to-image" },
+                { label: "PDF to JPG", href: "/pdf-to-jpg" },
+                { label: "PDF to PNG", href: "/pdf-to-png" },
+                { label: "Image to PDF", href: "/image-to-pdf" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     id: "pricing",

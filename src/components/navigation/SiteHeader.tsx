@@ -111,7 +111,10 @@ export default function SiteHeader() {
                   aria-controls={item.megaMenu?.id || "convert-menu"}
                   aria-haspopup="true"
                   className={`px-3.5 py-2 rounded-fk-md text-[14px] font-bold transition-colors flex items-center gap-1.5 ${
-                    isOpen || pathname.startsWith("/compress") || pathname.startsWith("/convert")
+                    isOpen ||
+                    (item.id === "compress" && pathname.startsWith("/compress")) ||
+                    (item.id === "convert" && pathname.startsWith("/convert")) ||
+                    (item.id === "pdf-tools" && (pathname.includes("pdf") || pathname.startsWith("/merge") || pathname.startsWith("/split") || pathname.startsWith("/reorder") || pathname.startsWith("/rotate") || pathname.startsWith("/delete") || pathname.startsWith("/extract")))
                       ? "text-fk-primary bg-fk-surface-muted"
                       : "text-fk-text-muted hover:text-fk-text hover:bg-fk-surface-muted"
                   }`}
