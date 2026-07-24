@@ -5,8 +5,9 @@ ctxWorkerInit();
 
 function ctxWorkerInit() {
   if (typeof self === "undefined") return;
+  const ctx: any = self;
 
-  self.onmessage = async (e: MessageEvent<WorkerRequestMessage>) => {
+  ctx.onmessage = async (e: MessageEvent<WorkerRequestMessage>) => {
     const msg = e.data;
     if (msg.type === "START_OVERLAY") {
       try {
@@ -22,7 +23,7 @@ function ctxWorkerInit() {
               type: "PROGRESS",
               payload: progress,
             };
-            self.postMessage(progressResp);
+            ctx.postMessage(progressResp);
           }
         );
 
@@ -33,13 +34,13 @@ function ctxWorkerInit() {
 
         // Transfer output ArrayBuffer back to main thread
         const transferableBuffer = artifact.fileData.buffer as ArrayBuffer;
-        self.postMessage(successResp, [transferableBuffer]);
+        ctx.postMessage(successResp, [transferableBuffer]);
       } catch (err: any) {
         const errorResp: WorkerResponseMessage = {
           type: "ERROR",
           payload: { error: err.message || String(err) },
         };
-        self.postMessage(errorResp);
+        ctx.postMessage(errorResp);
       }
     }
   };
