@@ -27,7 +27,7 @@ export default function ToolGrid() {
       id: "merge-pdf",
       nameKey: "tool.merge.title",
       descKey: "tool.merge.desc",
-      route: "#",
+      route: "/merge-pdf",
       iconBg: "bg-amber-50 dark:bg-amber-950/20",
       iconColor: "text-amber-600 dark:text-amber-400",
       iconPath: (
@@ -42,7 +42,7 @@ export default function ToolGrid() {
       id: "resize-image",
       nameKey: "tool.resize.title",
       descKey: "tool.resize.desc",
-      route: "#",
+      route: "/compress-image",
       iconBg: "bg-green-50 dark:bg-green-950/20",
       iconColor: "text-green-600 dark:text-green-400",
       iconPath: (
@@ -57,7 +57,7 @@ export default function ToolGrid() {
       id: "image-converter",
       nameKey: "tool.convert.title",
       descKey: "tool.convert.desc",
-      route: "#",
+      route: "/convert-image",
       iconBg: "bg-cyan-50 dark:bg-cyan-950/20",
       iconColor: "text-cyan-600 dark:text-cyan-400",
       iconPath: (
