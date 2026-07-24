@@ -65,12 +65,35 @@ export async function preflightPdfDocuments(
       };
     }
 
+    // Step A: Strict load test without ignoring encryption to catch password protection
+    try {
+      await PDFDocument.load(fileBuffer);
+    } catch (strictErr: any) {
+      const strictMsg = strictErr?.message || String(strictErr);
+      if (
+        strictMsg.toLowerCase().includes("encrypt") ||
+        strictMsg.toLowerCase().includes("password") ||
+        strictMsg.toLowerCase().includes("protected")
+      ) {
+        return {
+          isValid: false,
+          error: `Document "${fileName}" is password-protected or encrypted. Please remove the password before organizing pages.`,
+          errorCode: "PASSWORD_REQUIRED",
+          pageItems: [],
+          totalPages: 0,
+          documentsCount: inputDocs.length,
+          signatureDetected: false,
+        };
+      }
+    }
+
+    // Step B: Load document for inspection
     try {
       const pdfDoc = await PDFDocument.load(fileBuffer, {
         ignoreEncryption: true,
       });
 
-      // Scan for digital signature dictionary /Sig in catalog
+      // Scan for digital signature dictionary /Sig or /ByteRange in catalog
       const rawCatalogStr = new TextDecoder().decode(fileBuffer.slice(0, 10000));
       if (rawCatalogStr.includes("/Sig") || rawCatalogStr.includes("/ByteRange")) {
         signatureDetected = true;
@@ -94,18 +117,6 @@ export async function preflightPdfDocuments(
       totalPages += pageCount;
     } catch (err: any) {
       const msg = err?.message || String(err);
-      if (msg.toLowerCase().includes("encrypt") || msg.toLowerCase().includes("password")) {
-        return {
-          isValid: false,
-          error: `Document "${fileName}" is password-protected or encrypted. Please remove the password before organizing pages.`,
-          errorCode: "PASSWORD_REQUIRED",
-          pageItems: [],
-          totalPages: 0,
-          documentsCount: inputDocs.length,
-          signatureDetected: false,
-        };
-      }
-
       return {
         isValid: false,
         error: `Failed to inspect "${fileName}": ${msg}`,
@@ -125,7 +136,7 @@ export async function preflightPdfDocuments(
     documentsCount: inputDocs.length,
     signatureDetected,
     signatureWarning: signatureDetected
-      ? "Document contains a digital signature which will be invalidated by page modifications."
+      ? "Potential digital signature detected which will be invalidated by page modifications."
       : undefined,
   };
 }

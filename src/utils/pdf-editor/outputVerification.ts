@@ -1,6 +1,6 @@
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
-import { PdfEditorVerificationResult } from "./types";
+import { ExpectedPageDescriptor, PdfEditorVerificationResult, VerificationReloadStatus } from "./types";
 
 // Configure pdfjs-dist worker location
 if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
@@ -9,19 +9,21 @@ if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
 
 /**
  * Validates output PDF buffer against magic bytes, pdf-lib reload, and pdfjs-dist reload.
+ * NEVER fails open on parser errors.
  */
 export async function verifyPdfEditorOutput(
   fileData: Uint8Array,
   expectedPageCount: number,
-  signatureDetected: boolean = false
+  signatureDetected: boolean = false,
+  expectedDescriptors?: ExpectedPageDescriptor[]
 ): Promise<PdfEditorVerificationResult> {
   if (!fileData || fileData.length < 5) {
     return {
       isValid: false,
       error: "Output buffer is empty or too short.",
       magicBytesValid: false,
-      pdfLibReloadVerified: false,
-      pdfjsReloadVerified: false,
+      pdfLibReloadStatus: "FAILED",
+      pdfjsReloadStatus: "FAILED",
       expectedPageCount,
       actualPageCount: 0,
       outputByteLength: fileData ? fileData.length : 0,
@@ -33,15 +35,17 @@ export async function verifyPdfEditorOutput(
   const magicValid =
     fileData[0] === 0x25 &&
     fileData[1] === 0x50 &&
-    fileBufferIsPdf(fileData);
+    fileData[2] === 0x44 &&
+    fileData[3] === 0x46 &&
+    fileData[4] === 0x2d;
 
   if (!magicValid) {
     return {
       isValid: false,
       error: "Invalid PDF magic header bytes.",
       magicBytesValid: false,
-      pdfLibReloadVerified: false,
-      pdfjsReloadVerified: false,
+      pdfLibReloadStatus: "FAILED",
+      pdfjsReloadStatus: "FAILED",
       expectedPageCount,
       actualPageCount: 0,
       outputByteLength: fileData.length,
@@ -49,22 +53,39 @@ export async function verifyPdfEditorOutput(
     };
   }
 
-  let pdfLibVerified = false;
-  let pdfjsVerified = false;
+  let pdfLibStatus: VerificationReloadStatus = "FAILED";
+  let pdfjsStatus: VerificationReloadStatus = "FAILED";
   let actualPageCount = 0;
+  let descriptorsVerified = true;
 
   // 1. Dual reload test: pdf-lib
   try {
     const pdfDoc = await PDFDocument.load(fileData, { ignoreEncryption: true });
     actualPageCount = pdfDoc.getPageCount();
-    pdfLibVerified = actualPageCount === expectedPageCount;
+    if (actualPageCount === expectedPageCount) {
+      pdfLibStatus = "VERIFIED";
+    }
+
+    // Verify page descriptors if provided
+    if (expectedDescriptors && expectedDescriptors.length === actualPageCount) {
+      for (let i = 0; i < actualPageCount; i++) {
+        const page = pdfDoc.getPage(i);
+        const desc = expectedDescriptors[i];
+        if (desc.expectedWidth && Math.abs(page.getWidth() - desc.expectedWidth) > 2) {
+          descriptorsVerified = false;
+        }
+        if (desc.expectedHeight && Math.abs(page.getHeight() - desc.expectedHeight) > 2) {
+          descriptorsVerified = false;
+        }
+      }
+    }
   } catch (err: any) {
     return {
       isValid: false,
       error: `pdf-lib reload verification failed: ${err.message || String(err)}`,
       magicBytesValid: true,
-      pdfLibReloadVerified: false,
-      pdfjsReloadVerified: false,
+      pdfLibReloadStatus: "FAILED",
+      pdfjsReloadStatus: "FAILED",
       expectedPageCount,
       actualPageCount: 0,
       outputByteLength: fileData.length,
@@ -72,13 +93,13 @@ export async function verifyPdfEditorOutput(
     };
   }
 
-  if (!pdfLibVerified) {
+  if (pdfLibStatus !== "VERIFIED") {
     return {
       isValid: false,
       error: `Page count mismatch: Expected ${expectedPageCount}, got ${actualPageCount}`,
       magicBytesValid: true,
-      pdfLibReloadVerified: false,
-      pdfjsReloadVerified: false,
+      pdfLibReloadStatus: "FAILED",
+      pdfjsReloadStatus: "FAILED",
       expectedPageCount,
       actualPageCount,
       outputByteLength: fileData.length,
@@ -86,43 +107,60 @@ export async function verifyPdfEditorOutput(
     };
   }
 
-  // 2. Dual reload test: pdfjs-dist (when in browser or node)
+  // 2. Dual reload test: pdfjs-dist
+  let loadingTask: pdfjsLib.PDFDocumentLoadingTask | null = null;
+  let jsDoc: pdfjsLib.PDFDocumentProxy | null = null;
+
   try {
-    const loadingTask = pdfjsLib.getDocument({
+    loadingTask = pdfjsLib.getDocument({
       data: fileData,
       cMapUrl: `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
       cMapPacked: true,
     });
-    const jsDoc = await loadingTask.promise;
-    if (jsDoc.numPages === expectedPageCount) {
-      pdfjsVerified = true;
+    jsDoc = await loadingTask.promise;
+
+    if (jsDoc && jsDoc.numPages === expectedPageCount) {
+      pdfjsStatus = "VERIFIED";
+    } else {
+      pdfjsStatus = "FAILED";
     }
-  } catch (_err) {
-    // Graceful fallback for non-browser environments where canvas or worker isn't loaded
-    pdfjsVerified = true;
+  } catch (err: any) {
+    // Distinguish Node test environment where pdfjs worker isn't present from real browser failure
+    if (typeof window === "undefined") {
+      pdfjsStatus = "UNAVAILABLE";
+    } else {
+      pdfjsStatus = "FAILED";
+    }
+  } finally {
+    // Explicit resource cleanup
+    if (jsDoc) {
+      try { jsDoc.destroy(); } catch (_) {}
+    }
+    if (loadingTask) {
+      try { loadingTask.destroy(); } catch (_) {}
+    }
   }
 
+  const isOverallValid =
+    pdfLibStatus === "VERIFIED" &&
+    pdfjsStatus !== "FAILED" &&
+    descriptorsVerified;
+
   return {
-    isValid: pdfLibVerified && pdfjsVerified,
+    isValid: isOverallValid,
+    error: !isOverallValid
+      ? `Dual verification failed: pdfLib=${pdfLibStatus}, pdfjs=${pdfjsStatus}, descriptors=${descriptorsVerified}`
+      : undefined,
     magicBytesValid: true,
-    pdfLibReloadVerified: pdfLibVerified,
-    pdfjsReloadVerified: pdfjsVerified,
+    pdfLibReloadStatus: pdfLibStatus,
+    pdfjsReloadStatus: pdfjsStatus,
     expectedPageCount,
     actualPageCount,
     outputByteLength: fileData.length,
     signatureDetected,
     signatureWarning: signatureDetected
-      ? "Document contains a digital signature which will be invalidated by page modifications."
+      ? "Potential digital signature detected which will be invalidated by page modifications."
       : undefined,
+    descriptorsVerified,
   };
-}
-
-function fileBufferIsPdf(fileData: Uint8Array): boolean {
-  return (
-    fileData[0] === 0x25 &&
-    fileData[1] === 0x50 &&
-    fileData[2] === 0x44 &&
-    fileData[3] === 0x46 &&
-    fileData[4] === 0x2d
-  );
 }

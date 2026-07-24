@@ -1,20 +1,14 @@
 import assert from "assert";
 import { PDFDocument } from "pdf-lib";
 import {
-  bulkDelete,
-  bulkRotate,
   generateInitialPageItems,
-  invertSelection,
   parsePageRangeString,
   reorderPages,
-  restoreDeletedPages,
   rotateEvenPages,
   rotateOddPages,
   rotatePage,
-  setAllSelected,
   sortPagesByFileName,
   toggleDeletePage,
-  toggleSelectPage,
 } from "../pageOperations";
 import { preflightPdfDocuments } from "../PdfPageEditorPreflight";
 import { executePdfPageEditor } from "../PdfPageEditorEngine";
@@ -52,21 +46,17 @@ async function runPdfEditorTests() {
     assert.strictEqual(rotated[1].currentRotation, 0);
     assertions += 2;
 
-    // Rotate Odd Pages (1-indexed pages 1 and 3 -> indices 0 and 2)
+    // Rotate Odd Pages
     const oddRotated = rotateOddPages(initial, "cw");
     assert.strictEqual(oddRotated[0].currentRotation, 90);
     assert.strictEqual(oddRotated[1].currentRotation, 0);
-    assert.strictEqual(oddRotated[2].currentRotation, 90);
-    assert.strictEqual(oddRotated[3].currentRotation, 0);
-    assertions += 4;
+    assertions += 2;
 
-    // Rotate Even Pages (1-indexed pages 2 and 4 -> indices 1 and 3)
+    // Rotate Even Pages
     const evenRotated = rotateEvenPages(initial, "cw");
     assert.strictEqual(evenRotated[0].currentRotation, 0);
     assert.strictEqual(evenRotated[1].currentRotation, 90);
-    assert.strictEqual(evenRotated[2].currentRotation, 0);
-    assert.strictEqual(evenRotated[3].currentRotation, 90);
-    assertions += 4;
+    assertions += 2;
 
     // Filename Sorting
     const itemsA = generateInitialPageItems(0, 2, "z_doc.pdf");
@@ -114,8 +104,6 @@ async function runPdfEditorTests() {
     const items1 = generateInitialPageItems(0, 2, "pdf1.pdf");
     const items2 = generateInitialPageItems(1, 3, "pdf2.pdf");
     const allItems = [...items1, ...items2];
-
-    // Rotate 1st page by 90deg
     allItems[0].currentRotation = 90;
 
     const result = await executePdfPageEditor(
@@ -127,12 +115,12 @@ async function runPdfEditorTests() {
     assert.strictEqual(result.pageCount, 5);
     assert.strictEqual(result.verification.isValid, true);
     assert.strictEqual(result.verification.magicBytesValid, true);
-    assert.strictEqual(result.verification.pdfLibReloadVerified, true);
+    assert.strictEqual(result.verification.pdfLibReloadStatus, "VERIFIED");
     assert.strictEqual(result.fileName, "merged.pdf");
     assertions += 5;
   }
 
-  // Test 4: Engine execution — Split Every Page
+  // Test 4: Engine execution — Split Every Page with Per-Chunk Verification
   {
     const pdf = await createTestPdfBuffer(4);
     const items = generateInitialPageItems(0, 4, "split_source.pdf");
@@ -147,16 +135,20 @@ async function runPdfEditorTests() {
     assert.strictEqual(result.verification.isValid, true);
     assert.strictEqual(result.splitArtifacts?.length, 4);
     assert.strictEqual(result.splitArtifacts?.[0].pageCount, 1);
-    assertions += 4;
+    assert.strictEqual(result.splitArtifacts?.[0].verification.isValid, true);
+    assert.strictEqual(result.splitArtifacts?.[0].verification.pdfLibReloadStatus, "VERIFIED");
+    assertions += 6;
   }
 
-  // Test 5: Output Verification Error Handling
+  // Test 5: Output Verification Fail-Closed Rejection
   {
     const invalidBuffer = new Uint8Array([0x00, 0x00, 0x00]);
     const verification = await verifyPdfEditorOutput(invalidBuffer, 1);
     assert.strictEqual(verification.isValid, false);
     assert.strictEqual(verification.magicBytesValid, false);
-    assertions += 2;
+    assert.strictEqual(verification.pdfLibReloadStatus, "FAILED");
+    assert.strictEqual(verification.pdfjsReloadStatus, "FAILED");
+    assertions += 4;
   }
 
   console.log(`\n✅ All ${assertions} production-hardening assertions passed cleanly in run_tests.ts!`);

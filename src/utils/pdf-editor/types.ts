@@ -56,6 +56,13 @@ export type PreflightErrorCode =
   | "ZERO_PAGES"
   | "INVALID_MAGIC_BYTES";
 
+export interface ExpectedPageDescriptor {
+  pageIndex: number;
+  expectedWidth?: number;
+  expectedHeight?: number;
+  expectedRotation?: PageRotation;
+}
+
 export interface PdfEditorPreflightResult {
   isValid: boolean;
   error?: string;
@@ -67,17 +74,20 @@ export interface PdfEditorPreflightResult {
   signatureWarning?: string;
 }
 
+export type VerificationReloadStatus = "VERIFIED" | "FAILED" | "UNAVAILABLE";
+
 export interface PdfEditorVerificationResult {
   isValid: boolean;
   error?: string;
   magicBytesValid: boolean;
-  pdfLibReloadVerified: boolean;
-  pdfjsReloadVerified: boolean;
+  pdfLibReloadStatus: VerificationReloadStatus;
+  pdfjsReloadStatus: VerificationReloadStatus;
   expectedPageCount: number;
   actualPageCount: number;
   outputByteLength: number;
   signatureDetected: boolean;
   signatureWarning?: string;
+  descriptorsVerified?: boolean;
 }
 
 export interface PdfEditorOutputArtifact {
@@ -92,5 +102,6 @@ export interface PdfEditorOutputArtifact {
     fileData: Uint8Array;
     pageCount: number;
     byteLength: number;
+    verification: PdfEditorVerificationResult;
   }>;
 }

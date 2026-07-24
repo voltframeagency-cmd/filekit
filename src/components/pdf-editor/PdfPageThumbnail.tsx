@@ -12,6 +12,7 @@ if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
 interface PdfPageThumbnailProps {
   item: PageOperationItem;
   docBuffer: Uint8Array;
+  pdfDocProxy?: pdfjsLib.PDFDocumentProxy | null;
   displayIndex: number;
   totalDisplayPages: number;
   onRotate: (id: string, direction: "cw" | "ccw") => void;
@@ -23,6 +24,7 @@ interface PdfPageThumbnailProps {
 export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
   item,
   docBuffer,
+  pdfDocProxy,
   displayIndex,
   totalDisplayPages,
   onRotate,
@@ -31,6 +33,8 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
   onMovePage,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const renderTaskRef = useRef<pdfjsLib.RenderTask | null>(null);
+
   const [renderError, setRenderError] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState<boolean>(true);
   const [ariaAnnouncement, setAriaAnnouncement] = useState<string>("");
@@ -39,19 +43,25 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
     let isCancelled = false;
 
     async function renderThumbnail() {
-      if (!canvasRef.current || !docBuffer) return;
+      if (!canvasRef.current) return;
       setIsRendering(true);
       setRenderError(null);
 
       try {
-        const loadingTask = pdfjsLib.getDocument({
-          data: docBuffer,
-          cMapUrl: `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
-          cMapPacked: true,
-        });
+        let pdfDoc = pdfDocProxy;
+        let localTask: pdfjsLib.PDFDocumentLoadingTask | null = null;
 
-        const pdfDoc = await loadingTask.promise;
-        if (isCancelled) return;
+        // Fallback: If shared proxy is not yet ready, load locally
+        if (!pdfDoc && docBuffer) {
+          localTask = pdfjsLib.getDocument({
+            data: docBuffer,
+            cMapUrl: `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
+            cMapPacked: true,
+          });
+          pdfDoc = await localTask.promise;
+        }
+
+        if (isCancelled || !pdfDoc) return;
 
         // pdfjs-dist pages are 1-indexed
         const pdfPage = await pdfDoc.getPage(item.originalPageIndex + 1);
@@ -72,12 +82,19 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
           viewport,
         };
 
-        await pdfPage.render(renderContext).promise;
+        // Cancel previous render task if active
+        if (renderTaskRef.current) {
+          try { renderTaskRef.current.cancel(); } catch (_) {}
+        }
+
+        renderTaskRef.current = pdfPage.render(renderContext);
+        await renderTaskRef.current.promise;
+
         if (!isCancelled) {
           setIsRendering(false);
         }
       } catch (err: any) {
-        if (!isCancelled) {
+        if (!isCancelled && err?.name !== "RenderingCancelledException") {
           setRenderError(err.message || "Thumbnail error");
           setIsRendering(false);
         }
@@ -88,19 +105,39 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
 
     return () => {
       isCancelled = true;
+      if (renderTaskRef.current) {
+        try { renderTaskRef.current.cancel(); } catch (_) {}
+      }
+      if (canvasRef.current) {
+        canvasRef.current.width = 0;
+        canvasRef.current.height = 0;
+      }
     };
-  }, [docBuffer, item.originalPageIndex]);
+  }, [docBuffer, pdfDocProxy, item.originalPageIndex]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === " ") {
       e.preventDefault();
       onToggleSelect(item.id);
+    } else if (e.key === "R" || (e.key === "r" && e.shiftKey)) {
+      e.preventDefault();
+      onRotate(item.id, "ccw");
+      setAriaAnnouncement(`Page ${displayIndex + 1} rotated counter-clockwise 90 degrees`);
     } else if (e.key === "r" || e.key === "R") {
       e.preventDefault();
       onRotate(item.id, "cw");
+      setAriaAnnouncement(`Page ${displayIndex + 1} rotated clockwise 90 degrees`);
     } else if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
       onToggleDelete(item.id);
+    } else if (e.key === "Home" && onMovePage && displayIndex > 0) {
+      e.preventDefault();
+      onMovePage(displayIndex, 0);
+      setAriaAnnouncement(`Page ${displayIndex + 1} moved to position 1 of ${totalDisplayPages}`);
+    } else if (e.key === "End" && onMovePage && displayIndex < totalDisplayPages - 1) {
+      e.preventDefault();
+      onMovePage(displayIndex, totalDisplayPages - 1);
+      setAriaAnnouncement(`Page ${displayIndex + 1} moved to position ${totalDisplayPages} of ${totalDisplayPages}`);
     } else if (e.key === "ArrowLeft" && onMovePage && displayIndex > 0) {
       e.preventDefault();
       onMovePage(displayIndex, displayIndex - 1);

@@ -2,6 +2,7 @@ import { degrees, PDFDocument } from "pdf-lib";
 import { InputPdfDoc, preflightPdfDocuments } from "./PdfPageEditorPreflight";
 import { verifyPdfEditorOutput } from "./outputVerification";
 import {
+  ExpectedPageDescriptor,
   PageOperationItem,
   PdfEditorConfig,
   PdfEditorOutputArtifact,
@@ -64,7 +65,10 @@ export async function executePdfPageEditor(
   }
 
   // Handle Split Modes (Every Page / Every N Pages)
-  if (config.targetRoute === "/split-pdf" && (config.splitMode === "every-page" || config.splitMode === "every-n-pages")) {
+  if (
+    config.targetRoute === "/split-pdf" &&
+    (config.splitMode === "every-page" || config.splitMode === "every-n-pages")
+  ) {
     const n = config.splitMode === "every-page" ? 1 : Math.max(1, config.splitEveryN || 2);
     const splitArtifacts: PdfEditorOutputArtifact["splitArtifacts"] = [];
 
@@ -84,11 +88,27 @@ export async function executePdfPageEditor(
 
       const chunkBytes = await chunkDoc.save();
       const chunkNum = Math.floor(i / n) + 1;
+      const chunkFileName = `split-part-${chunkNum}.pdf`;
+
+      // CRITICAL: Independently verify every split artifact
+      const chunkVerification = await verifyPdfEditorOutput(
+        chunkBytes,
+        chunkItems.length,
+        preflight.signatureDetected
+      );
+
+      if (!chunkVerification.isValid) {
+        throw new Error(
+          `Split artifact "${chunkFileName}" failed output verification: ${chunkVerification.error}`
+        );
+      }
+
       splitArtifacts.push({
-        fileName: `split-part-${chunkNum}.pdf`,
+        fileName: chunkFileName,
         fileData: chunkBytes,
         pageCount: chunkItems.length,
         byteLength: chunkBytes.length,
+        verification: chunkVerification,
       });
     }
 
@@ -103,7 +123,11 @@ export async function executePdfPageEditor(
       outDoc.addPage(copiedPage);
     }
     const outputBytes = await outDoc.save();
-    const verification = await verifyPdfEditorOutput(outputBytes, activePageItems.length, preflight.signatureDetected);
+    const verification = await verifyPdfEditorOutput(
+      outputBytes,
+      activePageItems.length,
+      preflight.signatureDetected
+    );
 
     return {
       fileName: config.outputFilename || `filekit-split-${Date.now().toString().slice(-6)}.pdf`,
@@ -119,6 +143,7 @@ export async function executePdfPageEditor(
   // Standard Document Rebuilding (Merge / Reorder / Rotate / Delete / Extract)
   const outDoc = await PDFDocument.create();
   const totalPagesToProcess = activePageItems.length;
+  const descriptors: ExpectedPageDescriptor[] = [];
 
   for (let i = 0; i < activePageItems.length; i++) {
     const item = activePageItems[i];
@@ -137,6 +162,12 @@ export async function executePdfPageEditor(
       const finalAngle = (currentRot + item.currentRotation) % 360;
       copiedPage.setRotation(degrees(finalAngle));
     }
+
+    descriptors.push({
+      pageIndex: i,
+      expectedWidth: copiedPage.getWidth(),
+      expectedHeight: copiedPage.getHeight(),
+    });
 
     outDoc.addPage(copiedPage);
 
@@ -157,7 +188,8 @@ export async function executePdfPageEditor(
   const verification = await verifyPdfEditorOutput(
     outputBytes,
     activePageItems.length,
-    preflight.signatureDetected
+    preflight.signatureDetected,
+    descriptors
   );
 
   if (!verification.isValid) {

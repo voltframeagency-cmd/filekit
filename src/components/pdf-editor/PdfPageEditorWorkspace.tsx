@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import * as pdfjsLib from "pdfjs-dist";
 import {
   PageOperationItem,
   PdfEditorConfig,
@@ -12,7 +13,6 @@ import {
 import {
   bulkDelete,
   bulkRotate,
-  generateInitialPageItems,
   invertSelection,
   reorderPages,
   restoreDeletedPages,
@@ -29,6 +29,11 @@ import { executePdfPageEditor } from "@/utils/pdf-editor/PdfPageEditorEngine";
 import { PdfSelectionToolbar } from "./PdfSelectionToolbar";
 import { PdfPageThumbnailGrid } from "./PdfPageThumbnailGrid";
 import { PdfEditorResultCard } from "./PdfEditorResultCard";
+
+// Configure pdfjs-dist worker location
+if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+}
 
 interface PdfPageEditorWorkspaceProps {
   targetRoute: PdfEditorRouteTarget;
@@ -52,6 +57,19 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [splitMode, setSplitMode] = useState<PdfSplitMode>("range");
   const [splitEveryN, setSplitEveryN] = useState<number>(2);
+
+  // Shared cached PDF.js proxies to avoid parsing buffers 200 times per document
+  const pdfProxiesRef = useRef<Record<number, pdfjsLib.PDFDocumentProxy>>({});
+
+  useEffect(() => {
+    return () => {
+      // Cleanup PDF.js document proxies on workspace unmount
+      Object.values(pdfProxiesRef.current).forEach((proxy) => {
+        try { proxy.destroy(); } catch (_) {}
+      });
+      pdfProxiesRef.current = {};
+    };
+  }, []);
 
   const handleFileUpload = async (files: FileList) => {
     if (!files || files.length === 0) return;
@@ -88,6 +106,23 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
         setSignatureWarning(preflight.signatureWarning);
       } else {
         setSignatureWarning(null);
+      }
+
+      // Pre-load PDF.js document proxies ONCE for bounded thumbnail rendering
+      for (let docIdx = 0; docIdx < allDocs.length; docIdx++) {
+        if (!pdfProxiesRef.current[docIdx]) {
+          try {
+            const loadingTask = pdfjsLib.getDocument({
+              data: allDocs[docIdx].buffer,
+              cMapUrl: `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
+              cMapPacked: true,
+            });
+            const proxy = await loadingTask.promise;
+            pdfProxiesRef.current[docIdx] = proxy;
+          } catch (_) {
+            // Gracefully fallback if local proxy creation fails
+          }
+        }
       }
 
       setInputDocs(allDocs);
@@ -208,6 +243,12 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
   };
 
   const handleResetWorkspace = () => {
+    // Destroy all cached proxies
+    Object.values(pdfProxiesRef.current).forEach((proxy) => {
+      try { proxy.destroy(); } catch (_) {}
+    });
+    pdfProxiesRef.current = {};
+
     setInputDocs([]);
     setPageItems([]);
     setArtifact(null);
@@ -335,6 +376,7 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
           <PdfPageThumbnailGrid
             items={pageItems}
             documentBuffers={documentBuffers}
+            pdfDocProxies={pdfProxiesRef.current}
             onRotate={handleRotate}
             onToggleDelete={handleToggleDelete}
             onToggleSelect={handleToggleSelect}
