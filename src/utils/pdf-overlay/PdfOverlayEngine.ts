@@ -10,7 +10,12 @@ import {
   PdfOverlayProgress,
   WatermarkConfig,
 } from "./types";
-import { getTargetPageIndices, hexToPdfRgb } from "./watermarkOperations";
+import {
+  detectImageMimeType,
+  getTargetPageIndices,
+  hexToPdfRgb,
+  isWinAnsiSupported,
+} from "./watermarkOperations";
 
 export type ProgressCallback = (progress: PdfOverlayProgress) => void;
 
@@ -36,6 +41,24 @@ export async function executePdfWatermark(
       onProgress({ stage, message, processedItems, totalItems, percentage });
     }
   };
+
+  // Validation 1: Configuration pre-checks
+  if (config.type === "image") {
+    if (!config.imageBuffer || config.imageBuffer.length === 0) {
+      throw new Error("IMAGE_WATERMARK_REQUIRED: Please select a valid PNG or JPEG watermark image logo.");
+    }
+    const detectedMime = detectImageMimeType(config.imageBuffer);
+    if (!detectedMime) {
+      throw new Error("INVALID_IMAGE_MAGIC_BYTES: Image watermark file must be a valid PNG or JPEG image.");
+    }
+  } else if (config.type === "text") {
+    if (!config.text || !config.text.trim()) {
+      throw new Error("EMPTY_TEXT_REQUIRED: Please enter watermark text.");
+    }
+    if (!isWinAnsiSupported(config.text)) {
+      throw new Error("UNSUPPORTED_TEXT_CHARACTERS: Watermark text contains characters not supported by standard PDF fonts.");
+    }
+  }
 
   // Stage 1: Inspecting PDF
   reportProgress("inspecting", "Inspecting PDF document...", 0, 100);
@@ -68,9 +91,10 @@ export async function executePdfWatermark(
   if (config.type === "text") {
     embeddedFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   } else if (config.type === "image" && config.imageBuffer) {
-    if (config.imageMimeType === "image/png") {
+    const detectedMime = detectImageMimeType(config.imageBuffer);
+    if (detectedMime === "image/png") {
       embeddedImage = await pdfDoc.embedPng(config.imageBuffer);
-    } else {
+    } else if (detectedMime === "image/jpeg") {
       embeddedImage = await pdfDoc.embedJpg(config.imageBuffer);
     }
   }
@@ -78,13 +102,20 @@ export async function executePdfWatermark(
   const textColor = hexToPdfRgb(config.fontColor || "#3B82F6");
   const fontSize = Math.max(8, config.fontSize || 36);
   const opacity = Math.max(0.05, Math.min(1.0, config.opacity));
-  const rotationDegrees = degrees(config.rotationAngle || 0);
+  const rotationAngle = config.rotationAngle || 0;
+  const rotationDegrees = degrees(rotationAngle);
 
   // Stage 3: Stamping watermark onto target pages
   for (let i = 0; i < targetPageIndices.length; i++) {
     const pageIndex = targetPageIndices[i];
     const page = pdfDoc.getPage(pageIndex);
-    const { width: pageW, height: pageH } = page.getSize();
+    const { width: rawW, height: rawH } = page.getSize();
+    const pageRotation = page.getRotation().angle;
+
+    // Respect page rotation geometry
+    const isRotated90or270 = pageRotation === 90 || pageRotation === 270;
+    const pageW = isRotated90or270 ? rawH : rawW;
+    const pageH = isRotated90or270 ? rawW : rawH;
 
     if (config.type === "text") {
       const text = config.text || "WATERMARK";
@@ -97,7 +128,8 @@ export async function executePdfWatermark(
           { width: pageW, height: pageH },
           markBounds,
           100,
-          100
+          100,
+          rotationAngle
         );
         for (const coords of coordsList) {
           page.drawText(text, {
@@ -116,7 +148,9 @@ export async function executePdfWatermark(
           { width: pageW, height: pageH },
           markBounds,
           config.customX,
-          config.customY
+          config.customY,
+          36,
+          rotationAngle
         );
 
         page.drawText(text, {
@@ -140,7 +174,8 @@ export async function executePdfWatermark(
           { width: pageW, height: pageH },
           markBounds,
           80,
-          80
+          80,
+          rotationAngle
         );
         for (const coords of coordsList) {
           page.drawImage(embeddedImage, {
@@ -158,7 +193,9 @@ export async function executePdfWatermark(
           { width: pageW, height: pageH },
           markBounds,
           config.customX,
-          config.customY
+          config.customY,
+          36,
+          rotationAngle
         );
 
         page.drawImage(embeddedImage, {

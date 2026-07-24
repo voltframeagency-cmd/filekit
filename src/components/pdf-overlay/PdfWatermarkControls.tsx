@@ -5,13 +5,14 @@ import {
   WatermarkConfig,
   WatermarkPositionPreset,
   WatermarkTargetPages,
-  WatermarkType,
 } from "@/utils/pdf-overlay/types";
+import { isWinAnsiSupported } from "@/utils/pdf-overlay/watermarkOperations";
 
 interface PdfWatermarkControlsProps {
   config: WatermarkConfig;
   onChange: (updated: Partial<WatermarkConfig>) => void;
   onImageFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  validationError?: string | null;
 }
 
 const POSITION_PRESETS: Array<{ id: WatermarkPositionPreset; label: string }> = [
@@ -21,13 +22,17 @@ const POSITION_PRESETS: Array<{ id: WatermarkPositionPreset; label: string }> = 
   { id: "bottom-left", label: "Bottom Left" },
   { id: "tile", label: "Tile Grid" },
   { id: "bottom-right", label: "Bottom Right" },
+  { id: "custom", label: "Custom X/Y" },
 ];
 
 export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
   config,
   onChange,
   onImageFileChange,
+  validationError,
 }) => {
+  const isWinAnsiValid = config.type === "text" ? isWinAnsiSupported(config.text || "") : true;
+
   return (
     <div className="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-5">
       {/* Type Selector (Text vs Image) */}
@@ -68,6 +73,16 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
         </div>
       </div>
 
+      {/* Validation Warning Alert */}
+      {validationError && (
+        <div className="p-3 rounded-xl bg-amber-950/80 border border-amber-800 text-amber-200 text-xs font-medium flex items-center gap-2">
+          <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{validationError}</span>
+        </div>
+      )}
+
       {/* Text Settings */}
       {config.type === "text" && (
         <div className="space-y-3">
@@ -80,8 +95,15 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
               value={config.text || ""}
               onChange={(e) => onChange({ text: e.target.value })}
               placeholder="e.g. DRAFT / CONFIDENTIAL"
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold"
+              className={`w-full px-3 py-2 rounded-xl bg-slate-950 border text-slate-100 text-xs focus:outline-none focus:ring-1 font-semibold ${
+                !isWinAnsiValid ? "border-amber-600 focus:ring-amber-500" : "border-slate-800 focus:ring-blue-500"
+              }`}
             />
+            {!isWinAnsiValid && (
+              <p className="text-[11px] text-amber-400 mt-1">
+                Standard PDF fonts support Latin characters (A-Z, 0-9, standard symbols).
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -125,8 +147,12 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
           <label className="block text-xs font-medium text-slate-400 mb-1">
             Upload Logo / Image Watermark (PNG, JPG)
           </label>
-          <label className="cursor-pointer flex items-center justify-center p-3 border border-dashed border-slate-700 hover:border-blue-500 rounded-xl bg-slate-950 text-slate-300 text-xs font-semibold transition">
-            <span>{config.imageBuffer ? "Change Image File" : "Select PNG / JPG Logo"}</span>
+          <label className={`cursor-pointer flex items-center justify-center p-3 border border-dashed rounded-xl text-xs font-semibold transition ${
+            config.imageBuffer
+              ? "border-emerald-700/80 bg-emerald-950/40 text-emerald-200"
+              : "border-slate-700 hover:border-blue-500 bg-slate-950 text-slate-300"
+          }`}>
+            <span>{config.imageBuffer ? "✓ Image Uploaded (Click to Change)" : "Select PNG / JPG Logo"}</span>
             <input
               type="file"
               accept="image/png, image/jpeg"
@@ -189,6 +215,34 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
             </button>
           ))}
         </div>
+
+        {/* Custom Coordinates Inputs */}
+        {config.positionPreset === "custom" && (
+          <div className="grid grid-cols-2 gap-3 mt-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1">
+                Custom X (pt)
+              </label>
+              <input
+                type="number"
+                value={config.customX ?? 36}
+                onChange={(e) => onChange({ customX: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 text-xs font-mono"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1">
+                Custom Y (pt)
+              </label>
+              <input
+                type="number"
+                value={config.customY ?? 36}
+                onChange={(e) => onChange({ customY: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 text-xs font-mono"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Target Pages Mode */}

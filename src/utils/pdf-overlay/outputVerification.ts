@@ -2,9 +2,9 @@ import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
 import { PdfOverlayVerificationResult, VerificationReloadStatus } from "./types";
 
-// Configure pdfjs-dist worker location
+// Configure pdfjs-dist worker location cleanly
 if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 }
 
 /**
@@ -97,7 +97,6 @@ export async function verifyPdfOverlayOutput(
   try {
     loadingTask = pdfjsLib.getDocument({
       data: fileData,
-      cMapUrl: `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
       cMapPacked: true,
     });
     jsDoc = await loadingTask.promise;

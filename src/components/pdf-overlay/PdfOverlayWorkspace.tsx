@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   PdfOverlayOutputArtifact,
   PdfOverlayProgress,
   WatermarkConfig,
+  WorkerResponseMessage,
 } from "@/utils/pdf-overlay/types";
-import { preflightOverlayPdf } from "@/utils/pdf-overlay/PdfOverlayPreflight";
-import { executePdfWatermark } from "@/utils/pdf-overlay/PdfOverlayEngine";
+import { preflightOverlayPdf, MAX_PDF_FILE_BYTES } from "@/utils/pdf-overlay/PdfOverlayPreflight";
+import { isWinAnsiSupported, detectImageMimeType } from "@/utils/pdf-overlay/watermarkOperations";
 import { PdfWatermarkControls } from "./PdfWatermarkControls";
 import { PdfPagePreview } from "./PdfPagePreview";
 import { PdfOverlayResultCard } from "./PdfOverlayResultCard";
@@ -21,6 +22,8 @@ export const PdfOverlayWorkspace: React.FC = () => {
   const [signatureWarning, setSignatureWarning] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
+  const workerRef = useRef<Worker | null>(null);
+
   const [watermarkConfig, setWatermarkConfig] = useState<WatermarkConfig>({
     type: "text",
     text: "CONFIDENTIAL",
@@ -32,10 +35,41 @@ export const PdfOverlayWorkspace: React.FC = () => {
     targetPagesMode: "all",
   });
 
+  // Calculate config validation error
+  const getValidationError = (): string | null => {
+    if (watermarkConfig.type === "image") {
+      if (!watermarkConfig.imageBuffer || watermarkConfig.imageBuffer.length === 0) {
+        return "Please upload a PNG or JPG logo image.";
+      }
+      const detectedMime = detectImageMimeType(watermarkConfig.imageBuffer);
+      if (!detectedMime) {
+        return "Watermark file must be a valid PNG or JPEG image.";
+      }
+    } else if (watermarkConfig.type === "text") {
+      if (!watermarkConfig.text || !watermarkConfig.text.trim()) {
+        return "Please enter watermark text.";
+      }
+      if (!isWinAnsiSupported(watermarkConfig.text)) {
+        return "Text contains characters not supported by standard PDF fonts.";
+      }
+    }
+    return null;
+  };
+
+  const validationError = getValidationError();
+  const isApplyDisabled = isProcessing || !!validationError;
+
   const handleFileUpload = async (files: FileList) => {
     if (!files || files.length === 0) return;
     const file = files[0];
     setErrorMessage(null);
+
+    // Enforce 100 MB max size
+    if (file.size > MAX_PDF_FILE_BYTES) {
+      setErrorMessage(`File "${file.name}" exceeds maximum supported size of 100 MB.`);
+      return;
+    }
+
     setProgress({
       stage: "inspecting",
       message: "Reading PDF document...",
@@ -80,7 +114,7 @@ export const PdfOverlayWorkspace: React.FC = () => {
       const file = e.target.files[0];
       const arrayBuf = await file.arrayBuffer();
       const imgBuffer = new Uint8Array(arrayBuf);
-      const mimeType = file.type === "image/png" ? "image/png" : "image/jpeg";
+      const mimeType = detectImageMimeType(imgBuffer) || (file.type === "image/png" ? "image/png" : "image/jpeg");
       setWatermarkConfig((prev) => ({
         ...prev,
         imageBuffer: imgBuffer,
@@ -90,31 +124,78 @@ export const PdfOverlayWorkspace: React.FC = () => {
   };
 
   const handleApplyWatermark = async () => {
-    if (!sourceBuffer || !sourceFile) return;
+    if (!sourceBuffer || !sourceFile || isApplyDisabled) return;
     setIsProcessing(true);
     setErrorMessage(null);
 
     const outputName = `watermarked-${sourceFile.name}`;
 
     try {
-      const output = await executePdfWatermark(
-        sourceBuffer,
-        watermarkConfig,
-        outputName,
-        (prog) => setProgress(prog)
-      );
+      // Instantiate Web Worker for off-thread processing
+      const worker = new Worker(new URL("../../utils/pdf-overlay/pdfOverlay.worker.ts", import.meta.url));
+      workerRef.current = worker;
 
-      setArtifact(output);
-      setIsProcessing(false);
-      setProgress(null);
+      worker.onmessage = (e: MessageEvent<WorkerResponseMessage>) => {
+        const msg = e.data;
+        if (msg.type === "PROGRESS") {
+          setProgress(msg.payload);
+        } else if (msg.type === "SUCCESS") {
+          setArtifact(msg.payload.artifact);
+          setIsProcessing(false);
+          setProgress(null);
+          worker.terminate();
+          workerRef.current = null;
+        } else if (msg.type === "ERROR") {
+          setErrorMessage(msg.payload.error);
+          setIsProcessing(false);
+          setProgress(null);
+          worker.terminate();
+          workerRef.current = null;
+        }
+      };
+
+      worker.onerror = (errEvent) => {
+        setErrorMessage(errEvent.message || "Worker execution error");
+        setIsProcessing(false);
+        setProgress(null);
+        worker.terminate();
+        workerRef.current = null;
+      };
+
+      // Clone ArrayBuffer for worker transfer
+      const bufferCopy = sourceBuffer.slice(0).buffer;
+      worker.postMessage(
+        {
+          type: "START_OVERLAY",
+          payload: {
+            sourceBuffer: bufferCopy,
+            config: watermarkConfig,
+            fileName: outputName,
+          },
+        },
+        [bufferCopy]
+      );
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to apply watermark to PDF.");
+      setErrorMessage(err.message || "Failed to launch overlay worker.");
       setIsProcessing(false);
       setProgress(null);
     }
   };
 
+  const handleCancelWorker = () => {
+    if (workerRef.current) {
+      workerRef.current.terminate();
+      workerRef.current = null;
+    }
+    setIsProcessing(false);
+    setProgress(null);
+  };
+
   const handleResetWorkspace = () => {
+    if (workerRef.current) {
+      workerRef.current.terminate();
+      workerRef.current = null;
+    }
     setSourceFile(null);
     setSourceBuffer(null);
     setArtifact(null);
@@ -199,17 +280,26 @@ export const PdfOverlayWorkspace: React.FC = () => {
         <div>
           {/* Progress Indicator */}
           {progress && (
-            <div className="mb-6 p-4 rounded-xl bg-slate-900 border border-blue-800/80">
-              <div className="flex items-center justify-between text-xs font-semibold text-blue-300 mb-2">
-                <span>{progress.message}</span>
-                <span>{progress.percentage}%</span>
+            <div className="mb-6 p-4 rounded-xl bg-slate-900 border border-blue-800/80 flex items-center justify-between">
+              <div className="flex-1 mr-4">
+                <div className="flex items-center justify-between text-xs font-semibold text-blue-300 mb-2">
+                  <span>{progress.message}</span>
+                  <span>{progress.percentage}%</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 transition-all duration-200"
+                    style={{ width: `${progress.percentage}%` }}
+                  />
+                </div>
               </div>
-              <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden">
-                <div
-                  className="h-full bg-blue-500 transition-all duration-200"
-                  style={{ width: `${progress.percentage}%` }}
-                />
-              </div>
+              <button
+                type="button"
+                onClick={handleCancelWorker}
+                className="px-3 py-1.5 rounded-lg bg-red-950 hover:bg-red-900 border border-red-800 text-red-300 text-xs font-bold transition"
+              >
+                Cancel
+              </button>
             </div>
           )}
 
@@ -220,6 +310,7 @@ export const PdfOverlayWorkspace: React.FC = () => {
                 config={watermarkConfig}
                 onChange={handleWatermarkConfigChange}
                 onImageFileChange={handleImageFileChange}
+                validationError={validationError}
               />
             </div>
 
@@ -234,13 +325,13 @@ export const PdfOverlayWorkspace: React.FC = () => {
             <button
               type="button"
               onClick={handleApplyWatermark}
-              disabled={isProcessing}
+              disabled={isApplyDisabled}
               className="px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-40 text-white font-extrabold text-base shadow-2xl shadow-blue-500/40 transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
             >
               {isProcessing ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Stamping Watermark...
+                  Stamping Watermark Off-Thread...
                 </>
               ) : (
                 <>

@@ -1,6 +1,8 @@
 import { PDFDocument } from "pdf-lib";
 import { PdfOverlayPreflightResult } from "./types";
 
+export const MAX_PDF_FILE_BYTES = 100 * 1024 * 1024; // 100 MB
+
 /**
  * Preflight inspection for input PDF document prior to overlay application.
  */
@@ -13,6 +15,16 @@ export async function preflightOverlayPdf(
       isValid: false,
       error: `Document "${fileName}" is empty or invalid.`,
       errorCode: "CORRUPTED_DOCUMENT",
+      totalPages: 0,
+      signatureDetected: false,
+    };
+  }
+
+  if (fileBuffer.length > MAX_PDF_FILE_BYTES) {
+    return {
+      isValid: false,
+      error: `Document "${fileName}" exceeds maximum supported size of 100 MB.`,
+      errorCode: "FILE_TOO_LARGE",
       totalPages: 0,
       signatureDetected: false,
     };

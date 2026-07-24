@@ -53,7 +53,12 @@ export type PreflightErrorCode =
   | "PERMISSION_RESTRICTED"
   | "CORRUPTED_DOCUMENT"
   | "ZERO_PAGES"
-  | "INVALID_MAGIC_BYTES";
+  | "INVALID_MAGIC_BYTES"
+  | "FILE_TOO_LARGE"
+  | "IMAGE_WATERMARK_REQUIRED"
+  | "INVALID_IMAGE_MAGIC_BYTES"
+  | "EMPTY_TEXT_REQUIRED"
+  | "UNSUPPORTED_TEXT_CHARACTERS";
 
 export interface PdfOverlayPreflightResult {
   isValid: boolean;
@@ -87,3 +92,13 @@ export interface PdfOverlayOutputArtifact {
   byteLength: number;
   verification: PdfOverlayVerificationResult;
 }
+
+// Worker message protocol
+export type WorkerRequestMessage =
+  | { type: "START_OVERLAY"; payload: { sourceBuffer: ArrayBuffer; config: WatermarkConfig; fileName: string } }
+  | { type: "CANCEL" };
+
+export type WorkerResponseMessage =
+  | { type: "PROGRESS"; payload: PdfOverlayProgress }
+  | { type: "SUCCESS"; payload: { artifact: PdfOverlayOutputArtifact } }
+  | { type: "ERROR"; payload: { error: string; errorCode?: PreflightErrorCode } };
