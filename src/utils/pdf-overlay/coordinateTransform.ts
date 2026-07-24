@@ -15,9 +15,16 @@ export interface PageDimensions {
   height: number;
 }
 
+export interface PageCropBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface WatermarkPlacementItem {
-  x: number; // PDF points (bottom-left origin)
-  y: number; // PDF points (bottom-left origin)
+  x: number; // PDF points (visual placement)
+  y: number; // PDF points (visual placement)
   width: number; // PDF points
   height: number; // PDF points
   rotationDegrees: number;
@@ -67,7 +74,7 @@ export function getRotatedWatermarkBounds(
 }
 
 /**
- * Maps visual page coordinates (xVisual, yVisual) to raw PDF stream coordinates accounting for /Rotate (0, 90, 180, 270 deg).
+ * Maps visual page placement coordinates (xVisual, yVisual) to raw PDF stream coordinates accounting for /Rotate (0, 90, 180, 270 deg) and CropBox origin.
  */
 export function transformVisualToPdfCoordinates(
   xVisual: number,
@@ -78,38 +85,39 @@ export function transformVisualToPdfCoordinates(
   pageH: number,
   rawW: number,
   rawH: number,
-  rotationAngle: number = 0
+  rotationAngle: number = 0,
+  cropBox: PageCropBox = { x: 0, y: 0, width: pageW, height: pageH }
 ): { x: number; y: number } {
   const normAngle = ((rotationAngle % 360) + 360) % 360;
 
   switch (normAngle) {
     case 90:
       return {
-        x: yVisual,
-        y: rawW - xVisual - markW,
+        x: cropBox.x + yVisual,
+        y: cropBox.y + (pageW - xVisual - markW),
       };
     case 180:
       return {
-        x: rawW - xVisual - markW,
-        y: rawH - yVisual - markH,
+        x: cropBox.x + (pageW - xVisual - markW),
+        y: cropBox.y + (pageH - yVisual - markH),
       };
     case 270:
       return {
-        x: rawH - yVisual - markH,
-        y: xVisual,
+        x: cropBox.x + (pageH - yVisual - markH),
+        y: cropBox.y + xVisual,
       };
     case 0:
     default:
       return {
-        x: xVisual,
-        y: yVisual,
+        x: cropBox.x + xVisual,
+        y: cropBox.y + yVisual,
       };
   }
 }
 
 /**
  * Single Unified Placement Algorithm shared between Preview & Export Engine.
- * Computes exact PDF point placement items for single or tiled positions.
+ * Computes exact PDF point placement items for single or tiled positions within CropBox bounds.
  */
 export function buildWatermarkPlacementPlan(
   config: WatermarkConfig,

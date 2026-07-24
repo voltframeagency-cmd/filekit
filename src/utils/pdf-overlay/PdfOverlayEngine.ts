@@ -109,12 +109,13 @@ export async function executePdfWatermark(
     const pageIndex = targetPageIndices[i];
     const page = pdfDoc.getPage(pageIndex);
     const { width: rawW, height: rawH } = page.getSize();
+    const cropBox = page.getCropBox();
     const pageRotation = page.getRotation().angle;
 
-    // Respect page rotation geometry
+    // Respect page rotation geometry and CropBox placement boundary
     const isRotated90or270 = pageRotation === 90 || pageRotation === 270;
-    const pageW = isRotated90or270 ? rawH : rawW;
-    const pageH = isRotated90or270 ? rawW : rawH;
+    const pageW = isRotated90or270 ? cropBox.height : cropBox.width;
+    const pageH = isRotated90or270 ? cropBox.width : cropBox.height;
 
     if (config.type === "text") {
       const text = config.text || "WATERMARK";
@@ -139,7 +140,8 @@ export async function executePdfWatermark(
           pageH,
           rawW,
           rawH,
-          pageRotation
+          pageRotation,
+          cropBox
         );
 
         page.drawText(text, {
@@ -175,7 +177,8 @@ export async function executePdfWatermark(
           pageH,
           rawW,
           rawH,
-          pageRotation
+          pageRotation,
+          cropBox
         );
 
         page.drawImage(embeddedImage, {

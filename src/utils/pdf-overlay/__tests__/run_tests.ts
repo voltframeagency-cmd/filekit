@@ -90,14 +90,14 @@ async function runOverlayTests() {
 
     const t90 = transformVisualToPdfCoordinates(10, 20, markW, markH, pageW, pageH, 800, 600, 90);
     assert.strictEqual(t90.x, 20);
-    assert.strictEqual(t90.y, 800 - 10 - markW);
+    assert.strictEqual(t90.y, 600 - 10 - markW); // 490
 
     const t180 = transformVisualToPdfCoordinates(10, 20, markW, markH, pageW, pageH, 600, 800, 180);
-    assert.strictEqual(t180.x, 600 - 10 - markW);
-    assert.strictEqual(t180.y, 800 - 20 - markH);
+    assert.strictEqual(t180.x, 600 - 10 - markW); // 490
+    assert.strictEqual(t180.y, 800 - 20 - markH); // 730
 
     const t270 = transformVisualToPdfCoordinates(10, 20, markW, markH, pageW, pageH, 800, 600, 270);
-    assert.strictEqual(t270.x, 600 - 20 - markH);
+    assert.strictEqual(t270.x, 800 - 20 - markH); // 730
     assert.strictEqual(t270.y, 10);
 
     assertions += 8;
