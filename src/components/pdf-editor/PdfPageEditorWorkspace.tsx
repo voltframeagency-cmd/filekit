@@ -7,6 +7,7 @@ import {
   PdfEditorOutputArtifact,
   PdfEditorProgress,
   PdfEditorRouteTarget,
+  PdfSplitMode,
 } from "@/utils/pdf-editor/types";
 import {
   bulkDelete,
@@ -15,12 +16,15 @@ import {
   invertSelection,
   reorderPages,
   restoreDeletedPages,
+  rotateEvenPages,
+  rotateOddPages,
   rotatePage,
   setAllSelected,
+  sortPagesByFileName,
   toggleDeletePage,
   toggleSelectPage,
 } from "@/utils/pdf-editor/pageOperations";
-import { preflightPdfDocuments } from "@/utils/pdf-editor/PdfPageEditorPreflight";
+import { InputPdfDoc, preflightPdfDocuments } from "@/utils/pdf-editor/PdfPageEditorPreflight";
 import { executePdfPageEditor } from "@/utils/pdf-editor/PdfPageEditorEngine";
 import { PdfSelectionToolbar } from "./PdfSelectionToolbar";
 import { PdfPageThumbnailGrid } from "./PdfPageThumbnailGrid";
@@ -39,12 +43,15 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
   subtitle,
   actionButtonText,
 }) => {
-  const [documentBuffers, setDocumentBuffers] = useState<Uint8Array[]>([]);
+  const [inputDocs, setInputDocs] = useState<InputPdfDoc[]>([]);
   const [pageItems, setPageItems] = useState<PageOperationItem[]>([]);
   const [progress, setProgress] = useState<PdfEditorProgress | null>(null);
   const [artifact, setArtifact] = useState<PdfEditorOutputArtifact | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [signatureWarning, setSignatureWarning] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [splitMode, setSplitMode] = useState<PdfSplitMode>("range");
+  const [splitEveryN, setSplitEveryN] = useState<number>(2);
 
   const handleFileUpload = async (files: FileList) => {
     if (!files || files.length === 0) return;
@@ -58,14 +65,18 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
     });
 
     try {
-      const newBuffers: Uint8Array[] = [];
+      const newDocs: InputPdfDoc[] = [];
       for (let i = 0; i < files.length; i++) {
-        const arrayBuf = await files[i].arrayBuffer();
-        newBuffers.push(new Uint8Array(arrayBuf));
+        const file = files[i];
+        const arrayBuf = await file.arrayBuffer();
+        newDocs.push({
+          name: file.name,
+          buffer: new Uint8Array(arrayBuf),
+        });
       }
 
-      const allBuffers = [...documentBuffers, ...newBuffers];
-      const preflight = await preflightPdfDocuments(allBuffers);
+      const allDocs = [...inputDocs, ...newDocs];
+      const preflight = await preflightPdfDocuments(allDocs);
 
       if (!preflight.isValid) {
         setErrorMessage(preflight.error || "Invalid PDF document");
@@ -73,7 +84,13 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
         return;
       }
 
-      setDocumentBuffers(allBuffers);
+      if (preflight.signatureWarning) {
+        setSignatureWarning(preflight.signatureWarning);
+      } else {
+        setSignatureWarning(null);
+      }
+
+      setInputDocs(allDocs);
       setPageItems(preflight.pageItems);
       setProgress(null);
       setArtifact(null);
@@ -120,6 +137,18 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
     setPageItems((prev) => bulkRotate(prev, direction, hasSelection));
   };
 
+  const handleRotateOddPages = (direction: "cw" | "ccw") => {
+    setPageItems((prev) => rotateOddPages(prev, direction));
+  };
+
+  const handleRotateEvenPages = (direction: "cw" | "ccw") => {
+    setPageItems((prev) => rotateEvenPages(prev, direction));
+  };
+
+  const handleSortByFilename = () => {
+    setPageItems((prev) => sortPagesByFileName(prev));
+  };
+
   const handleBulkDelete = () => {
     const hasSelection = pageItems.some((p) => p.isSelected && !p.isDeleted);
     setPageItems((prev) => bulkDelete(prev, hasSelection));
@@ -139,13 +168,22 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
     );
   };
 
+  const handleSetSplitMode = (mode: PdfSplitMode, n?: number) => {
+    setSplitMode(mode);
+    if (n && n > 0) {
+      setSplitEveryN(n);
+    }
+  };
+
   const handleExecuteOperation = async () => {
-    if (documentBuffers.length === 0 || pageItems.length === 0) return;
+    if (inputDocs.length === 0 || pageItems.length === 0) return;
     setIsProcessing(true);
     setErrorMessage(null);
 
     const config: PdfEditorConfig = {
       targetRoute,
+      splitMode,
+      splitEveryN,
       outputFilename: `filekit-${targetRoute.replace("/", "")}-${Date.now()
         .toString()
         .slice(-6)}.pdf`,
@@ -153,7 +191,7 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
 
     try {
       const output = await executePdfPageEditor(
-        documentBuffers,
+        inputDocs,
         pageItems,
         config,
         (prog) => setProgress(prog)
@@ -170,15 +208,17 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
   };
 
   const handleResetWorkspace = () => {
-    setDocumentBuffers([]);
+    setInputDocs([]);
     setPageItems([]);
     setArtifact(null);
     setProgress(null);
     setErrorMessage(null);
+    setSignatureWarning(null);
     setIsProcessing(false);
   };
 
   const activePages = pageItems.filter((p) => !p.isDeleted);
+  const documentBuffers = inputDocs.map((d) => d.buffer);
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-8">
@@ -213,8 +253,18 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
         </div>
       )}
 
+      {/* Digital Signature Warning Notice */}
+      {signatureWarning && (
+        <div className="mb-6 p-4 rounded-xl bg-amber-950/80 border border-amber-800 text-amber-200 text-xs font-medium flex items-center gap-3">
+          <svg className="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{signatureWarning}</span>
+        </div>
+      )}
+
       {/* State A: Empty File Upload Dropzone */}
-      {documentBuffers.length === 0 && (
+      {inputDocs.length === 0 && (
         <div className="bg-slate-900/80 border-2 border-dashed border-slate-700 hover:border-blue-500/80 rounded-2xl p-10 text-center transition-colors">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-900/40 border border-blue-700/50 flex items-center justify-center text-blue-400 shadow-inner">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,7 +293,7 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
       )}
 
       {/* State B: Active Editing Workspace */}
-      {documentBuffers.length > 0 && !artifact && (
+      {inputDocs.length > 0 && !artifact && (
         <div>
           {/* Progress Indicator Banner */}
           {progress && (
@@ -265,13 +315,19 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
           <PdfSelectionToolbar
             pageItems={pageItems}
             targetRoute={targetRoute}
+            splitMode={splitMode}
+            splitEveryN={splitEveryN}
             onSelectAll={handleSelectAll}
             onDeselectAll={handleDeselectAll}
             onInvertSelection={handleInvertSelection}
             onBulkRotate={handleBulkRotate}
+            onRotateOddPages={handleRotateOddPages}
+            onRotateEvenPages={handleRotateEvenPages}
+            onSortByFilename={handleSortByFilename}
             onBulkDelete={handleBulkDelete}
             onRestoreAll={handleRestoreAll}
             onApplyRangeSelection={handleApplyRangeSelection}
+            onSetSplitMode={handleSetSplitMode}
             onAddFiles={handleAddMoreFiles}
           />
 

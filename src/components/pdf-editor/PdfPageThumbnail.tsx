@@ -33,6 +33,7 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [renderError, setRenderError] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState<boolean>(true);
+  const [ariaAnnouncement, setAriaAnnouncement] = useState<string>("");
 
   useEffect(() => {
     let isCancelled = false;
@@ -103,6 +104,7 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
     } else if (e.key === "ArrowLeft" && onMovePage && displayIndex > 0) {
       e.preventDefault();
       onMovePage(displayIndex, displayIndex - 1);
+      setAriaAnnouncement(`Page ${displayIndex + 1} moved to position ${displayIndex} of ${totalDisplayPages}`);
     } else if (
       e.key === "ArrowRight" &&
       onMovePage &&
@@ -110,6 +112,7 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
     ) {
       e.preventDefault();
       onMovePage(displayIndex, displayIndex + 1);
+      setAriaAnnouncement(`Page ${displayIndex + 1} moved to position ${displayIndex + 2} of ${totalDisplayPages}`);
     }
   };
 
@@ -117,6 +120,7 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
     <div
       tabIndex={0}
       onKeyDown={handleKeyDown}
+      aria-label={`Page ${displayIndex + 1} of ${totalDisplayPages}, ${item.sourceFileName || "Document"}`}
       className={`group relative flex flex-col items-center p-3 rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
         item.isDeleted
           ? "bg-slate-900/40 border-red-500/40 opacity-40 grayscale"
@@ -125,6 +129,11 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
           : "bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-800/80"
       }`}
     >
+      {/* ARIA Live Region for Screen-Reader Announcements */}
+      <span className="sr-only" aria-live="polite">
+        {ariaAnnouncement}
+      </span>
+
       {/* Top Header Controls */}
       <div className="w-full flex items-center justify-between mb-2">
         <label className="flex items-center gap-1.5 cursor-pointer">
@@ -174,6 +183,7 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
           <div className="absolute inset-0 bg-red-950/75 backdrop-blur-[1px] flex flex-col items-center justify-center p-2 text-red-300">
             <span className="text-xs font-bold uppercase tracking-wider mb-1">Deleted</span>
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleDelete(item.id);
@@ -186,8 +196,15 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
         )}
       </div>
 
+      {/* Source File Badge (for Merged Documents) */}
+      {item.sourceFileName && (
+        <span className="mt-1.5 text-[10px] text-slate-400 font-mono truncate max-w-full" title={item.sourceFileName}>
+          {item.sourceFileName}
+        </span>
+      )}
+
       {/* Bottom Quick Action Overlay Controls */}
-      <div className="mt-2.5 w-full flex items-center justify-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+      <div className="mt-2 w-full flex items-center justify-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
         <button
           type="button"
           onClick={() => onRotate(item.id, "ccw")}

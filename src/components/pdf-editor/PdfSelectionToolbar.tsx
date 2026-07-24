@@ -1,35 +1,48 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageOperationItem, PdfEditorRouteTarget } from "@/utils/pdf-editor/types";
+import { PageOperationItem, PdfEditorRouteTarget, PdfSplitMode } from "@/utils/pdf-editor/types";
 import { parsePageRangeString } from "@/utils/pdf-editor/pageOperations";
 
 interface PdfSelectionToolbarProps {
   pageItems: PageOperationItem[];
   targetRoute: PdfEditorRouteTarget;
+  splitMode?: PdfSplitMode;
+  splitEveryN?: number;
   onSelectAll: () => void;
   onDeselectAll: () => void;
   onInvertSelection: () => void;
   onBulkRotate: (direction: "cw" | "ccw") => void;
+  onRotateOddPages?: (direction: "cw" | "ccw") => void;
+  onRotateEvenPages?: (direction: "cw" | "ccw") => void;
+  onSortByFilename?: () => void;
   onBulkDelete: () => void;
   onRestoreAll: () => void;
   onApplyRangeSelection?: (selectedIndices: number[]) => void;
+  onSetSplitMode?: (mode: PdfSplitMode, n?: number) => void;
   onAddFiles?: (files: FileList) => void;
 }
 
 export const PdfSelectionToolbar: React.FC<PdfSelectionToolbarProps> = ({
   pageItems,
   targetRoute,
+  splitMode = "range",
+  splitEveryN = 2,
   onSelectAll,
   onDeselectAll,
   onInvertSelection,
   onBulkRotate,
+  onRotateOddPages,
+  onRotateEvenPages,
+  onSortByFilename,
   onBulkDelete,
   onRestoreAll,
   onApplyRangeSelection,
+  onSetSplitMode,
   onAddFiles,
 }) => {
   const [rangeText, setRangeText] = useState("");
+  const [everyNInput, setEveryNInput] = useState(splitEveryN);
 
   const activePages = pageItems.filter((p) => !p.isDeleted);
   const selectedPages = pageItems.filter((p) => p.isSelected && !p.isDeleted);
@@ -80,19 +93,35 @@ export const PdfSelectionToolbar: React.FC<PdfSelectionToolbarProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           {/* Add Files for Merge */}
           {targetRoute === "/merge-pdf" && onAddFiles && (
-            <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add More PDFs
-              <input
-                type="file"
-                multiple
-                accept="application/pdf"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </label>
+            <>
+              <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add More PDFs
+                <input
+                  type="file"
+                  multiple
+                  accept="application/pdf"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+
+              {onSortByFilename && (
+                <button
+                  type="button"
+                  onClick={onSortByFilename}
+                  title="Sort merged pages alphabetically by filename"
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition flex items-center gap-1"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                  </svg>
+                  Sort by Filename
+                </button>
+              )}
+            </>
           )}
 
           {/* Selection Toggles */}
@@ -135,6 +164,30 @@ export const PdfSelectionToolbar: React.FC<PdfSelectionToolbarProps> = ({
             Rotate 90°
           </button>
 
+          {/* Odd/Even Rotations for Rotate PDF Route */}
+          {targetRoute === "/rotate-pdf-pages" && (
+            <>
+              {onRotateOddPages && (
+                <button
+                  type="button"
+                  onClick={() => onRotateOddPages("cw")}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition"
+                >
+                  Rotate Odd Pages
+                </button>
+              )}
+              {onRotateEvenPages && (
+                <button
+                  type="button"
+                  onClick={() => onRotateEvenPages("cw")}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition"
+                >
+                  Rotate Even Pages
+                </button>
+              )}
+            </>
+          )}
+
           {/* Bulk Delete */}
           <button
             type="button"
@@ -161,9 +214,68 @@ export const PdfSelectionToolbar: React.FC<PdfSelectionToolbarProps> = ({
         </div>
       </div>
 
+      {/* Split Mode Selector for Split PDF */}
+      {targetRoute === "/split-pdf" && onSetSplitMode && (
+        <div className="mt-3 pt-3 border-t border-slate-800/80 flex flex-wrap items-center gap-4">
+          <span className="text-xs text-slate-400 font-medium">Split Mode:</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onSetSplitMode("every-page")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                splitMode === "every-page"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              }`}
+            >
+              Split Every Page
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onSetSplitMode("every-n-pages", everyNInput)}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                splitMode === "every-n-pages"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              }`}
+            >
+              Split Every N Pages
+            </button>
+
+            {splitMode === "every-n-pages" && (
+              <input
+                type="number"
+                min={1}
+                max={50}
+                value={everyNInput}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10) || 1;
+                  setEveryNInput(val);
+                  onSetSplitMode("every-n-pages", val);
+                }}
+                className="w-16 px-2 py-1 bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg font-mono"
+              />
+            )}
+
+            <button
+              type="button"
+              onClick={() => onSetSplitMode("range")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                splitMode === "range"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              }`}
+            >
+              Custom Range Selection
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Page Range Parser for Split / Extract */}
       {(targetRoute === "/extract-pdf-pages" ||
-        targetRoute === "/split-pdf") &&
+        (targetRoute === "/split-pdf" && splitMode === "range")) &&
         onApplyRangeSelection && (
           <form
             onSubmit={handleApplyRange}

@@ -2,38 +2,50 @@ import { PDFDocument } from "pdf-lib";
 import { generateInitialPageItems } from "./pageOperations";
 import { PageOperationItem, PdfEditorPreflightResult } from "./types";
 
+export interface InputPdfDoc {
+  name: string;
+  buffer: Uint8Array;
+}
+
 /**
  * Preflight inspection for input PDF documents.
  */
 export async function preflightPdfDocuments(
-  inputFiles: Uint8Array[]
+  inputDocs: Array<InputPdfDoc | Uint8Array>
 ): Promise<PdfEditorPreflightResult> {
-  if (!inputFiles || inputFiles.length === 0) {
+  if (!inputDocs || inputDocs.length === 0) {
     return {
       isValid: false,
       error: "No input PDF files provided.",
       pageItems: [],
       totalPages: 0,
       documentsCount: 0,
+      signatureDetected: false,
     };
   }
 
   const allPageItems: PageOperationItem[] = [];
   let totalPages = 0;
+  let signatureDetected = false;
 
-  for (let docIdx = 0; docIdx < inputFiles.length; docIdx++) {
-    const fileBuffer = inputFiles[docIdx];
+  for (let docIdx = 0; docIdx < inputDocs.length; docIdx++) {
+    const item = inputDocs[docIdx];
+    const fileBuffer = item instanceof Uint8Array ? item : item.buffer;
+    const fileName = item instanceof Uint8Array ? `Document-${docIdx + 1}.pdf` : item.name;
+
     if (!fileBuffer || fileBuffer.length < 5) {
       return {
         isValid: false,
-        error: `Document #${docIdx + 1} is empty or invalid.`,
+        error: `Document "${fileName}" is empty or invalid.`,
+        errorCode: "CORRUPTED_DOCUMENT",
         pageItems: [],
         totalPages: 0,
-        documentsCount: inputFiles.length,
+        documentsCount: inputDocs.length,
+        signatureDetected: false,
       };
     }
 
-    // Check %PDF- magic bytes
+    // Check %PDF- magic bytes (0x25, 0x50, 0x44, 0x46, 0x2D)
     const isMagicValid =
       fileBuffer[0] === 0x25 &&
       fileBuffer[1] === 0x50 &&
@@ -44,10 +56,12 @@ export async function preflightPdfDocuments(
     if (!isMagicValid) {
       return {
         isValid: false,
-        error: `Document #${docIdx + 1} is not a valid PDF file (missing %PDF- header).`,
+        error: `Document "${fileName}" is not a valid PDF file (missing %PDF- header).`,
+        errorCode: "INVALID_MAGIC_BYTES",
         pageItems: [],
         totalPages: 0,
-        documentsCount: inputFiles.length,
+        documentsCount: inputDocs.length,
+        signatureDetected: false,
       };
     }
 
@@ -55,27 +69,51 @@ export async function preflightPdfDocuments(
       const pdfDoc = await PDFDocument.load(fileBuffer, {
         ignoreEncryption: true,
       });
+
+      // Scan for digital signature dictionary /Sig in catalog
+      const rawCatalogStr = new TextDecoder().decode(fileBuffer.slice(0, 10000));
+      if (rawCatalogStr.includes("/Sig") || rawCatalogStr.includes("/ByteRange")) {
+        signatureDetected = true;
+      }
+
       const pageCount = pdfDoc.getPageCount();
       if (pageCount === 0) {
         return {
           isValid: false,
-          error: `Document #${docIdx + 1} has 0 pages.`,
+          error: `Document "${fileName}" contains 0 pages.`,
+          errorCode: "ZERO_PAGES",
           pageItems: [],
           totalPages: 0,
-          documentsCount: inputFiles.length,
+          documentsCount: inputDocs.length,
+          signatureDetected: false,
         };
       }
 
-      const docPageItems = generateInitialPageItems(docIdx, pageCount);
+      const docPageItems = generateInitialPageItems(docIdx, pageCount, fileName);
       allPageItems.push(...docPageItems);
       totalPages += pageCount;
     } catch (err: any) {
+      const msg = err?.message || String(err);
+      if (msg.toLowerCase().includes("encrypt") || msg.toLowerCase().includes("password")) {
+        return {
+          isValid: false,
+          error: `Document "${fileName}" is password-protected or encrypted. Please remove the password before organizing pages.`,
+          errorCode: "PASSWORD_REQUIRED",
+          pageItems: [],
+          totalPages: 0,
+          documentsCount: inputDocs.length,
+          signatureDetected: false,
+        };
+      }
+
       return {
         isValid: false,
-        error: `Failed to load document #${docIdx + 1}: ${err.message || String(err)}`,
+        error: `Failed to inspect "${fileName}": ${msg}`,
+        errorCode: "CORRUPTED_DOCUMENT",
         pageItems: [],
         totalPages: 0,
-        documentsCount: inputFiles.length,
+        documentsCount: inputDocs.length,
+        signatureDetected: false,
       };
     }
   }
@@ -84,6 +122,10 @@ export async function preflightPdfDocuments(
     isValid: true,
     pageItems: allPageItems,
     totalPages,
-    documentsCount: inputFiles.length,
+    documentsCount: inputDocs.length,
+    signatureDetected,
+    signatureWarning: signatureDetected
+      ? "Document contains a digital signature which will be invalidated by page modifications."
+      : undefined,
   };
 }
