@@ -21,7 +21,7 @@ export const PdfEditorResultCard: React.FC<PdfEditorResultCardProps> = ({
   };
 
   const handleDownload = () => {
-    const blob = new Blob([artifact.fileData], { type: artifact.mimeType });
+    const blob = new Blob([artifact.fileData.buffer as ArrayBuffer], { type: artifact.mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
