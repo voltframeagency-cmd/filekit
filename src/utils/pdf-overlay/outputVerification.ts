@@ -97,7 +97,7 @@ export async function verifyPdfOverlayOutput(
     }
 
     loadingTask = pdfjsLib.getDocument({
-      data: fileData,
+      data: fileData.slice(),
       cMapPacked: true,
     });
     jsDoc = await loadingTask.promise;
@@ -115,10 +115,9 @@ export async function verifyPdfOverlayOutput(
     }
   } finally {
     if (jsDoc) {
-      try { jsDoc.destroy(); } catch (_) {}
-    }
-    if (loadingTask) {
-      try { loadingTask.destroy(); } catch (_) {}
+      try { await jsDoc.destroy(); } catch (_) {}
+    } else if (loadingTask) {
+      try { await loadingTask.destroy(); } catch (_) {}
     }
   }
 

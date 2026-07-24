@@ -5,6 +5,11 @@ export interface WatermarkBounds {
   height: number;
 }
 
+export interface RotatedWatermarkBounds extends WatermarkBounds {
+  originOffsetX: number;
+  originOffsetY: number;
+}
+
 export interface PageDimensions {
   width: number;
   height: number;
@@ -19,21 +24,87 @@ export interface WatermarkPlacementItem {
 }
 
 /**
- * Calculates the bounding box dimensions of a watermark rotated by angleDegrees.
+ * Calculates rotated watermark dimensions and origin offsets across all 4 rotated corner vertices.
  */
+export function getRotatedWatermarkBoundsWithOffsets(
+  w: number,
+  h: number,
+  angleDegrees: number
+): RotatedWatermarkBounds {
+  const rad = (angleDegrees * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+
+  // Four vertices of unrotated rectangle around (0,0) origin
+  const v1 = { x: 0, y: 0 };
+  const v2 = { x: w * cos, y: w * sin };
+  const v3 = { x: -h * sin, y: h * cos };
+  const v4 = { x: w * cos - h * sin, y: w * sin + h * cos };
+
+  const xs = [v1.x, v2.x, v3.x, v4.x];
+  const ys = [v1.y, v2.y, v3.y, v4.y];
+
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  return {
+    width: maxX - minX,
+    height: maxY - minY,
+    originOffsetX: -minX,
+    originOffsetY: -minY,
+  };
+}
+
 export function getRotatedWatermarkBounds(
   width: number,
   height: number,
   angleDegrees: number
 ): WatermarkBounds {
-  const rad = (angleDegrees * Math.PI) / 180;
-  const cos = Math.abs(Math.cos(rad));
-  const sin = Math.abs(Math.sin(rad));
+  const res = getRotatedWatermarkBoundsWithOffsets(width, height, angleDegrees);
+  return { width: res.width, height: res.height };
+}
 
-  return {
-    width: width * cos + height * sin,
-    height: width * sin + height * cos,
-  };
+/**
+ * Maps visual page coordinates (xVisual, yVisual) to raw PDF stream coordinates accounting for /Rotate (0, 90, 180, 270 deg).
+ */
+export function transformVisualToPdfCoordinates(
+  xVisual: number,
+  yVisual: number,
+  markW: number,
+  markH: number,
+  pageW: number,
+  pageH: number,
+  rawW: number,
+  rawH: number,
+  rotationAngle: number = 0
+): { x: number; y: number } {
+  const normAngle = ((rotationAngle % 360) + 360) % 360;
+
+  switch (normAngle) {
+    case 90:
+      return {
+        x: yVisual,
+        y: rawW - xVisual - markW,
+      };
+    case 180:
+      return {
+        x: rawW - xVisual - markW,
+        y: rawH - yVisual - markH,
+      };
+    case 270:
+      return {
+        x: rawH - yVisual - markH,
+        y: xVisual,
+      };
+    case 0:
+    default:
+      return {
+        x: xVisual,
+        y: yVisual,
+      };
+  }
 }
 
 /**
@@ -48,8 +119,8 @@ export function buildWatermarkPlacementPlan(
 ): WatermarkPlacementItem[] {
   const { width: pageW, height: pageH } = pageDim;
   const rotationDegrees = config.rotationAngle || 0;
-  const rotBounds = getRotatedWatermarkBounds(markBounds.width, markBounds.height, rotationDegrees);
-  const { width: markW, height: markH } = rotBounds;
+  const rotBounds = getRotatedWatermarkBoundsWithOffsets(markBounds.width, markBounds.height, rotationDegrees);
+  const { width: markW, height: markH, originOffsetX, originOffsetY } = rotBounds;
 
   if (config.positionPreset === "tile") {
     const coordsList: Array<{ x: number; y: number }> = [];
@@ -58,14 +129,14 @@ export function buildWatermarkPlacementPlan(
 
     for (let y = margin; y <= pageH - markH; y += stepY) {
       for (let x = margin; x <= pageW - markW; x += stepX) {
-        coordsList.push({ x, y });
+        coordsList.push({ x: x + originOffsetX, y: y + originOffsetY });
       }
     }
 
     if (coordsList.length === 0) {
       coordsList.push({
-        x: Math.max(margin, (pageW - markW) / 2),
-        y: Math.max(margin, (pageH - markH) / 2),
+        x: Math.max(margin, (pageW - markW) / 2) + originOffsetX,
+        y: Math.max(margin, (pageH - markH) / 2) + originOffsetY,
       });
     }
 
@@ -116,8 +187,8 @@ export function buildWatermarkPlacementPlan(
 
   return [
     {
-      x,
-      y,
+      x: x + originOffsetX,
+      y: y + originOffsetY,
       width: markBounds.width,
       height: markBounds.height,
       rotationDegrees,
@@ -125,9 +196,6 @@ export function buildWatermarkPlacementPlan(
   ];
 }
 
-/**
- * Retained for backwards compatibility in existing utility calls.
- */
 export function calculateWatermarkCoordinates(
   positionPreset: WatermarkPositionPreset,
   pageDim: PageDimensions,

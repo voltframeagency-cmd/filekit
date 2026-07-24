@@ -52,11 +52,11 @@ export async function preflightOverlayPdf(
   try {
     await PDFDocument.load(fileBuffer);
   } catch (strictErr: any) {
-    const strictMsg = strictErr?.message || String(strictErr);
+    const strictMsg = (strictErr?.message || String(strictErr)).toLowerCase();
     if (
-      strictMsg.toLowerCase().includes("encrypt") ||
-      strictMsg.toLowerCase().includes("password") ||
-      strictMsg.toLowerCase().includes("protected")
+      strictMsg.includes("encrypt") ||
+      strictMsg.includes("password") ||
+      strictMsg.includes("protected")
     ) {
       return {
         isValid: false,

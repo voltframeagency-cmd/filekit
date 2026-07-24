@@ -1,5 +1,8 @@
 import { degrees, PDFDocument, StandardFonts } from "pdf-lib";
-import { buildWatermarkPlacementPlan } from "./coordinateTransform";
+import {
+  buildWatermarkPlacementPlan,
+  transformVisualToPdfCoordinates,
+} from "./coordinateTransform";
 import { preflightOverlayPdf } from "./PdfOverlayPreflight";
 import { verifyPdfOverlayOutput } from "./outputVerification";
 import {
@@ -127,9 +130,21 @@ export async function executePdfWatermark(
       );
 
       for (const item of placementPlan) {
+        const drawCoords = transformVisualToPdfCoordinates(
+          item.x,
+          item.y,
+          textWidth,
+          textHeight,
+          pageW,
+          pageH,
+          rawW,
+          rawH,
+          pageRotation
+        );
+
         page.drawText(text, {
-          x: item.x,
-          y: item.y,
+          x: drawCoords.x,
+          y: drawCoords.y,
           size: fontSize,
           font: embeddedFont,
           color: textColor,
@@ -151,9 +166,21 @@ export async function executePdfWatermark(
       );
 
       for (const item of placementPlan) {
+        const drawCoords = transformVisualToPdfCoordinates(
+          item.x,
+          item.y,
+          imgWidth,
+          imgHeight,
+          pageW,
+          pageH,
+          rawW,
+          rawH,
+          pageRotation
+        );
+
         page.drawImage(embeddedImage, {
-          x: item.x,
-          y: item.y,
+          x: drawCoords.x,
+          y: drawCoords.y,
           width: imgWidth,
           height: imgHeight,
           opacity,

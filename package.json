@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node -e \"const fs=require('fs'); fs.copyFileSync('node_modules/pdfjs-dist/build/pdf.worker.min.mjs', 'public/pdf.worker.min.mjs');\"",
-    "build": "npm run prebuild && next build",
+    "prebuild": "node scripts/copy-pdfjs-assets.mjs",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test": "npx tsx src/utils/engine/__tests__/run_tests.ts && npx tsx src/utils/image-engine/__tests__/run_tests.ts && npx tsx src/utils/pdf-to-image/__tests__/run_tests.ts && npx tsx src/utils/image-to-pdf/__tests__/run_tests.ts && npx tsx src/utils/pdf-editor/__tests__/run_tests.ts && npx tsx src/utils/pdf-overlay/__tests__/run_tests.ts && npx tsx src/config/__tests__/run_catalog_tests.ts && npx tsx src/config/__tests__/run_phase2e_audit.ts && npx tsx src/config/__tests__/run_pdfaid_source_fidelity_test.ts"

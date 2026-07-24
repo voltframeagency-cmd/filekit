@@ -7,6 +7,8 @@ import {
   calculateWatermarkCoordinates,
   generateTileGridCoordinates,
   getRotatedWatermarkBounds,
+  getRotatedWatermarkBoundsWithOffsets,
+  transformVisualToPdfCoordinates,
 } from "../coordinateTransform";
 import {
   detectImageMimeType,
@@ -27,6 +29,16 @@ async function createTestPdfBuffer(pageCount: number, rotationAngle: number = 0)
       page.setRotation({ type: "degrees", angle: rotationAngle });
     }
   }
+  return await doc.save();
+}
+
+async function createBoxedPdfBuffer(): Promise<Uint8Array> {
+  const doc = await PDFDocument.create();
+  const page = doc.addPage([600, 800]);
+  page.setCropBox(10, 10, 580, 780);
+  page.setTrimBox(20, 20, 560, 760);
+  page.setBleedBox(5, 5, 590, 790);
+  page.setArtBox(30, 30, 540, 740);
   return await doc.save();
 }
 
@@ -53,18 +65,45 @@ async function runOverlayTests() {
     assertions += 2;
   }
 
-  // Test 1: Rotated Watermark Bounding Box Calculation
+  // Test 1: Rotated Watermark Bounding Box Calculation & Origin Offsets
   {
-    const bounds = getRotatedWatermarkBounds(100, 50, 90);
+    const bounds = getRotatedWatermarkBoundsWithOffsets(100, 50, 90);
     assert.strictEqual(Math.round(bounds.width), 50);
     assert.strictEqual(Math.round(bounds.height), 100);
+    assert.ok(bounds.originOffsetX >= 0, "originOffsetX must be valid non-negative");
 
     const bounds45 = getRotatedWatermarkBounds(100, 100, 45);
     assert.ok(bounds45.width > 100, "Rotated 45 deg box width should expand");
-    assertions += 3;
+    assertions += 4;
   }
 
-  // Test 2: Unified Placement Plan Parity & Custom Placement
+  // Test 2: Page Rotation Visual-to-Raw Coordinate Transforms (0, 90, 180, 270 deg)
+  {
+    const markW = 100;
+    const markH = 50;
+    const pageW = 600;
+    const pageH = 800;
+
+    const t0 = transformVisualToPdfCoordinates(10, 20, markW, markH, pageW, pageH, 600, 800, 0);
+    assert.strictEqual(t0.x, 10);
+    assert.strictEqual(t0.y, 20);
+
+    const t90 = transformVisualToPdfCoordinates(10, 20, markW, markH, pageW, pageH, 800, 600, 90);
+    assert.strictEqual(t90.x, 20);
+    assert.strictEqual(t90.y, 800 - 10 - markW);
+
+    const t180 = transformVisualToPdfCoordinates(10, 20, markW, markH, pageW, pageH, 600, 800, 180);
+    assert.strictEqual(t180.x, 600 - 10 - markW);
+    assert.strictEqual(t180.y, 800 - 20 - markH);
+
+    const t270 = transformVisualToPdfCoordinates(10, 20, markW, markH, pageW, pageH, 800, 600, 270);
+    assert.strictEqual(t270.x, 600 - 20 - markH);
+    assert.strictEqual(t270.y, 10);
+
+    assertions += 8;
+  }
+
+  // Test 3: Unified Placement Plan Parity & Custom Placement
   {
     const pageDim = { width: 600, height: 800 };
     const markBounds = { width: 200, height: 100 };
@@ -95,7 +134,7 @@ async function runOverlayTests() {
     assertions += 6;
   }
 
-  // Test 3: Watermark Operations & WinAnsi Character Validation
+  // Test 4: Watermark Operations & WinAnsi Character Validation
   {
     const colorRgb = hexToPdfRgb("#FF0000");
     assert.strictEqual(colorRgb.type, "RGB");
@@ -112,7 +151,7 @@ async function runOverlayTests() {
     assertions += 7;
   }
 
-  // Test 4: Preflight Validation & 100 MB Limit Rejection
+  // Test 5: Preflight Validation & 100 MB Limit Rejection
   {
     const pdfBuffer = await createTestPdfBuffer(3);
     const preflight = await preflightOverlayPdf(pdfBuffer, "test.pdf");
@@ -133,7 +172,7 @@ async function runOverlayTests() {
     assertions += 5;
   }
 
-  // Test 5: Strict Validation Guard — Missing Image Rejection
+  // Test 6: Strict Validation Guard — Missing Image Rejection
   {
     const pdfBuffer = await createTestPdfBuffer(1);
     await assert.rejects(
@@ -157,7 +196,7 @@ async function runOverlayTests() {
     assertions += 1;
   }
 
-  // Test 6: Strict Validation Guard — Empty Text Rejection
+  // Test 7: Strict Validation Guard — Empty Text Rejection
   {
     const pdfBuffer = await createTestPdfBuffer(1);
     await assert.rejects(
@@ -182,7 +221,7 @@ async function runOverlayTests() {
     assertions += 1;
   }
 
-  // Test 7: Engine Execution — PNG Image Watermark Overlay
+  // Test 8: Engine Execution — PNG Image Watermark Overlay
   {
     const pdfBuffer = await createTestPdfBuffer(2);
 
@@ -208,7 +247,7 @@ async function runOverlayTests() {
     assertions += 3;
   }
 
-  // Test 8: Engine Execution — Rotated Source PDF Pages (90 deg)
+  // Test 9: Engine Execution — Rotated Source PDF Pages (90 deg)
   {
     const pdfRotatedBuffer = await createTestPdfBuffer(2, 90);
 
@@ -234,7 +273,35 @@ async function runOverlayTests() {
     assertions += 2;
   }
 
-  // Test 9: Output Verification Rejection & Fail-Closed Logic
+  // Test 10: Page Box Preservation Fixture
+  {
+    const boxedPdfBuffer = await createBoxedPdfBuffer();
+    const result = await executePdfWatermark(
+      boxedPdfBuffer,
+      {
+        type: "text",
+        text: "BOX TEST",
+        opacity: 0.5,
+        rotationAngle: 0,
+        positionPreset: "center",
+        targetPagesMode: "all",
+      },
+      "boxed_output.pdf",
+      undefined,
+      true
+    );
+
+    const reloadedDoc = await PDFDocument.load(result.fileData);
+    const reloadedPage = reloadedDoc.getPage(0);
+    const crop = reloadedPage.getCropBox();
+    assert.strictEqual(crop.x, 10);
+    assert.strictEqual(crop.y, 10);
+    assert.strictEqual(crop.width, 580);
+    assert.strictEqual(crop.height, 780);
+    assertions += 4;
+  }
+
+  // Test 11: Output Verification Rejection & Fail-Closed Logic
   {
     const invalidBuffer = new Uint8Array([0x00, 0x00, 0x00]);
     const verification = await verifyPdfOverlayOutput(invalidBuffer, 1, false, true);
