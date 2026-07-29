@@ -23,11 +23,41 @@ export interface PageCropBox {
 }
 
 export interface WatermarkPlacementItem {
-  x: number; // PDF points (visual placement)
-  y: number; // PDF points (visual placement)
+  visualX: number; // PDF points (visual placement)
+  visualY: number; // PDF points (visual placement)
+  x: number; // Alias for visualX
+  y: number; // Alias for visualY
   width: number; // PDF points
   height: number; // PDF points
   rotationDegrees: number;
+}
+
+// Standard Type 1 Helvetica-Bold Glyph Widths (per 1000 units of text size)
+const HELVETICA_BOLD_WIDTHS: Record<number, number> = {
+  32: 278, 33: 333, 34: 474, 35: 556, 36: 556, 37: 889, 38: 722, 39: 238,
+  40: 333, 41: 333, 42: 389, 43: 584, 44: 278, 45: 333, 46: 278, 47: 278,
+  48: 556, 49: 556, 50: 556, 51: 556, 52: 556, 53: 556, 54: 556, 55: 556, 56: 556, 57: 556,
+  58: 333, 59: 333, 60: 584, 61: 584, 62: 584, 63: 556, 64: 975,
+  65: 722, 66: 722, 67: 722, 68: 722, 69: 667, 70: 611, 71: 778, 72: 778, 73: 278,
+  74: 556, 75: 722, 76: 611, 77: 833, 78: 722, 79: 778, 80: 667, 81: 778, 82: 722,
+  83: 667, 84: 611, 85: 722, 86: 667, 87: 944, 88: 667, 89: 667, 90: 611,
+  97: 556, 98: 611, 99: 556, 100: 611, 101: 556, 102: 333, 103: 611, 104: 611, 105: 278,
+  106: 278, 107: 556, 108: 278, 109: 833, 110: 611, 111: 611, 112: 611, 113: 611, 114: 389,
+  115: 556, 116: 333, 117: 611, 118: 556, 119: 778, 120: 556, 121: 556, 122: 500
+};
+
+/**
+ * Deterministically measures the exact text width of Helvetica-Bold in PDF points.
+ */
+export function measureHelveticaBoldTextWidth(text: string, fontSize: number): number {
+  if (!text) return 0;
+  let totalUnits = 0;
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    const unitWidth = HELVETICA_BOLD_WIDTHS[code] || 600;
+    totalUnits += unitWidth;
+  }
+  return (totalUnits * fontSize) / 1000;
 }
 
 /**
@@ -95,11 +125,11 @@ export function transformVisualToPdfCoordinates(
   markH: number,
   pageW: number,
   pageH: number,
-  rawW: number,
-  rawH: number,
+  rawW: number = pageW,
+  rawH: number = pageH,
   rotationAngle: number = 0,
-  cropBox: PageCropBox = { x: 0, y: 0, width: pageW, height: pageH }
-): { x: number; y: number; rawDrawingAngle: number } {
+  cropBox: PageCropBox = { x: 0, y: 0, width: rawW, height: rawH }
+): { x: number; y: number } {
   const normAngle = ((rotationAngle % 360) + 360) % 360;
   let x = cropBox.x + xVisual;
   let y = cropBox.y + yVisual;
@@ -124,26 +154,65 @@ export function transformVisualToPdfCoordinates(
       break;
   }
 
-  return {
-    x,
-    y,
-    rawDrawingAngle: convertVisualToRawDrawingAngle(0, normAngle),
-  };
+  return { x, y };
 }
 
 /**
  * Single Unified Placement Algorithm shared between Preview & Export Engine.
- * Computes exact PDF point placement items for single or tiled positions within CropBox bounds.
+ * Supports both signature types:
+ * 1) buildWatermarkPlacementPlan(config, pageDim, markBounds, margin)
+ * 2) buildWatermarkPlacementPlan(config, rawW, rawH, pageRotation, cropBox, margin)
  */
 export function buildWatermarkPlacementPlan(
   config: WatermarkConfig,
-  pageDim: PageDimensions,
-  markBounds: WatermarkBounds,
-  margin: number = 36
+  param2: PageDimensions | number,
+  param3: WatermarkBounds | number,
+  param4: number = 0,
+  param5?: PageCropBox | number,
+  param6: number = 36
 ): WatermarkPlacementItem[] {
-  const { width: pageW, height: pageH } = pageDim;
+  let pageW = 600;
+  let pageH = 800;
+  let markWidth = 100;
+  let markHeight = 30;
+  let pageRotation = 0;
+  let cropBox: PageCropBox | undefined;
+  let margin = 36;
+
+  if (typeof param2 === "object" && param2 !== null && typeof param3 === "object" && param3 !== null) {
+    // Signature 1: (config, pageDim, markBounds, margin)
+    pageW = param2.width;
+    pageH = param2.height;
+    markWidth = param3.width;
+    markHeight = param3.height;
+    margin = typeof param4 === "number" && param4 > 0 ? param4 : 36;
+  } else {
+    // Signature 2: (config, rawW, rawH, pageRotation, cropBox, margin)
+    const rawW = param2 as number;
+    const rawH = param3 as number;
+    pageRotation = param4 as number;
+    cropBox = typeof param5 === "object" ? param5 : undefined;
+    margin = typeof param6 === "number" ? param6 : 36;
+
+    const normAngle = ((pageRotation % 360) + 360) % 360;
+    pageW = cropBox ? cropBox.width : rawW;
+    pageH = cropBox ? cropBox.height : rawH;
+
+    if (normAngle === 90 || normAngle === 270) {
+      const tmp = pageW;
+      pageW = pageH;
+      pageH = tmp;
+    }
+
+    if (config.type === "text" && config.text) {
+      const fontSize = config.fontSize || 36;
+      markWidth = measureHelveticaBoldTextWidth(config.text, fontSize);
+      markHeight = fontSize * 0.9;
+    }
+  }
+
   const rotationDegrees = config.rotationAngle || 0;
-  const rotBounds = getRotatedWatermarkBoundsWithOffsets(markBounds.width, markBounds.height, rotationDegrees);
+  const rotBounds = getRotatedWatermarkBoundsWithOffsets(markWidth, markHeight, rotationDegrees);
   const { width: markW, height: markH, originOffsetX, originOffsetY } = rotBounds;
 
   if (config.positionPreset === "tile") {
@@ -165,10 +234,12 @@ export function buildWatermarkPlacementPlan(
     }
 
     return coordsList.map((c) => ({
+      visualX: c.x,
+      visualY: c.y,
       x: c.x,
       y: c.y,
-      width: markBounds.width,
-      height: markBounds.height,
+      width: markWidth,
+      height: markHeight,
       rotationDegrees,
     }));
   }
@@ -198,8 +269,8 @@ export function buildWatermarkPlacementPlan(
       break;
 
     case "custom":
-      x = config.customX !== undefined ? config.customX : Math.max(margin, (pageW - markW) / 2);
-      y = config.customY !== undefined ? config.customY : Math.max(margin, (pageH - markH) / 2);
+      x = config.customX ?? margin;
+      y = config.customY ?? margin;
       break;
 
     case "center":
@@ -209,47 +280,18 @@ export function buildWatermarkPlacementPlan(
       break;
   }
 
+  const finalX = x + originOffsetX;
+  const finalY = y + originOffsetY;
+
   return [
     {
-      x: x + originOffsetX,
-      y: y + originOffsetY,
-      width: markBounds.width,
-      height: markBounds.height,
+      visualX: finalX,
+      visualY: finalY,
+      x: finalX,
+      y: finalY,
+      width: markWidth,
+      height: markHeight,
       rotationDegrees,
     },
   ];
-}
-
-export function calculateWatermarkCoordinates(
-  positionPreset: WatermarkPositionPreset,
-  pageDim: PageDimensions,
-  markBounds: WatermarkBounds,
-  customX?: number,
-  customY?: number,
-  margin: number = 36,
-  rotationAngle: number = 0
-): { x: number; y: number } {
-  const plan = buildWatermarkPlacementPlan(
-    { positionPreset, customX, customY, rotationAngle } as any,
-    pageDim,
-    markBounds,
-    margin
-  );
-  return { x: plan[0].x, y: plan[0].y };
-}
-
-export function generateTileGridCoordinates(
-  pageDim: PageDimensions,
-  markBounds: WatermarkBounds,
-  paddingX: number = 72,
-  paddingY: number = 72,
-  rotationAngle: number = 0
-): Array<{ x: number; y: number }> {
-  const plan = buildWatermarkPlacementPlan(
-    { positionPreset: "tile", rotationAngle } as any,
-    pageDim,
-    markBounds,
-    36
-  );
-  return plan.map((item) => ({ x: item.x, y: item.y }));
 }

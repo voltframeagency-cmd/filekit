@@ -351,6 +351,26 @@ async function runOverlayTests() {
     assertions += 3;
   }
 
+  // Test 12: Injected Loader Seam Exception (Structurally Valid PDF where Injected PDF.js Loader Throws)
+  {
+    const validPdfBuffer = await createTestPdfBuffer(1);
+    const verification = await verifyPdfOverlayOutput(
+      validPdfBuffer,
+      1,
+      false,
+      false, // isNodeTest = false (production browser simulation)
+      false, // forcePdfjsFailure = false
+      async () => {
+        throw new Error("Simulated PDF.js loader exception");
+      }
+    );
+
+    assert.strictEqual(verification.isValid, false, "Must fail closed when injected PDF.js loader throws");
+    assert.strictEqual(verification.pdfLibReloadStatus, "VERIFIED", "pdf-lib reload must be VERIFIED");
+    assert.strictEqual(verification.pdfjsReloadStatus, "FAILED", "PDF.js reload status must be FAILED");
+    assertions += 3;
+  }
+
   console.log(`\n✅ All ${assertions} Production-Hardened PDF Watermark Engine assertions passed cleanly!`);
 }
 

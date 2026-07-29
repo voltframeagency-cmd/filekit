@@ -60,6 +60,10 @@ export const PdfOverlayResultCard: React.FC<PdfOverlayResultCardProps> = ({
               Dual-Reload Verified
             </span>
 
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-950 text-blue-300 text-xs font-mono font-semibold border border-blue-800/60">
+              {artifact.executionMode || "WEB_WORKER"}
+            </span>
+
             <span className="text-xs text-slate-400 font-mono">
               {formatBytes(artifact.byteLength)}
             </span>
@@ -70,7 +74,7 @@ export const PdfOverlayResultCard: React.FC<PdfOverlayResultCardProps> = ({
           </h3>
 
           <p className="text-xs text-slate-400">
-            Watermarked <span className="text-slate-200 font-semibold">{artifact.pageCount}</span> page{artifact.pageCount !== 1 ? "s" : ""} • Processed 100% locally in browser
+            Watermarked <span className="text-slate-200 font-semibold">{artifact.pageCount}</span> page{artifact.pageCount !== 1 ? "s" : ""} • Processed 100% off-thread via Web Worker
           </p>
         </div>
 

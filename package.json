@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npx tsx src/utils/engine/__tests__/run_tests.ts && npx tsx src/utils/image-engine/__tests__/run_tests.ts && npx tsx src/utils/pdf-to-image/__tests__/run_tests.ts && npx tsx src/utils/image-to-pdf/__tests__/run_tests.ts && npx tsx src/utils/pdf-editor/__tests__/run_tests.ts && npx tsx src/utils/pdf-overlay/__tests__/run_tests.ts && npx tsx src/config/__tests__/run_catalog_tests.ts && npx tsx src/config/__tests__/run_phase2e_audit.ts && npx tsx src/config/__tests__/run_pdfaid_source_fidelity_test.ts"
+    "optimize:svg": "svgo -r -f public/brand-assets --config svgo.config.mjs",
+    "test": "npx tsx src/utils/engine/__tests__/run_tests.ts && npx tsx src/utils/image-engine/__tests__/run_tests.ts && npx tsx src/utils/pdf-to-image/__tests__/run_tests.ts && npx tsx src/utils/image-to-pdf/__tests__/run_tests.ts && npx tsx src/utils/pdf-editor/__tests__/run_tests.ts && npx tsx src/utils/pdf-overlay/__tests__/run_tests.ts && npx tsx src/utils/pdf-overlay/__tests__/run_rendered_pixel_fixtures.ts && npx tsx src/config/__tests__/run_catalog_tests.ts && npx tsx src/config/__tests__/run_phase2e_audit.ts && npx tsx src/config/__tests__/run_pdfaid_source_fidelity_test.ts"
   },
   "dependencies": {
     "next": "16.2.10",
@@ -26,6 +27,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "playwright": "^1.61.1",
+    "svgo": "^4.0.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

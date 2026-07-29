@@ -7,6 +7,7 @@ import {
 import { preflightOverlayPdf } from "./PdfOverlayPreflight";
 import { verifyPdfOverlayOutput } from "./outputVerification";
 import {
+  ExecutionMode,
   PdfOverlayOutputArtifact,
   PdfOverlayProgress,
   WatermarkConfig,
@@ -29,7 +30,8 @@ export async function executePdfWatermark(
   config: WatermarkConfig,
   fileName: string = "watermarked.pdf",
   onProgress?: ProgressCallback,
-  isNodeTest: boolean = false
+  isNodeTest: boolean = false,
+  executionMode: ExecutionMode = "WEB_WORKER"
 ): Promise<PdfOverlayOutputArtifact> {
   const reportProgress = (
     stage: PdfOverlayProgress["stage"],
@@ -101,44 +103,30 @@ export async function executePdfWatermark(
     }
   }
 
-  const textColor = hexToPdfRgb(config.fontColor || "#3B82F6");
-  const fontSize = Math.max(8, config.fontSize || 36);
-  const opacity = Math.max(0.05, Math.min(1.0, config.opacity));
-
-  // Stage 3: Stamping watermark onto target pages using unified placement plan
+  // Stage 3: Stamp watermarks page by page
   for (let i = 0; i < targetPageIndices.length; i++) {
-    const pageIndex = targetPageIndices[i];
-    const page = pdfDoc.getPage(pageIndex);
+    const pageIdx = targetPageIndices[i];
+    const page = pdfDoc.getPage(pageIdx);
+
     const { width: rawW, height: rawH } = page.getSize();
-    const cropBox = page.getCropBox();
-    const pageRotation = page.getRotation().angle;
+    const pageRotation = page.getRotation().angle || 0;
+    const cropBox = page.getCropBox() || { x: 0, y: 0, width: rawW, height: rawH };
 
-    // Respect page rotation geometry and CropBox placement boundary
-    const isRotated90or270 = pageRotation === 90 || pageRotation === 270;
-    const pageW = isRotated90or270 ? cropBox.height : cropBox.width;
-    const pageH = isRotated90or270 ? cropBox.width : cropBox.height;
+    const placementPlan = buildWatermarkPlacementPlan(config, rawW, rawH, pageRotation, cropBox);
 
-    if (config.type === "text") {
-      const text = config.text || "WATERMARK";
-      const textWidth = embeddedFont.widthOfTextAtSize(text, fontSize);
-      const textHeight = embeddedFont.heightAtSize(fontSize);
-      const markBounds = { width: textWidth, height: textHeight };
-
-      const placementPlan = buildWatermarkPlacementPlan(
-        config,
-        { width: pageW, height: pageH },
-        markBounds,
-        36
-      );
+    if (config.type === "text" && config.text && embeddedFont) {
+      const textColor = hexToPdfRgb(config.fontColor || "#EF4444");
+      const fontSize = config.fontSize || 36;
+      const opacity = config.opacity || 0.4;
 
       for (const item of placementPlan) {
         const drawCoords = transformVisualToPdfCoordinates(
-          item.x,
-          item.y,
-          textWidth,
-          textHeight,
-          pageW,
-          pageH,
+          item.visualX,
+          item.visualY,
+          item.width,
+          item.height,
+          rawW,
+          rawH,
           rawW,
           rawH,
           pageRotation,
@@ -146,7 +134,7 @@ export async function executePdfWatermark(
         );
         const rawAngle = convertVisualToRawDrawingAngle(item.rotationDegrees, pageRotation);
 
-        page.drawText(text, {
+        page.drawText(config.text, {
           x: drawCoords.x,
           y: drawCoords.y,
           size: fontSize,
@@ -157,26 +145,18 @@ export async function executePdfWatermark(
         });
       }
     } else if (config.type === "image" && embeddedImage) {
-      const imgWidth = Math.min(pageW * 0.8, embeddedImage.width * 0.5);
-      const scaleFactor = imgWidth / embeddedImage.width;
-      const imgHeight = embeddedImage.height * scaleFactor;
-      const markBounds = { width: imgWidth, height: imgHeight };
-
-      const placementPlan = buildWatermarkPlacementPlan(
-        config,
-        { width: pageW, height: pageH },
-        markBounds,
-        36
-      );
+      const imgWidth = embeddedImage.width * (config.fontSize ? config.fontSize / 36 : 1);
+      const imgHeight = embeddedImage.height * (config.fontSize ? config.fontSize / 36 : 1);
+      const opacity = config.opacity || 0.4;
 
       for (const item of placementPlan) {
         const drawCoords = transformVisualToPdfCoordinates(
-          item.x,
-          item.y,
-          imgWidth,
-          imgHeight,
-          pageW,
-          pageH,
+          item.visualX,
+          item.visualY,
+          item.width,
+          item.height,
+          rawW,
+          rawH,
           rawW,
           rawH,
           pageRotation,
@@ -231,5 +211,6 @@ export async function executePdfWatermark(
     pageCount: totalPages,
     byteLength: outputBytes.length,
     verification,
+    executionMode,
   };
 }

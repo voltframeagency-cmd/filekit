@@ -2,6 +2,8 @@ import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
 import { PdfOverlayVerificationResult, VerificationReloadStatus } from "./types";
 
+export type PdfJsLoaderFn = (data: Uint8Array) => Promise<{ numPages: number }>;
+
 /**
  * Validates output watermarked PDF buffer against magic bytes, pdf-lib reload, and pdfjs-dist reload.
  * Strictly fail-closed in browser/worker environments (requires pdfjsReloadStatus === "VERIFIED").
@@ -11,7 +13,8 @@ export async function verifyPdfOverlayOutput(
   expectedPageCount: number,
   signatureDetected: boolean = false,
   isNodeTest: boolean = false,
-  forcePdfjsFailure: boolean = false
+  forcePdfjsFailure: boolean = false,
+  pdfJsLoader?: PdfJsLoaderFn
 ): Promise<PdfOverlayVerificationResult> {
   if (!fileData || fileData.length < 5) {
     return {
@@ -91,16 +94,27 @@ export async function verifyPdfOverlayOutput(
   // 2. Dual reload test: pdfjs-dist
   if (forcePdfjsFailure) {
     pdfjsStatus = "FAILED";
+  } else if (pdfJsLoader) {
+    try {
+      const res = await pdfJsLoader(fileData);
+      if (res && res.numPages === expectedPageCount) {
+        pdfjsStatus = "VERIFIED";
+      } else {
+        pdfjsStatus = "FAILED";
+      }
+    } catch (_) {
+      pdfjsStatus = isNodeTest ? "UNAVAILABLE" : "FAILED";
+    }
   } else {
     let loadingTask: pdfjsLib.PDFDocumentLoadingTask | null = null;
     let jsDoc: pdfjsLib.PDFDocumentProxy | null = null;
 
     try {
       if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-        if (typeof window !== "undefined" && window.location) {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-        } else if (typeof self !== "undefined" && self.location) {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+        if (typeof self !== "undefined" && self.location && self.location.origin) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `${self.location.origin}/pdf.worker.min.mjs`;
+        } else if (typeof window !== "undefined" && window.location && window.location.origin) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `${window.location.origin}/pdf.worker.min.mjs`;
         } else {
           pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
         }
@@ -122,13 +136,8 @@ export async function verifyPdfOverlayOutput(
       } else {
         pdfjsStatus = "FAILED";
       }
-    } catch (err: any) {
-      if (isNodeTest) {
-        pdfjsStatus = "UNAVAILABLE";
-      } else {
-        // Fallback: If pdf-lib reloaded successfully and page count matched, treat as VERIFIED if structure is sound
-        pdfjsStatus = pdfLibStatus === "VERIFIED" ? "VERIFIED" : "FAILED";
-      }
+    } catch (_) {
+      pdfjsStatus = isNodeTest ? "UNAVAILABLE" : "FAILED";
     } finally {
       if (jsDoc) {
         try { await jsDoc.destroy(); } catch (_) {}
@@ -138,10 +147,12 @@ export async function verifyPdfOverlayOutput(
     }
   }
 
-  // In browser/worker environments, both pdf-lib and pdfjs-dist must be VERIFIED!
+  // Strict Fail-Closed Rule:
+  // In Node test mode, pdfjsStatus may be UNAVAILABLE (unless forcePdfjsFailure / custom loader was supplied).
+  // In production (browser/worker), pdfjsStatus MUST be "VERIFIED".
   const isOverallValid =
     pdfLibStatus === "VERIFIED" &&
-    (isNodeTest && !forcePdfjsFailure ? pdfjsStatus !== "FAILED" : pdfjsStatus === "VERIFIED");
+    (isNodeTest && !forcePdfjsFailure && !pdfJsLoader ? pdfjsStatus !== "FAILED" : pdfjsStatus === "VERIFIED");
 
   return {
     isValid: isOverallValid,

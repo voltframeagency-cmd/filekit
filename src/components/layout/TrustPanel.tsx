@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useLanguage } from "./LanguageContext";
+import { FileKitAsset } from "@/components/visuals/FileKitAsset";
 
 export default function TrustPanel() {
   const { t } = useLanguage();
@@ -11,20 +12,8 @@ export default function TrustPanel() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-4 md:divide-x md:divide-fk-border rtl:md:divide-x-reverse">
         {/* Column 1: 100% Private */}
         <div className="flex items-start gap-4 px-2">
-          <div className="text-fk-text shrink-0 mt-1">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.751h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 0v1.5"
-              />
-            </svg>
+          <div className="shrink-0 mt-1">
+            <FileKitAsset name="private-local-processing" className="w-12 h-12 object-contain" />
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
@@ -96,18 +85,10 @@ export default function TrustPanel() {
           </div>
         </div>
 
-        {/* Column 4: No Hidden Trials */}
+        {/* Column 4: Verified Output */}
         <div className="flex items-start gap-4 px-2 md:pl-6 rtl:md:pr-6 rtl:md:pl-2">
-          <div className="shrink-0 mt-1 flex items-center justify-center w-6 h-6 rounded-full bg-fk-success text-white">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth={3}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-            </svg>
+          <div className="shrink-0 mt-1">
+            <FileKitAsset name="verified-output" className="w-12 h-12 object-contain" />
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">

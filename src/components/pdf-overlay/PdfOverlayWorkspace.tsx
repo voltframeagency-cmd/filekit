@@ -9,7 +9,6 @@ import {
 } from "@/utils/pdf-overlay/types";
 import { preflightOverlayPdf, MAX_PDF_FILE_BYTES } from "@/utils/pdf-overlay/PdfOverlayPreflight";
 import { isWinAnsiSupported, detectImageMimeType } from "@/utils/pdf-overlay/watermarkOperations";
-import { executePdfWatermark } from "@/utils/pdf-overlay/PdfOverlayEngine";
 import { PdfWatermarkControls } from "./PdfWatermarkControls";
 import { PdfPagePreview } from "./PdfPagePreview";
 import { PdfOverlayResultCard } from "./PdfOverlayResultCard";
@@ -162,87 +161,66 @@ export const PdfOverlayWorkspace: React.FC = () => {
     const outputName = `watermarked-${sourceFile.name}`;
 
     try {
-      let workerLaunched = false;
-
-      if (typeof Worker !== "undefined") {
-        try {
-          const worker = new Worker(
-            new URL("../../utils/pdf-overlay/pdfOverlay.worker.ts", import.meta.url)
-          );
-          workerRef.current = worker;
-          workerLaunched = true;
-
-          worker.onmessage = (e: MessageEvent<WorkerResponseMessage>) => {
-            const msg = e.data;
-            if (msg.type === "PROGRESS") {
-              setProgress(msg.payload);
-            } else if (msg.type === "SUCCESS") {
-              setArtifact(msg.payload.artifact);
-              setIsProcessing(false);
-              setProgress(null);
-              worker.terminate();
-              workerRef.current = null;
-            } else if (msg.type === "ERROR") {
-              setErrorMessage(msg.payload.error);
-              setIsProcessing(false);
-              setProgress(null);
-              worker.terminate();
-              workerRef.current = null;
-            }
-          };
-
-          worker.onerror = async () => {
-            // Fallback to direct engine execution
-            try {
-              const res = await executePdfWatermark(
-                sourceBuffer,
-                watermarkConfig,
-                outputName,
-                (p) => setProgress(p)
-              );
-              setArtifact(res);
-            } catch (err: any) {
-              setErrorMessage(err.message || "Overlay processing failed");
-            } finally {
-              setIsProcessing(false);
-              setProgress(null);
-              if (workerRef.current) {
-                try { workerRef.current.terminate(); } catch (_) {}
-                workerRef.current = null;
-              }
-            }
-          };
-
-          const bufferCopy = sourceBuffer.slice(0).buffer;
-          worker.postMessage(
-            {
-              type: "START_OVERLAY",
-              payload: {
-                sourceBuffer: bufferCopy,
-                config: watermarkConfig,
-                fileName: outputName,
-              },
-            },
-            [bufferCopy]
-          );
-        } catch (_) {
-          workerLaunched = false;
-        }
+      if (typeof Worker === "undefined") {
+        setErrorMessage("WORKER_EXECUTION_FAILED: Web Worker execution is required but not supported in this environment.");
+        setIsProcessing(false);
+        return;
       }
 
-      if (!workerLaunched) {
-        const res = await executePdfWatermark(
-          sourceBuffer,
-          watermarkConfig,
-          outputName,
-          (p) => setProgress(p)
-        );
-        setArtifact(res);
+      const worker = new Worker(
+        new URL("../../utils/pdf-overlay/pdfOverlay.worker.ts", import.meta.url),
+        { type: "module" }
+      );
+      workerRef.current = worker;
+
+      worker.onmessage = (e: MessageEvent<WorkerResponseMessage>) => {
+        const msg = e.data;
+        if (msg.type === "PROGRESS") {
+          setProgress(msg.payload);
+        } else if (msg.type === "SUCCESS") {
+          setArtifact(msg.payload.artifact);
+          setIsProcessing(false);
+          setProgress(null);
+          worker.terminate();
+          workerRef.current = null;
+        } else if (msg.type === "ERROR") {
+          setErrorMessage(`WORKER_EXECUTION_FAILED: ${msg.payload.error}`);
+          setArtifact(null);
+          setIsProcessing(false);
+          setProgress(null);
+          worker.terminate();
+          workerRef.current = null;
+        }
+      };
+
+      worker.onerror = () => {
+        setErrorMessage("WORKER_EXECUTION_FAILED: Off-thread Web Worker encountered a fatal error during watermark processing.");
+        setArtifact(null);
         setIsProcessing(false);
         setProgress(null);
-      }
+        if (workerRef.current) {
+          try { workerRef.current.terminate(); } catch (_) {}
+          workerRef.current = null;
+        }
+      };
+
+      const freshCopy = new Uint8Array(sourceBuffer.length);
+      freshCopy.set(sourceBuffer);
+      const bufferCopy = freshCopy.buffer;
+      worker.postMessage(
+        {
+          type: "START_OVERLAY",
+          payload: {
+            sourceBuffer: bufferCopy,
+            config: watermarkConfig,
+            fileName: outputName,
+          },
+        },
+        [bufferCopy]
+      );
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to launch overlay processing.");
+      setErrorMessage(`WORKER_EXECUTION_FAILED: ${err.message || "Failed to launch Web Worker."}`);
+      setArtifact(null);
       setIsProcessing(false);
       setProgress(null);
     }

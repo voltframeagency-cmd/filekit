@@ -84,6 +84,8 @@ export interface PdfOverlayVerificationResult {
   signatureWarning?: string;
 }
 
+export type ExecutionMode = "WEB_WORKER" | "MAIN_THREAD_FALLBACK";
+
 export interface PdfOverlayOutputArtifact {
   fileName: string;
   fileData: Uint8Array;
@@ -91,6 +93,7 @@ export interface PdfOverlayOutputArtifact {
   pageCount: number;
   byteLength: number;
   verification: PdfOverlayVerificationResult;
+  executionMode: ExecutionMode;
 }
 
 // Worker message protocol
@@ -101,4 +104,4 @@ export type WorkerRequestMessage =
 export type WorkerResponseMessage =
   | { type: "PROGRESS"; payload: PdfOverlayProgress }
   | { type: "SUCCESS"; payload: { artifact: PdfOverlayOutputArtifact } }
-  | { type: "ERROR"; payload: { error: string; errorCode?: PreflightErrorCode } };
+  | { type: "ERROR"; payload: { error: string; code?: string } };

@@ -98,34 +98,40 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
         loadingTaskRef.current = loadingTask;
 
         const pdfDoc = await loadingTask.promise;
-        if (isCancelled) return;
         pdfDocRef.current = pdfDoc;
         setTotalPages(pdfDoc.numPages);
 
-        const pdfPage = await pdfDoc.getPage(pageIndex + 1);
-        if (isCancelled) return;
+        const page = await pdfDoc.getPage(pageIndex + 1);
 
-        const viewport = pdfPage.getViewport({ scale: 0.8 });
+        // Target fixed preview canvas container width ~ 500px
+        const unscaledViewport = page.getViewport({ scale: 1.0 });
+        const scale = 500 / unscaledViewport.width;
+        const viewport = page.getViewport({ scale });
         setPageViewport(viewport);
 
-        // Create offscreen base canvas
-        const baseCanvas = document.createElement("canvas");
+        if (!baseCanvasRef.current) {
+          baseCanvasRef.current = document.createElement("canvas");
+        }
+        const baseCanvas = baseCanvasRef.current;
         baseCanvas.width = viewport.width;
         baseCanvas.height = viewport.height;
         const baseCtx = baseCanvas.getContext("2d");
-        if (!baseCtx) return;
 
-        const renderTask = pdfPage.render({ canvasContext: baseCtx, viewport });
-        renderTaskRef.current = renderTask;
-        await renderTask.promise;
+        if (baseCtx) {
+          const renderContext = {
+            canvasContext: baseCtx,
+            viewport,
+          };
+          renderTaskRef.current = page.render(renderContext);
+          await renderTaskRef.current.promise;
+        }
 
-        if (isCancelled) return;
-        baseCanvasRef.current = baseCanvas;
-
-        setIsRendering(false);
+        if (!isCancelled) {
+          setIsRendering(false);
+        }
       } catch (err: any) {
-        if (!isCancelled && err.name !== "RenderingCancelledException") {
-          setRenderError(err.message || "Preview load error");
+        if (err?.name !== "RenderingCancelledException" && !isCancelled) {
+          setRenderError(err.message || "Failed to render preview canvas.");
           setIsRendering(false);
         }
       }
@@ -137,12 +143,6 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
       isCancelled = true;
       if (renderTaskRef.current) {
         try { renderTaskRef.current.cancel(); } catch (_) {}
-      }
-      if (pdfDocRef.current) {
-        try { pdfDocRef.current.destroy(); } catch (_) {}
-      }
-      if (loadingTaskRef.current) {
-        try { loadingTaskRef.current.destroy(); } catch (_) {}
       }
     };
   }, [sourceBuffer, pageIndex]);
@@ -173,29 +173,26 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
     ctx.save();
     ctx.globalAlpha = Math.max(0.05, Math.min(1.0, config.opacity));
 
+    const placementPlan = buildWatermarkPlacementPlan(
+      config,
+      pdfPageWidth,
+      pdfPageHeight,
+      0, // Viewport rotation is pre-applied by PDF.js viewport
+      undefined,
+      36
+    );
+
     if (config.type === "text" && config.text) {
-      ctx.fillStyle = config.fontColor || "#3B82F6";
+      ctx.fillStyle = config.fontColor || "#EF4444";
       const fontSizePdf = Math.max(8, config.fontSize || 36);
       const fontSizeCanvas = fontSizePdf * pageViewport.scale;
       ctx.font = `bold ${fontSizeCanvas}px sans-serif`;
 
       const text = config.text;
-      const textMetrics = ctx.measureText(text);
-      const markBoundsPdf = {
-        width: textMetrics.width / pageViewport.scale,
-        height: fontSizePdf,
-      };
-
-      const placementPlan = buildWatermarkPlacementPlan(
-        config,
-        { width: pdfPageWidth, height: pdfPageHeight },
-        markBoundsPdf,
-        36
-      );
 
       for (const item of placementPlan) {
         // Convert bottom-left origin PDF point (x, y) to top-left origin canvas pixel
-        const canvasPt = pageViewport.convertToViewportPoint(item.x, item.y);
+        const canvasPt = pageViewport.convertToViewportPoint(item.visualX, item.visualY);
         ctx.save();
         ctx.translate(canvasPt[0], canvasPt[1]);
         ctx.rotate((-item.rotationDegrees * Math.PI) / 180);
@@ -206,20 +203,12 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
       const imgWidthPdf = Math.min(pdfPageWidth * 0.8, imageObj.width * 0.5);
       const scale = imgWidthPdf / imageObj.width;
       const imgHeightPdf = imageObj.height * scale;
-      const markBoundsPdf = { width: imgWidthPdf, height: imgHeightPdf };
-
-      const placementPlan = buildWatermarkPlacementPlan(
-        config,
-        { width: pdfPageWidth, height: pdfPageHeight },
-        markBoundsPdf,
-        36
-      );
 
       const canvasWidth = imgWidthPdf * pageViewport.scale;
       const canvasHeight = imgHeightPdf * pageViewport.scale;
 
       for (const item of placementPlan) {
-        const canvasPt = pageViewport.convertToViewportPoint(item.x, item.y);
+        const canvasPt = pageViewport.convertToViewportPoint(item.visualX, item.visualY);
         ctx.save();
         ctx.translate(canvasPt[0], canvasPt[1]);
         ctx.rotate((-item.rotationDegrees * Math.PI) / 180);
@@ -229,33 +218,42 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
     }
 
     ctx.restore();
-  }, [config, imageObj, isPageTargeted, pageViewport]);
+  }, [config, isPageTargeted, pageViewport, imageObj]);
+
+  if (renderError) {
+    return (
+      <div className="p-4 rounded-xl bg-red-950/50 border border-red-800 text-red-200 text-xs">
+        Preview error: {renderError}
+      </div>
+    );
+  }
 
   return (
-    <div className="relative flex items-center justify-center min-h-[380px] w-full bg-slate-950 rounded-2xl p-4 border border-slate-800 shadow-2xl overflow-hidden">
-      {!isPageTargeted && (
-        <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-slate-900/90 border border-amber-700/80 text-amber-300 text-xs font-semibold flex items-center gap-1.5 shadow-lg">
-          <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          Page excluded from watermark range
-        </div>
-      )}
-
+    <div className="relative flex flex-col items-center justify-center w-full">
       {isRendering && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm z-10">
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs text-slate-400 font-semibold">Rendering Page Preview...</span>
+        <div className="absolute inset-0 bg-slate-950/80 rounded-2xl flex items-center justify-center z-10">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
+            <svg className="w-4 h-4 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            Rendering preview...
           </div>
         </div>
       )}
 
-      {renderError ? (
-        <div className="text-xs text-slate-400 font-mono text-center">{renderError}</div>
-      ) : (
-        <canvas ref={canvasRef} className="max-h-[460px] max-w-full rounded-lg shadow-lg border border-slate-900" />
-      )}
+      <div className="relative border border-slate-700/60 rounded-xl overflow-hidden shadow-2xl bg-white">
+        <canvas ref={canvasRef} className="block max-w-full h-auto" />
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 text-xs text-slate-400 font-mono">
+        <span>Page {pageIndex + 1} of {totalPages || 1}</span>
+        {!isPageTargeted && (
+          <span className="px-2 py-0.5 rounded bg-slate-800 text-amber-300 text-[10px] font-semibold">
+            Excluded by page range
+          </span>
+        )}
+      </div>
     </div>
   );
 };
