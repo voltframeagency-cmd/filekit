@@ -1,9 +1,9 @@
 # Comprehensive Server Engine Release Evidence Report
 
-> **Status Level Reached**: \`REMOTE_R2_OBJECT_DELETION_VERIFIED\` (Targeting \`PRIVATE_BETA_READY\` pending Docker Host setup for Container Worker)  
+> **Status Level Reached**: \`REMOTE_R2_OBJECT_DELETION_VERIFIED\` (Targeting \`CLOUDFLARE_PRIVATE_CANARY\` pending Docker Host for Container Worker)  
 > **Engine Family**: \`OFFICE_TO_PDF\` (Word-to-PDF Isolated Worker)  
 > **Governance Tag**: \`governance-freeze-v1\` (Commit \`a1813c2\`)  
-> **Authenticated Cloudflare Account**: \`voltframeagency@gmail.com\` (Account ID: \`ec7802e67539aee53b94fcf073b22709\`)  
+> **Authenticated Cloudflare Account**: \`REDACTED\` (Account ID: \`REDACTED\`)  
 > **Verified R2 Bucket**: \`filekit-canary-r2-staged\`  
 
 ---
@@ -40,8 +40,8 @@ ENGINE PROTOTYPE CLASSIFICATION LADDER
 ## 🚀 **Verified Cloudflare R2 Execution Evidence**
 
 1. **Wrangler OAuth Authentication**:
-   - User: `voltframeagency@gmail.com`
-   - Account ID: `ec7802e67539aee53b94fcf073b22709`
+   - User: `REDACTED`
+   - Account ID: `REDACTED`
    - Status: **`AUTHENTICATED`**
 
 2. **Real Cloudflare R2 Bucket Provisioning**:
@@ -49,11 +49,18 @@ ENGINE PROTOTYPE CLASSIFICATION LADDER
    - Created At: `2026-07-30T14:13:00.151Z`
    - Status: **`ACTIVE_ON_CLOUDFLARE_EDGE`**
 
-3. **Empirical R2 Object Storage Deletion Lifecycle Audit ([cloudflare-r2-real-deletion-evidence.json](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/cloudflare-r2-real-deletion-evidence.json))**:
-   - Uploaded payload `canary_test_docx_1785420800974.docx` to Cloudflare R2 bucket `filekit-canary-r2-staged` (15,313 ms).
-   - Downloaded payload back from R2 and verified byte length & PK header match (`504b0304`, 2,666 ms).
-   - Executed remote object deletion on Cloudflare R2 edge (1,992 ms).
-   - Verified post-deletion check: **`VERIFIED_404_NOT_FOUND`** (Object completely purged from Cloudflare R2).
+3. **Empirical R2 Storage Integrity & 3-Layer Deletion Audit ([cloudflare-r2-real-deletion-evidence.json](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/cloudflare-r2-real-deletion-evidence.json))**:
+   - Uploaded payload `canary_test_docx_1785421250066.docx` to Cloudflare R2 bucket `filekit-canary-r2-staged` (2,518 ms).
+   - Downloaded payload back from R2 and verified:
+     - `uploadSha256` == `downloadSha256` (**`Hash Match: True`**)
+     - `byteIdentityVerified`: **`True`**
+     - `docxStructureVerified`: **`True`** (`[Content_Types].xml` & ZIP header validated)
+   - Executed remote object deletion on Cloudflare R2 edge (2,074 ms).
+   - Verified 3-layer post-deletion check:
+     - `postDeleteHead`: **`NOT_FOUND`**
+     - `postDeleteGet`: **`NOT_FOUND`**
+     - `postDeleteListContainsKey`: **`false`**
+   - Deletion Evidence: Object confirmed deleted through direct R2 API. Post-delete HEAD and GET returned `NOT_FOUND`. Post-delete LIST did not contain the key.
 
 4. **SEO & Static Build Verification**:
    - `node scripts/run_access_governance_matrix.mjs` $\rightarrow$ **100% Pass** (17 planned route shells return HTTP 404, 7 planned aliases quarantined, 3 functional aliases redirect 308, 29 public tools return HTTP 200).
