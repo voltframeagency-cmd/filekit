@@ -45,22 +45,20 @@ ENGINE PROTOTYPE CLASSIFICATION LADDER
 
 ---
 
-## 🚀 **Verified Storage & Multi-Tier Secret Audit Evidence**
+## 🔍 **Host Environment Diagnostics Audit**
 
-1. **R2 Immediate Deletion & Orphan Lifecycle Fallback**:
-   - `R2_IMMEDIATE_DELETION_VALIDATED`: **Passed** (Direct API delete + 3-layer `NOT_FOUND` check)
-   - `R2_ORPHAN_EXPIRY_CONFIGURED`: **Passed** (Rule `filekit-canary-orphan-expiry` active: 1-day expiration for crash recovery fallback, bucket locks disabled).
+1. **Docker Installation Path Audit (Join-Path Evaluated)**:
+   - `Per-User Path` (`$env:LOCALAPPDATA\Programs\DockerDesktop\Docker Desktop.exe`): **`False`** (Empirically verified with PowerShell `Join-Path`)
+   - `All-Users Path` (`C:\Program Files\Docker\Docker\Docker Desktop.exe`): **`False`** (Empirically verified)
+   - `Get-Command docker`: Absent
 
-2. **Storage Identity & DOCX Required Parts Audit**:
-   - `uploadSha256` == `downloadSha256` (**`Hash Match: True`**)
-   - `byteIdentityVerified`: **`True`**
-   - `docxRequiredPartsVerified`: **`True`** (Explicitly verified `[Content_Types].xml`, `_rels/.rels`, and `word/document.xml` entries in ZIP container)
+2. **WSL 2 Status**:
+   - `Default Version`: 2
+   - `Virtual Machine Platform`: Requires enablement (`dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart`).
 
-3. **Multi-Tiered Secret Audit**:
-   - `CURRENT_WORKTREE_SECRET_SCAN`: `git grep -i "access_key"`, `api_token` $\rightarrow$ **0 credentials found**
-   - `GIT_HISTORY_SECRET_SCAN`: `git log -p` audit $\rightarrow$ **0 raw credentials found**
-   - `IGNORED_FILE_REVIEW`: `git status --ignored` $\rightarrow$ `.env.production` and `.next/` properly untracked.
-   - Account Email: `REDACTED` across all public artifacts.
+3. **Account Metadata & Secret Redaction**:
+   - Email & Account ID redacted across all public evidence files (`REDACTED`).
+   - Git secret audit (`CURRENT_WORKTREE_SECRET_SCAN`, `GIT_HISTORY_SECRET_SCAN`, `IGNORED_FILE_REVIEW`) $\rightarrow$ **0 exposed credentials found**.
 
 4. **SEO & Static Build Verification**:
    - `node scripts/run_access_governance_matrix.mjs` $\rightarrow$ **100% Pass** (17 planned route shells return HTTP 404, 7 planned aliases quarantined, 3 functional aliases redirect 308, 29 public tools return HTTP 200).
