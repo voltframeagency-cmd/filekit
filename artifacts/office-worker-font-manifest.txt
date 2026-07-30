@@ -1,0 +1,15 @@
+# Office Worker Installed Font Package Manifest
+================================================================================
+ttf-dejavu:
+  - /usr/share/fonts/dejavu/DejaVuSans.ttf
+  - /usr/share/fonts/dejavu/DejaVuSerif.ttf
+ttf-liberation:
+  - /usr/share/fonts/liberation/LiberationSans-Regular.ttf
+  - /usr/share/fonts/liberation/LiberationSerif-Regular.ttf
+font-freefont:
+  - /usr/share/fonts/freefont/FreeMono.ttf
+font-noto-arabic:
+  - /usr/share/fonts/noto/NotoNaskhArabic-Regular.ttf
+font-noto-cjk:
+  - /usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc
+================================================================================

@@ -1,0 +1,74 @@
+{
+  "fontPackageManifest": [
+    {
+      "package": "ttf-dejavu",
+      "files": [
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSerif.ttf"
+      ]
+    },
+    {
+      "package": "ttf-liberation",
+      "files": [
+        "/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/liberation/LiberationSerif-Regular.ttf"
+      ]
+    },
+    {
+      "package": "font-freefont",
+      "files": [
+        "/usr/share/fonts/freefont/FreeMono.ttf"
+      ]
+    },
+    {
+      "package": "font-noto-arabic",
+      "files": [
+        "/usr/share/fonts/noto/NotoNaskhArabic-Regular.ttf"
+      ]
+    },
+    {
+      "package": "font-noto-cjk",
+      "files": [
+        "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc"
+      ]
+    }
+  ],
+  "fontResolutionLedger": [
+    {
+      "requestedFont": "Arial",
+      "resolvedFont": "Liberation Sans",
+      "fallbackType": "EXACT_METRIC_SUBSTITUTE",
+      "missingGlyphs": 0
+    },
+    {
+      "requestedFont": "Times New Roman",
+      "resolvedFont": "Liberation Serif",
+      "fallbackType": "EXACT_METRIC_SUBSTITUTE",
+      "missingGlyphs": 0
+    },
+    {
+      "requestedFont": "Calibri",
+      "resolvedFont": "Liberation Sans",
+      "fallbackType": "METRIC_ALIGNED_FALLBACK",
+      "missingGlyphs": 0
+    },
+    {
+      "requestedFont": "Noto Naskh Arabic",
+      "resolvedFont": "Noto Naskh Arabic",
+      "fallbackType": "EXACT_MATCH",
+      "missingGlyphs": 0
+    },
+    {
+      "requestedFont": "SimSun (Chinese)",
+      "resolvedFont": "Noto Sans CJK SC",
+      "fallbackType": "EXACT_SCRIPT_FALLBACK",
+      "missingGlyphs": 0
+    },
+    {
+      "requestedFont": "MS Gothic (Japanese)",
+      "resolvedFont": "Noto Sans CJK JP",
+      "fallbackType": "EXACT_SCRIPT_FALLBACK",
+      "missingGlyphs": 0
+    }
+  ]
+}
