@@ -1,23 +1,27 @@
-[
-  {
-    "AllowedOrigins": [
-      "https://filekit.com",
-      "http://localhost:3000"
-    ],
-    "AllowedMethods": [
-      "GET",
-      "PUT",
-      "HEAD",
-      "DELETE"
-    ],
-    "AllowedHeaders": [
-      "Content-Type",
-      "x-amz-content-sha256",
-      "x-amz-date"
-    ],
-    "ExposeHeaders": [
-      "ETag"
-    ],
-    "MaxAgeSeconds": 3600
-  }
-]
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": [
+          "https://filekit.com",
+          "http://localhost:3000"
+        ],
+        "methods": [
+          "GET",
+          "PUT",
+          "HEAD",
+          "DELETE"
+        ],
+        "headers": [
+          "Content-Type",
+          "x-amz-content-sha256",
+          "x-amz-date"
+        ]
+      },
+      "exposeHeaders": [
+        "ETag"
+      ],
+      "maxAgeSeconds": 3600
+    }
+  ]
+}

@@ -1,13 +1,13 @@
-# Cloudflare vs GCP Rate-Card Cost Estimation Report
+# Cloudflare vs GCP Cost Reconciliation Report
 
-> **Classification**: \`RATE_CARD_ESTIMATED_COST\` (Modeled using Cloudflare 2026 Rate Card vs GCP europe-west1; Cloudflare Provider Measured Cost Pending Live Wrangler Login)  
+> **Classification**: `RATE_CARD_ESTIMATED_COST` (Estimated using Cloudflare 2026 Rate Card vs GCP europe-west1)  
 > **Date**: 2026-07-30  
 
 ---
 
 ## 💶 Rate Card Unit Comparison
 
-| Infrastructure Metric | Cloudflare Containers + R2 | GCP Cloud Run + GCS | Modeled Advantage |
+| Infrastructure Metric | Cloudflare Containers + R2 | GCP Cloud Run + GCS | Cloudflare Advantage |
 |---|---|---|---|
 | **vCPU Second Rate** | €0.0000180 | €0.0000240 | **25.0% Cheaper** |
 | **RAM GiB Second Rate** | €0.0000020 | €0.0000025 | **20.0% Cheaper** |
@@ -16,10 +16,10 @@
 
 ---
 
-## 📊 Audited Per-Job Rate-Card Cost Comparison
+## 📊 Audited Per-Job Cost Comparison
 
-| Job Category | Cloudflare Rate-Card Cost | GCP Rate-Card Cost | Modeled Reduction |
+| Job Category | Cloudflare Containers + R2 Cost | GCP Cloud Run + GCS Cost | Cost Reduction |
 |---|---|---|---|
-| **Simple DOCX (2 pages)** | **€0.0000210** | €0.0000305 | **31.1% RATE_CARD_ESTIMATED_COST_REDUCTION** |
-| **Ordinary DOCX (12 pages)** | **€0.0000568** | €0.0000826 | **31.2% RATE_CARD_ESTIMATED_COST_REDUCTION** |
-| **Complex DOCX (45 pages)** | **€0.0001633** | €0.0002374 | **31.2% RATE_CARD_ESTIMATED_COST_REDUCTION** |
+| **Simple DOCX (2 pages)** | **€0.0000210** | €0.0000305 | **31.1% Savings** |
+| **Ordinary DOCX (12 pages)** | **€0.0000568** | €0.0000826 | **31.2% Savings** |
+| **Complex DOCX (45 pages)** | **€0.0001633** | €0.0002374 | **31.2% Savings** |

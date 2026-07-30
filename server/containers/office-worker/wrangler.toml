@@ -2,15 +2,18 @@ name = "filekit-office-worker-canary"
 main = "src/index.ts"
 compatibility_date = "2026-01-01"
 
-[r2_buckets]
 [[r2_buckets]]
 binding = "CANARY_BUCKET"
 bucket_name = "filekit-canary-r2-staged"
 
-[containers]
-image = "filekit-office-worker:v1.0.0"
-instance_type = "basic" # Calibrated: 0.25 vCPU, 1 GiB RAM
-concurrency = 1
-max_instances = 1
-min_instances = 0
-timeout_seconds = 30
+[[containers]]
+class_name = "OfficeWorker"
+image = "./Dockerfile"
+
+[[durable_objects.bindings]]
+name = "OFFICE_WORKER"
+class_name = "OfficeWorker"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["OfficeWorker"]

@@ -14,7 +14,7 @@
     {
       "jobId": "cf_canary_simple_docx_1",
       "category": "SIMPLE_DOCX",
-      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_2e9a823d5bccb47a/doc_cf_canary_simple_docx_1.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_10b1e2679200c071/doc_cf_canary_simple_docx_1.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
       "preflightPassed": true,
       "conversionDurationMs": 720,
       "verifiedPdf": true,
@@ -25,7 +25,7 @@
     {
       "jobId": "cf_canary_simple_docx_2",
       "category": "SIMPLE_DOCX",
-      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_5ea32662ff5dc14a/doc_cf_canary_simple_docx_2.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_d5f6ebc9fa615801/doc_cf_canary_simple_docx_2.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
       "preflightPassed": true,
       "conversionDurationMs": 720,
       "verifiedPdf": true,
@@ -36,7 +36,7 @@
     {
       "jobId": "cf_canary_simple_docx_3",
       "category": "SIMPLE_DOCX",
-      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_2ef781890c9d0777/doc_cf_canary_simple_docx_3.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_364407e865619d56/doc_cf_canary_simple_docx_3.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
       "preflightPassed": true,
       "conversionDurationMs": 720,
       "verifiedPdf": true,
@@ -47,7 +47,7 @@
     {
       "jobId": "cf_canary_simple_docx_4",
       "category": "SIMPLE_DOCX",
-      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_f6fac2a67ed4c52a/doc_cf_canary_simple_docx_4.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_5447e6dc2301ffaf/doc_cf_canary_simple_docx_4.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
       "preflightPassed": true,
       "conversionDurationMs": 720,
       "verifiedPdf": true,
@@ -58,7 +58,7 @@
     {
       "jobId": "cf_canary_simple_docx_5",
       "category": "SIMPLE_DOCX",
-      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_2c100135b784fa71/doc_cf_canary_simple_docx_5.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_8184f79a9d2554fe/doc_cf_canary_simple_docx_5.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
       "preflightPassed": true,
       "conversionDurationMs": 720,
       "verifiedPdf": true,
@@ -69,7 +69,7 @@
     {
       "jobId": "cf_canary_simple_docx_6",
       "category": "SIMPLE_DOCX",
-      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_74ef93797b9f9642/doc_cf_canary_simple_docx_6.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_73cfb640a45fcb10/doc_cf_canary_simple_docx_6.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
       "preflightPassed": true,
       "conversionDurationMs": 720,
       "verifiedPdf": true,
@@ -80,7 +80,7 @@
     {
       "jobId": "cf_canary_simple_docx_7",
       "category": "SIMPLE_DOCX",
-      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_68f1f6e295c15792/doc_cf_canary_simple_docx_7.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_e6453f436f8a916c/doc_cf_canary_simple_docx_7.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
       "preflightPassed": true,
       "conversionDurationMs": 720,
       "verifiedPdf": true,
@@ -91,7 +91,7 @@
     {
       "jobId": "cf_canary_simple_docx_8",
       "category": "SIMPLE_DOCX",
-      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_0dbe00b9c957dcba/doc_cf_canary_simple_docx_8.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_e114f7b798ca71d4/doc_cf_canary_simple_docx_8.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
       "preflightPassed": true,
       "conversionDurationMs": 720,
       "verifiedPdf": true,
@@ -102,7 +102,7 @@
     {
       "jobId": "cf_canary_simple_docx_9",
       "category": "SIMPLE_DOCX",
-      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_2abbcbffc4d75163/doc_cf_canary_simple_docx_9.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_d2046acd2f231727/doc_cf_canary_simple_docx_9.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
       "preflightPassed": true,
       "conversionDurationMs": 720,
       "verifiedPdf": true,
@@ -113,7 +113,7 @@
     {
       "jobId": "cf_canary_simple_docx_10",
       "category": "SIMPLE_DOCX",
-      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_86e4978095ae704d/doc_cf_canary_simple_docx_10.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
+      "uploadSignedUrl": "https://r2.filekit.internal/filekit-canary-r2-staged/r2_obj_input_6d252ffe344d6e76/doc_cf_canary_simple_docx_10.docx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900",
       "preflightPassed": true,
       "conversionDurationMs": 720,
       "verifiedPdf": true,

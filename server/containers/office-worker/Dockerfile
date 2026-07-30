@@ -1,5 +1,4 @@
-# Pinned Base Image & LibreOffice Engine
-FROM alpine:3.20@sha256:777351696874e437b7004c1329b4720612a4339ed301540a83103212457814b7
+FROM alpine:3.20
 
 # Install Headless LibreOffice and Font Manifest
 RUN apk add --no-cache \

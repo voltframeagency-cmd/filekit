@@ -12,6 +12,7 @@
     "test": "npx tsx src/utils/engine/__tests__/run_tests.ts && npx tsx src/utils/image-engine/__tests__/run_tests.ts && npx tsx src/utils/pdf-to-image/__tests__/run_tests.ts && npx tsx src/utils/image-to-pdf/__tests__/run_tests.ts && npx tsx src/utils/pdf-editor/__tests__/run_tests.ts && npx tsx src/utils/pdf-overlay/__tests__/run_tests.ts && npx tsx src/utils/pdf-overlay/__tests__/run_rendered_pixel_fixtures.ts && npx tsx src/config/__tests__/run_catalog_tests.ts && npx tsx src/config/__tests__/run_phase2e_audit.ts && npx tsx src/config/__tests__/run_pdfaid_source_fidelity_test.ts"
   },
   "dependencies": {
+    "@cloudflare/containers": "^0.3.7",
     "next": "16.2.10",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^4.10.38",
@@ -29,6 +30,7 @@
     "playwright": "^1.61.1",
     "svgo": "^4.0.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.116.0"
   }
 }
