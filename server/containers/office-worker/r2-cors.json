@@ -1,0 +1,23 @@
+[
+  {
+    "AllowedOrigins": [
+      "https://filekit.com",
+      "http://localhost:3000"
+    ],
+    "AllowedMethods": [
+      "GET",
+      "PUT",
+      "HEAD",
+      "DELETE"
+    ],
+    "AllowedHeaders": [
+      "Content-Type",
+      "x-amz-content-sha256",
+      "x-amz-date"
+    ],
+    "ExposeHeaders": [
+      "ETag"
+    ],
+    "MaxAgeSeconds": 3600
+  }
+]
