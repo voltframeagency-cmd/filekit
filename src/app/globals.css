@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  /* Core brand palette */
-  --fk-bg: #FAFAF8;
+  /* Core brand palette - Vibrant Royal Blue #0977fd canvas */
+  --fk-bg: #0977fd;
   --fk-surface: #FFFFFF;
   --fk-surface-muted: #F8FAFC;
 
@@ -13,8 +13,8 @@
   --fk-border: #E2E8F0;
   --fk-border-strong: #CBD5E1;
 
-  --fk-primary: #2563EB;
-  --fk-primary-hover: #1D4ED8;
+  --fk-primary: #0977fd;
+  --fk-primary-hover: #0062d6;
   --fk-accent: #06B6D4;
 
   /* Semantic palette */
@@ -95,4 +95,37 @@ body {
   background: var(--fk-bg);
   color: var(--fk-text);
   font-family: var(--font-sans);
+}
+
+/* Creative Developer UI Enhancements */
+@layer utilities {
+  .glass-card {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card-hover {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .glass-card-hover:hover {
+    transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.8), 0 0 30px -5px rgba(59, 130, 246, 0.15);
+  }
+
+  .ambient-glow {
+    position: relative;
+  }
+  .ambient-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.6), transparent);
+  }
 }

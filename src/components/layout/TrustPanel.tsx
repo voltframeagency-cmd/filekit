@@ -13,7 +13,7 @@ export default function TrustPanel() {
         {/* Column 1: 100% Private */}
         <div className="flex items-start gap-4 px-2">
           <div className="shrink-0 mt-1">
-            <FileKitAsset name="private-local-processing" className="w-12 h-12 object-contain" />
+            <FileKitAsset name="private-local-processing" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
@@ -31,7 +31,7 @@ export default function TrustPanel() {
         <div className="flex items-start gap-4 px-2 md:pl-6 rtl:md:pr-6 rtl:md:pl-2">
           <div className="text-fk-text shrink-0 mt-1">
             <svg
-              className="w-6 h-6"
+              className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -60,7 +60,7 @@ export default function TrustPanel() {
         <div className="flex items-start gap-4 px-2 md:pl-6 rtl:md:pr-6 rtl:md:pl-2">
           <div className="text-fk-text shrink-0 mt-1">
             <svg
-              className="w-6 h-6"
+              className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -88,7 +88,7 @@ export default function TrustPanel() {
         {/* Column 4: Verified Output */}
         <div className="flex items-start gap-4 px-2 md:pl-6 rtl:md:pr-6 rtl:md:pl-2">
           <div className="shrink-0 mt-1">
-            <FileKitAsset name="verified-output" className="w-12 h-12 object-contain" />
+            <FileKitAsset name="verified-output" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">

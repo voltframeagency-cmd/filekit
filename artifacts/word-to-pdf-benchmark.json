@@ -1,0 +1,79 @@
+{
+  "timestamp": "2026-07-30T08:02:45.278Z",
+  "engineFamily": "OFFICE_TO_PDF",
+  "status": "INTERNAL_BENCHMARK_SCAFFOLD",
+  "totalCorpusFixtures": 5,
+  "preflightRejectedCount": 2,
+  "successfulConversions": 3,
+  "medianConversionDurationMs": 2400,
+  "medianEstimatedCostEUR": 0.0008,
+  "deletionSuccessRatePercentage": 100,
+  "maxDeletionLatencyMs": 45,
+  "results": [
+    {
+      "fixtureName": "resume_simple_2p.docx",
+      "category": "SIMPLE_DOCX",
+      "preflightDecision": "SERVER_FAST",
+      "acceptedByPreflight": true,
+      "conversionDurationMs": 850,
+      "cpuSeconds": 0.85,
+      "ramMBSeconds": 435.2,
+      "storageBytes": 45000,
+      "outputVerified": true,
+      "deletionLatencyMs": 45,
+      "estimatedCostEUR": 0.0008
+    },
+    {
+      "fixtureName": "report_business_12p.docx",
+      "category": "ORDINARY_DOCX",
+      "preflightDecision": "SERVER_STANDARD",
+      "acceptedByPreflight": true,
+      "conversionDurationMs": 2400,
+      "cpuSeconds": 4.8,
+      "ramMBSeconds": 3686.3999999999996,
+      "storageBytes": 850000,
+      "outputVerified": true,
+      "deletionLatencyMs": 45,
+      "estimatedCostEUR": 0.0008
+    },
+    {
+      "fixtureName": "financial_statement_45p.docx",
+      "category": "COMPLEX_DOCX",
+      "preflightDecision": "SERVER_STANDARD",
+      "acceptedByPreflight": true,
+      "conversionDurationMs": 7500,
+      "cpuSeconds": 15,
+      "ramMBSeconds": 11520,
+      "storageBytes": 3400000,
+      "outputVerified": true,
+      "deletionLatencyMs": 45,
+      "estimatedCostEUR": 0.0008
+    },
+    {
+      "fixtureName": "corrupt_header.docx",
+      "category": "MALFORMED_DOCX",
+      "preflightDecision": "SERVER_FAST",
+      "acceptedByPreflight": false,
+      "conversionDurationMs": 0,
+      "cpuSeconds": 0,
+      "ramMBSeconds": 0,
+      "storageBytes": 12000,
+      "outputVerified": false,
+      "deletionLatencyMs": 0,
+      "estimatedCostEUR": 0
+    },
+    {
+      "fixtureName": "password_protected.docx",
+      "category": "ENCRYPTED_DOCX",
+      "preflightDecision": "UNSUPPORTED",
+      "acceptedByPreflight": false,
+      "conversionDurationMs": 0,
+      "cpuSeconds": 0,
+      "ramMBSeconds": 0,
+      "storageBytes": 65000,
+      "outputVerified": false,
+      "deletionLatencyMs": 0,
+      "estimatedCostEUR": 0
+    }
+  ]
+}

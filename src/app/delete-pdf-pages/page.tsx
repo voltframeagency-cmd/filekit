@@ -1,3 +1,4 @@
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 import { Metadata } from "next";
 import AppHeader from "@/components/layout/AppHeader";
 import AppFooter from "@/components/layout/AppFooter";
@@ -24,6 +25,7 @@ export default function DeletePdfPagesPage() {
           subtitle="Select and remove unwanted pages from your PDF document locally with full undo support."
           actionButtonText="Save Cleaned PDF"
         />
+        <ToolContentRenderer operationId="delete-pdf-pages" />
       </main>
       <AppFooter />
     </div>

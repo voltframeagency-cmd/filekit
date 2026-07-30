@@ -1,3 +1,4 @@
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 import { Metadata } from "next";
 import { IMAGE_TO_PDF_ROUTES } from "@/config/imageToPdfRoutes";
 import ImageToPdfWorkspace from "@/components/pdf-tools/ImageToPdfWorkspace";

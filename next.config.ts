@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/jpeg-to-png",
+        destination: "/jpg-to-png",
+        permanent: true
+      },
+      {
         source: "/pdf-to-jpeg",
         destination: "/pdf-to-jpg",
         permanent: true

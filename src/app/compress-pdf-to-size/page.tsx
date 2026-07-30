@@ -1,3 +1,4 @@
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 import React, { Suspense } from "react";
 import CustomTargetPdfPage from "@/components/pdf-tools/CustomTargetPdfPage";
 

@@ -1,3 +1,4 @@
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 import { Metadata } from "next";
 import AppHeader from "@/components/layout/AppHeader";
 import AppFooter from "@/components/layout/AppFooter";
@@ -24,6 +25,7 @@ export default function ExtractPdfPagesPage() {
           subtitle="Select specific pages from your PDF file and export them as a new standalone document."
           actionButtonText="Export Extracted Pages"
         />
+        <ToolContentRenderer operationId="extract-pdf-pages" />
       </main>
       <AppFooter />
     </div>

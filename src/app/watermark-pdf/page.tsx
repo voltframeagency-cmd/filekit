@@ -1,3 +1,4 @@
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 import { Metadata } from "next";
 import SiteHeader from "@/components/navigation/SiteHeader";
 import { PdfOverlayWorkspace } from "@/components/pdf-overlay/PdfOverlayWorkspace";
@@ -17,6 +18,7 @@ export default function WatermarkPdfPage() {
       <SiteHeader />
       <main className="flex-1">
         <PdfOverlayWorkspace />
+        <ToolContentRenderer operationId="watermark-pdf" />
       </main>
     </div>
   );

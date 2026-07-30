@@ -61,7 +61,7 @@ export default function DevBrandAssetsPage() {
                 FileKit Visual Asset System
               </h1>
               <span className="text-xs px-3 py-1 bg-blue-600/90 text-white font-mono rounded-full font-semibold shadow-sm">
-                31 Launch Assets
+                34 Launch Assets
               </span>
             </div>
             <p className="text-slate-400 text-xs sm:text-sm mt-1.5 max-w-2xl">
@@ -99,10 +99,10 @@ export default function DevBrandAssetsPage() {
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition"
             >
-              <option value="all">All Categories (31)</option>
+              <option value="all">All Categories (34)</option>
               <option value="conversion">Conversions &amp; Office Tools (13)</option>
               <option value="pdf-tool">PDF Tools &amp; Security (11)</option>
-              <option value="how-it-works">How It Works (3)</option>
+              <option value="how-it-works">How It Works (6)</option>
               <option value="benefit">Trust &amp; Benefits (2)</option>
               <option value="hero">Hero Graphics (2)</option>
             </select>
@@ -162,7 +162,7 @@ export default function DevBrandAssetsPage() {
       <main className="max-w-7xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-200 flex items-center gap-2">
-            <span>Showing {filteredAssetKeys.length} of 31 Assets</span>
+            <span>Showing {filteredAssetKeys.length} of 34 Assets</span>
           </h2>
         </div>
 

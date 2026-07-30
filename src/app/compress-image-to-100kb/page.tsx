@@ -1,3 +1,4 @@
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 import ExactImageTargetPage from "@/components/image-tools/ExactImageTargetPage";
 import { EXACT_IMAGE_ROUTES } from "@/config/exactImageRoutes";
 

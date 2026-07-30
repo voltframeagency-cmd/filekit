@@ -1,3 +1,4 @@
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 import React from "react";
 import Metadata from "next";
 import { PDF_TO_IMAGE_ROUTES } from "@/config/pdfToImageRoutes";
@@ -17,6 +18,7 @@ export default function PdfToPngPage() {
   return (
     <main className="min-h-screen bg-fk-bg py-6">
       <PdfToImageWorkspace config={routeConfig} />
-    </main>
+      <ToolContentRenderer operationId="pdf-to-png" />
+      </main>
   );
 }

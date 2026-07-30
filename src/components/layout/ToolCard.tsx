@@ -31,7 +31,7 @@ export default function ToolCard({
     >
       <div className="flex items-center gap-4 min-w-0">
         {/* Tool icon */}
-        <div className={`w-[72px] h-[72px] rounded-2xl flex items-center justify-center shrink-0 overflow-hidden p-1.5 ${iconBg}`}>
+        <div className={`w-[88px] h-[88px] sm:w-[96px] sm:h-[96px] rounded-2xl flex items-center justify-center shrink-0 overflow-hidden p-2 shadow-sm ${iconBg}`}>
           {iconPath || (
             <svg
               className="w-7 h-7"

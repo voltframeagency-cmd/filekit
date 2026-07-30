@@ -1,13 +1,42 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { useLanguage } from "../layout/LanguageContext";
+import { FileKitAsset } from "../visuals/FileKitAsset";
+import { FileKitAssetName, fileKitAssets } from "../visuals/assetRegistry";
 
 interface UploadDropzoneProps {
   isGeneric?: boolean;
   onFileSelect: (file: File) => void;
   accept?: string;
   className?: string;
+  assetName?: FileKitAssetName;
+}
+
+// Map pathnames to brand illustration assets
+function getRouteAssetName(pathname: string): FileKitAssetName {
+  const route = pathname.replace(/^\//, '').split('/')[0];
+
+  if (!route) return 'step-upload';
+
+  // Direct mapping check
+  if (route in fileKitAssets) {
+    return route as FileKitAssetName;
+  }
+
+  // Specialized route mappings
+  if (route.includes('pdf-to-png')) return 'pdf-to-jpg';
+  if (route.includes('rotate')) return 'rotate-pdf';
+  if (route.includes('delete')) return 'delete-pdf-pages';
+  if (route.includes('extract')) return 'extract-pdf-pages';
+  if (route.includes('reorder')) return 'reorder-pdf';
+  if (route.includes('watermark')) return 'watermark-pdf';
+  if (route.includes('compress-pdf')) return 'compress-pdf';
+  if (route.includes('compress-image')) return 'step-2-compress';
+  if (route.includes('convert-image')) return 'png-to-jpg';
+
+  return 'step-upload';
 }
 
 export default function UploadDropzone({
@@ -15,10 +44,14 @@ export default function UploadDropzone({
   onFileSelect,
   accept = ".pdf",
   className = "",
+  assetName,
 }: UploadDropzoneProps) {
+  const pathname = usePathname();
   const { t } = useLanguage();
   const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const effectiveAssetName = assetName || getRouteAssetName(pathname);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -71,21 +104,13 @@ export default function UploadDropzone({
         className="hidden"
       />
 
-      {/* Upload Document SVG Icon */}
-      <div className="mb-4 text-fk-primary">
-        <svg
-          className="w-14 h-14"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-          />
-        </svg>
+      {/* Bespoke Route Use-Case Brand Asset Graphic */}
+      <div className="mb-4 flex items-center justify-center">
+        <FileKitAsset
+          name={effectiveAssetName}
+          className="w-28 h-28 sm:w-36 sm:h-36 max-w-[180px] max-h-[120px] object-contain filter drop-shadow-md hover:scale-105 transition-transform duration-300"
+          alt="Tool operation illustration"
+        />
       </div>
 
       {/* Main Drop Text */}

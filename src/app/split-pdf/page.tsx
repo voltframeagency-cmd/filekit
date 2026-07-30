@@ -1,3 +1,4 @@
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 import { Metadata } from "next";
 import AppHeader from "@/components/layout/AppHeader";
 import AppFooter from "@/components/layout/AppFooter";
@@ -24,6 +25,7 @@ export default function SplitPdfPage() {
           subtitle="Separate PDF pages or extract custom page ranges locally in your browser."
           actionButtonText="Export Split PDF"
         />
+        <ToolContentRenderer operationId="split-pdf" />
       </main>
       <AppFooter />
     </div>

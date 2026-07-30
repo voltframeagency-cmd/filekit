@@ -2,6 +2,7 @@ import React from "react";
 import Metadata from "next";
 import { PDF_TO_IMAGE_ROUTES } from "@/config/pdfToImageRoutes";
 import PdfToImageWorkspace from "@/components/pdf-tools/PdfToImageWorkspace";
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 
 const routeConfig = PDF_TO_IMAGE_ROUTES["/pdf-to-image"];
 
@@ -15,8 +16,9 @@ export const metadata = {
 
 export default function PdfToImagePage() {
   return (
-    <main className="min-h-screen bg-fk-bg py-6">
+    <main className="min-h-screen bg-fk-bg py-6 pb-16">
       <PdfToImageWorkspace config={routeConfig} />
+      <ToolContentRenderer operationId="pdf-to-image" />
     </main>
   );
 }

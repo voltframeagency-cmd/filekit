@@ -28,15 +28,15 @@ export default function ToolHero() {
 
   return (
     <div className="flex flex-col gap-8 max-w-[560px] w-full text-left ltr:text-left rtl:text-right">
-      {/* Headings */}
-      <h1 className="text-[44px] md:text-[54px] font-black leading-[1.1] tracking-tight text-fk-text font-sans">
+      {/* Headings — White on #0977fd blue canvas */}
+      <h1 className="text-[44px] md:text-[54px] font-black leading-[1.1] tracking-tight text-white font-sans drop-shadow-sm">
         <span>{t("hero.title1")}</span>
         <br />
-        <span className="text-fk-primary">{t("hero.title2")}</span>
+        <span className="text-blue-100">{t("hero.title2")}</span>
       </h1>
 
-      {/* Paragraph Description */}
-      <p className="text-[16px] md:text-[18px] font-medium text-fk-text-muted leading-relaxed">
+      {/* Paragraph Description — Soft white on blue */}
+      <p className="text-[16px] md:text-[18px] font-medium text-blue-100 leading-relaxed">
         {t("hero.subtitle1")}
         <br />
         {t("hero.subtitle2")}
@@ -44,9 +44,9 @@ export default function ToolHero() {
 
       {/* Main Large Search Box */}
       <div className="relative w-full max-w-[530px]">
-        <div className="relative flex items-center bg-white border border-fk-border hover:border-fk-border-strong focus-within:border-fk-primary focus-within:ring-2 focus-within:ring-fk-primary focus-within:ring-offset-2 rounded-fk-lg shadow-sm transition-all duration-150 h-[56px] px-4">
+        <div className="relative flex items-center bg-white border border-white/20 hover:border-white/40 focus-within:border-white focus-within:ring-2 focus-within:ring-white/30 focus-within:ring-offset-2 focus-within:ring-offset-[#0977fd] rounded-fk-lg shadow-lg transition-all duration-150 h-[56px] px-4">
           <svg
-            className="w-5 h-5 text-fk-text-subtle shrink-0"
+            className="w-5 h-5 text-slate-400 shrink-0"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -67,18 +67,18 @@ export default function ToolHero() {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             placeholder={t("homepage.searchPlaceholder")}
-            className="w-full bg-transparent border-none outline-none pl-3 pr-8 text-[15px] text-fk-text placeholder-fk-text-subtle"
+            className="w-full bg-transparent border-none outline-none pl-3 pr-8 text-[15px] text-slate-900 placeholder-slate-400"
           />
           {!query && (
-            <div className="absolute right-4 flex items-center justify-center w-6 h-6 bg-fk-surface-muted border border-fk-border rounded-md pointer-events-none">
-              <span className="text-[12px] font-bold text-fk-text-muted">/</span>
+            <div className="absolute right-4 flex items-center justify-center w-6 h-6 bg-slate-100 border border-slate-200 rounded-md pointer-events-none">
+              <span className="text-[12px] font-bold text-slate-500">/</span>
             </div>
           )}
         </div>
 
         {/* Dropdown Results */}
         {isFocused && query.length > 0 && (
-          <div className="absolute left-0 mt-2 w-full bg-white border border-fk-border shadow-md rounded-fk-lg overflow-hidden z-20">
+          <div className="absolute left-0 mt-2 w-full bg-white border border-slate-200 shadow-xl rounded-fk-lg overflow-hidden z-20">
             {filteredTools.length > 0 ? (
               <div className="py-1">
                 {filteredTools.map((tool, idx) => (
@@ -88,27 +88,27 @@ export default function ToolHero() {
                       setQuery("");
                       if (tool.route !== "#") router.push(tool.route);
                     }}
-                    className="w-full flex flex-col px-4 py-2.5 text-left hover:bg-fk-surface-muted transition-colors duration-150"
+                    className="w-full flex flex-col px-4 py-2.5 text-left hover:bg-slate-50 transition-colors duration-150"
                   >
-                    <span className="text-[14px] font-bold text-fk-text">{tool.name}</span>
-                    <span className="text-[11px] text-fk-text-subtle">{tool.desc}</span>
+                    <span className="text-[14px] font-bold text-slate-900">{tool.name}</span>
+                    <span className="text-[11px] text-slate-500">{tool.desc}</span>
                   </button>
                 ))}
               </div>
             ) : (
-              <div className="px-4 py-3 text-center text-[13px] text-fk-text-muted">
-                No tools found matching "{query}"
+              <div className="px-4 py-3 text-center text-[13px] text-slate-500">
+                No tools found matching &quot;{query}&quot;
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Trust Mini Badges Grid */}
+      {/* Trust Mini Badges Grid — White cards on blue canvas */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-[530px] mt-2">
         {/* Private by Design */}
-        <div className="flex items-center gap-3 p-3 bg-white border border-fk-border rounded-fk-lg shadow-sm hover:border-fk-border-strong transition-colors duration-150">
-          <div className="p-2 rounded-lg bg-fk-surface-muted text-fk-text shrink-0">
+        <div className="flex items-center gap-3 p-3 bg-white/95 backdrop-blur-sm border border-white/30 rounded-fk-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+          <div className="p-2 rounded-lg bg-blue-50 text-blue-700 shrink-0">
             <svg
               className="w-5 h-5"
               fill="none"
@@ -124,18 +124,18 @@ export default function ToolHero() {
             </svg>
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[12px] font-bold text-fk-text truncate">
+            <span className="text-[12px] font-bold text-slate-900 truncate">
               {t("homepage.privateTitle")}
             </span>
-            <span className="text-[11px] text-fk-text-subtle truncate">
+            <span className="text-[11px] text-slate-500 truncate">
               {t("homepage.privateDesc")}
             </span>
           </div>
         </div>
 
         {/* Processed Locally */}
-        <div className="flex items-center gap-3 p-3 bg-white border border-fk-border rounded-fk-lg shadow-sm hover:border-fk-border-strong transition-colors duration-150">
-          <div className="p-2 rounded-lg bg-fk-surface-muted text-fk-text shrink-0">
+        <div className="flex items-center gap-3 p-3 bg-white/95 backdrop-blur-sm border border-white/30 rounded-fk-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+          <div className="p-2 rounded-lg bg-blue-50 text-blue-700 shrink-0">
             <svg
               className="w-5 h-5"
               fill="none"
@@ -151,18 +151,18 @@ export default function ToolHero() {
             </svg>
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[12px] font-bold text-fk-text truncate">
+            <span className="text-[12px] font-bold text-slate-900 truncate">
               {t("homepage.localTitle")}
             </span>
-            <span className="text-[11px] text-fk-text-subtle truncate">
+            <span className="text-[11px] text-slate-500 truncate">
               {t("homepage.localDesc")}
             </span>
           </div>
         </div>
 
         {/* Secure Fallback */}
-        <div className="flex items-center gap-3 p-3 bg-white border border-fk-border rounded-fk-lg shadow-sm hover:border-fk-border-strong transition-colors duration-150">
-          <div className="p-2 rounded-lg bg-fk-surface-muted text-fk-text shrink-0">
+        <div className="flex items-center gap-3 p-3 bg-white/95 backdrop-blur-sm border border-white/30 rounded-fk-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+          <div className="p-2 rounded-lg bg-blue-50 text-blue-700 shrink-0">
             <svg
               className="w-5 h-5"
               fill="none"
@@ -178,10 +178,10 @@ export default function ToolHero() {
             </svg>
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[12px] font-bold text-fk-text truncate">
+            <span className="text-[12px] font-bold text-slate-900 truncate">
               {t("homepage.fallbackTitle")}
             </span>
-            <span className="text-[11px] text-fk-text-subtle truncate">
+            <span className="text-[11px] text-slate-500 truncate">
               {t("homepage.fallbackDesc")}
             </span>
           </div>

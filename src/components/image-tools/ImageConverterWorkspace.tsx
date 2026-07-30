@@ -1,18 +1,23 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import TrustPanel from "@/components/layout/TrustPanel";
 import ImageComparisonSlider from "@/components/image-tools/ImageComparisonSlider";
 import { ImageConversionEngine } from "@/utils/image-converter/ImageConversionEngine";
 import { ImageConversionPreflight } from "@/utils/image-converter/ImageConversionPreflight";
 import { ImageConversionResult, ImageConversionPreflightReport, SupportedImageFormat } from "@/utils/image-converter/types";
 import { ImageConversionRouteConfig } from "@/config/imageConversionRoutes";
+import { FileKitAsset } from "@/components/visuals/FileKitAsset";
+import { FileKitAssetName, fileKitAssets } from "@/components/visuals/assetRegistry";
 
 export interface ImageConverterWorkspaceProps {
   routeConfig: ImageConversionRouteConfig;
 }
 
 export default function ImageConverterWorkspace({ routeConfig }: ImageConverterWorkspaceProps) {
+  const pathname = usePathname();
+
   // Target format state
   const [targetFormat, setTargetFormat] = useState<SupportedImageFormat>(
     routeConfig.fixedOutputFormat || "image/png"
@@ -40,6 +45,12 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
   const activeAbortControllerRef = useRef<AbortController | null>(null);
   const settingsSectionRef = useRef<HTMLDivElement | null>(null);
   const resultHeadingRef = useRef<HTMLHeadingElement | null>(null);
+
+  // Compute route asset name dynamically
+  const routeSlug = pathname.replace(/^\//, '').split('/')[0];
+  const assetName: FileKitAssetName = (routeSlug in fileKitAssets)
+    ? (routeSlug as FileKitAssetName)
+    : 'png-to-jpg';
 
   // Privacy-compliant analytics logger
   const trackEvent = (eventName: string, payload?: Record<string, any>) => {
@@ -263,9 +274,14 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               onChange={handleFileSelect}
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
-            <svg className="w-12 h-12 text-fk-primary mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
+            {/* Bespoke Route Brand Illustration Asset */}
+            <div className="mb-5 flex items-center justify-center">
+              <FileKitAsset
+                name={assetName}
+                className="w-28 h-28 sm:w-36 sm:h-36 max-w-[180px] max-h-[120px] object-contain filter drop-shadow-md hover:scale-105 transition-transform duration-300"
+                alt="Tool operation illustration"
+              />
+            </div>
             <p className="text-[15px] font-bold text-fk-text">Drop your image here to convert</p>
             <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
               Supports JPG, PNG, and static WebP up to 50 MB

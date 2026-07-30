@@ -75,15 +75,15 @@ export default function ToolGrid() {
   ];
 
   return (
-    <div className="w-full flex flex-col gap-6">
-      {/* Title Header */}
+    <div className="w-full flex flex-col gap-6 bg-white border border-white/30 rounded-3xl p-6 sm:p-8 shadow-2xl">
+      {/* Title Header — slate-900 on white card background */}
       <div className="flex items-center justify-between">
-        <h2 className="text-[18px] font-bold text-fk-text leading-tight">
+        <h2 className="text-[18px] font-bold text-slate-900 leading-tight">
           {t("homepage.popularTools")}
         </h2>
         <a
           href="#"
-          className="text-[13px] font-bold text-fk-primary hover:text-fk-primary-hover hover:underline transition-colors duration-150"
+          className="text-[13px] font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-150"
         >
           {t("homepage.browseAll")}
         </a>

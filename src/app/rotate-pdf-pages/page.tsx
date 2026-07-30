@@ -1,3 +1,4 @@
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 import { Metadata } from "next";
 import AppHeader from "@/components/layout/AppHeader";
 import AppFooter from "@/components/layout/AppFooter";
@@ -24,6 +25,7 @@ export default function RotatePdfPagesPage() {
           subtitle="Rotate specific pages or all pages 90° clockwise or counter-clockwise in your browser."
           actionButtonText="Save Rotated PDF"
         />
+        <ToolContentRenderer operationId="rotate-pdf-pages" />
       </main>
       <AppFooter />
     </div>

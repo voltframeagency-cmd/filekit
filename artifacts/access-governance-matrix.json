@@ -1,0 +1,575 @@
+{
+  "timestamp": "2026-07-30T08:27:45.028Z",
+  "status": "COMPLETE_ACCESS_GOVERNANCE_MATRIX_FROZEN",
+  "metrics": {
+    "classifiedFunctionalRoutes": 29,
+    "providerMeasuredServerConversions": 0,
+    "internalBenchmarkHarnessValidation": "PASSED",
+    "plannedRoutesVerified404Count": "17 / 17",
+    "plannedAliasesQuarantinedCount": "7 / 7",
+    "functionalAliasesActiveCount": "3 / 3",
+    "publicRoutesVerified200Count": "29 / 29"
+  },
+  "records": [
+    {
+      "slug": "/sign-pdf",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/add-image-to-pdf",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/crop-pdf",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/add-page-numbers-to-pdf",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/word-to-pdf",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/excel-to-pdf",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/powerpoint-to-pdf",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/ocr-pdf",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/image-to-text",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/make-pdf-searchable",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-word",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-excel",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-powerpoint",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/heic-to-jpg",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/heic-to-png",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/avif-to-jpg",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/png-to-ico",
+      "category": "PLANNED_ROUTE",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/docx-to-pdf",
+      "category": "PLANNED_ALIAS",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/pptx-to-pdf",
+      "category": "PLANNED_ALIAS",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/ppt-to-pdf",
+      "category": "PLANNED_ALIAS",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/xlsx-to-pdf",
+      "category": "PLANNED_ALIAS",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-pptx",
+      "category": "PLANNED_ALIAS",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-xlsx",
+      "category": "PLANNED_ALIAS",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-xls",
+      "category": "PLANNED_ALIAS",
+      "runtimeHttpStatus": 404,
+      "robotsDirective": "noindex,nofollow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": true,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-jpeg",
+      "category": "FUNCTIONAL_ALIAS",
+      "runtimeHttpStatus": 308,
+      "robotsDirective": "noindex,follow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-picture",
+      "category": "FUNCTIONAL_ALIAS",
+      "runtimeHttpStatus": 308,
+      "robotsDirective": "noindex,follow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/jpeg-to-png",
+      "category": "FUNCTIONAL_ALIAS",
+      "runtimeHttpStatus": 308,
+      "robotsDirective": "noindex,follow",
+      "absentFromSitemap": true,
+      "absentFromNavigation": true,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/convert-image",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/jpg-to-png",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/png-to-jpg",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/jpg-to-webp",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/png-to-webp",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/webp-to-jpg",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/webp-to-png",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/compress-image",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/compress-image-to-100kb",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/compress-image-to-200kb",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/compress-image-to-500kb",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/compress-image-to-1mb",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/compress-image-to-size",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-image",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-jpg",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/pdf-to-png",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/image-to-pdf",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/jpg-to-pdf",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/png-to-pdf",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/compress-pdf",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/compress-pdf-to-2mb",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/compress-pdf-to-size",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/merge-pdf",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/split-pdf",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/rotate-pdf-pages",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/delete-pdf-pages",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/extract-pdf-pages",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/reorder-pdf-pages",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    },
+    {
+      "slug": "/watermark-pdf",
+      "category": "PUBLIC_ROUTE",
+      "runtimeHttpStatus": 200,
+      "robotsDirective": "index,follow",
+      "absentFromSitemap": false,
+      "absentFromNavigation": false,
+      "notFoundEnforced": false,
+      "passed": true
+    }
+  ]
+}

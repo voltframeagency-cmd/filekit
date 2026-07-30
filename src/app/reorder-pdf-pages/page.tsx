@@ -1,3 +1,4 @@
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
 import { Metadata } from "next";
 import AppHeader from "@/components/layout/AppHeader";
 import AppFooter from "@/components/layout/AppFooter";
@@ -24,6 +25,7 @@ export default function ReorderPdfPagesPage() {
           subtitle="Drag and drop page thumbnails to rearrange your PDF document sequence in seconds."
           actionButtonText="Save Reordered PDF"
         />
+        <ToolContentRenderer operationId="reorder-pdf-pages" />
       </main>
       <AppFooter />
     </div>
