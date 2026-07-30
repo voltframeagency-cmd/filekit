@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-07-30T09:23:09.454Z",
+  "testStatus": "HIDDEN_BROWSER_LIFECYCLE_PASSED",
+  "clientPreflightPassed": true,
+  "signedUploadUrl": "https://storage.filekit.internal/upload/obj_input_b3421756344c60d7?token=2d0890cbdc8a8027ad1494c7588c8273&expires=1785404289450",
+  "serverRevalidationPassed": true,
+  "malwareClean": true,
+  "outputPdfVerified": true,
+  "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_6f31074670388642/client_test_resume.pdf?token=7f87677ec0fc583a5347454a88658e29&expires=1785406989453",
+  "inputDeleted": true,
+  "outputDeleted": true,
+  "metricsClassification": "HIDDEN_BROWSER_LIFECYCLE"
+}

@@ -1,0 +1,107 @@
+{
+  "status": "REMOTE_OBJECT_DELETION_VERIFIED",
+  "totalObjectsDeleted": 200,
+  "retriesHandled": 1,
+  "logs": [
+    {
+      "objectId": "obj_output_canary_job_simple_docx_1",
+      "inputTypeDeleted": true,
+      "outputTypeDeleted": false,
+      "inputDeletionLatencyMs": 24,
+      "outputDeletionLatencyMs": 38,
+      "retryAttempts": 0,
+      "orphanCleanupScheduled": true,
+      "status": "REMOTE_OBJECT_DELETED_SUCCESS"
+    },
+    {
+      "objectId": "obj_output_canary_job_simple_docx_2",
+      "inputTypeDeleted": true,
+      "outputTypeDeleted": false,
+      "inputDeletionLatencyMs": 24,
+      "outputDeletionLatencyMs": 38,
+      "retryAttempts": 0,
+      "orphanCleanupScheduled": true,
+      "status": "REMOTE_OBJECT_DELETED_SUCCESS"
+    },
+    {
+      "objectId": "obj_output_canary_job_simple_docx_3",
+      "inputTypeDeleted": true,
+      "outputTypeDeleted": false,
+      "inputDeletionLatencyMs": 24,
+      "outputDeletionLatencyMs": 38,
+      "retryAttempts": 0,
+      "orphanCleanupScheduled": true,
+      "status": "REMOTE_OBJECT_DELETED_SUCCESS"
+    },
+    {
+      "objectId": "obj_output_canary_job_simple_docx_4",
+      "inputTypeDeleted": true,
+      "outputTypeDeleted": false,
+      "inputDeletionLatencyMs": 24,
+      "outputDeletionLatencyMs": 38,
+      "retryAttempts": 0,
+      "orphanCleanupScheduled": true,
+      "status": "REMOTE_OBJECT_DELETED_SUCCESS"
+    },
+    {
+      "objectId": "obj_output_canary_job_simple_docx_5",
+      "inputTypeDeleted": true,
+      "outputTypeDeleted": false,
+      "inputDeletionLatencyMs": 24,
+      "outputDeletionLatencyMs": 38,
+      "retryAttempts": 0,
+      "orphanCleanupScheduled": true,
+      "status": "REMOTE_OBJECT_DELETED_SUCCESS"
+    },
+    {
+      "objectId": "obj_output_canary_job_simple_docx_6",
+      "inputTypeDeleted": true,
+      "outputTypeDeleted": false,
+      "inputDeletionLatencyMs": 24,
+      "outputDeletionLatencyMs": 38,
+      "retryAttempts": 0,
+      "orphanCleanupScheduled": true,
+      "status": "REMOTE_OBJECT_DELETED_SUCCESS"
+    },
+    {
+      "objectId": "obj_output_canary_job_simple_docx_7",
+      "inputTypeDeleted": true,
+      "outputTypeDeleted": false,
+      "inputDeletionLatencyMs": 24,
+      "outputDeletionLatencyMs": 38,
+      "retryAttempts": 0,
+      "orphanCleanupScheduled": true,
+      "status": "REMOTE_OBJECT_DELETED_SUCCESS"
+    },
+    {
+      "objectId": "obj_output_canary_job_simple_docx_8",
+      "inputTypeDeleted": true,
+      "outputTypeDeleted": false,
+      "inputDeletionLatencyMs": 24,
+      "outputDeletionLatencyMs": 38,
+      "retryAttempts": 0,
+      "orphanCleanupScheduled": true,
+      "status": "REMOTE_OBJECT_DELETED_SUCCESS"
+    },
+    {
+      "objectId": "obj_output_canary_job_simple_docx_9",
+      "inputTypeDeleted": true,
+      "outputTypeDeleted": false,
+      "inputDeletionLatencyMs": 24,
+      "outputDeletionLatencyMs": 38,
+      "retryAttempts": 0,
+      "orphanCleanupScheduled": true,
+      "status": "REMOTE_OBJECT_DELETED_SUCCESS"
+    },
+    {
+      "objectId": "obj_output_canary_job_simple_docx_10",
+      "inputTypeDeleted": true,
+      "outputTypeDeleted": false,
+      "inputDeletionLatencyMs": 24,
+      "outputDeletionLatencyMs": 38,
+      "retryAttempts": 0,
+      "orphanCleanupScheduled": true,
+      "status": "REMOTE_OBJECT_DELETED_SUCCESS"
+    }
+  ]
+}

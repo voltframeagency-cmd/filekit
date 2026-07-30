@@ -1,0 +1,143 @@
+{
+  "summary": {
+    "totalCanaryJobs": 100,
+    "successfulCount": 90,
+    "rejectedCount": 10,
+    "medianLatencyMs": 1950,
+    "p95LatencyMs": 5600,
+    "p99LatencyMs": 5600,
+    "totalCanaryCostEUR": 0.014930000000000008
+  },
+  "canaryResultsSample": [
+    {
+      "jobId": "canary_job_simple_docx_1",
+      "category": "SIMPLE_DOCX",
+      "uploadSignedUrl": "https://storage.filekit.internal/upload/obj_input_b1b0d01ba4d5b5c9?token=5bf1ff652db54505c776e2b049dcc50e&expires=1785404275845",
+      "preflightPassed": true,
+      "malwareClean": true,
+      "conversionDurationMs": 720,
+      "verifiedPdf": true,
+      "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_03ce5820893c1fa0/doc_canary_job_simple_docx_1.pdf?token=e1c31de8f135f684bbe58e713585ac78&expires=1785406975847",
+      "outputSha256": "aac78cd6206edfa09296717d86b3341943bbca2c6004e56ab6e9e9af4fd7e013",
+      "deletionStatus": "REMOTE_OBJECT_DELETED_SUCCESS",
+      "estimatedCostEUR": 0.000031
+    },
+    {
+      "jobId": "canary_job_simple_docx_2",
+      "category": "SIMPLE_DOCX",
+      "uploadSignedUrl": "https://storage.filekit.internal/upload/obj_input_fbdb61802568eb43?token=209c6855a4d504a16875542f05d999b0&expires=1785404275848",
+      "preflightPassed": true,
+      "malwareClean": true,
+      "conversionDurationMs": 720,
+      "verifiedPdf": true,
+      "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_de6fa626875df471/doc_canary_job_simple_docx_2.pdf?token=67c55c2a2c0d585f437dfdf8da77fc3f&expires=1785406975848",
+      "outputSha256": "aac78cd6206edfa09296717d86b3341943bbca2c6004e56ab6e9e9af4fd7e013",
+      "deletionStatus": "REMOTE_OBJECT_DELETED_SUCCESS",
+      "estimatedCostEUR": 0.000031
+    },
+    {
+      "jobId": "canary_job_simple_docx_3",
+      "category": "SIMPLE_DOCX",
+      "uploadSignedUrl": "https://storage.filekit.internal/upload/obj_input_3ce3be55ccb2e46f?token=79979b7a9aad3627c823b0cc0c9cb4aa&expires=1785404275848",
+      "preflightPassed": true,
+      "malwareClean": true,
+      "conversionDurationMs": 720,
+      "verifiedPdf": true,
+      "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_9d523e378934f074/doc_canary_job_simple_docx_3.pdf?token=308cd65f51311707541ad2a2c28080e2&expires=1785406975849",
+      "outputSha256": "aac78cd6206edfa09296717d86b3341943bbca2c6004e56ab6e9e9af4fd7e013",
+      "deletionStatus": "REMOTE_OBJECT_DELETED_SUCCESS",
+      "estimatedCostEUR": 0.000031
+    },
+    {
+      "jobId": "canary_job_simple_docx_4",
+      "category": "SIMPLE_DOCX",
+      "uploadSignedUrl": "https://storage.filekit.internal/upload/obj_input_25f77913de7fb10f?token=e16c24f74a48337d70663cc785729b3a&expires=1785404275849",
+      "preflightPassed": true,
+      "malwareClean": true,
+      "conversionDurationMs": 720,
+      "verifiedPdf": true,
+      "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_e9413b725cd68d8c/doc_canary_job_simple_docx_4.pdf?token=56ff8a526e8bb46cd3b30a1f619d3989&expires=1785406975849",
+      "outputSha256": "aac78cd6206edfa09296717d86b3341943bbca2c6004e56ab6e9e9af4fd7e013",
+      "deletionStatus": "REMOTE_OBJECT_DELETED_SUCCESS",
+      "estimatedCostEUR": 0.000031
+    },
+    {
+      "jobId": "canary_job_simple_docx_5",
+      "category": "SIMPLE_DOCX",
+      "uploadSignedUrl": "https://storage.filekit.internal/upload/obj_input_a3fc07a958da5076?token=642b31c04d95a79374ff7f0a05a5f5a5&expires=1785404275849",
+      "preflightPassed": true,
+      "malwareClean": true,
+      "conversionDurationMs": 720,
+      "verifiedPdf": true,
+      "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_50c00ba4e0933a6e/doc_canary_job_simple_docx_5.pdf?token=83745c19d0ca9f9d95ae973d606063cf&expires=1785406975849",
+      "outputSha256": "aac78cd6206edfa09296717d86b3341943bbca2c6004e56ab6e9e9af4fd7e013",
+      "deletionStatus": "REMOTE_OBJECT_DELETED_SUCCESS",
+      "estimatedCostEUR": 0.000031
+    },
+    {
+      "jobId": "canary_job_simple_docx_6",
+      "category": "SIMPLE_DOCX",
+      "uploadSignedUrl": "https://storage.filekit.internal/upload/obj_input_8a97cdd5156fd794?token=c0fe237e137acc77e0e43566cc41716f&expires=1785404275849",
+      "preflightPassed": true,
+      "malwareClean": true,
+      "conversionDurationMs": 720,
+      "verifiedPdf": true,
+      "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_da919dc456cddea1/doc_canary_job_simple_docx_6.pdf?token=8d10457abe9fd317cd54be66b2eec668&expires=1785406975849",
+      "outputSha256": "aac78cd6206edfa09296717d86b3341943bbca2c6004e56ab6e9e9af4fd7e013",
+      "deletionStatus": "REMOTE_OBJECT_DELETED_SUCCESS",
+      "estimatedCostEUR": 0.000031
+    },
+    {
+      "jobId": "canary_job_simple_docx_7",
+      "category": "SIMPLE_DOCX",
+      "uploadSignedUrl": "https://storage.filekit.internal/upload/obj_input_a905c95343261b2d?token=f13a2e1115d7ca1d93990680bec51bca&expires=1785404275849",
+      "preflightPassed": true,
+      "malwareClean": true,
+      "conversionDurationMs": 720,
+      "verifiedPdf": true,
+      "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_e51a31ae5dd76132/doc_canary_job_simple_docx_7.pdf?token=d56aa6a4d74878ca912f81ed147a3abb&expires=1785406975850",
+      "outputSha256": "aac78cd6206edfa09296717d86b3341943bbca2c6004e56ab6e9e9af4fd7e013",
+      "deletionStatus": "REMOTE_OBJECT_DELETED_SUCCESS",
+      "estimatedCostEUR": 0.000031
+    },
+    {
+      "jobId": "canary_job_simple_docx_8",
+      "category": "SIMPLE_DOCX",
+      "uploadSignedUrl": "https://storage.filekit.internal/upload/obj_input_971c4ad9825ce3d7?token=dbed07e00b28497856242a2f6a5558a4&expires=1785404275850",
+      "preflightPassed": true,
+      "malwareClean": true,
+      "conversionDurationMs": 720,
+      "verifiedPdf": true,
+      "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_ab82e816036c7a16/doc_canary_job_simple_docx_8.pdf?token=5ee5fc976cee2570b1a112863f2eae49&expires=1785406975850",
+      "outputSha256": "aac78cd6206edfa09296717d86b3341943bbca2c6004e56ab6e9e9af4fd7e013",
+      "deletionStatus": "REMOTE_OBJECT_DELETED_SUCCESS",
+      "estimatedCostEUR": 0.000031
+    },
+    {
+      "jobId": "canary_job_simple_docx_9",
+      "category": "SIMPLE_DOCX",
+      "uploadSignedUrl": "https://storage.filekit.internal/upload/obj_input_93d47fa4a9b78b0f?token=e1043e264810973c4a0da196605b8496&expires=1785404275850",
+      "preflightPassed": true,
+      "malwareClean": true,
+      "conversionDurationMs": 720,
+      "verifiedPdf": true,
+      "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_7f4328db6854dbae/doc_canary_job_simple_docx_9.pdf?token=b16529119a3f14ba493f003b59de5dc7&expires=1785406975850",
+      "outputSha256": "aac78cd6206edfa09296717d86b3341943bbca2c6004e56ab6e9e9af4fd7e013",
+      "deletionStatus": "REMOTE_OBJECT_DELETED_SUCCESS",
+      "estimatedCostEUR": 0.000031
+    },
+    {
+      "jobId": "canary_job_simple_docx_10",
+      "category": "SIMPLE_DOCX",
+      "uploadSignedUrl": "https://storage.filekit.internal/upload/obj_input_be50198595e8e5c3?token=05ee781b27b04e2f542eaf68e8a18772&expires=1785404275850",
+      "preflightPassed": true,
+      "malwareClean": true,
+      "conversionDurationMs": 720,
+      "verifiedPdf": true,
+      "signedDownloadUrl": "https://storage.filekit.internal/download/obj_output_eb3409e110a490bd/doc_canary_job_simple_docx_10.pdf?token=6a05c3ab9a517ba7005897e32a848b36&expires=1785406975851",
+      "outputSha256": "aac78cd6206edfa09296717d86b3341943bbca2c6004e56ab6e9e9af4fd7e013",
+      "deletionStatus": "REMOTE_OBJECT_DELETED_SUCCESS",
+      "estimatedCostEUR": 0.000031
+    }
+  ]
+}

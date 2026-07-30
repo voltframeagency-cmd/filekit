@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  office-worker-canary:
+    image: filekit-office-worker:v1.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: filekit-office-worker-canary
+    environment:
+      - NODE_ENV=production
+      - LIBREOFFICE_USER_PROFILE_BASE=/tmp/job_profiles
+      - WORKER_CONCURRENCY_LIMIT=1
+      - MAX_JOB_EXECUTION_TIMEOUT_MS=15000
+      - HOST_SWAP_POLICY=DISABLED_OR_ENCRYPTED
+    read_only: true
+    network_mode: none
+    deploy:
+      resources:
+        limits:
+          cpus: '1.50'
+          memory: 1024M
+        reservations:
+          cpus: '0.50'
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 100
+    tmpfs:
+      - /tmp:size=256M,mode=1777
+    restart: "no"
