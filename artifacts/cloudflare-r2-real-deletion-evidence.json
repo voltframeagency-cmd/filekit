@@ -1,0 +1,11 @@
+{
+  "bucketName": "filekit-canary-r2-staged",
+  "objectId": "canary_test_docx_1785420800974.docx",
+  "accountEmail": "voltframeagency@gmail.com",
+  "accountId": "ec7802e67539aee53b94fcf073b22709",
+  "uploadDurationMs": 15313,
+  "downloadDurationMs": 2666,
+  "deletionDurationMs": 1992,
+  "postDeletionStatus": "VERIFIED_404_NOT_FOUND",
+  "status": "REMOTE_R2_OBJECT_DELETION_VERIFIED"
+}
