@@ -1,5 +1,6 @@
 {
-  "status": "REMOTE_OBJECT_DELETION_VERIFIED",
+  "status": "LOCAL_STORAGE_ADAPTER_DELETION_VERIFIED",
+  "remoteGcsObjectDeletion": "PENDING_GCP_DEPLOYMENT",
   "totalObjectsDeleted": 200,
   "retriesHandled": 1,
   "logs": [

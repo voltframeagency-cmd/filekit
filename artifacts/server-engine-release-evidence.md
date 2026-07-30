@@ -1,6 +1,6 @@
 # Comprehensive Server Engine Release Evidence Report
 
-> **Status Level Reached**: \`HIDDEN_BROWSER_LIFECYCLE\` (Targeting \`PRIVATE_BETA_READY\` pending Cloud credentials)  
+> **Status Level Reached**: \`LOCAL_HIDDEN_BROWSER_LIFECYCLE\` (Targeting \`PRIVATE_PROVIDER_CANARY\` pending GCP ADC Authentication)  
 > **Date**: 2026-07-30  
 > **Engine Family**: \`OFFICE_TO_PDF\` (Word-to-PDF Isolated Worker)  
 > **Governance Tag**: \`governance-freeze-v1\` (Commit \`a1813c2\`)  
@@ -24,11 +24,12 @@ ENGINE PROTOTYPE CLASSIFICATION LADDER
   1. PLANNED:                                 Passed (HTTP 404 access governance enforced)
   2. LOCAL_CONTAINER_MEASURED:                Passed (325 fixtures tested in isolated container)
   3. LOCAL_FIDELITY_VALIDATED:                Passed (150 heterogeneous fixtures & font ledgers verified)
-  4. PRIVATE_PROVIDER_CANARY:                 Passed (100 canary jobs, signed upload/download verified)
-  5. PROVIDER_MEASURED:                       Pending Cloud Run Deployment Credentials
-  6. PROVIDER_RECONCILED:                     Pending Live Cloud Billing Reconciliation
-  7. HIDDEN_BROWSER_LIFECYCLE:                Passed (Full client upload -> preflight -> execution -> deletion)
-  8. PRIVATE_BETA_READY:                      Pending Cloud Run Credentials & Canary Budget Approval
+  4. LOCAL_CANARY_HARNESS_VALIDATED:          Passed (100 canary harness jobs emulated cleanly)
+  5. LOCAL_HIDDEN_BROWSER_LIFECYCLE:          Passed (Full local client upload -> execution -> deletion)
+  6. PRIVATE_PROVIDER_CANARY:                 Pending GCP ADC Authentication & Deployment
+  7. PROVIDER_MEASURED:                       Pending Live Cloud Run Execution Telemetry
+  8. PROVIDER_RECONCILED:                     Pending Live Cloud Billing Reconciliation Export
+  9. PRIVATE_BETA_READY:                      Pending Live Provider Canary Pass & Founder Review
 ================================================================================
 ```
 
@@ -41,9 +42,8 @@ ENGINE PROTOTYPE CLASSIFICATION LADDER
    - Git Tag: `governance-freeze-v1`
    - [access-governance-matrix.md](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/access-governance-matrix.md)
 
-2. **Container Security & Font Manifest**:
-   - Container Image ID: `sha256:4d8e9f2a1048b3901f4c7811e9a3b6528701e902b489c7d12f389a910bf15e21`
-   - Base Image Digest: `alpine:3.20@sha256:777351696874e437b7004c1329b4720612a4339ed301540a83103212457814b7`
+2. **Container Security & Font Resolution**:
+   - Local Image ID: `sha256:4d8e9f2a1048b3901f4c7811e9a3b6528701e902b489c7d12f389a910bf15e21` (`LOCAL_IMAGE_ID_ONLY`)
    - [office-worker-font-manifest.txt](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/office-worker-font-manifest.txt)
    - [office-worker-font-resolution.json](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/office-worker-font-resolution.json)
 
@@ -51,31 +51,25 @@ ENGINE PROTOTYPE CLASSIFICATION LADDER
    - [word-to-pdf-fidelity-benchmark.md](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/word-to-pdf-fidelity-benchmark.md)
    - [word-to-pdf-fidelity-benchmark.json](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/word-to-pdf-fidelity-benchmark.json)
 
-4. **Private Provider Canary Telemetry**:
-   - [provider-canary.md](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/provider-canary.md)
-   - [provider-canary.json](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/provider-canary.json)
+4. **Local Canary Harness Telemetry & Cost Estimation**:
+   - [provider-canary.md](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/provider-canary.md) (`LOCAL_CANARY_HARNESS_VALIDATED`)
+   - [provider-cost-reconciliation.md](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/provider-cost-reconciliation.md) (`RATE_CARD_ESTIMATED_COST`)
+   - [remote-deletion-evidence.json](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/remote-deletion-evidence.json) (`LOCAL_STORAGE_ADAPTER_DELETION`)
 
-5. **Cost Reconciliation & Deletion Evidence**:
-   - [provider-cost-reconciliation.md](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/provider-cost-reconciliation.md)
-   - [provider-cost-reconciliation.json](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/provider-cost-reconciliation.json)
-   - [remote-deletion-evidence.json](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/remote-deletion-evidence.json)
-
-6. **Hidden Browser Lifecycle Pass**:
+5. **Local Hidden Browser Lifecycle Pass**:
    - [hidden-browser-lifecycle.json](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/hidden-browser-lifecycle.json)
+
+6. **Least-Privilege GCP Deployment Guide**:
+   - [gcp-canary-deployment-guide.md](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/docs/deployment/gcp-canary-deployment-guide.md)
 
 ---
 
-## 🔒 **Current Blocker Request: Cloud Credentials for Live Deployment**
+## 🔒 **Current Blocker Request: gcloud ADC Authentication**
 
-To advance Word-to-PDF from `HIDDEN_BROWSER_LIFECYCLE` to `PROVIDER_MEASURED` and `PRIVATE_BETA_READY`, the following minimum cloud credentials and budget authorization are required:
+To advance Word-to-PDF from `LOCAL_HIDDEN_BROWSER_LIFECYCLE` to `PRIVATE_PROVIDER_CANARY` and `PROVIDER_MEASURED`, the founder needs to authenticate the local environment via ADC:
 
-- **Provider**: Google Cloud Platform (GCP)
-- **Target Service**: Cloud Run (v2 API) & Cloud Storage (GCS)
-- **Region**: `europe-west1` (Belgium)
-- **Required Minimum IAM Permissions**:
-  - `roles/run.admin` (Deploy Cloud Run service)
-  - `roles/storage.admin` (Manage temporary bucket `filekit-staged-uploads`)
-  - `roles/artifactregistry.writer` (Push docker image to Artifact Registry)
-- **Expected Hourly Canary Cost**: €0.02 / hour
-- **Expected Total Canary Execution Cost**: €0.15 (100 test runs)
-- **Capped Budget Limit**: €5.00 hard limit
+```bash
+gcloud auth login
+gcloud auth application-default login
+gcloud config set project YOUR_GCP_PROJECT_ID
+```
