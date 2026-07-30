@@ -1,0 +1,87 @@
+{
+  "classification": "RATE_CARD_ESTIMATED_COST",
+  "totalCfCostEUR": 0.007108999999999994,
+  "totalGcpCostEUR": 0.01491399999999999,
+  "costComparisonsSample": [
+    {
+      "jobId": "cf_canary_simple_docx_1",
+      "category": "SIMPLE_DOCX",
+      "conversionDurationMs": 720,
+      "cloudflareCostEUR": 0.0000306,
+      "gcpEstimateCostEUR": 0.0000306,
+      "savingsPercentage": 0
+    },
+    {
+      "jobId": "cf_canary_simple_docx_2",
+      "category": "SIMPLE_DOCX",
+      "conversionDurationMs": 720,
+      "cloudflareCostEUR": 0.0000306,
+      "gcpEstimateCostEUR": 0.0000306,
+      "savingsPercentage": 0
+    },
+    {
+      "jobId": "cf_canary_simple_docx_3",
+      "category": "SIMPLE_DOCX",
+      "conversionDurationMs": 720,
+      "cloudflareCostEUR": 0.0000306,
+      "gcpEstimateCostEUR": 0.0000306,
+      "savingsPercentage": 0
+    },
+    {
+      "jobId": "cf_canary_simple_docx_4",
+      "category": "SIMPLE_DOCX",
+      "conversionDurationMs": 720,
+      "cloudflareCostEUR": 0.0000306,
+      "gcpEstimateCostEUR": 0.0000306,
+      "savingsPercentage": 0
+    },
+    {
+      "jobId": "cf_canary_simple_docx_5",
+      "category": "SIMPLE_DOCX",
+      "conversionDurationMs": 720,
+      "cloudflareCostEUR": 0.0000306,
+      "gcpEstimateCostEUR": 0.0000306,
+      "savingsPercentage": 0
+    },
+    {
+      "jobId": "cf_canary_simple_docx_6",
+      "category": "SIMPLE_DOCX",
+      "conversionDurationMs": 720,
+      "cloudflareCostEUR": 0.0000306,
+      "gcpEstimateCostEUR": 0.0000306,
+      "savingsPercentage": 0
+    },
+    {
+      "jobId": "cf_canary_simple_docx_7",
+      "category": "SIMPLE_DOCX",
+      "conversionDurationMs": 720,
+      "cloudflareCostEUR": 0.0000306,
+      "gcpEstimateCostEUR": 0.0000306,
+      "savingsPercentage": 0
+    },
+    {
+      "jobId": "cf_canary_simple_docx_8",
+      "category": "SIMPLE_DOCX",
+      "conversionDurationMs": 720,
+      "cloudflareCostEUR": 0.0000306,
+      "gcpEstimateCostEUR": 0.0000306,
+      "savingsPercentage": 0
+    },
+    {
+      "jobId": "cf_canary_simple_docx_9",
+      "category": "SIMPLE_DOCX",
+      "conversionDurationMs": 720,
+      "cloudflareCostEUR": 0.0000306,
+      "gcpEstimateCostEUR": 0.0000306,
+      "savingsPercentage": 0
+    },
+    {
+      "jobId": "cf_canary_simple_docx_10",
+      "category": "SIMPLE_DOCX",
+      "conversionDurationMs": 720,
+      "cloudflareCostEUR": 0.0000306,
+      "gcpEstimateCostEUR": 0.0000306,
+      "savingsPercentage": 0
+    }
+  ]
+}
