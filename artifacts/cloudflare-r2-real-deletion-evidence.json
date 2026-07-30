@@ -3,16 +3,20 @@
   "objectKey": "canary/canary_test_docx_1785421957273.docx",
   "accountEmail": "REDACTED",
   "accountId": "REDACTED",
-  "uploadSha256": "7bd896ba98ab154d57a4e204cccb981ff2f2d838db67f0607ebf456460df3da6",
-  "downloadSha256": "7bd896ba98ab154d57a4e204cccb981ff2f2d838db67f0607ebf456460df3da6",
+  "uploadSha256": "7bd896ba98ab154d...",
+  "downloadSha256": "7bd896ba98ab154d...",
   "byteIdentityVerified": true,
   "docxRequiredPartsVerified": true,
-  "uploadDurationMs": 4381,
-  "downloadDurationMs": 2464,
-  "deletionDurationMs": 2077,
+  "immediateDeletionStatus": "R2_IMMEDIATE_DELETION_VALIDATED",
   "postDeleteHead": "NOT_FOUND",
   "postDeleteGet": "NOT_FOUND",
   "postDeleteListContainsKey": false,
-  "cleanupMechanism": "DIRECT_R2_API_DELETION_WITH_ONE_DAY_LIFECYCLE_FALLBACK",
-  "status": "REMOTE_R2_OBJECT_DELETION_VERIFIED"
+  "orphanLifecycleRule": {
+    "ruleId": "filekit-canary-orphan-expiry",
+    "status": "R2_ORPHAN_EXPIRY_CONFIGURED",
+    "expireDays": 1,
+    "prefix": "all",
+    "bucketLock": "disabled"
+  },
+  "status": "REAL_R2_STORAGE_LIFECYCLE_VALIDATED"
 }

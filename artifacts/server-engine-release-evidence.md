@@ -31,11 +31,13 @@ ENGINE PROTOTYPE CLASSIFICATION LADDER
   7. REAL_CLOUDFLARE_R2_PROVISIONED:          Passed (Bucket filekit-canary-r2-staged active)
   8. R2_BYTE_IDENTITY_VERIFIED:               Passed (Upload SHA-256 == Download SHA-256 verified)
   9. DOCX_REQUIRED_PARTS_VERIFIED:            Passed ([Content_Types].xml, _rels/.rels, word/document.xml)
-  10. R2_REMOTE_DELETION_VERIFIED:            Passed (Real object upload -> download -> delete -> 404 verified)
-  11. REAL_R2_STORAGE_LIFECYCLE_VALIDATED:    Passed (Complete end-to-end R2 storage lifecycle validated)
-  12. CLOUDFLARE_CONTAINER_DEPLOYED:          Pending Docker Host for Container Build & Push
-  13. CLOUDFLARE_PRIVATE_CANARY:              Pending Live Container Execution & Canary Pass
-  14. PRIVATE_BETA_READY:                     Pending Live Container Worker Execution & Beta Pass
+  10. R2_IMMEDIATE_DELETION_VALIDATED:        Passed (Direct API delete + 3-layer 404 check)
+  11. R2_ORPHAN_EXPIRY_CONFIGURED:            Passed (Rule 'filekit-canary-orphan-expiry' active: 1 day)
+  12. REAL_R2_STORAGE_LIFECYCLE_VALIDATED:    Passed (Complete end-to-end R2 storage lifecycle validated)
+  13. CLOUDFLARE_CONTAINER_DEPLOYED:          Pending Docker Host for Container Build & Push
+  14. CLOUDFLARE_FIRST_REAL_JOB_VERIFIED:     Pending Single Real Provider Job Pass
+  15. CLOUDFLARE_PRIVATE_CANARY:              Pending 100-Job Real Container Execution
+  16. PRIVATE_BETA_READY:                     Pending Provider Telemetry & Beta Pass
 ================================================================================
 ```
 
@@ -43,16 +45,14 @@ ENGINE PROTOTYPE CLASSIFICATION LADDER
 
 ## 🚀 **Verified Storage & Multi-Tier Secret Audit Evidence**
 
-1. **Storage Identity & DOCX Required Parts Audit ([cloudflare-r2-real-deletion-evidence.json](file:///C:/Users/mahdi/.gemini/antigravity-ide/scratch/filekit/artifacts/cloudflare-r2-real-deletion-evidence.json))**:
+1. **R2 Immediate Deletion & Orphan Lifecycle Fallback**:
+   - `R2_IMMEDIATE_DELETION_VALIDATED`: **Passed** (Direct API delete + 3-layer `NOT_FOUND` check)
+   - `R2_ORPHAN_EXPIRY_CONFIGURED`: **Passed** (Rule `filekit-canary-orphan-expiry` active: 1-day expiration for crash recovery fallback, bucket locks disabled).
+
+2. **Storage Identity & DOCX Required Parts Audit**:
    - `uploadSha256` == `downloadSha256` (**`Hash Match: True`**)
    - `byteIdentityVerified`: **`True`**
    - `docxRequiredPartsVerified`: **`True`** (Explicitly verified `[Content_Types].xml`, `_rels/.rels`, and `word/document.xml` entries in ZIP container)
-
-2. **Three-Layer Post-Deletion Verification**:
-   - Object deletion confirmed through direct R2 API:
-     - `postDeleteHead`: **`NOT_FOUND`**
-     - `postDeleteGet`: **`NOT_FOUND`**
-     - `postDeleteListContainsKey`: **`false`**
 
 3. **Multi-Tiered Secret Audit**:
    - `CURRENT_WORKTREE_SECRET_SCAN`: `git grep -i "access_key"`, `api_token` $\rightarrow$ **0 credentials found**
