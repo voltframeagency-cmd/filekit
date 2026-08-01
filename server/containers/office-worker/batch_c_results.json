@@ -1,0 +1,17 @@
+{
+  "runId": "run_2ba8dac6",
+  "validConversionsPassed": 90,
+  "invalidInputsRejected": 10,
+  "totalCorrectOutcomes": 100,
+  "unexplained5xx": 0,
+  "automaticZeroRetentionRemainingObjects": 0,
+  "manualPurgeRequired": false,
+  "coldStartsCount": 88,
+  "latencyMetricsMs": {
+    "medianP50": 26006.4,
+    "p90": 26952.2,
+    "p95": 27113.1,
+    "p99": 27484.4
+  },
+  "promotedStatuses": []
+}

@@ -1,0 +1,13 @@
+{
+  "validConversionsPassed": 89,
+  "invalidInputsRejected": 10,
+  "totalCorrectOutcomes": 99,
+  "orphanObjectsRemaining": 4,
+  "latencyMetricsMs": {
+    "median": 27443.7,
+    "p90": 54223.3,
+    "p95": 55486.4,
+    "p99": 56959.5
+  },
+  "promotedStatuses": []
+}
