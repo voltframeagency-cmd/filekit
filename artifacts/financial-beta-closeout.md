@@ -159,13 +159,15 @@ To prevent version drift during private-beta telemetry collection, the engine co
 ================================================================================
                FILEKIT PRIVATE-BETA GOVERNANCE DEPLOYMENT FREEZE
 ================================================================================
-Engine Source Commit: cb0810b72a9c0bf862d066a576e86ddeed10c7e1
-Worker Service Name:  filekit-office-worker-canary
-Worker Version ID:    439d2cc8-7d7a-4714-bc86-c5545d57d4bd
-Container Image SHA:  sha256:34858208ba2b1b6b5489a9520d4e941fbb0bbe8f6283abb64a220de4e0d0b86c
-Wrangler CLI:         4.116.0
-Release Tag:          word-to-pdf-private-beta-v1
-Status:               POST_FREEZE_SMOKE_VERIFIED: PASSED
+Engine Source Commit:   cb0810b72a9c0bf862d066a576e86ddeed10c7e1
+Evidence/Freeze Commit: e7ed12e4f01476dd983f4b6ad85675e4eb012a64
+Worker Service Name:    filekit-office-worker-canary
+Worker Version ID:      439d2cc8-7d7a-4714-bc86-c5545d57d4bd
+Container Image SHA:    sha256:34858208ba2b1b6b5489a9520d4e941fbb0bbe8f6283abb64a220de4e0d0b86c
+Wrangler CLI:           4.116.0
+Release Tag:            word-to-pdf-private-beta-v1
+Status:                 POST_FREEZE_SMOKE_VERIFIED: PASSED
+Server-Side Cap:        Enforced (100 jobs max, HTTP 429 on overflow)
 ================================================================================
 ```
 
