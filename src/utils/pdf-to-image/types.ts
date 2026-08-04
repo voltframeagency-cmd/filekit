@@ -14,11 +14,26 @@ export type PdfRasterizationOutcome =
   | "OUTPUT_VERIFICATION_FAILED"
   | "ZIP_CREATION_FAILED";
 
+export type RoutingStatus = "LOCAL_SAFE" | "LOCAL_WITH_WARNING" | "UNSUPPORTED";
+
+export type PreflightFailureReason =
+  | "FILE_TOO_LARGE"
+  | "PAGE_COUNT_EXCEEDED"
+  | "ESTIMATED_MEMORY_EXCEEDED"
+  | "INVALID_PDF"
+  | "ENCRYPTED_PDF"
+  | "MALFORMED_PDF"
+  | "UNSUPPORTED_BROWSER";
+
 export interface PdfPreflightInfo {
   pageCount: number;
   isEncrypted: boolean;
   isSigned: boolean;
   isValid: boolean;
+  routingStatus: RoutingStatus;
+  failureReason?: PreflightFailureReason;
+  estimatedRasterMemoryBytes?: number;
+  warningMessage?: string;
   error?: string;
 }
 

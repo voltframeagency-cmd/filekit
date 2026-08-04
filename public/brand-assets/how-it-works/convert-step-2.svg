@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="convert-step-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 451.97 330.33" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg-canvas { fill: #f5f7fc; }
+      .outer-card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1; }
+      .header-circle { fill: #dbe6f8; }
+      .header-pill { fill: #e4ecfa; }
+      
+      /* Inner Window */
+      .inner-window { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1; }
+
+      /* Format Cards */
+      .card-selected { fill: #f4f8ff; stroke: #3b82f6; stroke-width: 1.5; }
+      .card-normal { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1; }
+
+      /* Radio Buttons */
+      .radio-selected-outer { fill: #ffffff; stroke: #3b82f6; stroke-width: 2; }
+      .radio-selected-inner { fill: #3b82f6; }
+      .radio-normal { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+
+      /* Action Button */
+      .action-button { fill: #2563eb; }
+    </style>
+  </defs>
+
+  <g id="layer-container">
+    <!-- Outer background canvas -->
+    <rect class="bg-canvas" x="0" y="0" width="451.97" height="330.33" rx="18" ry="18" />
+
+    <!-- Outer card frame -->
+    <rect class="outer-card" x="12" y="12" width="427.97" height="306.33" rx="16" ry="16" />
+
+    <!-- Top Left Header Elements -->
+    <circle class="header-circle" cx="36" cy="36" r="10" />
+    <rect class="header-pill" x="54" y="31" width="100" height="10" rx="5" />
+
+    <!-- INNER MAIN CARD CONTAINER -->
+    <rect class="inner-window" x="42" y="54" width="368" height="238" rx="14" />
+
+    <!-- 3 FORMAT OPTION CARDS SECTION -->
+
+    <!-- OPTION CARD 1: SELECTED (JPG Photo Image Format) -->
+    <g id="option-jpg">
+      <rect class="card-selected" x="60" y="80" width="100" height="142" rx="12" />
+
+      <!-- JPG Photo Icon -->
+      <g id="jpg-icon" clip-path="url(#jpg-clip)">
+        <clipPath id="jpg-clip">
+          <rect x="76" y="100" width="68" height="60" rx="10" />
+        </clipPath>
+        <rect x="76" y="100" width="68" height="60" rx="10" fill="#3b82f6" />
+        <!-- Sun Circle -->
+        <circle cx="91" cy="115" r="6" fill="#ffffff" />
+        <!-- Back Mountain Peak -->
+        <polygon points="106,160 124,130 144,160" fill="#2563eb" />
+        <!-- Front Mountain Peak -->
+        <polygon points="76,160 98,136 124,160" fill="#1d4ed8" />
+      </g>
+
+      <!-- Radio Button Selected -->
+      <circle class="radio-selected-outer" cx="110" cy="190" r="9" />
+      <circle class="radio-selected-inner" cx="110" cy="190" r="4.5" />
+    </g>
+
+    <!-- OPTION CARD 2: UNSELECTED (PNG Checkerboard Transparency Format) -->
+    <g id="option-png">
+      <rect class="card-normal" x="176" y="80" width="100" height="142" rx="12" />
+
+      <!-- PNG Checkerboard Pattern Icon -->
+      <g id="png-icon" clip-path="url(#png-clip)">
+        <clipPath id="png-clip">
+          <rect x="192" y="100" width="68" height="60" rx="10" />
+        </clipPath>
+        <rect x="192" y="100" width="68" height="60" rx="10" fill="#dbeafe" />
+
+        <!-- 4x4 Checkerboard Grid -->
+        <rect x="192" y="100" width="17" height="15" fill="#bfdbfe" />
+        <rect x="226" y="100" width="17" height="15" fill="#bfdbfe" />
+        <rect x="209" y="115" width="17" height="15" fill="#bfdbfe" />
+        <rect x="243" y="115" width="17" height="15" fill="#bfdbfe" />
+
+        <rect x="192" y="130" width="17" height="15" fill="#bfdbfe" />
+        <rect x="226" y="130" width="17" height="15" fill="#bfdbfe" />
+        <rect x="209" y="145" width="17" height="15" fill="#bfdbfe" />
+        <rect x="243" y="145" width="17" height="15" fill="#bfdbfe" />
+      </g>
+
+      <!-- Radio Button Unselected -->
+      <circle class="radio-normal" cx="226" cy="190" r="8" />
+    </g>
+
+    <!-- OPTION CARD 3: UNSELECTED (PDF / Document Format) -->
+    <g id="option-pdf">
+      <rect class="card-normal" x="292" y="80" width="100" height="142" rx="12" />
+
+      <!-- Document Sheet Icon -->
+      <g id="pdf-icon">
+        <!-- Paper Body with Folded Corner -->
+        <path d="
+          M 320 100
+          H 348
+          L 360 112
+          V 152
+          A 8 8 0 0 1 352 160
+          H 320
+          A 8 8 0 0 1 312 152
+          V 108
+          A 8 8 0 0 1 320 100
+          Z
+        " fill="#dbeafe" />
+        <!-- Folded Corner Triangle -->
+        <polygon points="348,100 360,112 348,112" fill="#a5c7fe" />
+
+        <!-- Inner Mountain Line Graphic -->
+        <polygon points="320,150 330,138 340,150" fill="#60a5fa" />
+        <polygon points="334,150 344,142 352,150" fill="#3b82f6" />
+      </g>
+
+      <!-- Radio Button Unselected -->
+      <circle class="radio-normal" cx="342" cy="190" r="8" />
+    </g>
+
+    <!-- BOTTOM ACTION BUTTON -->
+    <rect class="action-button" x="146" y="244" width="160" height="30" rx="8" />
+  </g>
+</svg>

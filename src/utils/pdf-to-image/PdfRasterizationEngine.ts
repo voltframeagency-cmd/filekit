@@ -32,6 +32,30 @@ export class PdfRasterizationEngine {
     return false;
   }
 
+  static async convert(options: {
+    pdfBuffer?: ArrayBuffer;
+    file?: File;
+    pageNumbers?: number[];
+    selectedPageNumbers?: number[];
+    outputFormat: PdfToImageOutputFormat;
+    resolutionPreset: ResolutionPreset;
+    quality?: number;
+    signal?: AbortSignal;
+    onProgress?: (currentPage: number, totalSelected: number) => void;
+  }): Promise<PdfRasterizationResult> {
+    const file = options.file || new File([options.pdfBuffer || new ArrayBuffer(0)], "document.pdf", { type: "application/pdf" });
+    const selectedPageNumbers = options.selectedPageNumbers || options.pageNumbers || [];
+    return this.rasterize({
+      file,
+      selectedPageNumbers,
+      outputFormat: options.outputFormat,
+      resolutionPreset: options.resolutionPreset,
+      quality: options.quality,
+      signal: options.signal,
+      onProgress: options.onProgress
+    });
+  }
+
   static async rasterize(options: RasterizePdfOptions): Promise<PdfRasterizationResult> {
     const startTime = Date.now();
     const { file, selectedPageNumbers, outputFormat, resolutionPreset, quality = 85, signal, onProgress } = options;

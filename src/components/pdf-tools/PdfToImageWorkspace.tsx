@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import Link from "next/link";
 import { PdfToImageRouteConfig } from "@/config/pdfToImageRoutes";
 import { PdfPreflightInfo, PdfRasterizationResult, PdfToImageOutputFormat, ResolutionPreset, RenderedPageResult } from "@/utils/pdf-to-image/types";
 import { PdfRasterizationPreflight } from "@/utils/pdf-to-image/PdfRasterizationPreflight";
 import { PdfRasterizationEngine } from "@/utils/pdf-to-image/PdfRasterizationEngine";
 import { PageSelectionParser } from "@/utils/pdf-to-image/pageSelection";
+import { getDeviceBudget, formatBytes } from "@/utils/pdf-to-image/limits";
+import { FileKitAsset } from "../visuals/FileKitAsset";
 
 export interface PdfToImageWorkspaceProps {
   config: PdfToImageRouteConfig;
@@ -16,6 +17,9 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
   const [file, setFile] = useState<File | null>(null);
   const [preflightInfo, setPreflightInfo] = useState<PdfPreflightInfo | null>(null);
   const [isPreflighting, setIsPreflighting] = useState<boolean>(false);
+
+  const budget = getDeviceBudget();
+  const formattedMaxSize = formatBytes(budget.maxBytes);
 
   const [pageSelectionMode, setPageSelectionMode] = useState<"ALL" | "CUSTOM">("ALL");
   const [customPageInput, setCustomPageInput] = useState<string>("");
@@ -99,46 +103,49 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
     }
     revokeAllUrls();
 
-    const currentReqId = ++requestIdRef.current;
     const controller = new AbortController();
     abortControllerRef.current = controller;
+    const currentReqId = ++requestIdRef.current;
 
     setIsProcessing(true);
-    setProgressCurrent(1);
-    setProgressTotal(selectedPages.length);
     setErrorMsg(null);
-    setResult(null);
+    setProgressCurrent(0);
+    setProgressTotal(selectedPages.length);
 
     try {
-      const res = await PdfRasterizationEngine.rasterize({
-        file,
-        selectedPageNumbers: selectedPages,
-        outputFormat: config.fixedOutputFormat || outputFormat,
+      const arrayBuffer = await file.arrayBuffer();
+      const res = await PdfRasterizationEngine.convert({
+        pdfBuffer: arrayBuffer,
+        pageNumbers: selectedPages,
+        outputFormat,
         resolutionPreset,
-        quality,
+        quality: outputFormat === "image/jpeg" ? quality : undefined,
         signal: controller.signal,
         onProgress: (current, total) => {
-          if (requestIdRef.current === currentReqId) {
+          if (currentReqId === requestIdRef.current) {
             setProgressCurrent(current);
             setProgressTotal(total);
           }
         }
       });
 
-      if (requestIdRef.current === currentReqId) {
-        res.renderedPages.forEach((p) => {
-          if (p.previewUrl) createdUrlsRef.current.push(p.previewUrl);
-        });
-        if (res.zipUrl) createdUrlsRef.current.push(res.zipUrl);
-
-        setResult(res);
+      if (currentReqId !== requestIdRef.current || controller.signal.aborted) {
+        return;
       }
+
+      // Track created object URLs
+      res.renderedPages.forEach((p) => {
+        if (p.previewUrl) createdUrlsRef.current.push(p.previewUrl);
+      });
+      if (res.zipUrl) createdUrlsRef.current.push(res.zipUrl);
+
+      setResult(res);
     } catch (err: any) {
-      if (requestIdRef.current === currentReqId && err.message !== "CANCELLED_BY_ABORT_SIGNAL") {
-        setErrorMsg(err.message || "PDF conversion failed.");
+      if (err.message !== "CANCELLED_BY_ABORT_SIGNAL") {
+        setErrorMsg(err.message || "Failed to convert PDF pages to images.");
       }
     } finally {
-      if (requestIdRef.current === currentReqId) {
+      if (currentReqId === requestIdRef.current) {
         setIsProcessing(false);
       }
     }
@@ -176,38 +183,68 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Route Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-extrabold text-fk-text mb-2">{config.h1}</h1>
-        <p className="text-[15px] text-fk-text-muted max-w-2xl mx-auto">{config.supportingCopy}</p>
-      </div>
+    <div className="w-full max-w-5xl mx-auto flex flex-col gap-6">
+      {/* Error Notice */}
+      {errorMsg && (
+        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm font-bold rounded-2xl flex items-center justify-between shadow-sm">
+          <span>{errorMsg}</span>
+          <button onClick={() => setErrorMsg(null)} className="text-red-500 hover:text-red-700 text-xs font-semibold">
+            Dismiss
+          </button>
+        </div>
+      )}
 
-      {/* File Select State */}
+      {/* File Dropzone State */}
       {!file && (
-        <div className="border-2 border-dashed border-fk-border rounded-fk-xl p-10 text-center bg-white shadow-sm hover:border-fk-primary transition-colors">
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={handleFileChange}
-            id="pdf-upload-input"
-            className="hidden"
-          />
-          <label htmlFor="pdf-upload-input" className="cursor-pointer flex flex-col items-center gap-3">
-            <span className="text-4xl">📄</span>
-            <span className="text-[16px] font-bold text-fk-text">Click to choose a PDF file</span>
-            <span className="text-[13px] text-fk-text-muted">Files are processed 100% locally in your browser memory</span>
-          </label>
+        <div className="bg-white border border-slate-200 rounded-3xl p-8 md:p-12 shadow-sm">
+          <div className="border-2 border-dashed border-blue-200 rounded-2xl p-10 text-center bg-blue-50/30 hover:bg-blue-50/70 hover:border-blue-500 transition-all cursor-pointer relative group">
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={handleFileChange}
+              id="pdf-upload-input"
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+            />
+            <div className="mb-2 flex items-center justify-center">
+              <FileKitAsset
+                name={(config.slug.replace(/^\//, '') as any) || "pdf-to-jpg"}
+                className="w-28 h-28 sm:w-36 sm:h-36 max-w-[180px] max-h-[120px] object-contain filter drop-shadow-md hover:scale-105 transition-transform duration-300"
+                alt="Tool operation illustration"
+              />
+            </div>
+            
+            <p className="text-lg font-extrabold text-slate-900 mb-4 z-20 relative pointer-events-none">Drop a PDF here</p>
+            
+            <div className="flex items-center justify-center gap-4 w-full max-w-[200px] mx-auto mb-5 z-20 relative pointer-events-none">
+              <div className="h-px bg-blue-200 flex-1"></div>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">OR</span>
+              <div className="h-px bg-blue-200 flex-1"></div>
+            </div>
+
+            <div className="flex flex-col items-center gap-2.5 z-20 relative pointer-events-none">
+              <div className="bg-blue-600 text-white font-extrabold py-3.5 px-8 rounded-xl shadow-md flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                Choose PDF
+              </div>
+              <p className="text-[13px] font-semibold text-slate-500">PDF up to {formattedMaxSize}</p>
+            </div>
+
+            <div className="mt-6 flex justify-center z-20 relative pointer-events-none">
+              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-blue-700 border border-blue-200 shadow-sm">
+                🔒 Processed locally in your browser. Your file is never uploaded.
+              </span>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Preflight & Configuration State */}
       {file && preflightInfo && preflightInfo.isValid && !result && (
-        <div className="bg-white border border-fk-border rounded-fk-xl p-6 shadow-sm flex flex-col gap-6">
-          <div className="flex items-center justify-between border-b border-fk-border pb-4">
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col gap-6">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <div>
-              <h2 className="text-[16px] font-bold text-fk-text">{file.name}</h2>
-              <span className="text-[13px] text-fk-text-muted">
+              <h2 className="text-base font-extrabold text-slate-900">{file.name}</h2>
+              <span className="text-xs font-semibold text-slate-500">
                 {preflightInfo.pageCount} {preflightInfo.pageCount === 1 ? "page" : "pages"} • {(file.size / 1024).toFixed(0)} KB
                 {preflightInfo.isSigned && " • Digitally signed PDF"}
               </span>
@@ -215,25 +252,33 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
             <button
               type="button"
               onClick={handleReset}
-              className="text-[13px] font-bold text-fk-text-subtle hover:text-fk-text"
+              className="text-xs font-bold text-slate-500 hover:text-red-600 transition-colors"
             >
               Choose another PDF
             </button>
           </div>
 
+          {/* Warning Banner */}
+          {preflightInfo.warningMessage && (
+            <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold rounded-xl flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{preflightInfo.warningMessage}</span>
+            </div>
+          )}
+
           {/* Controls Matrix */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Pages selector */}
             <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold text-fk-text">Pages</label>
+              <label className="text-xs font-bold text-slate-700">Pages</label>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setPageSelectionMode("ALL")}
-                  className={`flex-1 py-2 px-3 text-[13px] font-bold rounded-fk-md border transition-colors ${
+                  className={`flex-1 py-2.5 px-3 text-xs font-extrabold rounded-xl border transition-colors ${
                     pageSelectionMode === "ALL"
-                      ? "bg-fk-primary text-white border-fk-primary"
-                      : "bg-fk-surface-muted text-fk-text border-fk-border"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                   }`}
                 >
                   All pages ({preflightInfo.pageCount})
@@ -241,10 +286,10 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
                 <button
                   type="button"
                   onClick={() => setPageSelectionMode("CUSTOM")}
-                  className={`flex-1 py-2 px-3 text-[13px] font-bold rounded-fk-md border transition-colors ${
+                  className={`flex-1 py-2.5 px-3 text-xs font-extrabold rounded-xl border transition-colors ${
                     pageSelectionMode === "CUSTOM"
-                      ? "bg-fk-primary text-white border-fk-primary"
-                      : "bg-fk-surface-muted text-fk-text border-fk-border"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                   }`}
                 >
                   Custom pages
@@ -253,137 +298,87 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
               {pageSelectionMode === "CUSTOM" && (
                 <input
                   type="text"
-                  placeholder="e.g. 1, 3-5, 8"
+                  placeholder="e.g. 1, 3, 5-8"
                   value={customPageInput}
                   onChange={(e) => setCustomPageInput(e.target.value)}
-                  className="mt-1 px-3 py-2 border border-fk-border rounded-fk-md text-[13px] text-fk-text focus:outline-none focus:border-fk-primary"
+                  className="mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               )}
             </div>
 
-            {/* Format selector (hidden in FIXED_PAIR mode) */}
-            {config.mode === "GENERAL" ? (
+            {/* Format Selector (if not fixed) */}
+            {!config.fixedOutputFormat && (
               <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold text-fk-text">Output format</label>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setOutputFormat("image/jpeg")}
-                    className={`flex-1 py-2 px-3 text-[13px] font-bold rounded-fk-md border transition-colors ${
-                      outputFormat === "image/jpeg"
-                        ? "bg-fk-primary text-white border-fk-primary"
-                        : "bg-fk-surface-muted text-fk-text border-fk-border"
-                    }`}
-                  >
-                    JPG
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setOutputFormat("image/png")}
-                    className={`flex-1 py-2 px-3 text-[13px] font-bold rounded-fk-md border transition-colors ${
-                      outputFormat === "image/png"
-                        ? "bg-fk-primary text-white border-fk-primary"
-                        : "bg-fk-surface-muted text-fk-text border-fk-border"
-                    }`}
-                  >
-                    PNG
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold text-fk-text">Output format</label>
-                <div className="px-3 py-2 bg-fk-surface-muted border border-fk-border rounded-fk-md text-[13px] font-bold text-fk-text">
-                  {config.fixedOutputFormat === "image/jpeg" ? "JPG (Fixed)" : "PNG (Fixed)"}
-                </div>
+                <label className="text-xs font-bold text-slate-700">Image Format</label>
+                <select
+                  value={outputFormat}
+                  onChange={(e) => setOutputFormat(e.target.value as PdfToImageOutputFormat)}
+                  className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                >
+                  <option value="image/jpeg">JPG (JPEG Image)</option>
+                  <option value="image/png">PNG (Portable Network Graphics)</option>
+                  <option value="image/webp">WebP (Modern Image Format)</option>
+                </select>
               </div>
             )}
 
             {/* Resolution Preset */}
             <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold text-fk-text">Resolution</label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setResolutionPreset("STANDARD")}
-                  className={`flex-1 py-2 px-3 text-[13px] font-bold rounded-fk-md border transition-colors ${
-                    resolutionPreset === "STANDARD"
-                      ? "bg-fk-primary text-white border-fk-primary"
-                      : "bg-fk-surface-muted text-fk-text border-fk-border"
-                  }`}
-                >
-                  Standard
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setResolutionPreset("HIGH")}
-                  className={`flex-1 py-2 px-3 text-[13px] font-bold rounded-fk-md border transition-colors ${
-                    resolutionPreset === "HIGH"
-                      ? "bg-fk-primary text-white border-fk-primary"
-                      : "bg-fk-surface-muted text-fk-text border-fk-border"
-                  }`}
-                >
-                  High
-                </button>
-              </div>
+              <label className="text-xs font-bold text-slate-700">Image Resolution</label>
+              <select
+                value={resolutionPreset}
+                onChange={(e) => setResolutionPreset(e.target.value as ResolutionPreset)}
+                className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              >
+                <option value="STANDARD">Standard Quality (150 DPI)</option>
+                <option value="HIGH">High Quality (200 DPI)</option>
+                <option value="MAXIMUM">Maximum Quality (300 DPI)</option>
+              </select>
             </div>
 
-            {/* JPG Quality slider (shown only when JPG output is active) */}
-            {(config.fixedOutputFormat === "image/jpeg" || (config.mode === "GENERAL" && outputFormat === "image/jpeg")) && (
+            {/* Quality Slider (for JPG) */}
+            {outputFormat === "image/jpeg" && (
               <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-[13px] font-bold text-fk-text">
-                  <span>JPG Quality</span>
-                  <span>{quality}%</span>
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-slate-700">JPEG Quality</label>
+                  <span className="text-xs font-black text-blue-600">{quality}%</span>
                 </div>
                 <input
                   type="range"
-                  min={10}
+                  min={50}
                   max={100}
                   value={quality}
                   onChange={(e) => setQuality(Number(e.target.value))}
-                  className="w-full h-2 bg-fk-surface-muted rounded-lg appearance-none cursor-pointer accent-fk-primary"
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                 />
               </div>
             )}
           </div>
 
-          {/* Action Trigger Button */}
-          <div className="flex justify-end pt-2">
-            <button
-              type="button"
-              onClick={handleConvert}
-              disabled={isProcessing}
-              className="px-6 h-11 bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
-            >
-              {isProcessing
-                ? `Converting page ${progressCurrent} of ${progressTotal}...`
-                : "Convert PDF"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Error Notice */}
-      {errorMsg && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 text-[13px] font-bold rounded-fk-md flex items-center justify-between">
-          <span>{errorMsg}</span>
-          <button type="button" onClick={() => setErrorMsg(null)} className="text-red-500 hover:text-red-800">
-            ✕
+          <button
+            type="button"
+            disabled={isProcessing}
+            onClick={handleConvert}
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm rounded-xl transition-colors shadow-md disabled:opacity-50 mt-2"
+          >
+            {isProcessing
+              ? `Rendering page ${progressCurrent} of ${progressTotal}...`
+              : `Convert PDF to ${outputFormat === "image/png" ? "PNG" : "JPG"}`}
           </button>
         </div>
       )}
 
       {/* Results View */}
       {result && (
-        <div className="bg-white border border-fk-border rounded-fk-xl p-6 shadow-sm flex flex-col gap-6">
-          <div className="flex flex-wrap items-center justify-between border-b border-fk-border pb-4 gap-4">
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-4">
             <div>
-              <h2 className="text-[18px] font-extrabold text-fk-text">
+              <h2 className="text-xl font-extrabold text-slate-900">
                 {result.outcome === "PARTIAL_CONVERSION_FAILED"
                   ? "Partial Conversion Completed"
-                  : "Conversion Completed"}
+                  : "Conversion Completed Successfully!"}
               </h2>
-              <span className="text-[13px] text-fk-text-muted">
+              <span className="text-xs font-semibold text-slate-500 mt-1 block">
                 {result.renderedPages.length} {result.renderedPages.length === 1 ? "image" : "images"} generated • Total size: {(result.totalSizeBytes / 1024).toFixed(0)} KB
                 {result.failedPageNumbers && result.failedPageNumbers.length > 0 && (
                   <span className="text-red-600 font-bold ml-2">
@@ -397,7 +392,7 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
                 <button
                   type="button"
                   onClick={handleDownloadZip}
-                  className="px-5 h-10 bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[13px] font-bold shadow-sm transition-colors"
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md transition-colors"
                 >
                   Download All as ZIP
                 </button>
@@ -406,7 +401,7 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
                   <button
                     type="button"
                     onClick={() => handleDownloadSingle(result.renderedPages[0])}
-                    className="px-5 h-10 bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[13px] font-bold shadow-sm transition-colors"
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md transition-colors"
                   >
                     Download Image
                   </button>
@@ -418,28 +413,28 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
                   revokeAllUrls();
                   setResult(null);
                 }}
-                className="px-4 h-10 border border-fk-border hover:bg-fk-surface-muted text-fk-text rounded-fk-md text-[13px] font-bold transition-colors"
+                className="px-4 py-3 border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-colors"
               >
                 Adjust Settings
               </button>
             </div>
           </div>
 
-          {/* Generated Page Cards */}
+          {/* Generated Page Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {result.renderedPages.map((page) => (
-              <div key={page.pageNumber} className="border border-fk-border rounded-fk-md p-3 flex flex-col gap-2 bg-fk-surface-muted">
-                <div className="aspect-[4/3] bg-white rounded flex items-center justify-center overflow-hidden border border-fk-border">
+              <div key={page.pageNumber} className="border border-slate-200 rounded-2xl p-3 flex flex-col gap-2 bg-slate-50">
+                <div className="aspect-[4/3] bg-white rounded-xl flex items-center justify-center overflow-hidden border border-slate-200">
                   <img src={page.previewUrl} alt={`Page ${page.pageNumber}`} className="max-h-full max-w-full object-contain" />
                 </div>
-                <div className="flex items-center justify-between text-[12px]">
-                  <span className="font-bold text-fk-text">Page {page.pageNumber}</span>
-                  <span className="text-fk-text-muted">{(page.sizeBytes / 1024).toFixed(0)} KB</span>
+                <div className="flex items-center justify-between text-xs px-1">
+                  <span className="font-extrabold text-slate-900">Page {page.pageNumber}</span>
+                  <span className="text-slate-500 font-medium">{(page.sizeBytes / 1024).toFixed(0)} KB</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleDownloadSingle(page)}
-                  className="w-full py-1.5 bg-white hover:bg-fk-surface-muted border border-fk-border rounded text-[12px] font-bold text-fk-text transition-colors mt-1"
+                  className="w-full py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-blue-600 transition-colors mt-1 shadow-sm"
                 >
                   Download
                 </button>

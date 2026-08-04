@@ -1,0 +1,12 @@
+{
+  "runId": "run_pptx_67cc6045",
+  "engineFamily": "OFFICE_TO_PDF",
+  "format": "POWERPOINT_PPTX",
+  "validConversionsPassed": 7,
+  "invalidInputsRejected": 3,
+  "totalCorrectOutcomes": 10,
+  "automaticZeroRetentionRemainingObjects": 0,
+  "containerInstanceIds": [
+    "unknown"
+  ]
+}

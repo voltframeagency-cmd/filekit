@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="image-step-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 451.97 330.33" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg-canvas { fill: #f5f7fc; }
+      .outer-card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1; }
+      .header-circle { fill: #dbe6f8; }
+      .header-pill { fill: #e4ecfa; }
+      
+      /* Inner Window */
+      .inner-window { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1; }
+
+      /* Hero Card */
+      .hero-card { fill: #eff6ff; }
+      .sun-circle { fill: #60a5fa; }
+      .mtn-back { fill: #3b82f6; }
+      .mtn-front { fill: #2563eb; }
+      .river-wave { fill: #dbeafe; }
+
+      /* Download Badge */
+      .badge-circle { fill: #3b82f6; stroke: #ffffff; stroke-width: 3.5; }
+      .icon-stroke { stroke: #ffffff; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+
+      /* Action Button */
+      .action-button { fill: #2563eb; }
+    </style>
+  </defs>
+
+  <g id="layer-container">
+    <!-- Outer background canvas -->
+    <rect class="bg-canvas" x="0" y="0" width="451.97" height="330.33" rx="18" ry="18" />
+
+    <!-- Outer card frame -->
+    <rect class="outer-card" x="12" y="12" width="427.97" height="306.33" rx="16" ry="16" />
+
+    <!-- Top Left Header Elements -->
+    <circle class="header-circle" cx="36" cy="36" r="10" />
+    <rect class="header-pill" x="54" y="31" width="100" height="10" rx="5" />
+
+    <!-- INNER MAIN CARD CONTAINER -->
+    <rect class="inner-window" x="42" y="54" width="368" height="238" rx="14" />
+
+    <!-- CENTERED HERO PREVIEW CARD -->
+    <g id="hero-image-group">
+      <rect class="hero-card" x="166" y="74" width="120" height="116" rx="16" />
+
+      <g clip-path="url(#hero-clip-img)">
+        <clipPath id="hero-clip-img">
+          <rect x="166" y="74" width="120" height="116" rx="16" />
+        </clipPath>
+        <!-- Sun Circle -->
+        <circle class="sun-circle" cx="196" cy="102" r="10" />
+        <!-- Back Mountain Peak -->
+        <polygon class="mtn-back" points="212,176 250,118 286,176" />
+        <!-- Front Mountain Peak -->
+        <polygon class="mtn-front" points="166,176 198,134 236,176" />
+        <!-- River Wave Curve -->
+        <path class="river-wave" d="M 166 168 Q 206 172 236 178 T 286 180 V 190 L 166 190 Z" />
+      </g>
+    </g>
+
+    <!-- OVERLAID DOWNLOAD BADGE CIRCLE WITH CLEAN WHITE BORDER STROKE -->
+    <g id="download-badge">
+      <!-- Blue Badge Circle with Solid Crisp White Stroke Ring -->
+      <circle class="badge-circle" cx="260" cy="162" r="23" />
+      <!-- Download Arrow & Underline Tray -->
+      <line class="icon-stroke" x1="260" y1="151" x2="260" y2="165" />
+      <path class="icon-stroke" d="M 254 160 L 260 166 L 266 160" />
+      <line class="icon-stroke" x1="252" y1="171" x2="268" y2="171" />
+    </g>
+
+    <!-- BOTTOM ACTION BUTTON WITH CENTERED DOWNLOAD ICON -->
+    <g id="action-button-group">
+      <rect class="action-button" x="76" y="226" width="300" height="42" rx="10" />
+      <!-- Centered Download Icon inside Action Button -->
+      <line class="icon-stroke" x1="226" y1="236" x2="226" y2="248" />
+      <path class="icon-stroke" d="M 220 243 L 226 249 L 232 243" />
+      <line class="icon-stroke" x1="216" y1="254" x2="236" y2="254" />
+    </g>
+  </g>
+</svg>

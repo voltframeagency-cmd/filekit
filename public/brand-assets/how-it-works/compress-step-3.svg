@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 451.97 330.33">
+    <defs>
+        <style>
+            .bg-canvas{fill:#eff6ff;}
+            .card-white{fill:#ffffff;filter:url(#drop-shadow-1);}
+            .panel-bg{fill:#ffffff;stroke:#e2e8f0;stroke-width:1;}
+            .img-card{fill:#f4f8ff;stroke:#dbeafe;stroke-width:1;}
+            .sun{fill:#bfdbfe;}
+            .cloud{fill:#e2e8f0;}
+            .mtn-back{fill:#dbeafe;}
+            .mtn-front{fill:#bfdbfe;}
+            .tree{fill:#60a5fa;}
+            .river-bg{fill:#93c5fd;}
+            .river-stream{fill:#eff6ff;}
+            .accent-blue{stroke:#2563eb;}
+            .accent-blue-fill{fill:#2563eb;}
+            .track-inactive{stroke:#dbeafe;}
+            .dot-inactive{fill:#bfdbfe;}
+        </style>
+        <filter id="drop-shadow-1" x="20.61" y="11.57" width="450" height="337" filterUnits="userSpaceOnUse">
+            <feOffset dx="-7.13" dy="-3.56" />
+            <feGaussianBlur result="blur" stdDeviation="7.13" />
+            <feFlood flood-color="#1e40af" flood-opacity=".08" />
+            <feComposite in2="blur" operator="in" />
+            <feComposite in="SourceGraphic" />
+        </filter>
+    </defs>
+    <g id="Layer_1-2">
+        <!-- Outer background canvas -->
+        <rect class="bg-canvas" x="2.93" width="451.97" height="330.33" rx="18.04" ry="18.04" />
+        
+        <!-- White Main Card Container -->
+        <path class="card-white" d="M66.72,37.01h388.47v276.11c0,9.5-7.71,17.21-17.21,17.21H49.51V54.22c0-9.5,7.71-17.21,17.21-17.21Z" />
+
+        <!-- LEFT IMAGE CARD -->
+        <g id="left-image-card">
+            <rect class="img-card" x="65" y="60" width="102" height="225" rx="14" />
+            <!-- Sun -->
+            <circle class="sun" cx="98" cy="85" r="9" />
+            <!-- Cloud -->
+            <path class="cloud" d="M128 92 a 4 4 0 0 0 -4 -3 a 6 6 0 0 0 -9 2 a 4 4 0 0 0 -3 4 z" />
+            <!-- Mountains -->
+            <polygon class="mtn-back" points="65,175 100,130 140,175" />
+            <polygon class="mtn-front" points="85,175 115,140 155,175" />
+            <!-- Trees -->
+            <polygon class="tree" points="78,162 73,174 83,174" />
+            <polygon class="tree" points="78,154 75,163 81,163" />
+            <polygon class="tree" points="90,166 86,176 94,176" />
+            <polygon class="tree" points="90,160 87,167 93,167" />
+            <!-- Riverbank & Water -->
+            <path class="river-bg" d="M65 180 Q95 185 115 195 T167 198 L167 271 A 14 14 0 0 1 153 285 L79 285 A 14 14 0 0 1 65 271 Z" />
+            <path class="river-stream" d="M167 208 Q125 212 90 225 T65 245 L65 262 Q110 240 167 228 Z" />
+        </g>
+
+        <!-- CONNECTOR ARROW -->
+        <g id="connector">
+            <line x1="173" y1="70" x2="173" y2="275" stroke="#f1f5f9" stroke-width="1" />
+            <circle cx="173" cy="172" r="11" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+            <path d="M169 172 L176 172 M173 169 L177 172 L173 175" class="accent-blue" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        </g>
+
+        <!-- MIDDLE IMAGE CARD (IDENTICAL PREVIEW) -->
+        <g id="middle-image-card">
+            <rect class="img-card" x="181" y="60" width="102" height="225" rx="14" />
+            <!-- Sun -->
+            <circle class="sun" cx="214" cy="85" r="9" />
+            <!-- Cloud -->
+            <path class="cloud" d="M244 92 a 4 4 0 0 0 -4 -3 a 6 6 0 0 0 -9 2 a 4 4 0 0 0 -3 4 z" />
+            <!-- Mountains -->
+            <polygon class="mtn-back" points="181,175 216,130 256,175" />
+            <polygon class="mtn-front" points="201,175 231,140 271,175" />
+            <!-- Trees -->
+            <polygon class="tree" points="194,162 189,174 199,174" />
+            <polygon class="tree" points="194,154 193,163 197,163" />
+            <polygon class="tree" points="206,166 202,176 210,176" />
+            <polygon class="tree" points="206,160 203,167 209,167" />
+            <!-- Riverbank & Water -->
+            <path class="river-bg" d="M181 180 Q211 185 231 195 T283 198 L283 271 A 14 14 0 0 1 269 285 L195 285 A 14 14 0 0 1 181 271 Z" />
+            <path class="river-stream" d="M283 208 Q241 212 206 225 T181 245 L181 262 Q226 240 283 228 Z" />
+        </g>
+
+        <!-- RIGHT SAVE & DOWNLOAD RESULT PANEL -->
+        <g id="right-download-panel">
+            <rect class="panel-bg" x="294" y="60" width="128" height="225" rx="14" />
+            
+            <!-- Document / Image File Icon -->
+            <g id="file-icon" transform="translate(332, 75)">
+                <!-- Folded Document Body -->
+                <path d="M0 8 C0 3.5 3.5 0 8 0 L34 0 L52 18 L52 64 C52 68.5 48.5 72 44 72 L8 72 C3.5 72 0 68.5 0 64 Z" fill="#ffffff" stroke="#60a5fa" stroke-width="2.5" stroke-linejoin="round" />
+                <!-- Fold Corner -->
+                <path d="M34 0 L34 18 L52 18" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linejoin="round" />
+                <!-- Inner Image Icon -->
+                <circle cx="16" cy="24" r="4.5" fill="#93c5fd" />
+                <polygon points="10,48 24,32 38,48" fill="#93c5fd" />
+                <polygon points="26,48 36,37 46,48" fill="#bfdbfe" />
+
+                <!-- Download Badge Button -->
+                <circle cx="44" cy="56" r="14" class="accent-blue-fill" />
+                <path d="M44 48 L44 60 M39 55 L44 60 L49 55 M38 64 L50 64" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+
+            <!-- Progress / Meter Bar -->
+            <line x1="306" y1="180" x2="385" y2="180" class="accent-blue" stroke-width="5" stroke-linecap="round" />
+            <line x1="385" y1="180" x2="410" y2="180" class="track-inactive" stroke-width="5" stroke-linecap="round" />
+
+            <!-- Step Dots Row -->
+            <circle cx="306" cy="225" r="4" class="dot-inactive" />
+            <circle cx="332" cy="225" r="4" class="dot-inactive" />
+            <circle cx="358" cy="225" r="4" class="dot-inactive" />
+            <circle cx="384" cy="225" r="4" class="dot-inactive" />
+
+            <!-- Final Active Checkmark Badge -->
+            <circle cx="408" cy="225" r="8.5" class="accent-blue-fill" />
+            <path d="M404 225 L407 228 L412 222" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,37 @@
+{
+  "runId": "run_excel_2e2a6d20",
+  "engineFamily": "OFFICE_TO_PDF",
+  "format": "EXCEL_XLSX",
+  "validConversionsPassed": 90,
+  "invalidInputsRejected": 10,
+  "totalCorrectOutcomes": 100,
+  "automaticZeroRetentionRemainingObjects": 0,
+  "r2OperationLedger": {
+    "classA": 182,
+    "classB": 450,
+    "deletes": 180,
+    "details": {
+      "putCount": 180,
+      "getCount": 270,
+      "headCount": 180,
+      "listCount": 2,
+      "deleteCount": 180
+    }
+  },
+  "latencyMetricsMs": {
+    "medianP50": 23488.0,
+    "p90": 25898.9,
+    "p95": 26109.1,
+    "p99": 27701.2
+  },
+  "promotedStatuses": [
+    "XLSX_PREFLIGHT_BASIC_VALIDATED",
+    "LOCAL_CONTAINER_XLSX_EXECUTION",
+    "CLOUDFLARE_FIRST_XLSX_JOB_VERIFIED",
+    "CLOUDFLARE_XLSX_SMOKE_TEST",
+    "XLSX_MACRO_EXECUTION_BLOCKED",
+    "LOCAL_XLSX_FIDELITY_VALIDATED",
+    "CLOUDFLARE_XLSX_PRIVATE_CANARY",
+    "EXCEL_TO_PDF_PRIVATE_BETA_READY"
+  ]
+}

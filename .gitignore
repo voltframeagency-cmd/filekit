@@ -48,3 +48,6 @@ next-env.d.ts
 # testing and scratch
 *.pdf
 /design-reference
+__pycache__/
+*.pyc
+

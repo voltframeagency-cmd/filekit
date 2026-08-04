@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="compress-step-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 451.97 330.33" width="100%" height="100%">
+  <defs>
+    <style>
+      .bg-canvas { fill: #f5f7fc; }
+      .outer-card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1; }
+      .header-circle { fill: #dbe6f8; }
+      .header-pill { fill: #e4ecfa; }
+      
+      /* Floating Tooltip Slider Box */
+      .tooltip-card { fill: #ffffff; stroke: #0f172a; stroke-width: 1.5; stroke-linejoin: round; }
+      .slider-track-active { stroke: #000000; stroke-width: 4.5; stroke-linecap: round; }
+      .slider-track-inactive { stroke: #d1d5db; stroke-width: 4.5; stroke-linecap: round; }
+      .tick-mark { stroke: #000000; stroke-width: 1.5; stroke-linecap: round; }
+      .thumb-circle { fill: #ffffff; stroke: #000000; stroke-width: 2; }
+
+      /* Image Preview Cards */
+      .img-preview-card { fill: #d8e6fe; }
+      .sun-circle { fill: #bfdbfe; }
+      .cloud-shape { fill: #d0e1fe; }
+      .mtn-back { fill: #a5c7fe; }
+      .mtn-front { fill: #80b3ff; }
+      .tree-accent { fill: #3b82f6; }
+      .river-bank { fill: #91c4fd; }
+      .river-stream { fill: #e2eeff; }
+
+      /* Connectors & Pills */
+      .connector-bg { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.2; }
+      .arrow-stroke { stroke: #0f172a; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .bottom-pill { fill: #e2ecfe; }
+    </style>
+  </defs>
+
+  <g id="layer-container">
+    <!-- Outer background canvas -->
+    <rect class="bg-canvas" x="0" y="0" width="451.97" height="330.33" rx="18" ry="18" />
+
+    <!-- Outer card frame -->
+    <rect class="outer-card" x="12" y="12" width="427.97" height="306.33" rx="16" ry="16" />
+
+    <!-- Top Left Header Elements -->
+    <circle class="header-circle" cx="36" cy="36" r="10" />
+    <rect class="header-pill" x="54" y="31" width="100" height="10" rx="5" />
+
+    <!-- TOP FLOATING SLIDER TOOLTIP CARD -->
+    <g id="slider-tooltip">
+      <!-- Tooltip Box with downward Beak Pointing at Center -->
+      <path class="tooltip-card" d="
+        M 60 48
+        H 392
+        A 14 14 0 0 1 406 62
+        V 98
+        A 14 14 0 0 1 392 112
+        H 234
+        L 226 122
+        L 218 112
+        H 60
+        A 14 14 0 0 1 46 98
+        V 62
+        A 14 14 0 0 1 60 48
+        Z
+      " />
+
+      <!-- Slider Track -->
+      <line class="slider-track-active" x1="78" y1="80" x2="226" y2="80" />
+      <line class="slider-track-inactive" x1="226" y1="80" x2="374" y2="80" />
+
+      <!-- Tick Marks underneath at track ends -->
+      <line class="tick-mark" x1="86" y1="93" x2="86" y2="99" />
+      <line class="tick-mark" x1="366" y1="93" x2="366" y2="99" />
+
+      <!-- Slider Thumb Knob -->
+      <circle class="thumb-circle" cx="226" cy="80" r="13" />
+
+      <!-- Authentic Zendocs Mouse Cursor Pointer Arrow with Crisp White Outline -->
+      <g id="zendocs-cursor" transform="translate(227, 81)">
+        <path d="M0,0 L0,18 L4.5,13.5 L9,21 L12,19.5 L7.5,12 L13.5,12 Z" fill="#ffffff" stroke="#ffffff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+        <path d="M0,0 L0,18 L4.5,13.5 L9,21 L12,19.5 L7.5,12 L13.5,12 Z" fill="#000000" />
+      </g>
+    </g>
+
+    <!-- BOTTOM PREVIEW CARDS SECTION -->
+
+    <!-- LEFT IMAGE CARD -->
+    <g id="left-image-card">
+      <rect class="img-preview-card" x="30" y="138" width="174" height="150" rx="16" />
+
+      <g id="left-landscape" clip-path="url(#left-clip)">
+        <clipPath id="left-clip">
+          <rect x="30" y="138" width="174" height="150" rx="16" />
+        </clipPath>
+
+        <!-- Sun -->
+        <circle class="sun-circle" cx="80" cy="162" r="15" />
+
+        <!-- Clouds -->
+        <path class="cloud-shape" d="M 166 166 a 6 6 0 0 0 -6 -5 a 9 9 0 0 0 -13 2 a 6 6 0 0 0 -5 7 h 24 z" />
+
+        <!-- Back Mountain Peak -->
+        <polygon class="mtn-back" points="100,242 148,174 204,242" />
+
+        <!-- Front Mountain Peak -->
+        <polygon class="mtn-front" points="30,242 86,182 156,242" />
+
+        <!-- Pine Trees (Foreground Left) -->
+        <!-- Tall Tree -->
+        <polygon class="tree-accent" points="56,214 47,242 65,242" />
+        <polygon class="tree-accent" points="56,198 49,218 63,218" />
+        <!-- Short Tree -->
+        <polygon class="tree-accent" points="74,222 67,242 81,242" />
+        <polygon class="tree-accent" points="74,210 69,226 79,226" />
+
+        <!-- River Stream & Bank -->
+        <path class="river-bank" d="M 30 238 Q 80 244 114 254 T 204 256 L 204 274 A 16 16 0 0 1 188 288 L 46 288 A 16 16 0 0 1 30 274 Z" />
+        <path class="river-stream" d="M 204 262 Q 136 266 94 276 T 30 286 L 30 288 L 188 288 A 16 16 0 0 0 204 272 Z" />
+      </g>
+    </g>
+
+    <!-- CONNECTOR ARROW CIRCLE -->
+    <g id="middle-connector">
+      <circle class="connector-bg" cx="226" cy="213" r="13" />
+      <path class="arrow-stroke" d="M 221 213 H 229 M 226 209 L 230 213 L 226 217" />
+    </g>
+
+    <!-- RIGHT IMAGE CARD (IDENTICAL COMPARISON PREVIEW) -->
+    <g id="right-image-card">
+      <rect class="img-preview-card" x="248" y="138" width="174" height="150" rx="16" />
+
+      <g id="right-landscape" clip-path="url(#right-clip)">
+        <clipPath id="right-clip">
+          <rect x="248" y="138" width="174" height="150" rx="16" />
+        </clipPath>
+
+        <!-- Sun -->
+        <circle class="sun-circle" cx="298" cy="162" r="15" />
+
+        <!-- Clouds -->
+        <path class="cloud-shape" d="M 384 166 a 6 6 0 0 0 -6 -5 a 9 9 0 0 0 -13 2 a 6 6 0 0 0 -5 7 h 24 z" />
+
+        <!-- Back Mountain Peak -->
+        <polygon class="mtn-back" points="318,242 366,174 422,242" />
+
+        <!-- Front Mountain Peak -->
+        <polygon class="mtn-front" points="248,242 304,182 374,242" />
+
+        <!-- Pine Trees (Foreground Left) -->
+        <!-- Tall Tree -->
+        <polygon class="tree-accent" points="274,214 265,242 283,242" />
+        <polygon class="tree-accent" points="274,198 267,218 281,218" />
+        <!-- Short Tree -->
+        <polygon class="tree-accent" points="292,222 285,242 299,242" />
+        <polygon class="tree-accent" points="292,210 287,226 297,226" />
+
+        <!-- River Stream & Bank -->
+        <path class="river-bank" d="M 248 238 Q 298 244 332 254 T 422 256 L 422 274 A 16 16 0 0 1 406 288 L 264 288 A 16 16 0 0 1 248 274 Z" />
+        <path class="river-stream" d="M 422 262 Q 354 266 312 276 T 248 286 L 248 288 L 406 288 A 16 16 0 0 0 422 272 Z" />
+      </g>
+    </g>
+
+    <!-- BOTTOM PILL BUTTONS -->
+    <rect class="bottom-pill" x="90" y="296" width="54" height="15" rx="6" />
+    <rect class="bottom-pill" x="308" y="296" width="54" height="15" rx="6" />
+  </g>
+</svg>

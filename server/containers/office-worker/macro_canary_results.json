@@ -1,0 +1,75 @@
+{
+  "runId": "run_macro_canary_8b8ec1b3",
+  "totalFixtures": 6,
+  "correctRejections": 6,
+  "retainedObjects": 0,
+  "results": [
+    {
+      "id": "macro_xlsx_vba_octet_stream",
+      "status": "CORRECTLY_REJECTED",
+      "http_code": 422,
+      "wall_ms": 44.23809051513672,
+      "error": "MACRO_STREAM_DETECTED",
+      "detail": {
+        "error": "MACRO_STREAM_DETECTED",
+        "details": "OpenXML package contains prohibited vbaProject.bin macro binary stream."
+      }
+    },
+    {
+      "id": "macro_xlsx_vba_spreadsheet_mime",
+      "status": "CORRECTLY_REJECTED",
+      "http_code": 422,
+      "wall_ms": 39.06750679016113,
+      "error": "MACRO_STREAM_DETECTED",
+      "detail": {
+        "error": "MACRO_STREAM_DETECTED",
+        "details": "OpenXML package contains prohibited vbaProject.bin macro binary stream."
+      }
+    },
+    {
+      "id": "macro_ole2_vba_project_stream",
+      "status": "CORRECTLY_REJECTED",
+      "http_code": 422,
+      "wall_ms": 42.94586181640625,
+      "error": "MACRO_STREAM_DETECTED",
+      "detail": {
+        "error": "MACRO_STREAM_DETECTED",
+        "details": "OLE2 binary contains prohibited VBA / Macro stream containers."
+      }
+    },
+    {
+      "id": "macro_pptx_vba_project",
+      "status": "CORRECTLY_REJECTED",
+      "http_code": 422,
+      "wall_ms": 38.99240493774414,
+      "error": "MACRO_STREAM_DETECTED",
+      "detail": {
+        "error": "MACRO_STREAM_DETECTED",
+        "details": "OpenXML package contains prohibited vbaProject.bin macro binary stream."
+      }
+    },
+    {
+      "id": "macro_xlsm_extension",
+      "status": "CORRECTLY_REJECTED",
+      "http_code": 422,
+      "wall_ms": 55.0541877746582,
+      "error": "MACRO_FORMAT_REJECTED",
+      "detail": {
+        "error": "MACRO_FORMAT_REJECTED",
+        "details": "Macro-enabled formats (.xlsm, .xltm, .xlam, .pptm, .potm, .ppam) are strictly forbidden."
+      }
+    },
+    {
+      "id": "macro_pptm_extension",
+      "status": "CORRECTLY_REJECTED",
+      "http_code": 422,
+      "wall_ms": 44.53778266906738,
+      "error": "MACRO_FORMAT_REJECTED",
+      "detail": {
+        "error": "MACRO_FORMAT_REJECTED",
+        "details": "Macro-enabled formats (.xlsm, .xltm, .xlam, .pptm, .potm, .ppam) are strictly forbidden."
+      }
+    }
+  ],
+  "status": "PASSED_PREFLIGHT_LAYER"
+}
