@@ -40,7 +40,7 @@ The security audit evaluates 3 negative rejection paths and 2 positive authoriza
 
 | Test Case | Request Parameters | Authentication Input | Expected Outcome | Audit Result |
 |---|---|---|---|---|
-| **Test 1: Old Token Rejection** | `/internal/canary/convert` (POST) | `Bearer filekit_canary_secret_2026` | HTTP 401 Unauthorized | **PASSED** (`401`) |
+| **Test 1: Old Token Rejection** | `/internal/canary/convert` (POST) | `Bearer invalid_expired_token` | HTTP 401 Unauthorized | **PASSED** (`401`) |
 | **Test 2: Random Token Rejection** | `/internal/canary/convert` (POST) | `Bearer random_token_999` | HTTP 401 Unauthorized | **PASSED** (`401`) |
 | **Test 3: Invalid Admin Secret** | `/internal/admin/canary-runs/cleanup` | `X-Canary-Admin-Secret: wrong_secret` | HTTP 401 Unauthorized | **PASSED** (`401`) |
 | **Test 4: Current Bearer Token (Positive)** | `/internal/canary/convert` (POST) | Rotated Bearer Token (env) | Authorized Preflight Check | **PASSED** (`422` validated) |

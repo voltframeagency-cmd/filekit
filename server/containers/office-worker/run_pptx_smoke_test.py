@@ -8,7 +8,9 @@ from create_pptx_smoke_corpus import generate_pptx_smoke_corpus
 
 ENDPOINT = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/convert"
 INSPECT_ENDPOINT = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/inspect"
-BEARER_TOKEN = os.environ.get("CANARY_BEARER_TOKEN", "filekit_canary_secret_2026_rotated")
+BEARER_TOKEN = os.environ.get("CANARY_BEARER_TOKEN", "")
+if not BEARER_TOKEN:
+    raise ValueError("CANARY_BEARER_TOKEN environment variable is required")
 
 RUN_ID = f"run_pptx_{uuid.uuid4().hex[:8]}"
 

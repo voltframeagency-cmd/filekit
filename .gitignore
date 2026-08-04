@@ -50,4 +50,5 @@ next-env.d.ts
 /design-reference
 __pycache__/
 *.pyc
+pptx_visual_fidelity_results.json
 

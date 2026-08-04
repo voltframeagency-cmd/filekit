@@ -6,6 +6,7 @@ const { exec } = require('child_process');
 
 const PORT = 8080;
 const CONTAINER_INSTANCE_ID = `container_${os.hostname()}_${Date.now()}`;
+const CONTAINER_PROCESS_BOOT_ID = `boot_${os.hostname()}_${Math.random().toString(36).substring(2, 10)}_${Date.now()}`;
 const TEMPLATE_PROFILE_DIR = '/home/filekit/soffice_profile_template/user';
 
 function runCommand(cmd, opts) {
@@ -126,6 +127,7 @@ const server = http.createServer((req, res) => {
           'X-Profile-Method': timings.profileMethod,
           'X-Total-Job-Ms': String(timings.totalJobMs),
           'X-Container-Instance-Id': CONTAINER_INSTANCE_ID,
+          'X-Container-Process-Boot-Id': CONTAINER_PROCESS_BOOT_ID,
           'X-Detected-Format': detectedFormat,
           'X-LibreOffice-Stdout': Buffer.from(result.stdout || '').toString('base64'),
         });
@@ -138,6 +140,7 @@ const server = http.createServer((req, res) => {
           'Content-Type': 'application/json',
           'X-LibreOffice-Exit-Code': String(result.exitCode),
           'X-Container-Instance-Id': CONTAINER_INSTANCE_ID,
+          'X-Container-Process-Boot-Id': CONTAINER_PROCESS_BOOT_ID,
         });
         res.end(JSON.stringify({
           error: 'LIBREOFFICE_CONVERSION_FAILED',

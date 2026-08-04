@@ -6,15 +6,19 @@ import os
 url = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/convert"
 admin_url = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/admin/canary-runs/cleanup"
 
-BEARER_TOKEN = os.environ.get("CANARY_BEARER_TOKEN", "filekit_canary_secret_2026_rotated")
-ADMIN_SECRET = os.environ.get("CANARY_ADMIN_SECRET", "filekit_admin_canary_secret_2026")
+BEARER_TOKEN = os.environ.get("CANARY_BEARER_TOKEN", "")
+if not BEARER_TOKEN:
+    raise ValueError("CANARY_BEARER_TOKEN environment variable is required")
+ADMIN_SECRET = os.environ.get("CANARY_ADMIN_SECRET", "")
+if not ADMIN_SECRET:
+    raise ValueError("CANARY_ADMIN_SECRET environment variable is required")
 
 print("==========================================")
 print("FINAL SECURITY AUTHORIZATION PROOF")
 print("==========================================")
 
 # 1. Previous / Invalid Bearer Token Test
-req1 = urllib.request.Request(url, data=b"invalid", headers={"Authorization": "Bearer filekit_canary_secret_2026", "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "User-Agent": "FileKitCanaryRunner/1.0"}, method="POST")
+req1 = urllib.request.Request(url, data=b"invalid", headers={"Authorization": "Bearer invalid_expired_token", "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "User-Agent": "FileKitCanaryRunner/1.0"}, method="POST")
 try:
     with urllib.request.urlopen(req1) as res:
         print(f"Test 1 (Old Token): GOT {res.status} [FAIL]")

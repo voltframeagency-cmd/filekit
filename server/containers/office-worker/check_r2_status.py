@@ -9,7 +9,10 @@ def delete_orphan(key):
 
 # Query remaining objects
 url = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/orphan-check"
-req = urllib.request.Request(url, headers={"Authorization": "Bearer filekit_canary_secret_2026", "User-Agent": "FileKitCanaryRunner/1.0"})
+BEARER_TOKEN = os.environ.get("CANARY_BEARER_TOKEN", "")
+if not BEARER_TOKEN:
+    raise ValueError("CANARY_BEARER_TOKEN environment variable is required")
+req = urllib.request.Request(url, headers={"Authorization": f"Bearer {BEARER_TOKEN}", "User-Agent": "FileKitCanaryRunner/1.0"})
 try:
     with urllib.request.urlopen(req) as res:
         data = json.loads(res.read().decode('utf-8'))

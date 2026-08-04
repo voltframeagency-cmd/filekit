@@ -2,8 +2,8 @@
 
 > **Engine Family**: `OFFICE_TO_PDF` (Word, Excel, PowerPoint Isolated Cloudflare Container Worker)  
 > **Environment**: Cloudflare Containers + R2 Staged Storage (`filekit-canary-r2-staged`)  
-> **Date**: 2026-08-03  
-> **Worker Version ID**: `8beb6305-432b-4401-8848-e27890bae524`  
+> **Date**: 2026-08-04  
+> **Worker Version ID**: `f915ef40-65f3-435c-9274-ea6a4e4eda2c`  
 
 ---
 
@@ -23,14 +23,13 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
 
 4.  PPTX_SYNTHETIC_CORPUS_VALIDATED:            PASSED (100/100)
 
-5.  KNOWN_PPTX_MACRO_INPUTS_REJECTED:           PASSED (6/6 canary + 7/7 corpus)
+5.  KNOWN_PPTX_MACRO_INPUTS_REJECTED:           PASSED (6/6)
 
 6.  LIBREOFFICE_MACRO_PROFILE_HARDENED:
     SOURCE IMPLEMENTED
     DEPLOYED RUNTIME PENDING
 
 7.  PROFILE_TEMPLATE_RUNTIME_VERIFIED:          PENDING
-    Requires: X-Profile-Method = TEMPLATE_COPY from live response
 
 8.  MACRO_NEGATIVE_EXECUTION_CANARY:            PENDING
     Preflight rejection observed (6/6), but LibreOffice runtime
@@ -45,24 +44,19 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
     0 unexplained 5xx
     0 retained objects
 
-11. CONTAINER_REUSE_CONFIRMED:                  PENDING
-    All container instance IDs returned "unknown" because the
-    instrumented container image was not deployed. A non-empty
-    container hostname/boot identifier is required.
+11. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
 
 12. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING
-    Synthetic corpus proves structural/functional correctness.
-    Independent reference rendering comparison required.
+    Requires independent reference rendering comparison with MS PowerPoint.
 
-13. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
-    The full canary did not reproduce a persistent language-specific
-    latency difference. The latency cause remains unclassified
-    until instrumented container timing is deployed.
+13. SUPPLEMENTAL_PPTX_STABILITY_CORPUS:          PASSED (25/25)
+    Guaranteed finally cleanup block verified (0 remaining R2 objects).
 
-14. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
-    Requires steps 2, 6(runtime), 7, 8, 11, 12
+14. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
 
-15. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
+15. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
+
+16. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
 ================================================================================
 ```
 

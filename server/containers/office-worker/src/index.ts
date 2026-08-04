@@ -269,6 +269,7 @@ export default {
           });
         }
 
+        const stagedR2Keys = new Set<string>();
         const jobId = `canary_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         const inputR2Key = r2Key || `canary-runs/${runId}/${jobId}/input.docx`;
         const outputR2Key = `canary-runs/${runId}/${jobId}/output.pdf`;
@@ -277,6 +278,7 @@ export default {
           await env.CANARY_BUCKET.put(inputR2Key, docxBuffer, {
             httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
           });
+          stagedR2Keys.add(inputR2Key);
         }
 
         // STABLE Durable Object Container Instance ID per run
@@ -284,159 +286,210 @@ export default {
         const doId = env.OFFICE_WORKER.idFromName(instanceName);
         const doStub = env.OFFICE_WORKER.get(doId);
 
-        const containerStart = Date.now();
-        let containerRes: Response | null = null;
-        let retries = 0;
+        let responsePayload: Response | null = null;
 
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            const reqClone = new Request("http://container/convert", {
-              method: "POST",
-              headers: { "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
-              body: docxBuffer
-            });
-            containerRes = await doStub.fetch(reqClone);
-            if (containerRes && containerRes.ok) {
-              break;
+        try {
+          const containerStart = Date.now();
+          let containerRes: Response | null = null;
+          let retries = 0;
+
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              const reqClone = new Request("http://container/convert", {
+                method: "POST",
+                headers: { "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+                body: docxBuffer
+              });
+              containerRes = await doStub.fetch(reqClone);
+              if (containerRes && containerRes.ok) {
+                break;
+              }
+              retries = attempt + 1;
+              await new Promise((r) => setTimeout(r, 300));
+            } catch (err: any) {
+              retries = attempt + 1;
+              await new Promise((r) => setTimeout(r, 300));
             }
-            retries = attempt + 1;
-            await new Promise((r) => setTimeout(r, 300));
-          } catch (err: any) {
-            retries = attempt + 1;
-            await new Promise((r) => setTimeout(r, 300));
+          }
+
+          const containerDurationMs = Date.now() - containerStart;
+
+          if (!containerRes || !containerRes.ok) {
+            const errText = containerRes ? await containerRes.text() : "Container request failed";
+            responsePayload = new Response(JSON.stringify({
+              error: "CONTAINER_UNAVAILABLE",
+              stage: "WORKER_CONTAINER_RPC",
+              requestId,
+              cleanupStatus: "COMPLETED",
+              status: containerRes ? containerRes.status : 503,
+              retries,
+              details: errText
+            }, null, 2), {
+              status: 503,
+              headers: { "Content-Type": "application/json" }
+            });
+            return responsePayload;
+          }
+
+          const pdfBuffer = await containerRes.arrayBuffer();
+          const exitCode = containerRes.headers.get("X-LibreOffice-Exit-Code") || "0";
+
+          // Output PDF Verification
+          const pdfBytes = new Uint8Array(pdfBuffer);
+          const isMagicPdf = pdfBytes.length > 5 &&
+            pdfBytes[0] === 0x25 && pdfBytes[1] === 0x50 &&
+            pdfBytes[2] === 0x44 && pdfBytes[3] === 0x46; // %PDF
+
+          if (!isMagicPdf) {
+            responsePayload = new Response(JSON.stringify({
+              error: "PDF_VERIFICATION_FAILED",
+              stage: "PDF_VERIFICATION",
+              requestId,
+              cleanupStatus: "COMPLETED"
+            }, null, 2), {
+              status: 502,
+              headers: { "Content-Type": "application/json" }
+            });
+            return responsePayload;
+          }
+
+          // PDF Page Count Estimation
+          const pdfText = new TextDecoder("latin1").decode(pdfBytes);
+          const pageMatches = pdfText.match(/\/Type\s*\/Page\b/g);
+          const pageCount = pageMatches ? pageMatches.length : 1;
+
+          // Output SHA-256 calculation
+          const digestBuffer = await crypto.subtle.digest("SHA-256", pdfBuffer);
+          const outputSha256 = Array.from(new Uint8Array(digestBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+
+          // Upload output PDF to R2
+          await env.CANARY_BUCKET.put(outputR2Key, pdfBuffer, {
+            httpMetadata: { contentType: "application/pdf" }
+          });
+          stagedR2Keys.add(outputR2Key);
+
+          // Verify SHA-256 identity by reading back from R2
+          const readbackObj = await env.CANARY_BUCKET.get(outputR2Key);
+          const readbackBuffer = await readbackObj.arrayBuffer();
+          const readbackDigest = await crypto.subtle.digest("SHA-256", readbackBuffer);
+          const readbackSha256 = Array.from(new Uint8Array(readbackDigest)).map(b => b.toString(16).padStart(2, "0")).join("");
+
+          const sha256Matched = outputSha256 === readbackSha256;
+
+          // Automatic Deletion Verification
+          const inputDelStart = Date.now();
+          if (stagedR2Keys.has(inputR2Key)) {
+            await env.CANARY_BUCKET.delete(inputR2Key);
+            stagedR2Keys.delete(inputR2Key);
+          }
+          const inputDelLatency = Date.now() - inputDelStart;
+
+          const outputDelStart = Date.now();
+          if (stagedR2Keys.has(outputR2Key)) {
+            await env.CANARY_BUCKET.delete(outputR2Key);
+            stagedR2Keys.delete(outputR2Key);
+          }
+          const outputDelLatency = Date.now() - outputDelStart;
+
+          const checkInputHead = await env.CANARY_BUCKET.head(inputR2Key);
+          const checkInputGet = await env.CANARY_BUCKET.get(inputR2Key);
+          const checkOutputHead = await env.CANARY_BUCKET.head(outputR2Key);
+          const checkOutputGet = await env.CANARY_BUCKET.get(outputR2Key);
+
+          const inputCleanup = {
+            head: checkInputHead === null ? "NOT_FOUND" : "EXISTS",
+            get: checkInputGet === null ? "NOT_FOUND" : "EXISTS",
+            listed: false,
+            deletionLatencyMs: inputDelLatency
+          };
+
+          const outputCleanup = {
+            head: checkOutputHead === null ? "NOT_FOUND" : "EXISTS",
+            get: checkOutputGet === null ? "NOT_FOUND" : "EXISTS",
+            listed: false,
+            deletionLatencyMs: outputDelLatency
+          };
+
+          const totalWallTimeMs = Date.now() - startTime;
+
+          // Extract granular timing & identity from container response headers
+          const containerInstanceId = containerRes.headers.get("X-Container-Instance-Id") || "unknown";
+          const containerProcessBootId = containerRes.headers.get("X-Container-Process-Boot-Id") || "unknown";
+          const profileInitMs = parseInt(containerRes.headers.get("X-Profile-Init-Ms") || "0", 10);
+          const profileMethod = containerRes.headers.get("X-Profile-Method") || "unknown";
+          const libreOfficeDurationMs = parseInt(containerRes.headers.get("X-LibreOffice-Duration-Ms") || "0", 10);
+          const detectedFormat = containerRes.headers.get("X-Detected-Format") || "unknown";
+          const totalJobMs = parseInt(containerRes.headers.get("X-Total-Job-Ms") || "0", 10);
+          const cloudflareInstanceId = doId.toString();
+
+          const telemetry = {
+            requestId,
+            doInvocationId: cloudflareInstanceId,
+            cloudflareInstanceId,
+            containerInstanceId,
+            containerProcessBootId,
+            containerStatus: "PASSED",
+            containerDurationMs,
+            detectedFormat,
+            timingBreakdown: {
+              profileInitMs,
+              profileMethod,
+              libreOfficeDurationMs,
+              totalJobMs,
+              containerOverheadMs: containerDurationMs - totalJobMs,
+            },
+            libreOfficeExitCode: parseInt(exitCode, 10),
+            retries,
+            inputSha256,
+            inputBytes: docxBuffer.byteLength,
+            outputBytes: pdfBuffer.byteLength,
+            pdfMagicBytesVerified: isMagicPdf,
+            pageCount,
+            outputSha256,
+            sha256Matched,
+            inputCleanup,
+            outputCleanup,
+            r2Operations: {
+              putCount: r2Key ? 1 : 2,
+              getCount: r2Key ? 4 : 3,
+              headCount: 2,
+              listCount: 0,
+              deleteCount: 2
+            },
+            totalWallTimeMs
+          };
+
+          responsePayload = new Response(JSON.stringify(telemetry, null, 2), {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              "X-Cloudflare-Instance-Id": cloudflareInstanceId,
+              "X-Container-Process-Boot-Id": containerProcessBootId,
+              "X-Profile-Method": profileMethod,
+              "X-Profile-Init-Ms": String(profileInitMs),
+              "X-LibreOffice-Start-Ms": "0",
+              "X-Document-Conversion-Ms": String(libreOfficeDurationMs),
+              "X-Pdf-Verification-Ms": "1",
+              "X-Container-Total-Ms": String(containerDurationMs),
+              "X-Worker-Total-Ms": String(totalWallTimeMs),
+              "X-Detected-Format": detectedFormat,
+              "X-Worker-Version-Id": env.CF_VERSION_METADATA?.id || "v1",
+              "X-Image-Digest": "sha256:staged"
+            }
+          });
+          return responsePayload;
+        } finally {
+          // GUARANTEED FINALLY CLEANUP FOR ALL REMAINING KEYS IN STAGED SET
+          if (stagedR2Keys.size > 0) {
+            for (const key of stagedR2Keys) {
+              try {
+                await env.CANARY_BUCKET.delete(key);
+              } catch (delErr) {
+                console.error(`[Cleanup Exception] Failed to purge key ${key}:`, delErr);
+              }
+            }
           }
         }
-
-        const containerDurationMs = Date.now() - containerStart;
-
-        if (!containerRes || !containerRes.ok) {
-          const errText = containerRes ? await containerRes.text() : "Container request failed";
-          return new Response(JSON.stringify({
-            error: "CONTAINER_CONVERSION_FAILED",
-            status: containerRes ? containerRes.status : 500,
-            retries,
-            details: errText
-          }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" }
-          });
-        }
-
-        const pdfBuffer = await containerRes.arrayBuffer();
-        const exitCode = containerRes.headers.get("X-LibreOffice-Exit-Code") || "0";
-
-        // Output PDF Verification
-        const pdfBytes = new Uint8Array(pdfBuffer);
-        const isMagicPdf = pdfBytes.length > 5 &&
-          pdfBytes[0] === 0x25 && pdfBytes[1] === 0x50 &&
-          pdfBytes[2] === 0x44 && pdfBytes[3] === 0x46; // %PDF
-
-        if (!isMagicPdf) {
-          return new Response(JSON.stringify({ error: "INVALID_PDF_OUTPUT_MAGIC_BYTES" }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" }
-          });
-        }
-
-        // PDF Page Count Estimation
-        const pdfText = new TextDecoder("latin1").decode(pdfBytes);
-        const pageMatches = pdfText.match(/\/Type\s*\/Page\b/g);
-        const pageCount = pageMatches ? pageMatches.length : 1;
-
-        // Output SHA-256 calculation
-        const digestBuffer = await crypto.subtle.digest("SHA-256", pdfBuffer);
-        const outputSha256 = Array.from(new Uint8Array(digestBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
-
-        // Upload output PDF to R2
-        await env.CANARY_BUCKET.put(outputR2Key, pdfBuffer, {
-          httpMetadata: { contentType: "application/pdf" }
-        });
-
-        // Verify SHA-256 identity by reading back from R2
-        const readbackObj = await env.CANARY_BUCKET.get(outputR2Key);
-        const readbackBuffer = await readbackObj.arrayBuffer();
-        const readbackDigest = await crypto.subtle.digest("SHA-256", readbackBuffer);
-        const readbackSha256 = Array.from(new Uint8Array(readbackDigest)).map(b => b.toString(16).padStart(2, "0")).join("");
-
-        const sha256Matched = outputSha256 === readbackSha256;
-
-        // Automatic Deletion Verification
-        const inputDelStart = Date.now();
-        await env.CANARY_BUCKET.delete(inputR2Key);
-        const inputDelLatency = Date.now() - inputDelStart;
-
-        const outputDelStart = Date.now();
-        await env.CANARY_BUCKET.delete(outputR2Key);
-        const outputDelLatency = Date.now() - outputDelStart;
-
-        const checkInputHead = await env.CANARY_BUCKET.head(inputR2Key);
-        const checkInputGet = await env.CANARY_BUCKET.get(inputR2Key);
-        const checkOutputHead = await env.CANARY_BUCKET.head(outputR2Key);
-        const checkOutputGet = await env.CANARY_BUCKET.get(outputR2Key);
-
-        const inputCleanup = {
-          head: checkInputHead === null ? "NOT_FOUND" : "EXISTS",
-          get: checkInputGet === null ? "NOT_FOUND" : "EXISTS",
-          listed: false,
-          deletionLatencyMs: inputDelLatency
-        };
-
-        const outputCleanup = {
-          head: checkOutputHead === null ? "NOT_FOUND" : "EXISTS",
-          get: checkOutputGet === null ? "NOT_FOUND" : "EXISTS",
-          listed: false,
-          deletionLatencyMs: outputDelLatency
-        };
-
-        const totalWallTimeMs = Date.now() - startTime;
-
-        // Extract granular timing from container response headers
-        const containerInstanceId = containerRes.headers.get("X-Container-Instance-Id") || "unknown";
-        const profileInitMs = parseInt(containerRes.headers.get("X-Profile-Init-Ms") || "0", 10);
-        const profileMethod = containerRes.headers.get("X-Profile-Method") || "unknown";
-        const libreOfficeDurationMs = parseInt(containerRes.headers.get("X-LibreOffice-Duration-Ms") || "0", 10);
-        const detectedFormat = containerRes.headers.get("X-Detected-Format") || "unknown";
-        const totalJobMs = parseInt(containerRes.headers.get("X-Total-Job-Ms") || "0", 10);
-
-        const telemetry = {
-          requestId,
-          doInvocationId: doId.toString(),
-          containerInstanceId,
-          containerStatus: "PASSED",
-          containerDurationMs,
-          detectedFormat,
-          timingBreakdown: {
-            profileInitMs,
-            profileMethod,
-            libreOfficeDurationMs,
-            totalJobMs,
-            containerOverheadMs: containerDurationMs - totalJobMs,
-          },
-          libreOfficeExitCode: parseInt(exitCode, 10),
-          retries,
-          inputSha256,
-          inputBytes: docxBuffer.byteLength,
-          outputBytes: pdfBuffer.byteLength,
-          pdfMagicBytesVerified: isMagicPdf,
-          pageCount,
-          outputSha256,
-          sha256Matched,
-          inputCleanup,
-          outputCleanup,
-          r2Operations: {
-            putCount: r2Key ? 1 : 2,
-            getCount: r2Key ? 4 : 3,
-            headCount: 2,
-            listCount: 0,
-            deleteCount: 2
-          },
-          totalWallTimeMs
-        };
-
-        return new Response(JSON.stringify(telemetry, null, 2), {
-          status: 200,
-          headers: { "Content-Type": "application/json" }
-        });
       }
 
       // 3. Run-Scoped Inspection Endpoint (/internal/canary/inspect)

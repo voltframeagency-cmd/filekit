@@ -1,9 +1,15 @@
 import urllib.request
 import json
+import os
 
 url = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/convert"
+
+BEARER_TOKEN = os.environ.get("CANARY_BEARER_TOKEN", "")
+if not BEARER_TOKEN:
+    raise ValueError("CANARY_BEARER_TOKEN environment variable is required")
+
 headers = {
-    "Authorization": "Bearer filekit_canary_secret_2026",
+    "Authorization": f"Bearer {BEARER_TOKEN}",
     "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
