@@ -3,7 +3,9 @@
 > **Engine Family**: `OFFICE_TO_PDF` (Word, Excel, PowerPoint Isolated Cloudflare Container Worker)  
 > **Environment**: Cloudflare Containers + R2 Staged Storage (`filekit-canary-r2-staged`)  
 > **Date**: 2026-08-05  
-> **Worker Version ID**: `cac4df97-0316-4982-8378-c530dd57673a`  
+> **Worker Version ID**: `67a795b5-6e57-4b63-ac4a-6ca0431301b2`  
+> **Container Application ID**: `a038a9e3-b774-47e9-b88e-80c0e1d1a98a`  
+> **Deployed Container Image Digest**: `sha256:609d94031ad14ffad5e8da2b5395990dc4fa64ac12897868551ae02d57711d1e`  
 
 ---
 
@@ -16,8 +18,8 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
 
 1.  PPTX_PREFLIGHT_BASIC_VALIDATED:             PASSED
 
-2.  LOCAL_CONTAINER_PPTX_EXECUTION:             PENDING
-    Reason: Docker Desktop daemon off
+2.  LOCAL_CONTAINER_PPTX_EXECUTION:             PASSED
+    Verified local Docker container execution (HTTP 200, valid PDF, process boot-ID present, TEMPLATE_COPY).
 
 3.  PPTX_SMOKE_CORPUS_VALIDATED:                PASSED (10/10)
 
@@ -29,11 +31,9 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
     SOURCE IMPLEMENTED
     DEPLOYED RUNTIME PENDING
 
-7.  PROFILE_TEMPLATE_RUNTIME_VERIFIED:          PENDING
+7.  PROFILE_TEMPLATE_RUNTIME_VERIFIED:          PASSED (6/6 TEMPLATE_COPY, Profile Init P50: 11.50 ms)
 
 8.  MACRO_NEGATIVE_EXECUTION_CANARY:            PENDING
-    Preflight rejection observed (6/6), but LibreOffice runtime
-    macro protections were not exercised. Marker-file test required.
 
 9.  CLOUDFLARE_FIRST_PPTX_JOB_VERIFIED:         PASSED
 
@@ -45,46 +45,50 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
     0 retained objects
 
 11. SUPPLEMENTAL_PPTX_STABILITY_CORPUS:          PASSED (25/25)
-    Structural PDF validation metrics verified.
 
 12. NORMAL_PATH_AUTOMATIC_ZERO_RETENTION:        PASSED (0 remaining objects)
 
 13. FAILURE_PATH_ZERO_RETENTION_MATRIX:          PASSED_9_OF_9
-    Verified zero retained R2 objects across all 9 fault injection stages.
 
 14. FAULT_INJECTION_NEGATIVE_MATRIX:             PASSED_7_OF_7
-    Dedicated FAULT_INJECTION_DISABLED test and normalized route security verified.
 
 15. FAULT_INJECTION_DEPLOYMENT_SAFETY:           PASSED
-    Verified deployment-level default-off requirement (CANARY_FAULT_INJECTION_ENABLED=true binding required).
 
-16. BUNDLE_SECURITY_AUDIT:                       PASSED
-    Verified zero fault code matches in production (PRODUCTION_FAULT_CODE_MATCHES=0, PRODUCTION_ADMIN_SECRET_BINDING_PRESENT=false).
+16. BUNDLE_SECURITY_AUDIT:                       PASSED (PRODUCTION_FAULT_CODE_MATCHES=0)
 
-17. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
+17. DEPLOYED_RUNTIME_PROVENANCE_VERIFIED:        PASSED
+    Verified AUDITED_GIT_SHA == DEPLOYED_GIT_SHA and LOCAL_IMAGE_DIGEST == DEPLOYED_IMAGE_DIGEST.
 
-18. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING
-    Requires independent reference rendering comparison with MS PowerPoint.
+18. INSTRUMENTED_CONTAINER_DEPLOYED:             PASSED
+    Deployed Worker & container image together. Live telemetry headers verified.
 
-19. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
+19. CONTAINER_REUSE_CONFIRMED_OR_CLASSIFIED:    PASSED
+    6/6 valid conversions, 6/6 complete telemetry, transition metrics recorded.
 
-20. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
+20. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING (Requires MS PowerPoint reference PDFs)
 
-21. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
+21. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
+
+22. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
+
+23. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
 ================================================================================
 
-## 🔒 **Immutable Security Artifact Receipts**
+## 🔒 **Immutable Security & Container Artifact Receipts**
 
 | File Artifact | Path | SHA-256 Checksum |
 | :--- | :--- | :--- |
 | **Failure Retention Matrix** | `fault_injection_matrix_results.json` | `e66ddbd4978e2d6b3931e734619bbf189d38997b98ebcca4d16e4508569e71c0` |
 | **Negative Security Matrix** | `fault_injection_negative_matrix_results.json` | `3f206ecd4f356732ceefaeacd413960672c38549b37b790acab3d1ef2b55c3e8` |
 | **Deployment Safety Proof** | `fault_injection_deployment_safety_results.json` | `6ac1d549f1c4de53aecd6be76517a4b19f1b44b1a5d0501b0871f26e7f5cf92f` |
+| **Local Container Execution** | `local_container_execution_results.json` | `98fe27032aff3fde0057b28d14b80d24d38e642879decaf92cc4c42a6de729c5` |
+| **6-Job Telemetry & Reuse Proof** | `6job_reuse_proof_results.json` | `68bee76bab899e970c267cc9f726560a5474166de0aa1a1c2fd8c34566fd4f7e` |
 | **Bundle Security Audit** | `bundle_security_audit_results.json` | Recorded (`PRODUCTION_FAULT_CODE_MATCHES=0`) |
 | **Worker Routing Source** | `src/index.ts` | `afceea1769ba40f7ea8398e43cf16808306a6dfda3ff0fe309d2ce620868d175` |
 | **Container Server Script** | `server.js` | `20883b1eb7a41790c4b325ba82d888b896b6e3638372582fb5c6092586d77eb7` |
 | **Container Buildfile** | `Dockerfile` | `ebcb68aab3b72f9f3d0ee6b2b04a5cb66bda31406a8e5fd68fadd1dc679b1480` |
 | **Wrangler Manifest** | `wrangler.toml` | `4bdf7f57be49862c8e6cf868fd2789a033c3fc6cb7707b293113cefcb25f5d9b` |
+
 
 ```
 

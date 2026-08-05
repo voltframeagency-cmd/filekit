@@ -1,0 +1,15 @@
+{
+  "engineFamily": "OFFICE_TO_PDF",
+  "httpStatus": 200,
+  "pdfMagicBytesValid": true,
+  "pdfEofValid": true,
+  "pdfSize": 30662,
+  "processBootIdPresent": true,
+  "processBootId": "boot_280abe5fc679_jdjwya2f_1785916732284",
+  "profileMethod": "TEMPLATE_COPY",
+  "profileInitMs": "9",
+  "libreofficeDurationMs": "1794",
+  "totalJobMs": "1805",
+  "clientWallMs": 1824.93,
+  "localContainerPptxExecution": "PASSED"
+}

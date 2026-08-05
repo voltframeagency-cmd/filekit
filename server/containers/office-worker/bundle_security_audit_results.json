@@ -1,6 +1,6 @@
 {
   "engineFamily": "OFFICE_TO_PDF",
-  "gitSha": "86f8935656ee6bdc7269bc8241ddaf616746e744",
+  "gitSha": "36f98ce037f092b9af9f702619f8d5fe589d088c",
   "workerVersionId": "cac4df97-0316-4982-8378-c530dd57673a",
   "runId": "run_20260805_canary_closeout",
   "fileHashes": {
@@ -15,6 +15,14 @@
     "deploymentSafetyJson": {
       "path": "fault_injection_deployment_safety_results.json",
       "sha256": "6ac1d549f1c4de53aecd6be76517a4b19f1b44b1a5d0501b0871f26e7f5cf92f"
+    },
+    "localContainerJson": {
+      "path": "local_container_execution_results.json",
+      "sha256": "98fe27032aff3fde0057b28d14b80d24d38e642879decaf92cc4c42a6de729c5"
+    },
+    "reuseProofJson": {
+      "path": "6job_reuse_proof_results.json",
+      "sha256": "68bee76bab899e970c267cc9f726560a5474166de0aa1a1c2fd8c34566fd4f7e"
     },
     "workerSource": {
       "path": "src/index.ts",

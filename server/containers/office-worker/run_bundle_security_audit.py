@@ -55,6 +55,8 @@ def main():
         "faultMatrixJson": "fault_injection_matrix_results.json",
         "negativeMatrixJson": "fault_injection_negative_matrix_results.json",
         "deploymentSafetyJson": "fault_injection_deployment_safety_results.json",
+        "localContainerJson": "local_container_execution_results.json",
+        "reuseProofJson": "6job_reuse_proof_results.json",
         "workerSource": "src/index.ts",
         "containerServerJs": "server.js",
         "dockerfile": "Dockerfile",
