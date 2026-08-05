@@ -1,0 +1,39 @@
+{
+  "engineFamily": "OFFICE_TO_PDF",
+  "gitSha": "86f8935656ee6bdc7269bc8241ddaf616746e744",
+  "workerVersionId": "cac4df97-0316-4982-8378-c530dd57673a",
+  "runId": "run_20260805_canary_closeout",
+  "fileHashes": {
+    "faultMatrixJson": {
+      "path": "fault_injection_matrix_results.json",
+      "sha256": "e66ddbd4978e2d6b3931e734619bbf189d38997b98ebcca4d16e4508569e71c0"
+    },
+    "negativeMatrixJson": {
+      "path": "fault_injection_negative_matrix_results.json",
+      "sha256": "3f206ecd4f356732ceefaeacd413960672c38549b37b790acab3d1ef2b55c3e8"
+    },
+    "deploymentSafetyJson": {
+      "path": "fault_injection_deployment_safety_results.json",
+      "sha256": "6ac1d549f1c4de53aecd6be76517a4b19f1b44b1a5d0501b0871f26e7f5cf92f"
+    },
+    "workerSource": {
+      "path": "src/index.ts",
+      "sha256": "afceea1769ba40f7ea8398e43cf16808306a6dfda3ff0fe309d2ce620868d175"
+    },
+    "containerServerJs": {
+      "path": "server.js",
+      "sha256": "20883b1eb7a41790c4b325ba82d888b896b6e3638372582fb5c6092586d77eb7"
+    },
+    "dockerfile": {
+      "path": "Dockerfile",
+      "sha256": "ebcb68aab3b72f9f3d0ee6b2b04a5cb66bda31406a8e5fd68fadd1dc679b1480"
+    },
+    "wranglerToml": {
+      "path": "wrangler.toml",
+      "sha256": "4bdf7f57be49862c8e6cf868fd2789a033c3fc6cb7707b293113cefcb25f5d9b"
+    }
+  },
+  "productionFaultCodeMatches": 0,
+  "productionAdminSecretBindingPresent": false,
+  "bundleSecurityAuditPassed": true
+}

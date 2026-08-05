@@ -58,17 +58,34 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
 15. FAULT_INJECTION_DEPLOYMENT_SAFETY:           PASSED
     Verified deployment-level default-off requirement (CANARY_FAULT_INJECTION_ENABLED=true binding required).
 
-16. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
+16. BUNDLE_SECURITY_AUDIT:                       PASSED
+    Verified zero fault code matches in production (PRODUCTION_FAULT_CODE_MATCHES=0, PRODUCTION_ADMIN_SECRET_BINDING_PRESENT=false).
 
-17. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING
+17. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
+
+18. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING
     Requires independent reference rendering comparison with MS PowerPoint.
 
-18. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
+19. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
 
-19. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
+20. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
 
-20. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
+21. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
 ================================================================================
+
+## 🔒 **Immutable Security Artifact Receipts**
+
+| File Artifact | Path | SHA-256 Checksum |
+| :--- | :--- | :--- |
+| **Failure Retention Matrix** | `fault_injection_matrix_results.json` | `e66ddbd4978e2d6b3931e734619bbf189d38997b98ebcca4d16e4508569e71c0` |
+| **Negative Security Matrix** | `fault_injection_negative_matrix_results.json` | `3f206ecd4f356732ceefaeacd413960672c38549b37b790acab3d1ef2b55c3e8` |
+| **Deployment Safety Proof** | `fault_injection_deployment_safety_results.json` | `6ac1d549f1c4de53aecd6be76517a4b19f1b44b1a5d0501b0871f26e7f5cf92f` |
+| **Bundle Security Audit** | `bundle_security_audit_results.json` | Recorded (`PRODUCTION_FAULT_CODE_MATCHES=0`) |
+| **Worker Routing Source** | `src/index.ts` | `afceea1769ba40f7ea8398e43cf16808306a6dfda3ff0fe309d2ce620868d175` |
+| **Container Server Script** | `server.js` | `20883b1eb7a41790c4b325ba82d888b896b6e3638372582fb5c6092586d77eb7` |
+| **Container Buildfile** | `Dockerfile` | `ebcb68aab3b72f9f3d0ee6b2b04a5cb66bda31406a8e5fd68fadd1dc679b1480` |
+| **Wrangler Manifest** | `wrangler.toml` | `4bdf7f57be49862c8e6cf868fd2789a033c3fc6cb7707b293113cefcb25f5d9b` |
+
 ```
 
 ---
