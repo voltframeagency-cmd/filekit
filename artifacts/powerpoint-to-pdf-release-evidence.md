@@ -3,7 +3,7 @@
 > **Engine Family**: `OFFICE_TO_PDF` (Word, Excel, PowerPoint Isolated Cloudflare Container Worker)  
 > **Environment**: Cloudflare Containers + R2 Staged Storage (`filekit-canary-r2-staged`)  
 > **Date**: 2026-08-05  
-> **Worker Version ID**: `975c40cd-7a39-47d0-be41-a8f354d83106`  
+> **Worker Version ID**: `0d432ad9-5d07-4ae8-9d8c-f1a93a0a0e5b`  
 
 ---
 
@@ -17,7 +17,7 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
 1.  PPTX_PREFLIGHT_BASIC_VALIDATED:             PASSED
 
 2.  LOCAL_CONTAINER_PPTX_EXECUTION:             PENDING
-    Reason: updated Docker image not built locally
+    Reason: Docker Desktop daemon off
 
 3.  PPTX_SMOKE_CORPUS_VALIDATED:                PASSED (10/10)
 
@@ -49,8 +49,8 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
 
 12. NORMAL_PATH_AUTOMATIC_ZERO_RETENTION:        PASSED (0 remaining objects)
 
-13. FAILURE_PATH_ZERO_RETENTION_MATRIX:          PASSED (9/9 fault injection stages)
-    Verified zero retained R2 objects on all injected failure paths.
+13. FAILURE_PATH_ZERO_RETENTION_MATRIX:          PASSED_9_OF_9
+    Verified zero retained R2 objects across all 9 fault injection stages.
 
 14. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
 

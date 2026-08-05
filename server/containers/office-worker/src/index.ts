@@ -275,18 +275,11 @@ export default {
         const outputR2Key = `canary-runs/${runId}/${jobId}/output.pdf`;
 
         const faultSecret = request.headers.get("X-Canary-Fault-Injection-Secret") || "";
-        const faultStage = (faultSecret === env.CANARY_ADMIN_SECRET) ? (request.headers.get("X-Canary-Fault-Injection") || "") : "";
-
-        if (!r2Key) {
-          await env.CANARY_BUCKET.put(inputR2Key, docxBuffer, {
-            httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
-          });
-          stagedR2Keys.add(inputR2Key);
-        }
-
-        if (faultStage === "AFTER_INPUT_R2_WRITE") {
-          throw new Error("INJECTED_FAULT_AFTER_INPUT_R2_WRITE");
-        }
+        const faultStageHeader = request.headers.get("X-Canary-Fault-Injection") || "";
+        const isFaultAllowed = url.pathname === "/internal/canary/convert" && 
+                               !!env.CANARY_ADMIN_SECRET && 
+                               faultSecret === env.CANARY_ADMIN_SECRET;
+        const faultStage = isFaultAllowed ? faultStageHeader : "";
 
         // STABLE Durable Object Container Instance ID per run
         const instanceName = `word-to-pdf-canary-instance-${runId}`;
@@ -296,6 +289,17 @@ export default {
         let responsePayload: Response | null = null;
 
         try {
+          if (!r2Key) {
+            await env.CANARY_BUCKET.put(inputR2Key, docxBuffer, {
+              httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
+            });
+            stagedR2Keys.add(inputR2Key);
+          }
+
+          if (faultStage === "AFTER_INPUT_R2_WRITE") {
+            throw new Error("INJECTED_FAULT_AFTER_INPUT_R2_WRITE");
+          }
+
           if (faultStage === "BEFORE_CONTAINER_RPC") {
             throw new Error("INJECTED_FAULT_BEFORE_CONTAINER_RPC");
           }
