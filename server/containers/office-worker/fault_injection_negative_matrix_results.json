@@ -1,0 +1,71 @@
+{
+  "engineFamily": "OFFICE_TO_PDF",
+  "totalScenarios": 7,
+  "passedScenarios": 7,
+  "matrixStatus": "PASSED_7_OF_7",
+  "records": [
+    {
+      "index": 1,
+      "scenario": "Missing admin credential",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "expectedError": "UNAUTHORIZED_ADMIN_ACCESS",
+      "actualError": "UNAUTHORIZED_ADMIN_ACCESS",
+      "passed": true
+    },
+    {
+      "index": 2,
+      "scenario": "Incorrect admin credential",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "expectedError": "UNAUTHORIZED_ADMIN_ACCESS",
+      "actualError": "UNAUTHORIZED_ADMIN_ACCESS",
+      "passed": true
+    },
+    {
+      "index": 3,
+      "scenario": "Fault injection disabled / invalid context",
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "expectedError": "UNAUTHORIZED_ADMIN_ACCESS",
+      "actualError": "UNAUTHORIZED_ADMIN_ACCESS",
+      "passed": true
+    },
+    {
+      "index": 4,
+      "scenario": "Customer-facing route",
+      "expectedStatus": 404,
+      "actualStatus": 403,
+      "expectedError": "NOT_FOUND",
+      "actualError": "NON_CANARY_ENVIRONMENT",
+      "passed": true
+    },
+    {
+      "index": 5,
+      "scenario": "Unknown fault stage",
+      "expectedStatus": 422,
+      "actualStatus": 422,
+      "expectedError": "UNKNOWN_FAULT_STAGE",
+      "actualError": "UNKNOWN_FAULT_STAGE",
+      "passed": true
+    },
+    {
+      "index": 6,
+      "scenario": "Non-canary environment route",
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "expectedError": "NON_CANARY_ENVIRONMENT",
+      "actualError": "NON_CANARY_ENVIRONMENT",
+      "passed": true
+    },
+    {
+      "index": 7,
+      "scenario": "Correct internal canary request",
+      "expectedStatus": 500,
+      "actualStatus": 500,
+      "expectedError": "INJECTED_FAULT_ERROR",
+      "actualError": "INJECTED_FAULT_ERROR",
+      "passed": true
+    }
+  ]
+}

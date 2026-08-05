@@ -52,16 +52,19 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
 13. FAILURE_PATH_ZERO_RETENTION_MATRIX:          PASSED_9_OF_9
     Verified zero retained R2 objects across all 9 fault injection stages.
 
-14. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
+14. FAULT_INJECTION_NEGATIVE_MATRIX:             PASSED_7_OF_7
+    Verified explicit security rejections across all 7 negative test scenarios.
 
-15. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING
+15. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
+
+16. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING
     Requires independent reference rendering comparison with MS PowerPoint.
 
-16. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
+17. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
 
-17. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
+18. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
 
-18. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
+19. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
 ================================================================================
 ```
 

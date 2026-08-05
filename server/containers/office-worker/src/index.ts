@@ -41,6 +41,41 @@ export default {
   async fetch(request: Request, env: any, ctx: any): Promise<Response> {
     try {
       const url = new URL(request.url);
+      const faultStageHeader = request.headers.get("X-Canary-Fault-Injection");
+
+      // Global Fault Injection Security Guard
+      if (faultStageHeader !== null) {
+        if (!url.pathname.startsWith("/internal/canary/")) {
+          return new Response(JSON.stringify({ error: "NON_CANARY_ENVIRONMENT", details: "Fault injection prohibited outside internal canary route." }), { status: 403, headers: { "Content-Type": "application/json" } });
+        }
+        if (url.pathname !== "/internal/canary/convert") {
+          return new Response(JSON.stringify({ error: "NON_CANARY_ENVIRONMENT", details: "Fault injection only allowed on /internal/canary/convert" }), { status: 403, headers: { "Content-Type": "application/json" } });
+        }
+        const faultSecret = request.headers.get("X-Canary-Fault-Injection-Secret") || "";
+        if (!env.CANARY_ADMIN_SECRET) {
+          return new Response(JSON.stringify({ error: "FAULT_INJECTION_DISABLED", details: "Fault injection is disabled in this environment." }), { status: 403, headers: { "Content-Type": "application/json" } });
+        }
+        if (!faultSecret) {
+          return new Response(JSON.stringify({ error: "UNAUTHORIZED_ADMIN_ACCESS", details: "Missing X-Canary-Fault-Injection-Secret header." }), { status: 401, headers: { "Content-Type": "application/json" } });
+        }
+        if (faultSecret !== env.CANARY_ADMIN_SECRET) {
+          return new Response(JSON.stringify({ error: "UNAUTHORIZED_ADMIN_ACCESS", details: "Invalid X-Canary-Fault-Injection-Secret header." }), { status: 401, headers: { "Content-Type": "application/json" } });
+        }
+        const KNOWN_STAGES = [
+          "AFTER_INPUT_R2_WRITE",
+          "BEFORE_CONTAINER_RPC",
+          "DURING_CONTAINER_RPC_TIMEOUT",
+          "AFTER_CONTAINER_SUCCESS",
+          "DURING_PDF_VERIFICATION",
+          "BEFORE_OUTPUT_R2_WRITE",
+          "AFTER_OUTPUT_R2_WRITE",
+          "DURING_RESPONSE_SERIALIZATION",
+          "FIRST_DELETE_ATTEMPT_FAILURE"
+        ];
+        if (!KNOWN_STAGES.includes(faultStageHeader)) {
+          return new Response(JSON.stringify({ error: "UNKNOWN_FAULT_STAGE", stage: faultStageHeader, details: "Requested fault stage is unknown." }), { status: 422, headers: { "Content-Type": "application/json" } });
+        }
+      }
 
       // 1. Public Health Check
       if (url.pathname === "/" || url.pathname === "/health") {
@@ -274,12 +309,7 @@ export default {
         const inputR2Key = r2Key || `canary-runs/${runId}/${jobId}/input.docx`;
         const outputR2Key = `canary-runs/${runId}/${jobId}/output.pdf`;
 
-        const faultSecret = request.headers.get("X-Canary-Fault-Injection-Secret") || "";
-        const faultStageHeader = request.headers.get("X-Canary-Fault-Injection") || "";
-        const isFaultAllowed = url.pathname === "/internal/canary/convert" && 
-                               !!env.CANARY_ADMIN_SECRET && 
-                               faultSecret === env.CANARY_ADMIN_SECRET;
-        const faultStage = isFaultAllowed ? faultStageHeader : "";
+        const faultStage = request.headers.get("X-Canary-Fault-Injection") || "";
 
         // STABLE Durable Object Container Instance ID per run
         const instanceName = `word-to-pdf-canary-instance-${runId}`;
