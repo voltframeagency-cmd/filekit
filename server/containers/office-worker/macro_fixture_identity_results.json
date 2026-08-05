@@ -1,0 +1,8 @@
+{
+  "positiveControlFixtureSha256": "2173a52fe5398e1b9fd62f07fadf291dd2db2927e7cf5b7dc639c3eb04fbf6ac",
+  "hardenedRunFixtureSha256": "2173a52fe5398e1b9fd62f07fadf291dd2db2927e7cf5b7dc639c3eb04fbf6ac",
+  "fixtureHashMatch": true,
+  "entrypointMatch": true,
+  "markerPathLogicMatch": true,
+  "macroExecutionSuppressionVerified": "PASSED"
+}

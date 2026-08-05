@@ -3,7 +3,7 @@
 > **Engine Family**: `OFFICE_TO_PDF` (Word, Excel, PowerPoint Isolated Cloudflare Container Worker)  
 > **Environment**: Cloudflare Containers + R2 Staged Storage (`filekit-canary-r2-staged`)  
 > **Date**: 2026-08-05  
-> **Worker Version ID**: `66a36161-9b75-441c-9ed7-13421ffd1aeb`  
+> **Worker Version ID**: `0d6e3834-b47b-4d20-8ec7-a86c4a78cd57`  
 > **Container Application ID**: `a038a9e3-b774-47e9-b88e-80c0e1d1a98a`  
 > **Deployed Container Image Digest**: `sha256:609d94031ad14ffad5e8da2b5395990dc4fa64ac12897868551ae02d57711d1e`  
 
@@ -30,7 +30,7 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
 
 7.  PROFILE_TEMPLATE_RUNTIME_VERIFIED:          PASSED (6/6 TEMPLATE_COPY)
 
-8.  MACRO_NEGATIVE_EXECUTION_CANARY:            PASSED (Positive control Run A + Hardened Run B verified)
+8.  MACRO_EXECUTION_SUPPRESSION_VERIFIED:       PASSED (SHA-256 hash match verified across Run A & B)
 
 9.  CLOUDFLARE_FIRST_PPTX_JOB_VERIFIED:         PASSED
 
@@ -48,21 +48,21 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
 
 16. BUNDLE_SECURITY_AUDIT:                       PASSED (PRODUCTION_FAULT_CODE_MATCHES=0)
 
-17. DEPLOYED_RUNTIME_PROVENANCE_VERIFIED:        PASSED (Git SHA 36f98ce)
+17. CURRENT_WORKER_PROVENANCE_VERIFIED:          PASSED (Clean HEAD 6a7a646, Worker 0d6e3834)
 
-18. CURRENT_HEAD_RUNTIME_EQUIVALENCE:            PASSED (Git SHA 1039a93, RUNTIME_CRITICAL_DIFF_COUNT=0)
+18. INSTRUMENTED_CONTAINER_DEPLOYED:             PASSED
 
-19. INSTRUMENTED_CONTAINER_DEPLOYED:             PASSED
+19. CONTAINER_BEHAVIOR_CLASSIFIED:              PASSED (GENUINE_PROCESS_REUSE_OBSERVED=false, 5 transitions)
 
-20. CONTAINER_BEHAVIOR_CLASSIFIED:              PASSED (GENUINE_PROCESS_REUSE_OBSERVED=false, 5 transitions)
+20. ALL_LATEST_PREFIXES_INSPECTED:               PASSED (0 retained R2 objects across 9 prefixes)
 
-21. RECENT_R2_CANARY_PREFIX_AUDIT:               PASSED (0 retained R2 objects across 5 prefixes)
+21. PPTX_EVENTUAL_COMPLETION:                   PASSED_24_OF_24 (100% 24/24 eventual conversions)
 
-22. PPTX_REPRESENTATIVE_MATRIX_STABILITY:       PASSED_24_OF_24 (100% 24/24 valid conversions)
+22. PPTX_FIRST_ATTEMPT_STABILITY:               PASSED_22_OF_24 (91.7% First-Attempt Success)
 
-23. FAILED_FIXTURE_REPRODUCTION_RUNS:            PASSED_12_OF_12 (100% 12/12 valid reproduction runs)
+23. COLD_FIRST_ATTEMPT_SUCCESS_RATE:            PASSED (6/6 100.0% Cold First-Attempt Success)
 
-24. PPTX_LATENCY_CAUSE_CLASSIFIED:              PASSED (Dominant: UNATTRIBUTED_CONTAINER_OVERHEAD 76.85%)
+24. PPTX_LATENCY_BOTTLENECK_LOCALIZED:          PASSED (Dominant: UNATTRIBUTED_CONTAINER_SIDE_OVERHEAD)
 
 25. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING (Requires MS PowerPoint reference PDFs)
 
@@ -83,13 +83,17 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
 | **Hardened Profile Inspection** | `hardened_profile_inspection_results.json` | `b6e3058b51e075fda6ec1952ff541ea77df529d2bdc5ca62be5f7a747a3b90fa` |
 | **Runtime Macro Marker Canary** | `macro_runtime_canary_results.json` | `3b2976e3778af0f46ae9e15340d827b726ef8d1673630fcd752ecfd8b47ec935` |
 | **Macro Positive Control** | `macro_positive_control_results.json` | `0536908bbed1170a6d7b0fa664591e51d8903be0cf05c0fd010f5bb9691ff4d0` |
+| **Macro Fixture Identity Proof** | `macro_fixture_identity_results.json` | `e79a0e764a9098a355891f40f850fe824a14214147f06bfc194db5b2479a2a56` |
 | **Failed Fixture Reproduction** | `failed_fixtures_reproduction_results.json` | `86aac8671d06009dfb672aa5ef6eba7e6728ac83580791a4d64b4dcc2aff5794` |
+| **24-Job Retry Accounting Audit** | `24job_retry_accounting_audit.json` | `9f5244ab1302659e7b7a0466a22690cf3915bb2e6696641e027cd2288933d0ec` |
+| **12-Job Cold/Warm Readiness Timing** | `12job_cold_warm_timing_results.json` | `a4589f5c0674ce64c5060a3dc90ff0c6fde0779ee9655ebf2eef084afbc360e9` |
 | **24-Job Latency Matrix** | `24job_latency_matrix_results.json` | `9523dc48c057f0ee795723557f6765cd46ff204152ff8dfa602b83979b529751` |
 | **Bundle Security Audit** | `bundle_security_audit_results.json` | Recorded (`PRODUCTION_FAULT_CODE_MATCHES=0`) |
-| **Worker Routing Source** | `src/index.ts` | `ce171422e129feff8268308b7490364924c625da9dd87e72da4af42be7a76f7e` |
+| **Worker Routing Source** | `src/index.ts` | `f38882f1b9a3e78627ab17f971736f7647c5e5623d55b1e80806dd811fd8ce6d` |
 | **Container Server Script** | `server.js` | `20883b1eb7a41790c4b325ba82d888b896b6e3638372582fb5c6092586d77eb7` |
 | **Container Buildfile** | `Dockerfile` | `ebcb68aab3b72f9f3d0ee6b2b04a5cb66bda31406a8e5fd68fadd1dc679b1480` |
 | **Wrangler Manifest** | `wrangler.toml` | `4bdf7f57be49862c8e6cf868fd2789a033c3fc6cb7707b293113cefcb25f5d9b` |
+
 
 
 

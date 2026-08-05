@@ -1,0 +1,10 @@
+{
+  "totalFixtures": 24,
+  "firstAttemptSuccesses": "22/24",
+  "retriedFixtureCount": 2,
+  "secondAttemptSuccesses": 2,
+  "thirdAttemptSuccesses": 0,
+  "exhaustedRetries": 0,
+  "pptxEventualCompletion": "PASSED_24_OF_24",
+  "pptxFirstAttemptStability": "PASSED_22_OF_24"
+}

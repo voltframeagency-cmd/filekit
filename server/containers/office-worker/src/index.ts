@@ -539,10 +539,12 @@ export default {
               getCount: r2Key ? 4 : 3,
               headCount: 2,
               listCount: 0,
-              deleteCount: 2
+            deleteCount: 2
             },
             totalWallTimeMs
           };
+
+          const containerReadyWaitTotalMs = containerDurationMs - libreOfficeDurationMs;
 
           responsePayload = new Response(JSON.stringify(telemetry, null, 2), {
             status: 200,
@@ -557,6 +559,8 @@ export default {
               "X-Pdf-Verification-Ms": "1",
               "X-Container-Total-Ms": String(containerDurationMs),
               "X-Worker-Total-Ms": String(totalWallTimeMs),
+              "X-Container-Attempt-Index": String(retries),
+              "X-Container-Ready-Wait-Total-Ms": String(containerReadyWaitTotalMs),
               "X-Detected-Format": detectedFormat,
               "X-Worker-Version-Id": env.CF_VERSION_METADATA?.id || "v1",
               "X-Image-Digest": "sha256:staged"
