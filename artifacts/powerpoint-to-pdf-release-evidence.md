@@ -3,7 +3,7 @@
 > **Engine Family**: `OFFICE_TO_PDF` (Word, Excel, PowerPoint Isolated Cloudflare Container Worker)  
 > **Environment**: Cloudflare Containers + R2 Staged Storage (`filekit-canary-r2-staged`)  
 > **Date**: 2026-08-05  
-> **Worker Version ID**: `7249670a-1203-4dec-aaf1-9ab75efe45b5`  
+> **Worker Version ID**: `cac4df97-0316-4982-8378-c530dd57673a`  
 
 ---
 
@@ -55,16 +55,19 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
 14. FAULT_INJECTION_NEGATIVE_MATRIX:             PASSED_7_OF_7
     Dedicated FAULT_INJECTION_DISABLED test and normalized route security verified.
 
-15. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
+15. FAULT_INJECTION_DEPLOYMENT_SAFETY:           PASSED
+    Verified deployment-level default-off requirement (CANARY_FAULT_INJECTION_ENABLED=true binding required).
 
-16. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING
+16. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
+
+17. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING
     Requires independent reference rendering comparison with MS PowerPoint.
 
-17. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
+18. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
 
-18. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
+19. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
 
-19. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
+20. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
 ================================================================================
 ```
 

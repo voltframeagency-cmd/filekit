@@ -1,0 +1,8 @@
+{
+  "engineFamily": "OFFICE_TO_PDF",
+  "requestDisabledHeaderOverrideRejectsFault": true,
+  "requestHeaderCannotEnableFaultInjection": true,
+  "productionBuildContainsFaultInjection": false,
+  "productionEnvHasCanaryAdminSecret": false,
+  "deploymentSafetyStatus": "PASSED"
+}

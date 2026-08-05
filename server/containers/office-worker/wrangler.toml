@@ -21,6 +21,9 @@ class_name = "OfficeWorker"
 tag = "v1"
 new_sqlite_classes = ["OfficeWorker"]
 
+[vars]
+CANARY_FAULT_INJECTION_ENABLED = "true"
+
 [secrets]
 required = [
   "CANARY_BEARER_TOKEN",

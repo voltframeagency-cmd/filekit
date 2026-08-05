@@ -74,9 +74,10 @@ export default {
         }
         const disabledHeader = (request.headers.get("X-Canary-Fault-Injection-Disabled") || request.headers.get("x-canary-fault-injection-disabled") || "").toLowerCase();
         const enabledHeader = (request.headers.get("X-Canary-Fault-Injection-Enabled") || request.headers.get("x-canary-fault-injection-enabled") || "").toLowerCase();
-        const isDisabled = disabledHeader === "true" || enabledHeader === "false" || env.CANARY_FAULT_INJECTION_ENABLED === "false";
+        const isFaultInjectionExplicitlyEnabled = env.CANARY_FAULT_INJECTION_ENABLED === "true";
+        const isDisabled = disabledHeader === "true" || enabledHeader === "false" || !isFaultInjectionExplicitlyEnabled;
         if (isDisabled) {
-          return new Response(JSON.stringify({ error: "FAULT_INJECTION_DISABLED", details: "Fault injection is disabled." }), { status: 403, headers: { "Content-Type": "application/json" } });
+          return new Response(JSON.stringify({ error: "FAULT_INJECTION_DISABLED", details: "Fault injection is disabled at deployment level (CANARY_FAULT_INJECTION_ENABLED != true) or request header." }), { status: 403, headers: { "Content-Type": "application/json" } });
         }
       }
 
