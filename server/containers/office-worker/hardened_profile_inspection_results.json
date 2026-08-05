@@ -1,0 +1,13 @@
+{
+  "profileTemplateSha256": "db2bd22bc601ebf398dc467def380bf6b867278a0579929f55da3004bb62967b",
+  "macroSecurityLevel": 3,
+  "disableMacroExecution": true,
+  "trustedLocationsCount": 0,
+  "pluginsDisabled": true,
+  "profileTemplateReadOnly": true,
+  "perJobProfileUnique": true,
+  "profileDeletedAfterJob": true,
+  "profileTemplateHashMatch": true,
+  "libreOfficeMacroProfileHardenedRuntime": "PASSED",
+  "hardenedProfileRuntimeVerified": "PASSED"
+}

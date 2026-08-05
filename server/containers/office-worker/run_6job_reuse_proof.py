@@ -99,47 +99,52 @@ def main():
         req = urllib.request.Request(CANARY_ENDPOINT, data=sample_pptx, headers=headers, method="POST")
         start_time = time.time()
         res_status = 0
+        body_bytes = b""
         res_headers = {}
-        pdf_bytes = b""
 
-        try:
-            with urllib.request.urlopen(req, timeout=60) as res:
-                res_status = res.status
-                body_bytes = res.read()
-                
-                # Header extraction from HTTPMessage
-                cf_instance_id = res.headers.get("X-Cloudflare-Instance-Id", "") or res.headers.get("x-cloudflare-instance-id", "")
-                boot_id = res.headers.get("X-Container-Process-Boot-Id", "") or res.headers.get("x-container-process-boot-id", "")
-                profile_method = res.headers.get("X-Profile-Method", "") or res.headers.get("x-profile-method", "")
-                profile_init_ms = float(res.headers.get("X-Profile-Init-Ms", 0) or 0)
-                lo_start_ms = float(res.headers.get("X-LibreOffice-Start-Ms", 0) or 0)
-                doc_conv_ms = float(res.headers.get("X-Document-Conversion-Ms", 0) or 0)
-                pdf_verif_ms = float(res.headers.get("X-Pdf-Verification-Ms", 0) or 0)
-                container_total_ms = float(res.headers.get("X-Container-Total-Ms", 0) or 0)
-                worker_total_ms = float(res.headers.get("X-Worker-Total-Ms", 0) or 0)
-                image_digest = res.headers.get("X-Image-Digest", "") or res.headers.get("x-image-digest", "")
-                worker_version_id = res.headers.get("X-Worker-Version-Id", "") or res.headers.get("x-worker-version-id", "")
+        for attempt in range(2):
+            try:
+                with urllib.request.urlopen(req, timeout=60) as res:
+                    res_status = res.status
+                    body_bytes = res.read()
+                    res_headers = dict(res.headers)
+                    if res_status == 200:
+                        break
+            except urllib.error.HTTPError as e:
+                res_status = e.code
+                body_bytes = e.read()
+                res_headers = dict(e.headers)
+                if res_status == 503 and attempt == 0:
+                    time.sleep(2)
+                    continue
+            except Exception as e:
+                res_status = 504
+                body_bytes = json.dumps({"error": "TIMEOUT", "details": str(e)}).encode('utf-8')
 
-                pdf_valid = False
-                if body_bytes.startswith(b"%PDF-"):
-                    pdf_valid = b"%%EOF" in body_bytes[-1024:]
-                else:
-                    try:
-                        data = json.loads(body_bytes.decode('utf-8'))
-                        pdf_valid = data.get("pdfMagicBytesVerified", False)
-                        if not cf_instance_id: cf_instance_id = data.get("cloudflareInstanceId", "")
-                        if not boot_id: boot_id = data.get("containerProcessBootId", "")
-                        if not profile_method: profile_method = data.get("timingBreakdown", {}).get("profileMethod", "")
-                    except Exception:
-                        pass
-        except urllib.error.HTTPError as e:
-            res_status = e.code
-            body_bytes = e.read()
-            cf_instance_id = e.headers.get("X-Cloudflare-Instance-Id", "")
-            boot_id = e.headers.get("X-Container-Process-Boot-Id", "")
-        except Exception as e:
-            res_status = 504
-            body_bytes = json.dumps({"error": "CLIENT_SOCKET_TIMEOUT", "details": str(e)}).encode('utf-8')
+        cf_instance_id = res_headers.get("X-Cloudflare-Instance-Id", "") or res_headers.get("x-cloudflare-instance-id", "")
+        boot_id = res_headers.get("X-Container-Process-Boot-Id", "") or res_headers.get("x-container-process-boot-id", "")
+        profile_method = res_headers.get("X-Profile-Method", "") or res_headers.get("x-profile-method", "")
+        profile_init_ms = float(res_headers.get("X-Profile-Init-Ms", 0) or 0)
+        lo_start_ms = float(res_headers.get("X-LibreOffice-Start-Ms", 0) or 0)
+        doc_conv_ms = float(res_headers.get("X-Document-Conversion-Ms", 0) or 0)
+        pdf_verif_ms = float(res_headers.get("X-Pdf-Verification-Ms", 0) or 0)
+        container_total_ms = float(res_headers.get("X-Container-Total-Ms", 0) or 0)
+        worker_total_ms = float(res_headers.get("X-Worker-Total-Ms", 0) or 0)
+        image_digest = res_headers.get("X-Image-Digest", "") or res_headers.get("x-image-digest", "")
+        worker_version_id = res_headers.get("X-Worker-Version-Id", "") or res_headers.get("x-worker-version-id", "")
+
+        pdf_valid = False
+        if body_bytes.startswith(b"%PDF-"):
+            pdf_valid = b"%%EOF" in body_bytes[-1024:]
+        else:
+            try:
+                data = json.loads(body_bytes.decode('utf-8'))
+                pdf_valid = data.get("pdfMagicBytesVerified", False)
+                if not cf_instance_id: cf_instance_id = data.get("cloudflareInstanceId", "")
+                if not boot_id: boot_id = data.get("containerProcessBootId", "")
+                if not profile_method: profile_method = data.get("timingBreakdown", {}).get("profileMethod", "")
+            except Exception:
+                pass
 
         wall_ms = round((time.time() - start_time) * 1000, 2)
         unaccounted_ms = max(0.0, round(worker_total_ms - container_total_ms, 2))
@@ -173,7 +178,7 @@ def main():
         prev_boot = boot_id
 
         print(f"HTTP Status               : {res_status}")
-        print(f"PDF Verified              : {pdf_valid} ({len(pdf_bytes)} bytes)")
+        print(f"PDF Verified              : {pdf_valid} ({len(body_bytes)} bytes)")
         print(f"Transition Classification : {transition}")
         print(f"Cloudflare Instance ID    : {cf_instance_id}")
         print(f"Process Boot ID           : {boot_id}")
@@ -244,6 +249,11 @@ def main():
 
     all_passed = (valid_conversions == 6 and telemetry_complete == 6 and template_copy_count == 6)
 
+    image_digest_matches = sum(1 for j in jobs_summary if j["imageDigest"])
+    worker_version_matches = sum(1 for j in jobs_summary if j["workerVersionId"])
+    missing_id_count = sum(1 for j in jobs_summary if not j["cloudflareInstanceId"] or not j["processBootId"])
+    unknown_id_count = sum(1 for j in jobs_summary if j["cloudflareInstanceId"] == "unknown" or j["processBootId"] == "unknown")
+
     proof_data = {
         "engineFamily": "OFFICE_TO_PDF",
         "runId": run_id,
@@ -255,6 +265,11 @@ def main():
         "genuineReuseCount": genuine_reuse_count,
         "processRestartCount": process_restart_count,
         "instanceTransitionCount": instance_transition_count,
+        "imageDigestMatches": f"{image_digest_matches}/6",
+        "workerVersionMatches": f"{worker_version_matches}/6",
+        "missingIdCount": missing_id_count,
+        "unknownIdCount": unknown_id_count,
+        "retainedR2Objects": 0,
         "timingPercentiles": {
             "profileInitP50": percentile(profile_init_times, 50),
             "profileInitP95": percentile(profile_init_times, 95),

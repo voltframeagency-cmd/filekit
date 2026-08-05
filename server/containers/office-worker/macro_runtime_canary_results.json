@@ -1,0 +1,14 @@
+{
+  "engineFamily": "OFFICE_TO_PDF",
+  "httpStatus": 200,
+  "testDocumentReachedLibreOffice": true,
+  "markerFileCreated": false,
+  "macroExecutionObserved": false,
+  "networkActivity": "none",
+  "processSpawnActivity": "none",
+  "externalSideEffects": 0,
+  "profileFilesRetained": 0,
+  "r2ObjectsRetained": 0,
+  "clientWallMs": 25392.72,
+  "macroNegativeExecutionCanary": "PASSED"
+}
