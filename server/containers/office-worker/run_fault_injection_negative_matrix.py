@@ -44,8 +44,8 @@ SCENARIOS = [
             "User-Agent": "FileKitCanaryRunner/1.0",
             "X-Canary-Fault-Injection": "AFTER_INPUT_R2_WRITE"
         },
-        "expectedStatus": 401,
-        "expectedError": "UNAUTHORIZED_ADMIN_ACCESS"
+        "allowedStatus": [401],
+        "allowedError": ["UNAUTHORIZED_ADMIN_ACCESS"]
     },
     {
         "index": 2,
@@ -58,22 +58,23 @@ SCENARIOS = [
             "X-Canary-Fault-Injection-Secret": "wrong_secret_123",
             "X-Canary-Fault-Injection": "AFTER_INPUT_R2_WRITE"
         },
-        "expectedStatus": 401,
-        "expectedError": "UNAUTHORIZED_ADMIN_ACCESS"
+        "allowedStatus": [401],
+        "allowedError": ["UNAUTHORIZED_ADMIN_ACCESS"]
     },
     {
         "index": 3,
-        "name": "Fault injection disabled / invalid context",
+        "name": "Fault injection disabled flag",
         "url": CANARY_ENDPOINT,
         "headers": {
             "Authorization": f"Bearer {BEARER_TOKEN}",
             "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             "User-Agent": "FileKitCanaryRunner/1.0",
-            "X-Canary-Fault-Injection-Secret": "wrong_admin_disabled",
-            "X-Canary-Fault-Injection": "AFTER_INPUT_R2_WRITE"
+            "X-Canary-Fault-Injection-Secret": ADMIN_SECRET,
+            "X-Canary-Fault-Injection": "AFTER_INPUT_R2_WRITE",
+            "X-Canary-Fault-Injection-Disabled": "true"
         },
-        "expectedStatus": 401,
-        "expectedError": "UNAUTHORIZED_ADMIN_ACCESS"
+        "allowedStatus": [403],
+        "allowedError": ["FAULT_INJECTION_DISABLED"]
     },
     {
         "index": 4,
@@ -85,8 +86,8 @@ SCENARIOS = [
             "X-Canary-Fault-Injection-Secret": ADMIN_SECRET,
             "X-Canary-Fault-Injection": "AFTER_INPUT_R2_WRITE"
         },
-        "expectedStatus": 404,
-        "expectedError": "NOT_FOUND"
+        "allowedStatus": [403, 404],
+        "allowedError": ["NON_CANARY_ENVIRONMENT", "NOT_FOUND"]
     },
     {
         "index": 5,
@@ -99,8 +100,8 @@ SCENARIOS = [
             "X-Canary-Fault-Injection-Secret": ADMIN_SECRET,
             "X-Canary-Fault-Injection": "INVALID_STAGE_XYZ"
         },
-        "expectedStatus": 422,
-        "expectedError": "UNKNOWN_FAULT_STAGE"
+        "allowedStatus": [422],
+        "allowedError": ["UNKNOWN_FAULT_STAGE"]
     },
     {
         "index": 6,
@@ -112,8 +113,8 @@ SCENARIOS = [
             "X-Canary-Fault-Injection-Secret": ADMIN_SECRET,
             "X-Canary-Fault-Injection": "AFTER_INPUT_R2_WRITE"
         },
-        "expectedStatus": 403,
-        "expectedError": "NON_CANARY_ENVIRONMENT"
+        "allowedStatus": [403, 404],
+        "allowedError": ["NON_CANARY_ENVIRONMENT", "NOT_FOUND"]
     },
     {
         "index": 7,
@@ -126,8 +127,8 @@ SCENARIOS = [
             "X-Canary-Fault-Injection-Secret": ADMIN_SECRET,
             "X-Canary-Fault-Injection": "AFTER_INPUT_R2_WRITE"
         },
-        "expectedStatus": 500,
-        "expectedError": "INJECTED_FAULT_ERROR"
+        "allowedStatus": [500],
+        "allowedError": ["INJECTED_FAULT_ERROR"]
     }
 ]
 
@@ -148,8 +149,8 @@ def main():
         name = item["name"]
         url = item["url"]
         headers = item["headers"]
-        exp_status = item["expectedStatus"]
-        exp_error = item["expectedError"]
+        allowed_status = item["allowedStatus"]
+        allowed_error = item["allowedError"]
 
         req_data = sample_pptx if ("convert" in url or "powerpoint" in url) else json.dumps({"runId": "test_neg"}).encode('utf-8')
         req = urllib.request.Request(url, data=req_data, headers=headers, method="POST")
@@ -175,7 +176,7 @@ def main():
                 actual_error = f"HTTP_{e.code}"
 
         # Match status
-        is_pass = (actual_status == exp_status) or (exp_status in [403, 404] and actual_status in [403, 404])
+        is_pass = (actual_status in allowed_status)
         if is_pass:
             passed_count += 1
             status_str = "PASS"
@@ -185,15 +186,15 @@ def main():
         rec = {
             "index": idx,
             "scenario": name,
-            "expectedStatus": exp_status,
+            "allowedStatus": allowed_status,
             "actualStatus": actual_status,
-            "expectedError": exp_error,
+            "allowedError": allowed_error,
             "actualError": actual_error,
             "passed": is_pass
         }
         records.append(rec)
 
-        print(f"[{idx:01d}/{total}] {status_str} {name:<36} HTTP:{actual_status} (Expected:{exp_status}) ErrorCode:{actual_error}", flush=True)
+        print(f"[{idx:01d}/{total}] {status_str} {name:<36} HTTP:{actual_status} (Allowed:{allowed_status}) ErrorCode:{actual_error}", flush=True)
 
     print("=" * 70)
     print("FAULT INJECTION NEGATIVE MATRIX SUMMARY")

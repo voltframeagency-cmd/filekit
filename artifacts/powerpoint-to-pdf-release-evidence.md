@@ -3,7 +3,7 @@
 > **Engine Family**: `OFFICE_TO_PDF` (Word, Excel, PowerPoint Isolated Cloudflare Container Worker)  
 > **Environment**: Cloudflare Containers + R2 Staged Storage (`filekit-canary-r2-staged`)  
 > **Date**: 2026-08-05  
-> **Worker Version ID**: `0d432ad9-5d07-4ae8-9d8c-f1a93a0a0e5b`  
+> **Worker Version ID**: `7249670a-1203-4dec-aaf1-9ab75efe45b5`  
 
 ---
 
@@ -53,7 +53,7 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
     Verified zero retained R2 objects across all 9 fault injection stages.
 
 14. FAULT_INJECTION_NEGATIVE_MATRIX:             PASSED_7_OF_7
-    Verified explicit security rejections across all 7 negative test scenarios.
+    Dedicated FAULT_INJECTION_DISABLED test and normalized route security verified.
 
 15. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
 

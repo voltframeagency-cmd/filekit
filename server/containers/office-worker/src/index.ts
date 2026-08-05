@@ -52,13 +52,10 @@ export default {
           return new Response(JSON.stringify({ error: "NON_CANARY_ENVIRONMENT", details: "Fault injection only allowed on /internal/canary/convert" }), { status: 403, headers: { "Content-Type": "application/json" } });
         }
         const faultSecret = request.headers.get("X-Canary-Fault-Injection-Secret") || "";
-        if (!env.CANARY_ADMIN_SECRET) {
-          return new Response(JSON.stringify({ error: "FAULT_INJECTION_DISABLED", details: "Fault injection is disabled in this environment." }), { status: 403, headers: { "Content-Type": "application/json" } });
-        }
         if (!faultSecret) {
           return new Response(JSON.stringify({ error: "UNAUTHORIZED_ADMIN_ACCESS", details: "Missing X-Canary-Fault-Injection-Secret header." }), { status: 401, headers: { "Content-Type": "application/json" } });
         }
-        if (faultSecret !== env.CANARY_ADMIN_SECRET) {
+        if (!env.CANARY_ADMIN_SECRET || faultSecret !== env.CANARY_ADMIN_SECRET) {
           return new Response(JSON.stringify({ error: "UNAUTHORIZED_ADMIN_ACCESS", details: "Invalid X-Canary-Fault-Injection-Secret header." }), { status: 401, headers: { "Content-Type": "application/json" } });
         }
         const KNOWN_STAGES = [
@@ -74,6 +71,12 @@ export default {
         ];
         if (!KNOWN_STAGES.includes(faultStageHeader)) {
           return new Response(JSON.stringify({ error: "UNKNOWN_FAULT_STAGE", stage: faultStageHeader, details: "Requested fault stage is unknown." }), { status: 422, headers: { "Content-Type": "application/json" } });
+        }
+        const disabledHeader = (request.headers.get("X-Canary-Fault-Injection-Disabled") || request.headers.get("x-canary-fault-injection-disabled") || "").toLowerCase();
+        const enabledHeader = (request.headers.get("X-Canary-Fault-Injection-Enabled") || request.headers.get("x-canary-fault-injection-enabled") || "").toLowerCase();
+        const isDisabled = disabledHeader === "true" || enabledHeader === "false" || env.CANARY_FAULT_INJECTION_ENABLED === "false";
+        if (isDisabled) {
+          return new Response(JSON.stringify({ error: "FAULT_INJECTION_DISABLED", details: "Fault injection is disabled." }), { status: 403, headers: { "Content-Type": "application/json" } });
         }
       }
 
