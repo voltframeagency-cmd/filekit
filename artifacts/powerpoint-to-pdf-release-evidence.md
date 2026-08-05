@@ -2,8 +2,8 @@
 
 > **Engine Family**: `OFFICE_TO_PDF` (Word, Excel, PowerPoint Isolated Cloudflare Container Worker)  
 > **Environment**: Cloudflare Containers + R2 Staged Storage (`filekit-canary-r2-staged`)  
-> **Date**: 2026-08-04  
-> **Worker Version ID**: `f915ef40-65f3-435c-9274-ea6a4e4eda2c`  
+> **Date**: 2026-08-05  
+> **Worker Version ID**: `975c40cd-7a39-47d0-be41-a8f354d83106`  
 
 ---
 
@@ -44,19 +44,24 @@ FILEKIT POWERPOINT-TO-PDF ACCEPTANCE LADDER
     0 unexplained 5xx
     0 retained objects
 
-11. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
+11. SUPPLEMENTAL_PPTX_STABILITY_CORPUS:          PASSED (25/25)
+    Structural PDF validation metrics verified.
 
-12. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING
+12. NORMAL_PATH_AUTOMATIC_ZERO_RETENTION:        PASSED (0 remaining objects)
+
+13. FAILURE_PATH_ZERO_RETENTION_MATRIX:          PASSED (9/9 fault injection stages)
+    Verified zero retained R2 objects on all injected failure paths.
+
+14. CONTAINER_REUSE_CONFIRMED:                  PENDING INSTRUMENTED IMAGE
+
+15. PPTX_VISUAL_FIDELITY_VALIDATED:             PENDING
     Requires independent reference rendering comparison with MS PowerPoint.
 
-13. SUPPLEMENTAL_PPTX_STABILITY_CORPUS:          PASSED (25/25)
-    Guaranteed finally cleanup block verified (0 remaining R2 objects).
+16. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
 
-14. PPTX_LATENCY_CAUSE_CLASSIFIED:              PENDING
+17. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
 
-15. POWERPOINT_TO_PDF_PRIVATE_BETA_READY:       PENDING
-
-16. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
+18. POWERPOINT_TO_PDF_PUBLIC_READY:             PENDING
 ================================================================================
 ```
 

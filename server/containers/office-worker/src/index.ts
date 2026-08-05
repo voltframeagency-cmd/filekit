@@ -274,11 +274,18 @@ export default {
         const inputR2Key = r2Key || `canary-runs/${runId}/${jobId}/input.docx`;
         const outputR2Key = `canary-runs/${runId}/${jobId}/output.pdf`;
 
+        const faultSecret = request.headers.get("X-Canary-Fault-Injection-Secret") || "";
+        const faultStage = (faultSecret === env.CANARY_ADMIN_SECRET) ? (request.headers.get("X-Canary-Fault-Injection") || "") : "";
+
         if (!r2Key) {
           await env.CANARY_BUCKET.put(inputR2Key, docxBuffer, {
             httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
           });
           stagedR2Keys.add(inputR2Key);
+        }
+
+        if (faultStage === "AFTER_INPUT_R2_WRITE") {
+          throw new Error("INJECTED_FAULT_AFTER_INPUT_R2_WRITE");
         }
 
         // STABLE Durable Object Container Instance ID per run
@@ -289,9 +296,29 @@ export default {
         let responsePayload: Response | null = null;
 
         try {
+          if (faultStage === "BEFORE_CONTAINER_RPC") {
+            throw new Error("INJECTED_FAULT_BEFORE_CONTAINER_RPC");
+          }
+
           const containerStart = Date.now();
           let containerRes: Response | null = null;
           let retries = 0;
+
+          if (faultStage === "DURING_CONTAINER_RPC_TIMEOUT") {
+            // Simulate 504 Timeout
+            responsePayload = new Response(JSON.stringify({
+              error: "CONVERSION_TIMEOUT",
+              stage: "WORKER_CONTAINER_RPC",
+              requestId,
+              cleanupStatus: "COMPLETED",
+              status: 504,
+              details: "Injected container RPC timeout"
+            }, null, 2), {
+              status: 504,
+              headers: { "Content-Type": "application/json" }
+            });
+            return responsePayload;
+          }
 
           for (let attempt = 0; attempt < 3; attempt++) {
             try {
@@ -334,11 +361,19 @@ export default {
           const pdfBuffer = await containerRes.arrayBuffer();
           const exitCode = containerRes.headers.get("X-LibreOffice-Exit-Code") || "0";
 
+          if (faultStage === "AFTER_CONTAINER_SUCCESS") {
+            throw new Error("INJECTED_FAULT_AFTER_CONTAINER_SUCCESS");
+          }
+
           // Output PDF Verification
           const pdfBytes = new Uint8Array(pdfBuffer);
-          const isMagicPdf = pdfBytes.length > 5 &&
+          let isMagicPdf = pdfBytes.length > 5 &&
             pdfBytes[0] === 0x25 && pdfBytes[1] === 0x50 &&
             pdfBytes[2] === 0x44 && pdfBytes[3] === 0x46; // %PDF
+
+          if (faultStage === "DURING_PDF_VERIFICATION") {
+            isMagicPdf = false;
+          }
 
           if (!isMagicPdf) {
             responsePayload = new Response(JSON.stringify({
@@ -362,11 +397,19 @@ export default {
           const digestBuffer = await crypto.subtle.digest("SHA-256", pdfBuffer);
           const outputSha256 = Array.from(new Uint8Array(digestBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
 
+          if (faultStage === "BEFORE_OUTPUT_R2_WRITE") {
+            throw new Error("INJECTED_FAULT_BEFORE_OUTPUT_R2_WRITE");
+          }
+
           // Upload output PDF to R2
           await env.CANARY_BUCKET.put(outputR2Key, pdfBuffer, {
             httpMetadata: { contentType: "application/pdf" }
           });
           stagedR2Keys.add(outputR2Key);
+
+          if (faultStage === "AFTER_OUTPUT_R2_WRITE") {
+            throw new Error("INJECTED_FAULT_AFTER_OUTPUT_R2_WRITE");
+          }
 
           // Verify SHA-256 identity by reading back from R2
           const readbackObj = await env.CANARY_BUCKET.get(outputR2Key);
@@ -421,6 +464,10 @@ export default {
           const detectedFormat = containerRes.headers.get("X-Detected-Format") || "unknown";
           const totalJobMs = parseInt(containerRes.headers.get("X-Total-Job-Ms") || "0", 10);
           const cloudflareInstanceId = doId.toString();
+
+          if (faultStage === "DURING_RESPONSE_SERIALIZATION") {
+            throw new Error("INJECTED_FAULT_DURING_RESPONSE_SERIALIZATION");
+          }
 
           const telemetry = {
             requestId,
@@ -478,14 +525,32 @@ export default {
             }
           });
           return responsePayload;
+        } catch (err: any) {
+          responsePayload = new Response(JSON.stringify({
+            error: "INJECTED_FAULT_ERROR",
+            stage: faultStage || "UNKNOWN",
+            requestId,
+            cleanupStatus: "COMPLETED",
+            details: err.message
+          }, null, 2), {
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+          });
+          return responsePayload;
         } finally {
-          // GUARANTEED FINALLY CLEANUP FOR ALL REMAINING KEYS IN STAGED SET
+          // GUARANTEED FINALLY CLEANUP FOR ALL REMAINING KEYS IN STAGED SET WITH RETRY
           if (stagedR2Keys.size > 0) {
             for (const key of stagedR2Keys) {
-              try {
-                await env.CANARY_BUCKET.delete(key);
-              } catch (delErr) {
-                console.error(`[Cleanup Exception] Failed to purge key ${key}:`, delErr);
+              for (let delAttempt = 0; delAttempt < 3; delAttempt++) {
+                try {
+                  if (faultStage === "FIRST_DELETE_ATTEMPT_FAILURE" && delAttempt === 0) {
+                    throw new Error("INJECTED_FIRST_DELETE_ATTEMPT_FAILURE");
+                  }
+                  await env.CANARY_BUCKET.delete(key);
+                  break;
+                } catch (delErr) {
+                  await new Promise((r) => setTimeout(r, 200));
+                }
               }
             }
           }

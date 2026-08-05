@@ -20,3 +20,9 @@ class_name = "OfficeWorker"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["OfficeWorker"]
+
+[secrets]
+required = [
+  "CANARY_BEARER_TOKEN",
+  "CANARY_ADMIN_SECRET"
+]
