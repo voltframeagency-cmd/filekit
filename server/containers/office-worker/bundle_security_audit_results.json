@@ -1,6 +1,6 @@
 {
   "engineFamily": "OFFICE_TO_PDF",
-  "gitSha": "9b349eee8d61cb1ae7cba0b090048d5ea1eb949c",
+  "gitSha": "1039a93182af23d25f07dd359298685daea1674a",
   "workerVersionId": "cac4df97-0316-4982-8378-c530dd57673a",
   "runId": "run_20260805_canary_closeout",
   "fileHashes": {
@@ -32,13 +32,21 @@
       "path": "macro_runtime_canary_results.json",
       "sha256": "3b2976e3778af0f46ae9e15340d827b726ef8d1673630fcd752ecfd8b47ec935"
     },
+    "macroPosControlJson": {
+      "path": "macro_positive_control_results.json",
+      "sha256": "0536908bbed1170a6d7b0fa664591e51d8903be0cf05c0fd010f5bb9691ff4d0"
+    },
+    "failedReproJson": {
+      "path": "failed_fixtures_reproduction_results.json",
+      "sha256": "86aac8671d06009dfb672aa5ef6eba7e6728ac83580791a4d64b4dcc2aff5794"
+    },
     "latencyMatrixJson": {
       "path": "24job_latency_matrix_results.json",
-      "sha256": "7dd62fdbed9448de4a3d16880c24ea87b6b425e413e7c9d6e5e5e1cb6d31ac4e"
+      "sha256": "9523dc48c057f0ee795723557f6765cd46ff204152ff8dfa602b83979b529751"
     },
     "workerSource": {
       "path": "src/index.ts",
-      "sha256": "afceea1769ba40f7ea8398e43cf16808306a6dfda3ff0fe309d2ce620868d175"
+      "sha256": "ce171422e129feff8268308b7490364924c625da9dd87e72da4af42be7a76f7e"
     },
     "containerServerJs": {
       "path": "server.js",

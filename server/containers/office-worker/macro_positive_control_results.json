@@ -1,0 +1,22 @@
+{
+  "engineFamily": "OFFICE_TO_PDF",
+  "runAPositiveControl": {
+    "environment": "PERMISSIVE_TEST_ENVIRONMENT",
+    "positiveControlMarkerCreated": true,
+    "positiveControlMacroExecuted": true
+  },
+  "runBHardenedContainer": {
+    "environment": "CLOUDFLARE_HARDENED_CONTAINER",
+    "httpStatus": 200,
+    "testDocumentReachedLibreOffice": true,
+    "hardenedMarkerCreated": false,
+    "macroExecutionObserved": false,
+    "networkActivity": "none",
+    "processSpawnActivity": "none",
+    "externalSideEffects": 0,
+    "profileFilesRetained": 0,
+    "r2ObjectsRetained": 0,
+    "clientWallMs": 16621.69
+  },
+  "macroNegativeExecutionCanary": "PASSED"
+}

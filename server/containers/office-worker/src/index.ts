@@ -358,7 +358,7 @@ export default {
             return responsePayload;
           }
 
-          for (let attempt = 0; attempt < 3; attempt++) {
+          for (let attempt = 0; attempt < 10; attempt++) {
             try {
               const reqClone = new Request("http://container/convert", {
                 method: "POST",
@@ -370,10 +370,10 @@ export default {
                 break;
               }
               retries = attempt + 1;
-              await new Promise((r) => setTimeout(r, 300));
+              await new Promise((r) => setTimeout(r, 500));
             } catch (err: any) {
               retries = attempt + 1;
-              await new Promise((r) => setTimeout(r, 300));
+              await new Promise((r) => setTimeout(r, 500));
             }
           }
 

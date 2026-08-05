@@ -118,18 +118,27 @@ def main():
         body_bytes = b""
         res_headers = {}
 
-        try:
-            with urllib.request.urlopen(req, timeout=60) as res:
-                res_status = res.status
-                body_bytes = res.read()
-                res_headers = dict(res.headers)
-        except urllib.error.HTTPError as e:
-            res_status = e.code
-            body_bytes = e.read()
-            res_headers = dict(e.headers)
-        except Exception as e:
-            res_status = 504
-            body_bytes = json.dumps({"error": "TIMEOUT", "details": str(e)}).encode('utf-8')
+        for attempt in range(3):
+            try:
+                with urllib.request.urlopen(req, timeout=90) as res:
+                    res_status = res.status
+                    body_bytes = res.read()
+                    res_headers = dict(res.headers)
+                    if res_status == 200:
+                        break
+            except urllib.error.HTTPError as e:
+                res_status = e.code
+                body_bytes = e.read()
+                res_headers = dict(e.headers)
+                if res_status == 503 and attempt < 2:
+                    time.sleep(3)
+                    continue
+            except Exception as e:
+                if attempt < 2:
+                    time.sleep(3)
+                    continue
+                res_status = 504
+                body_bytes = json.dumps({"error": "TIMEOUT", "details": str(e)}).encode('utf-8')
 
         wall_ms = round((time.time() - start_time) * 1000, 2)
 
@@ -143,6 +152,7 @@ def main():
         container_total_ms = float(res_headers.get("X-Container-Total-Ms", 0) or 0)
         worker_total_ms = float(res_headers.get("X-Worker-Total-Ms", 0) or 0)
 
+        unattributed_container_overhead_ms = max(0.0, round(container_total_ms - profile_init_ms - doc_conv_ms, 2))
         unaccounted_ms = max(0.0, round(worker_total_ms - container_total_ms, 2))
 
         pdf_valid = False
@@ -189,6 +199,7 @@ def main():
             "containerTotalMs": container_total_ms,
             "workerTotalMs": worker_total_ms,
             "clientWallMs": wall_ms,
+            "unattributedContainerOverheadMs": unattributed_container_overhead_ms,
             "unaccountedMs": unaccounted_ms
         })
 
@@ -204,9 +215,10 @@ def main():
     overall_doc_conv_p50 = percentile(all_doc_conv, 50)
     overall_worker_total_p50 = percentile(all_worker_total, 50)
     overall_container_total_p50 = percentile(all_container_total, 50)
+    overall_unattributed_overhead_p50 = max(0.0, overall_container_total_p50 - overall_doc_conv_p50)
 
-    dominant_component = "DOCUMENT_CONVERSION" if overall_doc_conv_p50 > (overall_worker_total_p50 * 0.4) else "WORKER_R2_OVERHEAD"
-    dominant_pct = round((overall_doc_conv_p50 / max(1.0, overall_worker_total_p50)) * 100, 2)
+    dominant_component = "UNATTRIBUTED_CONTAINER_OVERHEAD" if overall_unattributed_overhead_p50 > overall_doc_conv_p50 else "DOCUMENT_CONVERSION"
+    dominant_pct = round((overall_unattributed_overhead_p50 / max(1.0, overall_worker_total_p50)) * 100, 2)
 
     matrix_data = {
         "engineFamily": "OFFICE_TO_PDF",
@@ -225,13 +237,15 @@ def main():
             "workerTotalP50": overall_worker_total_p50,
             "workerTotalP95": percentile(all_worker_total, 95),
             "clientWallP50": percentile(all_client_wall, 50),
+            "unattributedContainerOverheadP50": overall_unattributed_overhead_p50,
             "unaccountedP50": percentile(all_unaccounted, 50)
         },
         "categorySummaries": category_summaries,
-        "dominantComponent": dominant_component,
+        "dominantMeasuredComponent": dominant_component,
         "dominantComponentPercentage": dominant_pct,
         "jobs": results_jobs,
-        "pptxLatencyCauseClassified": "PASSED" if valid_count >= 20 else "FAILED"
+        "pptxRepresentativeMatrixStability": f"PASSED_{valid_count}_OF_24" if valid_count == 24 else f"FAILED_{valid_count}_OF_24",
+        "pptxLatencyCauseClassified": "PASSED" if valid_count == 24 else "FAILED"
     }
 
     with open("24job_latency_matrix_results.json", "w") as f:

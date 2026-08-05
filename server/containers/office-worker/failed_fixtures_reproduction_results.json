@@ -1,0 +1,119 @@
+{
+  "engineFamily": "OFFICE_TO_PDF",
+  "totalReproductionRuns": 12,
+  "validConversions": "12/12",
+  "unexplained5xx": 0,
+  "clientTimeouts": 0,
+  "retainedR2Objects": 0,
+  "runs": [
+    {
+      "runIndex": 1,
+      "fixtureName": "simple_deck_1.pptx",
+      "category": "SIMPLE",
+      "repeat": 1,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 7549.09
+    },
+    {
+      "runIndex": 2,
+      "fixtureName": "simple_deck_1.pptx",
+      "category": "SIMPLE",
+      "repeat": 2,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 5849.66
+    },
+    {
+      "runIndex": 3,
+      "fixtureName": "simple_deck_1.pptx",
+      "category": "SIMPLE",
+      "repeat": 3,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 4695.6
+    },
+    {
+      "runIndex": 4,
+      "fixtureName": "simple_deck_2.pptx",
+      "category": "SIMPLE",
+      "repeat": 1,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 6803.9
+    },
+    {
+      "runIndex": 5,
+      "fixtureName": "simple_deck_2.pptx",
+      "category": "SIMPLE",
+      "repeat": 2,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 4759.49
+    },
+    {
+      "runIndex": 6,
+      "fixtureName": "simple_deck_2.pptx",
+      "category": "SIMPLE",
+      "repeat": 3,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 5932.35
+    },
+    {
+      "runIndex": 7,
+      "fixtureName": "simple_deck_3.pptx",
+      "category": "SIMPLE",
+      "repeat": 1,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 7261.06
+    },
+    {
+      "runIndex": 8,
+      "fixtureName": "simple_deck_3.pptx",
+      "category": "SIMPLE",
+      "repeat": 2,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 31191.18
+    },
+    {
+      "runIndex": 9,
+      "fixtureName": "simple_deck_3.pptx",
+      "category": "SIMPLE",
+      "repeat": 3,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 33436.22
+    },
+    {
+      "runIndex": 10,
+      "fixtureName": "simple_deck_4.pptx",
+      "category": "SIMPLE",
+      "repeat": 1,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 18682.27
+    },
+    {
+      "runIndex": 11,
+      "fixtureName": "simple_deck_4.pptx",
+      "category": "SIMPLE",
+      "repeat": 2,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 21582.49
+    },
+    {
+      "runIndex": 12,
+      "fixtureName": "simple_deck_4.pptx",
+      "category": "SIMPLE",
+      "repeat": 3,
+      "httpStatus": 200,
+      "pdfValid": true,
+      "clientWallMs": 22910.37
+    }
+  ],
+  "failedFixturesReproduction": "PASSED"
+}

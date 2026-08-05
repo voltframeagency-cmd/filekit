@@ -59,6 +59,8 @@ def main():
         "reuseProofJson": "6job_reuse_proof_results.json",
         "hardenedProfileJson": "hardened_profile_inspection_results.json",
         "macroCanaryJson": "macro_runtime_canary_results.json",
+        "macroPosControlJson": "macro_positive_control_results.json",
+        "failedReproJson": "failed_fixtures_reproduction_results.json",
         "latencyMatrixJson": "24job_latency_matrix_results.json",
         "workerSource": "src/index.ts",
         "containerServerJs": "server.js",
