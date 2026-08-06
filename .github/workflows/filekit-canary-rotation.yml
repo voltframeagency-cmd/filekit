@@ -24,22 +24,22 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4 # v4.2.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4 # v4.1.0
+        uses: actions/setup-node@39370e3970a6d050c38000445c58f1158406437d # v4.1.0
         with:
           node-version: '22'
 
       - name: Setup Python
-        uses: actions/setup-python@v5 # v5.3.0
+        uses: actions/setup-python@0b93645e9fea7312ecced27e396d6c364c8d20de # v5.3.0
         with:
           python-version: '3.11'
 
       - name: Install Dependencies
+        working-directory: server/containers/office-worker
         run: |
-          npm ci || npm install
-          pip install --upgrade pip
+          npm ci
 
       - name: Generate and Register Masked Canary Secrets
         id: gen_secrets
@@ -65,62 +65,37 @@ jobs:
       - name: Run Security Audit
         working-directory: server/containers/office-worker
         run: |
-          python run_security_audit.py > security_audit_raw.log
-          cat security_audit_raw.log
+          python run_security_audit.py
 
       - name: Run Authenticated Canary Test Suite
         if: ${{ inputs.run_full_suite }}
+        env:
+          RUN_FULL_SUITE: ${{ inputs.run_full_suite }}
         working-directory: server/containers/office-worker
         run: |
-          python run_30job_stability_matrix.py || true
-
-      - name: Sanitize and Export Artifacts
-        working-directory: server/containers/office-worker
-        run: |
-          python -c "
-          import json, os
-          summary = {
-              'rotationCompleted': True,
-              'randomInvalidBearerRejected': True,
-              'randomInvalidAdminRejected': True,
-              'currentBearerAuthorized': True,
-              'currentAdminAuthorized': True,
-              'githubMaskingRegistered': True,
-              'repositorySecretScanMatches': 0,
-              'artifactSecretScanMatches': 0,
-              'temporaryFileSecretScanMatches': 0,
-              'testSuiteStatus': 'PASSED',
-              'workerVersionId': '1ecf726c-6d1f-46b1-8a73-363057193d30',
-              'workflowRunId': '${{ github.run_id }}',
-              'gitSha': '${{ github.sha }}'
-          }
-          with open('sanitized_rotation_summary.json', 'w') as f:
-              json.dump(summary, f, indent=2)
-          "
+          test -f run_30job_stability_matrix.py
+          python run_30job_stability_matrix.py
 
       - name: Secret Scan Verification
         working-directory: server/containers/office-worker
         run: |
-          python -c "
-          import os
-          b = os.environ['CANARY_BEARER_TOKEN']
-          a = os.environ['CANARY_ADMIN_SECRET']
-          for fname in os.listdir('.'):
-              if fname.endswith('.json') or fname.endswith('.log'):
-                  content = open(fname, 'r', errors='ignore').read()
-                  if b in content or a in content:
-                      raise ValueError(f'SECRET EXPOSURE DETECTED IN {fname}')
-          print('SECRET_ARTIFACT_SCAN_MATCHES = 0 (ALL ARTIFACTS CLEAN)')
-          "
+          python run_secret_scan.py
+
+      - name: Sanitize and Export Artifacts
+        env:
+          RUN_FULL_SUITE: ${{ inputs.run_full_suite }}
+        working-directory: server/containers/office-worker
+        run: |
+          python build_sanitized_summary.py
 
       - name: Clean Up Temporary Secret Memory Files
         if: always()
         working-directory: server/containers/office-worker
         run: |
-          rm -f _sec_store.py security_audit_raw.log
+          rm -f _sec_store.py security_audit_raw.log security_authorization_results.json secret_scan_results.json 30job_stability_matrix_results.json
 
       - name: Upload Sanitized Evidence Artifact
-        uses: actions/upload-artifact@v4 # v4.6.0
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           name: sanitized-canary-rotation-evidence
           path: server/containers/office-worker/sanitized_rotation_summary.json
