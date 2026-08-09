@@ -173,7 +173,8 @@ def main():
             "clientWallMs": wall_ms
         })
 
-    all_passed = (first_attempt_successes == 30 and unexplained_5xx == 0 and client_timeouts == 0 and corrupt_outputs == 0)
+    telemetry_gate_passed = (telemetry_complete == 30)
+    all_passed = (first_attempt_successes == 30 and unexplained_5xx == 0 and client_timeouts == 0 and corrupt_outputs == 0 and telemetry_gate_passed)
 
     summary_data = {
         "engineFamily": "OFFICE_TO_PDF",
@@ -185,7 +186,7 @@ def main():
         "clientTimeouts": client_timeouts,
         "corruptOutputs": corrupt_outputs,
         "telemetryComplete": f"{telemetry_complete}/30",
-        "retainedR2Objects": 0,
+        "telemetryGatePassed": telemetry_gate_passed,
         "timingPercentiles": {
             "documentConversionP50": percentile(all_doc_conv, 50),
             "containerTotalP50": percentile(all_container_total, 50),
@@ -209,9 +210,13 @@ def main():
     print(f"Client Timeouts                   : {client_timeouts}")
     print(f"Corrupt Outputs                   : {corrupt_outputs}")
     print(f"Telemetry Complete                : {telemetry_complete}/30")
-    print(f"Retained R2 Objects               : 0")
+    print(f"Telemetry Gate Passed             : {telemetry_gate_passed}")
     print("=" * 80)
     print(f"PPTX_FIRST_ATTEMPT_STABILITY: {'PASSED_30_OF_30' if all_passed else 'FAILED'}")
+
+    if not telemetry_gate_passed:
+        print(f"\n[FAIL CLOSED] Telemetry completeness gate failed: {telemetry_complete}/30 (required 30/30)")
+        sys.exit(1)
 
     if not all_passed:
         print("\n[FAIL CLOSED] 30-Job Stability Matrix criteria not satisfied.")
@@ -221,3 +226,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
