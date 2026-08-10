@@ -2,102 +2,134 @@ name: FileKit Canary Blind Secret Rotation & Authenticated Audit
 
 on:
   workflow_dispatch:
-      inputs:
-            run_full_suite:
-                    description: 'Run 30-job stability suite in runner'
-                            required: false
-                                    type: boolean
-                                            default: true
+    inputs:
+      run_full_suite:
+        description: 'Run 30-job stability suite in runner'
+        required: false
+        type: boolean
+        default: true
 
-                                            concurrency:
-                                              group: filekit-canary-rotation
-                                                cancel-in-progress: false
+concurrency:
+  group: filekit-canary-rotation
+  cancel-in-progress: false
 
-                                                jobs:
-                                                  rotate-and-audit:
-                                                      name: Blind Secret Rotation & Audit
-                                                          runs-on: ubuntu-latest
-                                                              environment: filekit-canary
-                                                                  permissions:
-                                                                        contents: read
-                                                                            timeout-minutes: 30
+jobs:
+  validate-yaml:
+    name: Validate Workflow YAML Syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-                                                                                steps:
-                                                                                      - name: Checkout Code
-                                                                                              uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Python
+        uses: actions/setup-python@0b93645e9fea7312ecced27e396d6c364c8d20de # v5.3.0
+        with:
+          python-version: '3.11'
 
-                                                                                                    - name: Setup Node.js
-                                                                                                            uses: actions/setup-node@39370e3970a6d050c38000445c58f1158406437d # v4.1.0
-                                                                                                                    with:
-                                                                                                                              node-version: '22'
-                                                                                                                              
-                                                                                                                                    - name: Setup Python
-                                                                                                                                            uses: actions/setup-python@0b93645e9fea7312ecced27e396d6c364c8d20de # v5.3.0
-                                                                                                                                                    with:
-                                                                                                                                                              python-version: '3.11'
-                                                                                                                                                              
-                                                                                                                                                                    - name: Install Dependencies
-                                                                                                                                                                            working-directory: server/containers/office-worker
-                                                                                                                                                                                    run: |
-                                                                                                                                                                                              npm ci
-                                                                                                                                                                                              
-                                                                                                                                                                                                    - name: Generate and Register Masked Canary Secrets
-                                                                                                                                                                                                            id: gen_secrets
-                                                                                                                                                                                                                    run: |
-                                                                                                                                                                                                                              BEARER=$(python3 -c "import secrets; print(secrets.token_hex(32))")
-                                                                                                                                                                                                                                        ADMIN=$(python3 -c "import secrets; print(secrets.token_hex(32))")
-                                                                                                                                                                                                                                                  
-                                                                                                                                                                                                                                                            echo "::add-mask::$BEARER"
-                                                                                                                                                                                                                                                                      echo "::add-mask::$ADMIN"
-                                                                                                                                                                                                                                                                                
-                                                                                                                                                                                                                                                                                          echo "CANARY_BEARER_TOKEN=$BEARER" >> $GITHUB_ENV
-                                                                                                                                                                                                                                                                                                    echo "CANARY_ADMIN_SECRET=$ADMIN" >> $GITHUB_ENV
-                                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                                          - name: Upload Secrets to Cloudflare Worker
-                                                                                                                                                                                                                                                                                                                  env:
-                                                                                                                                                                                                                                                                                                                            CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-                                                                                                                                                                                                                                                                                                                                      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
-                                                                                                                                                                                                                                                                                                                                              working-directory: server/containers/office-worker
-                                                                                                                                                                                                                                                                                                                                                      run: |
-                                                                                                                                                                                                                                                                                                                                                                printf "%s\n" "$CANARY_BEARER_TOKEN" | npx wrangler secret put CANARY_BEARER_TOKEN
-                                                                                                                                                                                                                                                                                                                                                                   
-                                                                                                                                                                                                                                                                                                                                                                             printf "%s\n" "$CANARY_ADMIN_SECRET" | npx wrangler secret put CANARY_ADMIN_SECRET
-                                                                                                                                                                                                                                                                                                                                                                             
-                                                                                                                                                                                                                                                                                                                                                                                   - name: Run Security Audit
-                                                                                                                                                                                                                                                                                                                                                                                           working-directory: server/containers/office-worker
-                                                                                                                                                                                                                                                                                                                                                                                                   run: |
-                                                                                                                                                                                                                                                                                                                                                                                                             python run_security_audit.py
-                                                                                                                                                                                                                                                                                                                                                                                                             
-                                                                                                                                                                                                                                                                                                                                                                                                                   - name: Run Authenticated Canary Test Suite
-                                                                                                                                                                                                                                                                                                                                                                                                                           if: ${{ inputs.run_full_suite }}
-                                                                                                                                                                                                                                                                                                                                                                                                                                   env:
-                                                                                                                                                                                                                                                                                                                                                                                                                                             RUN_FULL_SUITE: ${{ inputs.run_full_suite }}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                     working-directory: server/containers/office-worker
-                                                                                                                                                                                                                                                                                                                                                                                                                                                             run: |
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                       test -f run_30job_stability_matrix.py
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 python run_30job_stability_matrix.py
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       - name: Secret Scan Verification
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               working-directory: server/containers/office-worker
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       run: |
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 python run_secret_scan.py
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       - name: Sanitize and Export Artifacts
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               env:
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         RUN_FULL_SUITE: ${{ inputs.run_full_suite }}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 working-directory: server/containers/office-worker
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         run: |
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   python build_sanitized_summary.py
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         - name: Clean Up Temporary Secret Memory Files
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 if: always()
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         working-directory: server/containers/office-worker
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 run: |
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           rm -f _sec_store.py security_audit_raw.log security_authorization_results.json secret_scan_results.json 30job_stability_matrix_results.json
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 - name: Upload Sanitized Evidence Artifact
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 with:
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           name: sanitized-canary-rotation-evidence
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     path: server/containers/office-worker/sanitized_rotation_summary.json
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Validate Workflow YAML
+        run: |
+          python -c "import yaml; yaml.safe_load(open('.github/workflows/filekit-canary-rotation.yml'))"
+          echo "YAML_PARSE_VALID=true"
+          yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable, document-start: disable}}" .github/workflows/filekit-canary-rotation.yml
+          echo "YAML_LINT_VALID=true"
+
+  rotate-and-audit:
+    name: Blind Secret Rotation & Audit
+    needs: validate-yaml
+    runs-on: ubuntu-latest
+    environment: filekit-canary
+    permissions:
+      contents: read
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c38000445c58f1158406437d # v4.1.0
+        with:
+          node-version: '22'
+
+      - name: Setup Python
+        uses: actions/setup-python@0b93645e9fea7312ecced27e396d6c364c8d20de # v5.3.0
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        working-directory: server/containers/office-worker
+        run: |
+          npm ci
+
+      - name: Generate and Register Masked Canary Secrets
+        id: gen_secrets
+        run: |
+          BEARER=$(python3 -c "import secrets; print(secrets.token_hex(32))")
+          ADMIN=$(python3 -c "import secrets; print(secrets.token_hex(32))")
+
+          echo "::add-mask::$BEARER"
+          echo "::add-mask::$ADMIN"
+
+          echo "CANARY_BEARER_TOKEN=$BEARER" >> $GITHUB_ENV
+          echo "CANARY_ADMIN_SECRET=$ADMIN" >> $GITHUB_ENV
+
+      - name: Upload Secrets to Cloudflare Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: server/containers/office-worker
+        run: |
+          printf "%s\n" "$CANARY_BEARER_TOKEN" | npx wrangler secret put CANARY_BEARER_TOKEN
+          printf "%s\n" "$CANARY_ADMIN_SECRET" | npx wrangler secret put CANARY_ADMIN_SECRET
+
+      - name: Run Security Audit
+        working-directory: server/containers/office-worker
+        run: |
+          python run_security_audit.py
+
+      - name: Run Authenticated Canary Test Suite
+        if: ${{ inputs.run_full_suite }}
+        env:
+          RUN_FULL_SUITE: ${{ inputs.run_full_suite }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: server/containers/office-worker
+        run: |
+          test -f run_30job_stability_matrix.py
+          python run_30job_stability_matrix.py
+
+      - name: R2 Retention Audit
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: server/containers/office-worker
+        run: |
+          python run_r2_retention_audit.py
+
+      - name: Secret Scan Verification
+        working-directory: server/containers/office-worker
+        run: |
+          python run_secret_scan.py
+
+      - name: Sanitize and Export Artifacts
+        env:
+          RUN_FULL_SUITE: ${{ inputs.run_full_suite }}
+        working-directory: server/containers/office-worker
+        run: |
+          python build_sanitized_summary.py
+
+      - name: Clean Up Temporary Secret Memory Files
+        if: always()
+        working-directory: server/containers/office-worker
+        run: |
+          rm -f _sec_store.py security_audit_raw.log security_authorization_results.json secret_scan_results.json 30job_stability_matrix_results.json r2_retention_audit_results.json
+
+      - name: Upload Sanitized Evidence Artifact
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: sanitized-canary-rotation-evidence
+          path: server/containers/office-worker/sanitized_rotation_summary.json
