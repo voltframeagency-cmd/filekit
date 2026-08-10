@@ -109,7 +109,7 @@ temp_matches, temp_exposed = scan_directory(runner_temp, github_transport_paths)
 # and are NOT GitHub transport files (those were already excluded above)
 user_created_temp_matches = temp_matches
 
-total_matches = repo_matches + user_created_temp_matches
+total_matches = repo_matches + artifact_matches + user_created_temp_matches
 all_passed = (total_matches == 0)
 
 results_payload = {
@@ -119,7 +119,7 @@ results_payload = {
     "githubTransportFilesExcluded": len(github_transport_paths),
     "totalMatches": total_matches,
     "passed": all_passed,
-    "exposedFiles": repo_exposed + temp_exposed,
+    "exposedFiles": repo_exposed + artifact_exposed + temp_exposed,
     "scanBoundary": {
         "repositoryFiles": "SCANNED",
         "userCreatedTempFiles": "SCANNED",
