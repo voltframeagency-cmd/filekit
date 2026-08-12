@@ -358,13 +358,15 @@ export default {
             return responsePayload;
           }
 
+          const reqContentType = request.headers.get("content-type") || "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
           for (let attempt = 0; attempt < 10; attempt++) {
             try {
               const reqClone = new Request("http://container/convert", {
                 method: "POST",
-                headers: { "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+                headers: { "Content-Type": reqContentType },
                 body: docxBuffer
               });
+
               containerRes = await doStub.fetch(reqClone);
               if (containerRes && containerRes.ok) {
                 break;
