@@ -113,9 +113,10 @@ def main():
             "Authorization": f"Bearer {BEARER_TOKEN}",
             "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             "User-Agent": "FileKit30JobMatrixRunner/1.0",
-            "X-Canary-Run-Id": run_id,
+            "X-Canary-Run-Id": batch_run_id,
             "X-Canary-Job-Id": f"job_30j_{idx}"
         }
+
 
         req = urllib.request.Request(CANARY_ENDPOINT, data=job["data"], headers=headers, method="POST")
         start_time = time.time()
