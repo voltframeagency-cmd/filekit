@@ -128,7 +128,8 @@ def main():
 
         try:
             # Single attempt per request - no client retries
-            with urllib.request.urlopen(req, timeout=90) as res:
+            with urllib.request.urlopen(req, timeout=180) as res:
+
                 res_status = res.status
                 body_bytes = res.read()
                 res_headers = dict(res.headers)
