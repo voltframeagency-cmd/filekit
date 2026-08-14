@@ -125,7 +125,7 @@ def main():
     else:
         print("[Warning] Pre-warm completed without explicit 200 OK, proceeding to matrix.", flush=True)
 
-    time.sleep(1.0)
+    time.sleep(2.0)
 
     for job in matrix_jobs:
         idx = job["jobIndex"]
@@ -224,11 +224,11 @@ def main():
         if res_status == 401 or failure_class in ("PROPAGATION_FAILURE", "CLIENT_TIMEOUT"):
             diag_reason = "propagation_verification" if res_status == 401 else "timeout_verification"
             print(f"  [Diagnostic Probe] Triggering non-modifying diagnostic probe ({diag_reason})...")
-            for diag_attempt in range(1, 4):
-                time.sleep(2.0)
+            for diag_attempt in range(1, 3):
+                time.sleep(1.0)
                 try:
                     diag_req = urllib.request.Request(CANARY_ENDPOINT, data=job["data"], headers=headers, method="POST")
-                    with urllib.request.urlopen(diag_req, timeout=30) as diag_res:
+                    with urllib.request.urlopen(diag_req, timeout=10) as diag_res:
                         d_status = diag_res.status
                         d_pdf_valid = True
                         diagnostic_probes.append({
