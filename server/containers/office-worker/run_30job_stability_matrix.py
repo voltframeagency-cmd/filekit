@@ -32,7 +32,7 @@ import sys
 from create_pptx_real_fidelity_corpus import generate_real_fidelity_corpus
 
 if hasattr(sys.stdout, 'reconfigure'):
-    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stdout.reconfigure(encoding='utf-8', line_buffering=True)
 
 CANARY_ENDPOINT = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/convert"
 
@@ -58,9 +58,9 @@ def percentile(data, pct):
     return round(d0 + d1, 2)
 
 def main():
-    print("=" * 80)
-    print("FILEKIT 30-JOB REPRESENTATIVE STABILITY MATRIX (NO CLIENT RETRIES)")
-    print("=" * 80)
+    print("=" * 80, flush=True)
+    print("FILEKIT 30-JOB REPRESENTATIVE STABILITY MATRIX (NO CLIENT RETRIES)", flush=True)
+    print("=" * 80, flush=True)
 
     corpus = generate_real_fidelity_corpus()
 
@@ -100,7 +100,9 @@ def main():
     batch_run_id = f"batch_30job_{int(time.time())}"
 
     # Container Pre-Warm Probe: Ensure microVM is booted and healthy before the 30-job matrix begins
-    print("\n--- Pre-Warming Container Instance for Batch ---")
+    print("\n--- Pre-Warming Container Instance for Batch ---", flush=True)
+    from create_pptx_smoke_corpus import build_openxml_pptx
+    warm_data = build_openxml_pptx(title="Prewarm", num_slides=1)
     warm_headers = {
         "Authorization": f"Bearer {BEARER_TOKEN}",
         "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -108,21 +110,20 @@ def main():
         "X-Canary-Run-Id": batch_run_id,
         "X-Canary-Job-Id": "job_prewarm"
     }
-    warm_data = corpus[0]["data"]
-    for warm_attempt in range(1, 10):
+    for warm_attempt in range(1, 4):
         try:
-            print(f"[Pre-Warm Attempt {warm_attempt}/10] Sending probe to container...")
+            print(f"[Pre-Warm Attempt {warm_attempt}/3] Sending 1-slide probe to container...", flush=True)
             warm_req = urllib.request.Request(CANARY_ENDPOINT, data=warm_data, headers=warm_headers, method="POST")
-            with urllib.request.urlopen(warm_req, timeout=120) as w_res:
+            with urllib.request.urlopen(warm_req, timeout=90) as w_res:
                 w_bytes = w_res.read()
                 if w_res.status == 200 and (w_bytes.startswith(b"%PDF-") or b"pdfMagicBytesVerified" in w_bytes):
-                    print(f"[Pre-Warm Ready] Container is warm and verified (Attempt {warm_attempt}).")
+                    print(f"[Pre-Warm Ready] Container is warm and verified (Attempt {warm_attempt}).", flush=True)
                     break
         except Exception as w_err:
-            print(f"[Pre-Warm Waiting] {w_err} (Attempt {warm_attempt}/10)")
-            time.sleep(3.0)
+            print(f"[Pre-Warm Waiting] {w_err} (Attempt {warm_attempt}/3)", flush=True)
+            time.sleep(2.0)
     else:
-        print("[Warning] Pre-warm completed without explicit 200 OK, proceeding to matrix.")
+        print("[Warning] Pre-warm completed without explicit 200 OK, proceeding to matrix.", flush=True)
 
     time.sleep(1.0)
 
@@ -155,10 +156,7 @@ def main():
 
         try:
             # Single attempt per request - no client retries
-            with urllib.request.urlopen(req, timeout=120) as res:
-
-
-
+            with urllib.request.urlopen(req, timeout=90) as res:
                 res_status = res.status
                 body_bytes = res.read()
                 res_headers = dict(res.headers)
