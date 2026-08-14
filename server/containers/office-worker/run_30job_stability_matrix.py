@@ -195,6 +195,43 @@ def main():
               f"FailureClass: {failure_class} | "
               f"Conversion: {doc_conv_ms}ms | ContainerTotal: {container_total_ms}ms | Wall: {wall_ms}ms")
 
+        diagnostic_probes = []
+        if res_status == 401 or failure_class in ("PROPAGATION_FAILURE", "CLIENT_TIMEOUT"):
+            diag_reason = "propagation_verification" if res_status == 401 else "timeout_verification"
+            print(f"  [Diagnostic Probe] Triggering non-modifying diagnostic probe ({diag_reason})...")
+            for diag_attempt in range(1, 4):
+                time.sleep(2.0)
+                try:
+                    diag_req = urllib.request.Request(CANARY_ENDPOINT, data=job["data"], headers=headers, method="POST")
+                    with urllib.request.urlopen(diag_req, timeout=30) as diag_res:
+                        d_status = diag_res.status
+                        d_pdf_valid = True
+                        diagnostic_probes.append({
+                            "attempt": diag_attempt,
+                            "httpStatus": d_status,
+                            "pdfValid": d_pdf_valid,
+                            "classification": "PROPAGATION_RECOVERED" if res_status == 401 else "TIMEOUT_RECOVERED"
+                        })
+                        print(f"  [Diagnostic Probe {diag_attempt}] Status: {d_status} (Passed)")
+                        break
+                except urllib.error.HTTPError as de:
+                    d_status = de.code
+                    diagnostic_probes.append({
+                        "attempt": diag_attempt,
+                        "httpStatus": d_status,
+                        "pdfValid": False,
+                        "classification": f"HTTP_{d_status}"
+                    })
+                    print(f"  [Diagnostic Probe {diag_attempt}] HTTP {d_status}")
+                except Exception as de:
+                    diagnostic_probes.append({
+                        "attempt": diag_attempt,
+                        "httpStatus": -1,
+                        "exceptionClass": type(de).__name__,
+                        "classification": "CLIENT_TIMEOUT"
+                    })
+                    print(f"  [Diagnostic Probe {diag_attempt}] Exception: {type(de).__name__}")
+
         results.append({
             "jobIndex": idx,
             "category": cat,
@@ -203,6 +240,7 @@ def main():
             "failureClass": failure_class,
             "exceptionClass": exception_class,
             "responseReceived": response_received,
+            "diagnosticProbes": diagnostic_probes,
             "cloudflareInstanceId": cf_instance_id,
             "processBootId": boot_id,
             "documentConversionMs": doc_conv_ms,
