@@ -99,6 +99,33 @@ def main():
 
     batch_run_id = f"batch_30job_{int(time.time())}"
 
+    # Container Pre-Warm Probe: Ensure microVM is booted and healthy before the 30-job matrix begins
+    print("\n--- Pre-Warming Container Instance for Batch ---")
+    warm_headers = {
+        "Authorization": f"Bearer {BEARER_TOKEN}",
+        "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "User-Agent": "FileKit30JobMatrixRunner/1.0",
+        "X-Canary-Run-Id": batch_run_id,
+        "X-Canary-Job-Id": "job_prewarm"
+    }
+    warm_data = corpus[0]["data"]
+    for warm_attempt in range(1, 10):
+        try:
+            print(f"[Pre-Warm Attempt {warm_attempt}/10] Sending probe to container...")
+            warm_req = urllib.request.Request(CANARY_ENDPOINT, data=warm_data, headers=warm_headers, method="POST")
+            with urllib.request.urlopen(warm_req, timeout=120) as w_res:
+                w_bytes = w_res.read()
+                if w_res.status == 200 and (w_bytes.startswith(b"%PDF-") or b"pdfMagicBytesVerified" in w_bytes):
+                    print(f"[Pre-Warm Ready] Container is warm and verified (Attempt {warm_attempt}).")
+                    break
+        except Exception as w_err:
+            print(f"[Pre-Warm Waiting] {w_err} (Attempt {warm_attempt}/10)")
+            time.sleep(3.0)
+    else:
+        print("[Warning] Pre-warm completed without explicit 200 OK, proceeding to matrix.")
+
+    time.sleep(1.0)
+
     for job in matrix_jobs:
         idx = job["jobIndex"]
         cat = job["category"]
