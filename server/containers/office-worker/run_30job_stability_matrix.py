@@ -102,10 +102,10 @@ def main():
     for job in matrix_jobs:
         idx = job["jobIndex"]
         cat = job["category"]
-        run_id = f"run_30j_{idx}_{int(time.time())}"
+        job_id = f"job_30j_{idx}"
 
         if idx > 1:
-            time.sleep(4.0)
+            time.sleep(1.0)
 
         print(f"\n[Job {idx}/30] Category: {cat}")
 
@@ -113,8 +113,8 @@ def main():
             "Authorization": f"Bearer {BEARER_TOKEN}",
             "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             "User-Agent": "FileKit30JobMatrixRunner/1.0",
-            "X-Canary-Run-Id": run_id,
-            "X-Canary-Job-Id": f"job_30j_{idx}"
+            "X-Canary-Run-Id": batch_run_id,
+            "X-Canary-Job-Id": job_id
         }
 
         req = urllib.request.Request(CANARY_ENDPOINT, data=job["data"], headers=headers, method="POST")
@@ -128,7 +128,7 @@ def main():
 
         try:
             # Single attempt per request - no client retries
-            with urllib.request.urlopen(req, timeout=90) as res:
+            with urllib.request.urlopen(req, timeout=120) as res:
 
 
 
