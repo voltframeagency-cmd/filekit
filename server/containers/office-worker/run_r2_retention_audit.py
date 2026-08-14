@@ -28,12 +28,24 @@ retained_count = -1  # -1 means "could not determine"
 retained_keys = []
 api_error = None
 
+# Determine candidate runId to audit
+run_id = os.environ.get("CANARY_RUN_ID", "")
+if not run_id:
+    try:
+        with open("30job_stability_matrix_results.json", "r", encoding="utf-8") as f:
+            mat_data = json.load(f)
+            run_id = mat_data.get("batchRunId", "")
+    except Exception:
+        pass
+if not run_id:
+    run_id = "default"
+
 # Strategy 1: Worker Admin API (authenticated via CANARY_ADMIN_SECRET)
 if ADMIN_SECRET:
     try:
         req = urllib.request.Request(
             ADMIN_URL,
-            data=json.dumps({"runId": "", "dryRun": True}).encode('utf-8'),
+            data=json.dumps({"runId": run_id, "dryRun": True}).encode('utf-8'),
             headers={
                 "X-Canary-Admin-Secret": ADMIN_SECRET,
                 "Content-Type": "application/json",
@@ -45,13 +57,35 @@ if ADMIN_SECRET:
             body = json.loads(res.read().decode("utf-8"))
             retained_count = body.get("matchingObjectCount", 0)
             retained_keys = body.get("objects", [])
-            print(f"[Worker Admin API] R2 retention query successful. Retained objects: {retained_count}")
+            print(f"[Worker Admin API] R2 retention query successful for runId '{run_id}'. Retained objects: {retained_count}")
             api_error = None
     except Exception as e:
         print(f"[Worker Admin API Warning] {e}")
         api_error = str(e)
 
-# Strategy 2: Cloudflare REST API
+# Strategy 2: Worker Inspect API (authenticated via CANARY_BEARER_TOKEN)
+if retained_count == -1 and BEARER_TOKEN:
+    try:
+        inspect_url = f"https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/inspect?runId={run_id}"
+        req = urllib.request.Request(
+            inspect_url,
+            headers={
+                "Authorization": f"Bearer {BEARER_TOKEN}",
+                "User-Agent": "FileKitCanaryRunner/1.0"
+            },
+            method="GET"
+        )
+        with urllib.request.urlopen(req) as res:
+            body = json.loads(res.read().decode("utf-8"))
+            retained_count = body.get("remainingObjectCount", 0)
+            retained_keys = body.get("objects", [])
+            print(f"[Worker Inspect API] R2 retention query successful for runId '{run_id}'. Retained objects: {retained_count}")
+            api_error = None
+    except Exception as e:
+        print(f"[Worker Inspect API Warning] {e}")
+        api_error = str(e)
+
+# Strategy 3: Cloudflare REST API
 if retained_count == -1 and CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID:
     list_url = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/r2/buckets/{R2_BUCKET_NAME}/objects"
     req = urllib.request.Request(
