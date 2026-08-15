@@ -26,7 +26,7 @@ if not bearer_token or not admin_secret:
 tokens_to_scan = [bearer_token, admin_secret]
 
 # Excluded directory patterns
-EXCLUDED_DIRS = {".git", "node_modules", ".venv", "__pycache__", ".wrangler", "dist", "build"}
+EXCLUDED_DIRS = {".git", "node_modules", ".venv", "__pycache__", ".wrangler", "dist", "build", "_runner_file_commands"}
 EXCLUDED_EXTS = {".png", ".jpg", ".jpeg", ".ico", ".pdf", ".docx", ".xlsx", ".pptx", ".exe", ".zip", ".tar", ".gz", ".pyc"}
 
 # GitHub-managed ephemeral transport files — these are EXPECTED to contain
