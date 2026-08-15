@@ -119,19 +119,19 @@ def main():
             "X-Canary-Job-Id": f"job_prewarm_{cat_name.lower()}"
         }
         container_ready = False
-        for warm_attempt in range(1, 11):
+        for warm_attempt in range(1, 6):
             try:
-                print(f"[{cat_name} Pre-Warm Attempt {warm_attempt}/10] Sending 1-slide probe to container...", flush=True)
+                print(f"[{cat_name} Pre-Warm Attempt {warm_attempt}/5] Sending 1-slide probe to container...", flush=True)
                 warm_req = urllib.request.Request(CANARY_ENDPOINT, data=warm_data, headers=warm_headers, method="POST")
-                with urllib.request.urlopen(warm_req, timeout=30) as w_res:
+                with urllib.request.urlopen(warm_req, timeout=90) as w_res:
                     w_bytes = w_res.read()
                     if w_res.status == 200 and (w_bytes.startswith(b"%PDF-") or b"pdfMagicBytesVerified" in w_bytes):
                         print(f"[{cat_name} Pre-Warm Ready] Container is warm and verified (Attempt {warm_attempt}).", flush=True)
                         container_ready = True
                         break
             except Exception as w_err:
-                print(f"[{cat_name} Pre-Warm Waiting] {w_err} (Attempt {warm_attempt}/10)", flush=True)
-                time.sleep(2.0)
+                print(f"[{cat_name} Pre-Warm Waiting] {w_err} (Attempt {warm_attempt}/5)", flush=True)
+                time.sleep(3.0)
 
         if not container_ready:
             print(f"[FAIL CLOSED] Container instance for category {cat_name} could not be warmed.", flush=True)
