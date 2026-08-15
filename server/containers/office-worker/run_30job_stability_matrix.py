@@ -99,35 +99,32 @@ def main():
 
     batch_run_id = f"batch_30job_{int(time.time())}"
 
-    # Container Pre-Warm Probe: Ensure microVM is booted and healthy before the 30-job matrix begins
-    print("\n--- Pre-Warming Container Instance for Batch ---", flush=True)
+    # Pre-Warm 4 Container Pool Instances for high-throughput batch execution
+    print("\n--- Pre-Warming 4 Container Pool Instances for Batch ---", flush=True)
     from create_pptx_smoke_corpus import build_openxml_pptx
     warm_data = build_openxml_pptx(title="Prewarm", num_slides=1)
-    warm_headers = {
-        "Authorization": f"Bearer {BEARER_TOKEN}",
-        "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "User-Agent": "FileKit30JobMatrixRunner/1.0",
-        "X-Canary-Run-Id": batch_run_id,
-        "X-Canary-Job-Id": "job_prewarm"
-    }
-    container_ready = False
-    for warm_attempt in range(1, 16):
-        try:
-            print(f"[Pre-Warm Attempt {warm_attempt}/15] Sending 1-slide probe to container...", flush=True)
-            warm_req = urllib.request.Request(CANARY_ENDPOINT, data=warm_data, headers=warm_headers, method="POST")
-            with urllib.request.urlopen(warm_req, timeout=30) as w_res:
-                w_bytes = w_res.read()
-                if w_res.status == 200 and (w_bytes.startswith(b"%PDF-") or b"pdfMagicBytesVerified" in w_bytes):
-                    print(f"[Pre-Warm Ready] Container is warm and verified (Attempt {warm_attempt}).", flush=True)
-                    container_ready = True
-                    break
-        except Exception as w_err:
-            print(f"[Pre-Warm Waiting] {w_err} (Attempt {warm_attempt}/15)", flush=True)
-            time.sleep(3.0)
-
-    if not container_ready:
-        print("[FAIL CLOSED] Container instance could not be warmed before starting matrix.", flush=True)
-        sys.exit(1)
+    
+    for p_idx in range(4):
+        p_run_id = f"{batch_run_id}_pool_{p_idx}"
+        p_headers = {
+            "Authorization": f"Bearer {BEARER_TOKEN}",
+            "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "User-Agent": "FileKit30JobMatrixRunner/1.0",
+            "X-Canary-Run-Id": p_run_id,
+            "X-Canary-Job-Id": f"job_prewarm_p{p_idx}"
+        }
+        for warm_attempt in range(1, 10):
+            try:
+                print(f"[Pre-Warm Pool {p_idx} Attempt {warm_attempt}/9] Sending probe to instance...", flush=True)
+                warm_req = urllib.request.Request(CANARY_ENDPOINT, data=warm_data, headers=p_headers, method="POST")
+                with urllib.request.urlopen(warm_req, timeout=35) as w_res:
+                    w_bytes = w_res.read()
+                    if w_res.status == 200 and (w_bytes.startswith(b"%PDF-") or b"pdfMagicBytesVerified" in w_bytes):
+                        print(f"[Pre-Warm Pool {p_idx} Ready] Instance {p_idx} is warm and verified.", flush=True)
+                        break
+            except Exception as w_err:
+                print(f"[Pre-Warm Pool {p_idx} Waiting] {w_err}", flush=True)
+                time.sleep(2.0)
 
     time.sleep(2.0)
 
@@ -135,12 +132,13 @@ def main():
         idx = job["jobIndex"]
         cat = job["category"]
         job_id = f"job_30j_{idx}"
-        run_id = f"run_30j_{idx}_{int(time.time())}"
+        pool_id = idx % 4
+        run_id = f"{batch_run_id}_pool_{pool_id}"
 
         if idx > 1:
-            time.sleep(3.0)
+            time.sleep(1.5)
 
-        print(f"\n[Job {idx}/30] Category: {cat}")
+        print(f"\n[Job {idx}/30] Category: {cat} (Pool Instance: {pool_id})")
 
         headers = {
             "Authorization": f"Bearer {BEARER_TOKEN}",
