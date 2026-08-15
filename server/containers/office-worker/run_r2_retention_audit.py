@@ -28,40 +28,57 @@ retained_count = -1  # -1 means "could not determine"
 retained_keys = []
 api_error = None
 
-# Determine candidate runId to audit
-run_id = os.environ.get("CANARY_RUN_ID", "")
-if not run_id:
+# Determine candidate runIds to audit
+run_ids = []
+env_run_id = os.environ.get("CANARY_RUN_ID", "")
+if env_run_id:
+    run_ids = [env_run_id]
+else:
     try:
         with open("30job_stability_matrix_results.json", "r", encoding="utf-8") as f:
             mat_data = json.load(f)
-            run_id = mat_data.get("batchRunId", "")
+            if "batchRunIds" in mat_data:
+                run_ids = mat_data["batchRunIds"]
+            elif "batchRunId" in mat_data:
+                run_ids = [mat_data["batchRunId"]]
     except Exception:
         pass
-if not run_id:
-    run_id = "default"
+if not run_ids:
+    run_ids = ["default"]
 
 # Strategy 1: Worker Admin API (authenticated via CANARY_ADMIN_SECRET)
 if ADMIN_SECRET:
-    try:
-        req = urllib.request.Request(
-            ADMIN_URL,
-            data=json.dumps({"runId": run_id, "dryRun": True}).encode('utf-8'),
-            headers={
-                "X-Canary-Admin-Secret": ADMIN_SECRET,
-                "Content-Type": "application/json",
-                "User-Agent": "FileKitCanaryRunner/1.0"
-            },
-            method="POST"
-        )
-        with urllib.request.urlopen(req) as res:
-            body = json.loads(res.read().decode("utf-8"))
-            retained_count = body.get("matchingObjectCount", 0)
-            retained_keys = body.get("objects", [])
-            print(f"[Worker Admin API] R2 retention query successful for runId '{run_id}'. Retained objects: {retained_count}")
-            api_error = None
-    except Exception as e:
-        print(f"[Worker Admin API Warning] {e}")
-        api_error = str(e)
+    total_retained = 0
+    all_retained_keys = []
+    admin_success = True
+    for r_id in run_ids:
+        try:
+            req = urllib.request.Request(
+                ADMIN_URL,
+                data=json.dumps({"runId": r_id, "dryRun": True}).encode('utf-8'),
+                headers={
+                    "X-Canary-Admin-Secret": ADMIN_SECRET,
+                    "Content-Type": "application/json",
+                    "User-Agent": "FileKitCanaryRunner/1.0"
+                },
+                method="POST"
+            )
+            with urllib.request.urlopen(req) as res:
+                body = json.loads(res.read().decode("utf-8"))
+                cnt = body.get("matchingObjectCount", 0)
+                total_retained += cnt
+                all_retained_keys.extend(body.get("objects", []))
+                print(f"[Worker Admin API] R2 retention query successful for runId '{r_id}'. Retained objects: {cnt}")
+        except Exception as e:
+            print(f"[Worker Admin API Warning] {e}")
+            api_error = str(e)
+            admin_success = False
+            break
+
+    if admin_success:
+        retained_count = total_retained
+        retained_keys = all_retained_keys
+        api_error = None
 
 # Strategy 2: Worker Inspect API (authenticated via CANARY_BEARER_TOKEN)
 if retained_count == -1 and BEARER_TOKEN:
