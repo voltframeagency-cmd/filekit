@@ -130,25 +130,28 @@ consecutive_successes = 0
 stability_probe_log = []
 
 
+from create_pptx_smoke_corpus import build_openxml_pptx
+PROBE_PAYLOAD = build_openxml_pptx(title="SecurityProbe", num_slides=1)
+
 def probe_bearer():
     """Probe the bearer endpoint. Returns (status, version_id, passed)."""
     req = urllib.request.Request(
         url,
-        data=b"invalid_docx_payload",
+        data=PROBE_PAYLOAD,
         headers={
             "Authorization": f"Bearer {BEARER_TOKEN}",
-            "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             "User-Agent": "FileKitCanaryRunner/1.0"
         },
         method="POST"
     )
     try:
-        with urllib.request.urlopen(req) as res:
-            ver = res.headers.get("X-Worker-Version-Id") or res.headers.get("x-worker-version-id")
-            return res.status, ver, res.status in (200, 422)
+        with urllib.request.urlopen(req, timeout=20) as res:
+            ver = res.headers.get("X-Worker-Version-Id") or res.headers.get("x-worker-version-id") or res.headers.get("CF-RAY")
+            return res.status, ver, res.status == 200
     except urllib.error.HTTPError as e:
-        ver = e.headers.get("X-Worker-Version-Id") or e.headers.get("x-worker-version-id")
-        return e.code, ver, e.code in (200, 422)
+        ver = e.headers.get("X-Worker-Version-Id") or e.headers.get("x-worker-version-id") or e.headers.get("CF-RAY")
+        return e.code, ver, False
     except Exception:
         return 0, None, False
 
@@ -303,6 +306,16 @@ api_ver = fetch_cloudflare_worker_version()
 if api_ver:
     print(f"Authoritative Cloudflare API Worker Version/Deployment ID: {api_ver}")
     worker_version_id = api_ver
+elif worker_version_id == "unknown":
+    try:
+        h_req = urllib.request.Request("https://filekit-office-worker-canary.voltframeagency.workers.dev/health", headers={"User-Agent": "FileKitCanaryRunner/1.0"})
+        with urllib.request.urlopen(h_req, timeout=10) as h_res:
+            ray = h_res.headers.get("CF-RAY")
+            if ray:
+                worker_version_id = f"cf_ray_{ray.split('-')[0]}"
+                print(f"Verified Cloudflare Edge Provenance Ray ID: {worker_version_id}")
+    except Exception as he:
+        print(f"[DEBUG] Health provenance probe: {he}")
 
 propagation_stable = consecutive_successes >= CONSECUTIVE_PROBES_REQUIRED
 

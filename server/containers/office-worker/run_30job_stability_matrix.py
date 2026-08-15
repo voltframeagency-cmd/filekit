@@ -134,7 +134,7 @@ def main():
         run_id = f"run_30j_{idx}_{int(time.time())}"
 
         if idx > 1:
-            time.sleep(3.0)
+            time.sleep(1.0)
 
         print(f"\n[Job {idx}/30] Category: {cat}")
 
@@ -142,7 +142,7 @@ def main():
             "Authorization": f"Bearer {BEARER_TOKEN}",
             "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             "User-Agent": "FileKit30JobMatrixRunner/1.0",
-            "X-Canary-Run-Id": run_id,
+            "X-Canary-Run-Id": batch_run_id,
             "X-Canary-Job-Id": job_id
         }
 
