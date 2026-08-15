@@ -72,7 +72,7 @@ def main():
         ("LARGE_DECK", 4)
     ]
 
-    batch_run_id = "filekit-canary-stable-instance"
+    batch_run_id = f"canary_run_{int(time.time())}"
 
     matrix_jobs = []
     job_idx = 1
@@ -150,6 +150,28 @@ def main():
     if not container_ready:
         print("[FAIL CLOSED] Container instance could not be warmed before starting matrix.", flush=True)
         sys.exit(1)
+
+    time.sleep(2.0)
+
+    # Post-Warm Cleanup: Ensure zero residual objects from pre-warm attempts before the 30-job matrix begins
+    if admin_secret:
+        try:
+            cleanup_url = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/admin/canary-runs/cleanup"
+            cleanup_req = urllib.request.Request(
+                cleanup_url,
+                data=json.dumps({"runId": batch_run_id, "dryRun": False}).encode('utf-8'),
+                headers={
+                    "X-Canary-Admin-Secret": admin_secret,
+                    "Content-Type": "application/json",
+                    "User-Agent": "FileKit30JobMatrixRunner/1.0"
+                },
+                method="POST"
+            )
+            with urllib.request.urlopen(cleanup_req, timeout=10) as c_res:
+                c_body = json.loads(c_res.read().decode('utf-8'))
+                print(f"[Post-Warm Cleanup] Pre-warm residual R2 objects purged: {c_body.get('deletedCount', 0)}", flush=True)
+        except Exception as c_err:
+            print(f"[Post-Warm Cleanup Notice] {c_err}", flush=True)
 
     print("[Ready] Container settled and verified. Starting 30-job stability matrix in 6 seconds...", flush=True)
     time.sleep(6.0)
