@@ -72,7 +72,7 @@ def main():
         ("LARGE_DECK", 4)
     ]
 
-    batch_run_id = f"canary_run_{int(time.time())}"
+    batch_run_id = "filekit-canary-stable-instance"
 
     matrix_jobs = []
     job_idx = 1
