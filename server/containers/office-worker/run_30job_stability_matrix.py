@@ -285,8 +285,8 @@ def main():
 
     summary_data = {
         "engineFamily": "OFFICE_TO_PDF",
-        "batchRunId": list(category_run_ids.values())[0],
-        "batchRunIds": list(category_run_ids.values()),
+        "batchRunId": batch_run_id,
+        "batchRunIds": [batch_run_id],
         "totalJobs": 30,
         "firstAttemptSuccesses": f"{first_attempt_successes}/30",
         "eventualSuccesses": f"{first_attempt_successes}/30",
