@@ -100,6 +100,27 @@ def main():
     all_worker_total = []
     all_client_wall = []
 
+    # Pre-Run Retention Cleanup: Clean up any stale canary keys from previous test cycles
+    admin_secret = os.environ.get("CANARY_ADMIN_SECRET", "")
+    if admin_secret:
+        try:
+            cleanup_url = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/admin/canary-runs/cleanup"
+            cleanup_req = urllib.request.Request(
+                cleanup_url,
+                data=json.dumps({"runId": batch_run_id, "dryRun": False}).encode('utf-8'),
+                headers={
+                    "X-Canary-Admin-Secret": admin_secret,
+                    "Content-Type": "application/json",
+                    "User-Agent": "FileKit30JobMatrixRunner/1.0"
+                },
+                method="POST"
+            )
+            with urllib.request.urlopen(cleanup_req, timeout=10) as c_res:
+                c_body = json.loads(c_res.read().decode('utf-8'))
+                print(f"[Pre-Run Cleanup] Stale R2 objects purged: {c_body.get('deletedCount', 0)}", flush=True)
+        except Exception as c_err:
+            print(f"[Pre-Run Cleanup Notice] {c_err}", flush=True)
+
     # Container Pre-Warm Probe: Ensure canonical microVM is booted and healthy before the 30-job matrix begins
     print(f"\n--- Pre-Warming Canonical Container Instance ({batch_run_id}) ---", flush=True)
     from create_pptx_smoke_corpus import build_openxml_pptx
