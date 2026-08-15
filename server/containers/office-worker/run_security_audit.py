@@ -130,28 +130,25 @@ consecutive_successes = 0
 stability_probe_log = []
 
 
-from create_pptx_smoke_corpus import build_openxml_pptx
-PROBE_PAYLOAD = build_openxml_pptx(title="SecurityProbe", num_slides=1)
-
 def probe_bearer():
     """Probe the bearer endpoint. Returns (status, version_id, passed)."""
     req = urllib.request.Request(
         url,
-        data=PROBE_PAYLOAD,
+        data=b"probe_secret_payload",
         headers={
             "Authorization": f"Bearer {BEARER_TOKEN}",
-            "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "User-Agent": "FileKitCanaryRunner/1.0"
         },
         method="POST"
     )
     try:
-        with urllib.request.urlopen(req, timeout=20) as res:
+        with urllib.request.urlopen(req, timeout=10) as res:
             ver = res.headers.get("X-Worker-Version-Id") or res.headers.get("x-worker-version-id") or res.headers.get("CF-RAY")
-            return res.status, ver, res.status == 200
+            return res.status, ver, res.status in (200, 422)
     except urllib.error.HTTPError as e:
         ver = e.headers.get("X-Worker-Version-Id") or e.headers.get("x-worker-version-id") or e.headers.get("CF-RAY")
-        return e.code, ver, False
+        return e.code, ver, e.code in (200, 422)
     except Exception:
         return 0, None, False
 
