@@ -72,26 +72,20 @@ def main():
         ("LARGE_DECK", 4)
     ]
 
-    batch_ts = int(time.time())
-    category_run_ids = {
-        cat_name: f"batch_{cat_name.lower()}_{batch_ts}"
-        for cat_name, _ in categories
-    }
+    batch_run_id = "filekit-canary-stable-instance"
 
-    categorized_jobs = []
+    matrix_jobs = []
     job_idx = 1
     for cat_name, count in categories:
-        cat_jobs = []
         for c in range(count):
             sample_data = corpus[(job_idx - 1) % len(corpus)]["data"]
-            cat_jobs.append({
+            matrix_jobs.append({
                 "jobIndex": job_idx,
                 "category": cat_name,
                 "data": sample_data,
-                "runId": category_run_ids[cat_name]
+                "runId": batch_run_id
             })
             job_idx += 1
-        categorized_jobs.append((cat_name, category_run_ids[cat_name], cat_jobs))
 
     results = []
     first_attempt_successes = 0
@@ -106,184 +100,183 @@ def main():
     all_worker_total = []
     all_client_wall = []
 
-    for cat_name, cat_run_id, jobs in categorized_jobs:
-        # Container Pre-Warm Probe: Ensure category microVM is booted and healthy before its jobs run
-        print(f"\n--- Pre-Warming Container Instance for Category: {cat_name} ({cat_run_id}) ---", flush=True)
-        from create_pptx_smoke_corpus import build_openxml_pptx
-        warm_data = build_openxml_pptx(title=f"Prewarm_{cat_name}", num_slides=1)
-        warm_headers = {
+    # Container Pre-Warm Probe: Ensure canonical microVM is booted and healthy before the 30-job matrix begins
+    print(f"\n--- Pre-Warming Canonical Container Instance ({batch_run_id}) ---", flush=True)
+    from create_pptx_smoke_corpus import build_openxml_pptx
+    warm_data = build_openxml_pptx(title="Prewarm", num_slides=1)
+    warm_headers = {
+        "Authorization": f"Bearer {BEARER_TOKEN}",
+        "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "User-Agent": "FileKit30JobMatrixRunner/1.0",
+        "X-Canary-Run-Id": batch_run_id,
+        "X-Canary-Job-Id": "job_prewarm"
+    }
+    container_ready = False
+    for warm_attempt in range(1, 10):
+        try:
+            print(f"[Pre-Warm Attempt {warm_attempt}/9] Sending 1-slide probe to container...", flush=True)
+            warm_req = urllib.request.Request(CANARY_ENDPOINT, data=warm_data, headers=warm_headers, method="POST")
+            with urllib.request.urlopen(warm_req, timeout=90) as w_res:
+                w_bytes = w_res.read()
+                if w_res.status == 200 and (w_bytes.startswith(b"%PDF-") or b"pdfMagicBytesVerified" in w_bytes):
+                    print(f"[Pre-Warm Ready] Container is warm and verified (Attempt {warm_attempt}).", flush=True)
+                    container_ready = True
+                    break
+        except Exception as w_err:
+            print(f"[Pre-Warm Waiting] {w_err} (Attempt {warm_attempt}/9)", flush=True)
+            time.sleep(3.0)
+
+    if not container_ready:
+        print("[FAIL CLOSED] Container instance could not be warmed before starting matrix.", flush=True)
+        sys.exit(1)
+
+    time.sleep(2.0)
+
+    for job in matrix_jobs:
+        idx = job["jobIndex"]
+        cat = job["category"]
+        job_id = f"job_30j_{idx}"
+        run_id = job["runId"]
+
+        time.sleep(2.0)
+        print(f"\n[Job {idx}/30] Category: {cat} (Run ID: {run_id})")
+
+        headers = {
             "Authorization": f"Bearer {BEARER_TOKEN}",
             "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             "User-Agent": "FileKit30JobMatrixRunner/1.0",
-            "X-Canary-Run-Id": cat_run_id,
-            "X-Canary-Job-Id": f"job_prewarm_{cat_name.lower()}"
+            "X-Canary-Run-Id": run_id,
+            "X-Canary-Job-Id": job_id
         }
-        container_ready = False
-        for warm_attempt in range(1, 6):
+
+        req = urllib.request.Request(CANARY_ENDPOINT, data=job["data"], headers=headers, method="POST")
+        start_time = time.time()
+        res_status = 0
+        body_bytes = b""
+        res_headers = {}
+        failure_class = "NONE"
+        exception_class = "NONE"
+        response_received = True
+
+        try:
+            # Single attempt per request - no client retries
+            with urllib.request.urlopen(req, timeout=90) as res:
+                res_status = res.status
+                body_bytes = res.read()
+                res_headers = dict(res.headers)
+        except urllib.error.HTTPError as e:
+            res_status = e.code
             try:
-                print(f"[{cat_name} Pre-Warm Attempt {warm_attempt}/5] Sending 1-slide probe to container...", flush=True)
-                warm_req = urllib.request.Request(CANARY_ENDPOINT, data=warm_data, headers=warm_headers, method="POST")
-                with urllib.request.urlopen(warm_req, timeout=90) as w_res:
-                    w_bytes = w_res.read()
-                    if w_res.status == 200 and (w_bytes.startswith(b"%PDF-") or b"pdfMagicBytesVerified" in w_bytes):
-                        print(f"[{cat_name} Pre-Warm Ready] Container is warm and verified (Attempt {warm_attempt}).", flush=True)
-                        container_ready = True
-                        break
-            except Exception as w_err:
-                print(f"[{cat_name} Pre-Warm Waiting] {w_err} (Attempt {warm_attempt}/5)", flush=True)
-                time.sleep(3.0)
+                body_bytes = e.read()
+            except Exception:
+                body_bytes = b""
+            res_headers = dict(e.headers)
+            if res_status == 401:
+                # Distinguish auth failures — likely propagation inconsistency
+                propagation_failures += 1
+                failure_class = "PROPAGATION_FAILURE"
+            elif res_status >= 500:
+                # Actual HTTP 5xx returned by the server
+                server_5xx += 1
+                failure_class = "SERVER_5XX"
+            else:
+                failure_class = f"HTTP_{res_status}"
+        except Exception as e:
+            # Client-side timeout or network error — NOT an HTTP 504
+            # Record the actual exception class for truthful diagnosis
+            exception_class = type(e).__name__
+            response_received = False
+            client_timeouts += 1
+            failure_class = "CLIENT_TIMEOUT"
+            # Use a synthetic status that is clearly not an HTTP status
+            res_status = -1
+            body_bytes = json.dumps({
+                "error": "CLIENT_TIMEOUT",
+                "exceptionClass": exception_class,
+                "details": str(e)
+            }).encode('utf-8')
 
-        if not container_ready:
-            print(f"[FAIL CLOSED] Container instance for category {cat_name} could not be warmed.", flush=True)
-            sys.exit(1)
+        wall_ms = round((time.time() - start_time) * 1000, 2)
 
-        time.sleep(1.5)
+        cf_instance_id = res_headers.get("X-Cloudflare-Instance-Id", "") or res_headers.get("x-cloudflare-instance-id", "")
+        boot_id = res_headers.get("X-Container-Process-Boot-Id", "") or res_headers.get("x-container-process-boot-id", "")
+        doc_conv_ms = float(res_headers.get("X-Document-Conversion-Ms", 0) or 0)
+        container_total_ms = float(res_headers.get("X-Container-Total-Ms", 0) or 0)
+        worker_total_ms = float(res_headers.get("X-Worker-Total-Ms", 0) or 0)
 
-        for job in jobs:
-            idx = job["jobIndex"]
-            cat = job["category"]
-            job_id = f"job_30j_{idx}"
-            run_id = job["runId"]
+        pdf_valid = body_bytes.startswith(b"%PDF-") or (b"pdfMagicBytesVerified" in body_bytes and b"true" in body_bytes)
 
-            time.sleep(1.5)
-            print(f"\n[Job {idx}/30] Category: {cat} (Run ID: {run_id})")
+        if res_status == 200 and pdf_valid:
+            first_attempt_successes += 1
+        elif res_status == 200 and not pdf_valid:
+            corrupt_outputs += 1
 
-            headers = {
-                "Authorization": f"Bearer {BEARER_TOKEN}",
-                "Content-Type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                "User-Agent": "FileKit30JobMatrixRunner/1.0",
-                "X-Canary-Run-Id": run_id,
-                "X-Canary-Job-Id": job_id
-            }
+        if cf_instance_id and boot_id:
+            telemetry_complete += 1
 
-            req = urllib.request.Request(CANARY_ENDPOINT, data=job["data"], headers=headers, method="POST")
-            start_time = time.time()
-            res_status = 0
-            body_bytes = b""
-            res_headers = {}
-            failure_class = "NONE"
-            exception_class = "NONE"
-            response_received = True
+        all_doc_conv.append(doc_conv_ms)
+        all_container_total.append(container_total_ms)
+        all_worker_total.append(worker_total_ms)
+        all_client_wall.append(wall_ms)
 
-            try:
-                # Single attempt per request - no client retries
-                with urllib.request.urlopen(req, timeout=90) as res:
-                    res_status = res.status
-                    body_bytes = res.read()
-                    res_headers = dict(res.headers)
-            except urllib.error.HTTPError as e:
-                res_status = e.code
+        status_display = str(res_status) if res_status > 0 else "CLIENT_TIMEOUT"
+        print(f"Status: {status_display} | PDF Valid: {pdf_valid} | "
+              f"FailureClass: {failure_class} | "
+              f"Conversion: {doc_conv_ms}ms | ContainerTotal: {container_total_ms}ms | Wall: {wall_ms}ms")
+
+        diagnostic_probes = []
+        if res_status == 401 or failure_class in ("PROPAGATION_FAILURE", "CLIENT_TIMEOUT"):
+            diag_reason = "propagation_verification" if res_status == 401 else "timeout_verification"
+            print(f"  [Diagnostic Probe] Triggering non-modifying diagnostic probe ({diag_reason})...")
+            for diag_attempt in range(1, 3):
+                time.sleep(1.0)
                 try:
-                    body_bytes = e.read()
-                except Exception:
-                    body_bytes = b""
-                res_headers = dict(e.headers)
-                if res_status == 401:
-                    # Distinguish auth failures — likely propagation inconsistency
-                    propagation_failures += 1
-                    failure_class = "PROPAGATION_FAILURE"
-                elif res_status >= 500:
-                    # Actual HTTP 5xx returned by the server
-                    server_5xx += 1
-                    failure_class = "SERVER_5XX"
-                else:
-                    failure_class = f"HTTP_{res_status}"
-            except Exception as e:
-                # Client-side timeout or network error — NOT an HTTP 504
-                # Record the actual exception class for truthful diagnosis
-                exception_class = type(e).__name__
-                response_received = False
-                client_timeouts += 1
-                failure_class = "CLIENT_TIMEOUT"
-                # Use a synthetic status that is clearly not an HTTP status
-                res_status = -1
-                body_bytes = json.dumps({
-                    "error": "CLIENT_TIMEOUT",
-                    "exceptionClass": exception_class,
-                    "details": str(e)
-                }).encode('utf-8')
-
-            wall_ms = round((time.time() - start_time) * 1000, 2)
-
-            cf_instance_id = res_headers.get("X-Cloudflare-Instance-Id", "") or res_headers.get("x-cloudflare-instance-id", "")
-            boot_id = res_headers.get("X-Container-Process-Boot-Id", "") or res_headers.get("x-container-process-boot-id", "")
-            doc_conv_ms = float(res_headers.get("X-Document-Conversion-Ms", 0) or 0)
-            container_total_ms = float(res_headers.get("X-Container-Total-Ms", 0) or 0)
-            worker_total_ms = float(res_headers.get("X-Worker-Total-Ms", 0) or 0)
-
-            pdf_valid = body_bytes.startswith(b"%PDF-") or (b"pdfMagicBytesVerified" in body_bytes and b"true" in body_bytes)
-
-            if res_status == 200 and pdf_valid:
-                first_attempt_successes += 1
-            elif res_status == 200 and not pdf_valid:
-                corrupt_outputs += 1
-
-            if cf_instance_id and boot_id:
-                telemetry_complete += 1
-
-            all_doc_conv.append(doc_conv_ms)
-            all_container_total.append(container_total_ms)
-            all_worker_total.append(worker_total_ms)
-            all_client_wall.append(wall_ms)
-
-            status_display = str(res_status) if res_status > 0 else "CLIENT_TIMEOUT"
-            print(f"Status: {status_display} | PDF Valid: {pdf_valid} | "
-                  f"FailureClass: {failure_class} | "
-                  f"Conversion: {doc_conv_ms}ms | ContainerTotal: {container_total_ms}ms | Wall: {wall_ms}ms")
-
-            diagnostic_probes = []
-            if res_status == 401 or failure_class in ("PROPAGATION_FAILURE", "CLIENT_TIMEOUT"):
-                diag_reason = "propagation_verification" if res_status == 401 else "timeout_verification"
-                print(f"  [Diagnostic Probe] Triggering non-modifying diagnostic probe ({diag_reason})...")
-                for diag_attempt in range(1, 3):
-                    time.sleep(1.0)
-                    try:
-                        diag_req = urllib.request.Request(CANARY_ENDPOINT, data=job["data"], headers=headers, method="POST")
-                        with urllib.request.urlopen(diag_req, timeout=10) as diag_res:
-                            d_status = diag_res.status
-                            d_pdf_valid = True
-                            diagnostic_probes.append({
-                                "attempt": diag_attempt,
-                                "httpStatus": d_status,
-                                "pdfValid": d_pdf_valid,
-                                "classification": "PROPAGATION_RECOVERED" if res_status == 401 else "TIMEOUT_RECOVERED"
-                            })
-                            print(f"  [Diagnostic Probe {diag_attempt}] Status: {d_status} (Passed)")
-                            break
-                    except urllib.error.HTTPError as de:
-                        d_status = de.code
+                    diag_req = urllib.request.Request(CANARY_ENDPOINT, data=job["data"], headers=headers, method="POST")
+                    with urllib.request.urlopen(diag_req, timeout=10) as diag_res:
+                        d_status = diag_res.status
+                        d_pdf_valid = True
                         diagnostic_probes.append({
                             "attempt": diag_attempt,
                             "httpStatus": d_status,
-                            "pdfValid": False,
-                            "classification": f"HTTP_{d_status}"
+                            "pdfValid": d_pdf_valid,
+                            "classification": "PROPAGATION_RECOVERED" if res_status == 401 else "TIMEOUT_RECOVERED"
                         })
-                        print(f"  [Diagnostic Probe {diag_attempt}] HTTP {d_status}")
-                    except Exception as de:
-                        diagnostic_probes.append({
-                            "attempt": diag_attempt,
-                            "httpStatus": -1,
-                            "exceptionClass": type(de).__name__,
-                            "classification": "CLIENT_TIMEOUT"
-                        })
-                        print(f"  [Diagnostic Probe {diag_attempt}] Exception: {type(de).__name__}")
+                        print(f"  [Diagnostic Probe {diag_attempt}] Status: {d_status} (Passed)")
+                        break
+                except urllib.error.HTTPError as de:
+                    d_status = de.code
+                    diagnostic_probes.append({
+                        "attempt": diag_attempt,
+                        "httpStatus": d_status,
+                        "pdfValid": False,
+                        "classification": f"HTTP_{d_status}"
+                    })
+                    print(f"  [Diagnostic Probe {diag_attempt}] HTTP {d_status}")
+                except Exception as de:
+                    diagnostic_probes.append({
+                        "attempt": diag_attempt,
+                        "httpStatus": -1,
+                        "exceptionClass": type(de).__name__,
+                        "classification": "CLIENT_TIMEOUT"
+                    })
+                    print(f"  [Diagnostic Probe {diag_attempt}] Exception: {type(de).__name__}")
 
-            results.append({
-                "jobIndex": idx,
-                "category": cat,
-                "httpStatus": res_status,
-                "pdfValid": pdf_valid,
-                "failureClass": failure_class,
-                "exceptionClass": exception_class,
-                "responseReceived": response_received,
-                "diagnosticProbes": diagnostic_probes,
-                "cloudflareInstanceId": cf_instance_id,
-                "processBootId": boot_id,
-                "documentConversionMs": doc_conv_ms,
-                "containerTotalMs": container_total_ms,
-                "workerTotalMs": worker_total_ms,
-                "clientWallMs": wall_ms
-            })
+        results.append({
+            "jobIndex": idx,
+            "category": cat,
+            "httpStatus": res_status,
+            "pdfValid": pdf_valid,
+            "failureClass": failure_class,
+            "exceptionClass": exception_class,
+            "responseReceived": response_received,
+            "diagnosticProbes": diagnostic_probes,
+            "cloudflareInstanceId": cf_instance_id,
+            "processBootId": boot_id,
+            "documentConversionMs": doc_conv_ms,
+            "containerTotalMs": container_total_ms,
+            "workerTotalMs": worker_total_ms,
+            "clientWallMs": wall_ms
+        })
 
     telemetry_gate_passed = (telemetry_complete == 30)
     all_passed = (first_attempt_successes == 30 and server_5xx == 0
