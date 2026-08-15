@@ -151,7 +151,8 @@ def main():
         print("[FAIL CLOSED] Container instance could not be warmed before starting matrix.", flush=True)
         sys.exit(1)
 
-    time.sleep(2.0)
+    print("[Ready] Container settled and verified. Starting 30-job stability matrix in 6 seconds...", flush=True)
+    time.sleep(6.0)
 
     for job in matrix_jobs:
         idx = job["jobIndex"]
@@ -159,7 +160,9 @@ def main():
         job_id = f"job_30j_{idx}"
         run_id = job["runId"]
 
-        time.sleep(2.0)
+        if idx > 1:
+            time.sleep(3.0)
+
         print(f"\n[Job {idx}/30] Category: {cat} (Run ID: {run_id})")
 
         headers = {
