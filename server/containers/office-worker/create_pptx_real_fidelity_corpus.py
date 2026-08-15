@@ -20,18 +20,19 @@ import hashlib
 
 def _slide_xml(texts, title="Slide", is_rtl=False):
     lang_attr = 'lang="ar-SA" rtl="1"' if is_rtl else 'lang="en-US"'
+    body_attr = 'rtlCol="1"' if is_rtl else ''
     sp_blocks = []
     sp_blocks.append(f'''<p:sp>
   <p:nvSpPr><p:cNvPr id="2" name="Title 1"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>
   <p:spPr><a:xfrm><a:off x="457200" y="457200"/><a:ext cx="8229600" cy="1000000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr>
-  <p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr {lang_attr} b="1"/><a:t>{title}</a:t></a:r></a:p></p:txBody>
+  <p:txBody><a:bodyPr {body_attr}/><a:lstStyle/><a:p><a:r><a:rPr {lang_attr} b="1"/><a:t>{title}</a:t></a:r></a:p></p:txBody>
 </p:sp>''')
 
     for i, txt in enumerate(texts, 3):
         sp_blocks.append(f'''<p:sp>
   <p:nvSpPr><p:cNvPr id="{i}" name="Content {i}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>
   <p:spPr><a:xfrm><a:off x="457200" y="{1600000 + (i-3)*700000}"/><a:ext cx="8229600" cy="500000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr>
-  <p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr {lang_attr}/><a:t>{txt}</a:t></a:r></a:p></p:txBody>
+  <p:txBody><a:bodyPr {body_attr}/><a:lstStyle/><a:p><a:r><a:rPr {lang_attr}/><a:t>{txt}</a:t></a:r></a:p></p:txBody>
 </p:sp>''')
 
     return f'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -137,7 +138,13 @@ def generate_real_fidelity_corpus():
         is_rtl = (spec["class"] == "ARABIC_RTL_REAL_WORLD")
         slides_xml = []
         for s in range(spec["slides"]):
-            slides_xml.append(_slide_xml([f"Slide {s+1} body content for {spec['title']}"], title=f"{spec['title']} (Slide {s+1})", is_rtl=is_rtl))
+            if is_rtl:
+                slide_title = f"{spec['title']} - الشريحة {s+1}"
+                slide_body = f"تفاصيل ومحتويات الشريحة {s+1} لـ {spec['title']}"
+            else:
+                slide_title = f"{spec['title']} (Slide {s+1})"
+                slide_body = f"Slide {s+1} body content for {spec['title']}"
+            slides_xml.append(_slide_xml([slide_body], title=slide_title, is_rtl=is_rtl))
         data = _build_pptx(slides_xml)
         corpus.append({
             "id": spec["id"],
