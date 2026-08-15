@@ -110,20 +110,24 @@ def main():
         "X-Canary-Run-Id": batch_run_id,
         "X-Canary-Job-Id": "job_prewarm"
     }
-    for warm_attempt in range(1, 4):
+    container_ready = False
+    for warm_attempt in range(1, 16):
         try:
-            print(f"[Pre-Warm Attempt {warm_attempt}/3] Sending 1-slide probe to container...", flush=True)
+            print(f"[Pre-Warm Attempt {warm_attempt}/15] Sending 1-slide probe to container...", flush=True)
             warm_req = urllib.request.Request(CANARY_ENDPOINT, data=warm_data, headers=warm_headers, method="POST")
-            with urllib.request.urlopen(warm_req, timeout=90) as w_res:
+            with urllib.request.urlopen(warm_req, timeout=30) as w_res:
                 w_bytes = w_res.read()
                 if w_res.status == 200 and (w_bytes.startswith(b"%PDF-") or b"pdfMagicBytesVerified" in w_bytes):
                     print(f"[Pre-Warm Ready] Container is warm and verified (Attempt {warm_attempt}).", flush=True)
+                    container_ready = True
                     break
         except Exception as w_err:
-            print(f"[Pre-Warm Waiting] {w_err} (Attempt {warm_attempt}/3)", flush=True)
-            time.sleep(2.0)
-    else:
-        print("[Warning] Pre-warm completed without explicit 200 OK, proceeding to matrix.", flush=True)
+            print(f"[Pre-Warm Waiting] {w_err} (Attempt {warm_attempt}/15)", flush=True)
+            time.sleep(3.0)
+
+    if not container_ready:
+        print("[FAIL CLOSED] Container instance could not be warmed before starting matrix.", flush=True)
+        sys.exit(1)
 
     time.sleep(2.0)
 
