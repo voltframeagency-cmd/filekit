@@ -55,7 +55,7 @@ async function runCatalogTests() {
   const fullUrls = fullSitemap.map((s) => s.url);
 
   // Must contain core and compressor routes
-  const requiredCore = ["/", "/compress-pdf", "/compress-pdf-to-2mb", "/compress-image", "/compress-image-to-200kb"];
+  const requiredCore = ["/", "/sv", "/compress-pdf", "/compress-pdf-to-2mb", "/compress-image", "/compress-image-to-200kb"];
   requiredCore.forEach((path) => {
     const hasMatch = fullUrls.some((u) => u.endsWith(path));
     if (!hasMatch) throw new Error(`Site-wide sitemap missing core route: ${path}`);

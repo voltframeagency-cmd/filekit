@@ -7,6 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const coreAndCompressorRoutes = [
     "",
+    "/sv",
     "/compress-pdf",
     "/compress-pdf-to-size",
     "/compress-pdf-to-2mb",

@@ -14,8 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FileKit - Fix the file. Finish the upload.",
-  description: "Stockholm Utility Minimalism tool for secure and local file processing.",
+  title: "FileKit — Convert, Compress & Edit Files Online",
+  description: "Files on your terms. Convert, compress, resize, organize, and repair PDFs, images, Office files, archives, audio, and video with browser-first privacy.",
+  alternates: {
+    canonical: "https://filekit.co",
+    languages: {
+      "en": "https://filekit.co",
+      "sv": "https://filekit.co/sv",
+      "x-default": "https://filekit.co"
+    }
+  }
 };
 
 export default function RootLayout({

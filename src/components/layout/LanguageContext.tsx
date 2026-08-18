@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-type Language = "en" | "ar" | "tr";
+type Language = "en" | "ar" | "tr" | "sv";
 type Direction = "ltr" | "rtl";
 
 interface LanguageContextType {
@@ -23,10 +23,16 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.searchPlaceholder": "Search tools...",
     "nav.allToolsBtn": "All tools",
     
-    "hero.title1": "Fix the file.",
-    "hero.title2": "Finish the upload.",
-    "hero.subtitle1": "18 precise file tools for compression, conversion,",
-    "hero.subtitle2": "merging, resizing and organization. No account required.",
+    "hero.tagline": "Files on your terms.",
+    "hero.title1": "Turn files into",
+    "hero.title2": "exactly what you need.",
+    "hero.subtitle1": "Convert, compress, resize, organize, and repair PDFs, images, Office files, archives, audio, and video.",
+    "hero.subtitle2": "Files stay in your browser when possible; server processing is temporary and files are deleted automatically.",
+    
+    "trust.badge1": "Browser-first processing",
+    "trust.badge2": "Automatic deletion after server jobs",
+    "trust.badge3": "No account for basic tools",
+    "trust.badge4": "Verified results",
     
     "homepage.searchPlaceholder": "Find the right tool for your task...",
     "homepage.privateTitle": "Private by design",
@@ -347,7 +353,85 @@ const translations: Record<Language, Record<string, string>> = {
     
     "lang.en": "English",
     "lang.ar": "العربية",
-    "lang.tr": "Türkçe"
+    "lang.tr": "Türkçe",
+    "lang.sv": "Svenska"
+  },
+  sv: {
+    "nav.allTools": "Alla verktyg",
+    "nav.compress": "Komprimera",
+    "nav.convert": "Konvertera",
+    "nav.merge": "Slå samman",
+    "nav.image": "Bild",
+    "nav.organize": "Ordna",
+    "nav.searchPlaceholder": "Sök verktyg...",
+    "nav.allToolsBtn": "Alla verktyg",
+    
+    "hero.tagline": "Filer på dina villkor.",
+    "hero.title1": "Gör om filer till",
+    "hero.title2": "exakt det du behöver.",
+    "hero.subtitle1": "Konvertera, komprimera, ändra storlek, ordna och reparera PDF-filer, bilder, Office-filer, arkiv, ljud och video.",
+    "hero.subtitle2": "När det går behandlas filen direkt i webbläsaren. När en server behövs sker behandlingen tillfälligt och filen raderas automatiskt.",
+    
+    "trust.badge1": "I webbläsaren när det går",
+    "trust.badge2": "Automatisk radering efter serverjobb",
+    "trust.badge3": "Inget konto för basverktyg",
+    "trust.badge4": "Verifierade resultat",
+    
+    "homepage.searchPlaceholder": "Hitta rätt verktyg för din uppgift...",
+    "homepage.privateTitle": "Integritet i grunden",
+    "homepage.privateDesc": "Filer stannar hos dig",
+    "homepage.localTitle": "Lokal behandling",
+    "homepage.localDesc": "Närhelst det är möjligt",
+    "homepage.fallbackTitle": "Säker serverreserv",
+    "homepage.fallbackDesc": "TLS-skyddad överföring",
+    "homepage.dropAnywhere": "Släpp en fil var som helst",
+    "homepage.chooseFile": "Välj en fil",
+    "homepage.orChoose": "eller välj en fil från din enhet",
+    "homepage.methodShown": "Behandlingsmetoden visas innan något startar.",
+    "homepage.popularTools": "Populära verktyg",
+    "homepage.browseAll": "Se alla verktyg →",
+    "homepage.footerNote": "Gratis basverktyg. Inget konto krävs.",
+    
+    "tool.compress.desc": "Gör PDF-filer mindre",
+    "tool.merge.title": "Slå samman PDF",
+    "tool.merge.desc": "Kombinera PDF-filer",
+    "tool.resize.title": "Ändra bildstorlek",
+    "tool.resize.desc": "Exakta pixlar eller KB",
+    "tool.convert.title": "Bildkonverterare",
+    "tool.convert.desc": "JPG, PNG, WEBP",
+    "tool.pdfToWord.title": "PDF till Word",
+    "tool.pdfToWord.desc": "Redigerbar DOCX",
+    "tool.allTools.title": "Alla verktyg",
+    "tool.allTools.desc": "Utforska hela sviten",
+
+    "breadcrumb.home": "Hem",
+    "breadcrumb.compress": "Komprimera PDF",
+    "compress.title": "Komprimera PDF under 2 MB",
+    "compress.subtitle": "Minska PDF-storleken med högsta möjliga kvalitet.",
+    
+    "badge.local": "Behandlas på denna enhet",
+    "workspace.dropHere": "Släpp din PDF här",
+    "workspace.pdfOnly": "Endast PDF · Behandlas i webbläsaren",
+    "workspace.stayOnDevice": "Filen lämnar inte din enhet vid lokal behandling.",
+    "workspace.askBeforeTransfer": "FileKit frågar alltid innan tillfällig serverbehandling.",
+    
+    "trust.privateTitle": "Full integritet",
+    "trust.privateDesc1": "Dina filer stannar under",
+    "trust.privateDesc2": "din kontroll.",
+    "trust.localTitle": "I webbläsaren",
+    "trust.localDesc1": "Lokal behandling direkt i",
+    "trust.localDesc2": "webbläsaren.",
+    "trust.tempTitle": "Automatisk radering",
+    "trust.tempDesc1": "Serverfiler raderas",
+    "trust.tempDesc2": "automatiskt.",
+    "trust.trialTitle": "Inga dolda avgifter",
+    "trust.trialDesc1": "Tydliga och ärliga",
+    "trust.trialDesc2": "villkor.",
+    
+    "lang.en": "English",
+    "lang.ar": "العربية",
+    "lang.tr": "Türkçe",
+    "lang.sv": "Svenska"
   }
 };
 
@@ -360,7 +444,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check local storage or document attributes
     const savedLang = localStorage.getItem("fk-lang") as Language;
-    if (savedLang && ["en", "ar", "tr"].includes(savedLang)) {
+    if (savedLang && ["en", "ar", "tr", "sv"].includes(savedLang)) {
       setLanguage(savedLang);
     }
   }, []);
