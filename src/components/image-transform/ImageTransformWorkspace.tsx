@@ -65,6 +65,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
   // Rotate & Flip options
   const [rotationAngle, setRotationAngle] = useState<RotationAngle>(90);
   const [flipDirection, setFlipDirection] = useState<FlipDirection>("horizontal");
+  const [blurRadius, setBlurRadius] = useState<number>(8);
 
   const imgRef = useRef<HTMLImageElement | null>(null);
 
@@ -320,7 +321,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           sourceFile.name
         );
 
-        const blob = new Blob([exportRes.outputBuffer], { type: exportFormat });
+        const blob = new Blob([exportRes.outputBuffer as unknown as BlobPart], { type: exportFormat });
         const downloadUrl = URL.createObjectURL(blob);
 
         setResult({
@@ -328,6 +329,81 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           outputSizeBytes: exportRes.outputSizeBytes,
           width: targetWidth,
           height: targetHeight,
+          durationMs: exportRes.durationMs,
+          fileName: exportRes.fileName,
+          mimeType: exportFormat,
+        });
+      } else if (mode === "grayscale") {
+        if (!sourceDataUrl) throw new Error("No source image available");
+        const img = new Image();
+        img.src = sourceDataUrl;
+        await new Promise((res) => (img.onload = res));
+
+        const canvas = ImageTransformEngine.applyGrayscale(img);
+        const exportRes = await ImageExportEngine.exportCanvas(
+          canvas,
+          { format: exportFormat, quality: exportQuality / 100 },
+          sourceFile.name
+        );
+
+        const blob = new Blob([exportRes.outputBuffer as unknown as BlobPart], { type: exportFormat });
+        const downloadUrl = URL.createObjectURL(blob);
+
+        setResult({
+          downloadUrl,
+          outputSizeBytes: exportRes.outputSizeBytes,
+          width: sourceDims.width,
+          height: sourceDims.height,
+          durationMs: exportRes.durationMs,
+          fileName: exportRes.fileName,
+          mimeType: exportFormat,
+        });
+      } else if (mode === "invert") {
+        if (!sourceDataUrl) throw new Error("No source image available");
+        const img = new Image();
+        img.src = sourceDataUrl;
+        await new Promise((res) => (img.onload = res));
+
+        const canvas = ImageTransformEngine.applyInvert(img);
+        const exportRes = await ImageExportEngine.exportCanvas(
+          canvas,
+          { format: exportFormat, quality: exportQuality / 100 },
+          sourceFile.name
+        );
+
+        const blob = new Blob([exportRes.outputBuffer as unknown as BlobPart], { type: exportFormat });
+        const downloadUrl = URL.createObjectURL(blob);
+
+        setResult({
+          downloadUrl,
+          outputSizeBytes: exportRes.outputSizeBytes,
+          width: sourceDims.width,
+          height: sourceDims.height,
+          durationMs: exportRes.durationMs,
+          fileName: exportRes.fileName,
+          mimeType: exportFormat,
+        });
+      } else if (mode === "blur") {
+        if (!sourceDataUrl) throw new Error("No source image available");
+        const img = new Image();
+        img.src = sourceDataUrl;
+        await new Promise((res) => (img.onload = res));
+
+        const canvas = ImageTransformEngine.applyBlur(img, blurRadius);
+        const exportRes = await ImageExportEngine.exportCanvas(
+          canvas,
+          { format: exportFormat, quality: exportQuality / 100 },
+          sourceFile.name
+        );
+
+        const blob = new Blob([exportRes.outputBuffer as unknown as BlobPart], { type: exportFormat });
+        const downloadUrl = URL.createObjectURL(blob);
+
+        setResult({
+          downloadUrl,
+          outputSizeBytes: exportRes.outputSizeBytes,
+          width: sourceDims.width,
+          height: sourceDims.height,
           durationMs: exportRes.durationMs,
           fileName: exportRes.fileName,
           mimeType: exportFormat,

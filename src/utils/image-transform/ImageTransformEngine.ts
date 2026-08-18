@@ -316,4 +316,112 @@ export class ImageTransformEngine {
     ctx.drawImage(sourceCanvas, 0, 0);
     return canvas;
   }
+
+  /**
+   * Applies monochrome grayscale desaturation filter (0.299R + 0.587G + 0.114B)
+   */
+  static applyGrayscale(
+    sourceCanvas: HTMLCanvasElement | OffscreenCanvas | ImageBitmap | HTMLImageElement
+  ): HTMLCanvasElement | OffscreenCanvas {
+    const srcW = "width" in sourceCanvas ? sourceCanvas.width : (sourceCanvas as any).naturalWidth;
+    const srcH = "height" in sourceCanvas ? sourceCanvas.height : (sourceCanvas as any).naturalHeight;
+
+    let canvas: HTMLCanvasElement | OffscreenCanvas;
+    let ctx: any;
+
+    if (typeof OffscreenCanvas !== "undefined") {
+      canvas = new OffscreenCanvas(srcW, srcH);
+      ctx = canvas.getContext("2d");
+    } else if (typeof document !== "undefined") {
+      canvas = document.createElement("canvas");
+      canvas.width = srcW;
+      canvas.height = srcH;
+      ctx = canvas.getContext("2d");
+    } else {
+      throw new Error("No canvas context available");
+    }
+
+    ctx.drawImage(sourceCanvas, 0, 0);
+    const imgData = ctx.getImageData(0, 0, srcW, srcH);
+    const data = imgData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+      data[i] = gray;
+      data[i + 1] = gray;
+      data[i + 2] = gray;
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    return canvas;
+  }
+
+  /**
+   * Applies negative color channel inversion filter (255 - C, preserving alpha)
+   */
+  static applyInvert(
+    sourceCanvas: HTMLCanvasElement | OffscreenCanvas | ImageBitmap | HTMLImageElement
+  ): HTMLCanvasElement | OffscreenCanvas {
+    const srcW = "width" in sourceCanvas ? sourceCanvas.width : (sourceCanvas as any).naturalWidth;
+    const srcH = "height" in sourceCanvas ? sourceCanvas.height : (sourceCanvas as any).naturalHeight;
+
+    let canvas: HTMLCanvasElement | OffscreenCanvas;
+    let ctx: any;
+
+    if (typeof OffscreenCanvas !== "undefined") {
+      canvas = new OffscreenCanvas(srcW, srcH);
+      ctx = canvas.getContext("2d");
+    } else if (typeof document !== "undefined") {
+      canvas = document.createElement("canvas");
+      canvas.width = srcW;
+      canvas.height = srcH;
+      ctx = canvas.getContext("2d");
+    } else {
+      throw new Error("No canvas context available");
+    }
+
+    ctx.drawImage(sourceCanvas, 0, 0);
+    const imgData = ctx.getImageData(0, 0, srcW, srcH);
+    const data = imgData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = 255 - data[i];
+      data[i + 1] = 255 - data[i + 1];
+      data[i + 2] = 255 - data[i + 2];
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    return canvas;
+  }
+
+  /**
+   * Applies Gaussian defocus / privacy blur filter
+   */
+  static applyBlur(
+    sourceCanvas: HTMLCanvasElement | OffscreenCanvas | ImageBitmap | HTMLImageElement,
+    blurRadiusPx: number = 8
+  ): HTMLCanvasElement | OffscreenCanvas {
+    const srcW = "width" in sourceCanvas ? sourceCanvas.width : (sourceCanvas as any).naturalWidth;
+    const srcH = "height" in sourceCanvas ? sourceCanvas.height : (sourceCanvas as any).naturalHeight;
+
+    let canvas: HTMLCanvasElement | OffscreenCanvas;
+    let ctx: any;
+
+    if (typeof OffscreenCanvas !== "undefined") {
+      canvas = new OffscreenCanvas(srcW, srcH);
+      ctx = canvas.getContext("2d");
+    } else if (typeof document !== "undefined") {
+      canvas = document.createElement("canvas");
+      canvas.width = srcW;
+      canvas.height = srcH;
+      ctx = canvas.getContext("2d");
+    } else {
+      throw new Error("No canvas context available");
+    }
+
+    ctx.filter = `blur(${Math.max(1, blurRadiusPx)}px)`;
+    ctx.drawImage(sourceCanvas, 0, 0);
+    ctx.filter = "none";
+    return canvas;
+  }
 }

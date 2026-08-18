@@ -1,7 +1,7 @@
 export interface ImageToPdfRouteConfig {
   slug: string;
   mode: "GENERAL" | "FIXED_INPUT";
-  allowedMime?: "image/jpeg" | "image/png";
+  allowedMime?: "image/jpeg" | "image/png" | "image/tiff";
   h1: string;
   title: string;
   metaDescription: string;
@@ -88,6 +88,31 @@ export const IMAGE_TO_PDF_ROUTES: Record<string, ImageToPdfRouteConfig> = {
       {
         question: "Is my PNG data kept private?",
         answer: "Yes. All processing occurs locally in browser memory without sending data over the network."
+      }
+    ]
+  },
+  "/tiff-to-pdf": {
+    slug: "/tiff-to-pdf",
+    mode: "FIXED_INPUT",
+    allowedMime: "image/tiff",
+    h1: "Convert TIFF to PDF",
+    title: "Convert TIFF to PDF Online - Free & Private | FileKit",
+    metaDescription: "Convert TIFF and TIF image scans into high-quality PDF documents locally in your browser with complete privacy.",
+    acceptedFileTypesText: "Supports TIFF & TIF images",
+    routeDescription: "Convert high-resolution TIFF image scans into high-fidelity PDF documents directly on your device.",
+    useCases: [
+      "Convert high-resolution document scans to standard PDF format",
+      "Archive medical and architectural TIFF images as PDF",
+      "Combine TIFF graphics into multi-page PDF documents"
+    ],
+    faqs: [
+      {
+        question: "Are large TIFF scans supported?",
+        answer: "Yes. FileKit processes TIFF scans client-side within your browser's memory tier."
+      },
+      {
+        question: "Is my document data kept private?",
+        answer: "Yes. All TIFF processing is 100% local with zero server uploads."
       }
     ]
   }

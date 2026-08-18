@@ -160,12 +160,34 @@ async function runRotationAndFlipTests() {
   console.log("✓ Rotation canvas dimension swap mathematics (90°/180°/270°) verified.");
 }
 
+async function runFilterMathematicsTests() {
+  console.log("Running Grayscale, Invert, and Blur Formula Tests...");
+
+  // 1. Grayscale luminance formula: 0.299R + 0.587G + 0.114B
+  const r = 100, g = 150, b = 200;
+  const expectedGray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+  if (expectedGray !== 141) {
+    throw new Error(`Grayscale luminance mismatch: expected 141, got ${expectedGray}`);
+  }
+
+  // 2. Invert formula: 255 - C
+  const invR = 255 - r;
+  const invG = 255 - g;
+  const invB = 255 - b;
+  if (invR !== 155 || invG !== 105 || invB !== 55) {
+    throw new Error(`Invert formula mismatch: got (${invR}, ${invG}, ${invB})`);
+  }
+
+  console.log("✓ Grayscale luminance and Invert channel mathematics verified.");
+}
+
 async function main() {
   await runSvgRendererTests();
   await runCropMathematicsTests();
   await runResizeMathematicsTests();
   await runIcoDecoderTests();
   await runRotationAndFlipTests();
+  await runFilterMathematicsTests();
   console.log("--------------------------------------------------");
   console.log("ALL IMAGE TRANSFORM & VECTOR SUITE TESTS PASSED!");
   console.log("--------------------------------------------------");

@@ -5,7 +5,9 @@ export type SupportedImageFormat =
   | "image/x-icon"
   | "image/heic"
   | "image/avif"
-  | "image/bmp";
+  | "image/bmp"
+  | "image/gif"
+  | "image/tiff";
 
 export type ImageConversionOutcome =
   | "CONVERSION_COMPLETED"

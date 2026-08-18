@@ -70,6 +70,11 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "BMP to JPG", href: "/bmp-to-jpg" },
       { label: "PNG to BMP", href: "/png-to-bmp" },
       { label: "JPG to BMP", href: "/jpg-to-bmp" },
+      { label: "GIF to PNG", href: "/gif-to-png" },
+      { label: "GIF to JPG", href: "/gif-to-jpg" },
+      { label: "Grayscale Image", href: "/grayscale-image" },
+      { label: "Invert Image", href: "/invert-image" },
+      { label: "Blur Image", href: "/blur-image" },
       { label: "Crop Image", href: "/crop-image" },
       { label: "Resize Image", href: "/resize-image" },
       { label: "Rotate Image", href: "/rotate-image" },
@@ -95,7 +100,8 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
     links: [
       { label: "Image to PDF", href: "/image-to-pdf" },
       { label: "JPG to PDF", href: "/jpg-to-pdf" },
-      { label: "PNG to PDF", href: "/png-to-pdf" }
+      { label: "PNG to PDF", href: "/png-to-pdf" },
+      { label: "TIFF to PDF", href: "/tiff-to-pdf" }
     ]
   }
 ];

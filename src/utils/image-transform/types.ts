@@ -5,7 +5,10 @@ export type ImageTransformMode =
   | "resize"
   | "rotate"
   | "flip"
-  | "ico-to-png";
+  | "ico-to-png"
+  | "grayscale"
+  | "invert"
+  | "blur";
 
 export type RotationAngle = 90 | 180 | 270;
 export type FlipDirection = "horizontal" | "vertical";

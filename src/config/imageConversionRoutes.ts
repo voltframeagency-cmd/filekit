@@ -248,5 +248,31 @@ export const IMAGE_CONVERSION_ROUTES: Record<string, ImageConversionRouteConfig>
     jsonLdTitle: "FileKit Convert JPG to BMP",
     metaTitle: "Convert JPG to BMP Online — Free Local Image Converter | FileKit",
     metaDescription: "Convert JPEG photos into Windows BMP bitmap format directly in your browser."
+  },
+  "/gif-to-png": {
+    slug: "/gif-to-png",
+    mode: "FIXED_PAIR",
+    expectedInputFormat: "image/gif",
+    fixedOutputFormat: "image/png",
+    navigationLabel: "GIF to PNG",
+    h1: "Convert GIF to PNG",
+    supportingCopy: "Convert GIF graphics and stills into lossless PNG images with alpha transparency.",
+    analyticsOperation: "gif_to_png",
+    jsonLdTitle: "FileKit Convert GIF to PNG",
+    metaTitle: "Convert GIF to PNG Online — Free Local Image Converter | FileKit",
+    metaDescription: "Convert GIF pictures into crisp lossless PNG format directly in your browser."
+  },
+  "/gif-to-jpg": {
+    slug: "/gif-to-jpg",
+    mode: "FIXED_PAIR",
+    expectedInputFormat: "image/gif",
+    fixedOutputFormat: "image/jpeg",
+    navigationLabel: "GIF to JPG",
+    h1: "Convert GIF to JPG",
+    supportingCopy: "Convert GIF animations and still images to universal JPG format locally with complete privacy.",
+    analyticsOperation: "gif_to_jpg",
+    jsonLdTitle: "FileKit Convert GIF to JPG",
+    metaTitle: "Convert GIF to JPG Online — Free Local Image Converter | FileKit",
+    metaDescription: "Convert GIF images to universal JPEG photo format directly in your browser with zero file uploads."
   }
 };
