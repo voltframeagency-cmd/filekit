@@ -216,16 +216,26 @@ export function inspectAndRoutePreflight(inspection: FilePreflightInspection): R
     return "UNSUPPORTED";
   }
 
-  // Local-first execution paths
+  // Local-first execution paths (€0.00 cloud cost)
   if (
     inspection.requestedOperation.includes("merge") ||
     inspection.requestedOperation.includes("split") ||
     inspection.requestedOperation.includes("rotate") ||
     inspection.requestedOperation.includes("delete") ||
     inspection.requestedOperation.includes("reorder") ||
+    inspection.requestedOperation.includes("crop") ||
+    inspection.requestedOperation.includes("watermark") ||
+    inspection.requestedOperation.includes("page-number") ||
     inspection.requestedOperation.includes("jpg-to-png") ||
     inspection.requestedOperation.includes("png-to-jpg") ||
-    inspection.requestedOperation.includes("jpg-to-webp")
+    inspection.requestedOperation.includes("jpg-to-webp") ||
+    inspection.requestedOperation.includes("png-to-ico") ||
+    inspection.requestedOperation.includes("heic-to-jpg") ||
+    inspection.requestedOperation.includes("heic-to-png") ||
+    inspection.requestedOperation.includes("avif-to-jpg") ||
+    inspection.requestedOperation.includes("image-to-text") ||
+    inspection.requestedOperation.includes("ocr-pdf") ||
+    inspection.requestedOperation.includes("make-pdf-searchable")
   ) {
     return inspection.fileSizeBytes < 50 * 1024 * 1024 ? "LOCAL_SAFE" : "LOCAL_WITH_WARNING";
   }

@@ -71,10 +71,33 @@ const server = http.createServer((req, res) => {
       }
       timings.profileInitMs = Date.now() - profileStart;
 
-      // Phase 2: Format detection
+      // Phase 2: Format detection & Target Resolution
+      const urlObj = new URL(req.url, `http://localhost:${PORT}`);
+      const requestedTarget = (urlObj.searchParams.get('target') || 'pdf').toLowerCase();
+
       let inputFilename = 'input.docx';
       let detectedFormat = 'DOCX';
-      if (buffer.length >= 8 && buffer[0] === 0xd0 && buffer[1] === 0xcf && buffer[2] === 0x11 && buffer[3] === 0xe0) {
+      let outputExtension = 'pdf';
+      let contentType = 'application/pdf';
+
+      if (buffer.length >= 4 && buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) {
+        // PDF Input
+        inputFilename = 'input.pdf';
+        detectedFormat = 'PDF';
+        if (requestedTarget === 'docx') {
+          outputExtension = 'docx';
+          contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        } else if (requestedTarget === 'xlsx') {
+          outputExtension = 'xlsx';
+          contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        } else if (requestedTarget === 'pptx') {
+          outputExtension = 'pptx';
+          contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+        } else {
+          outputExtension = 'docx';
+          contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        }
+      } else if (buffer.length >= 8 && buffer[0] === 0xd0 && buffer[1] === 0xcf && buffer[2] === 0x11 && buffer[3] === 0xe0) {
         inputFilename = 'input.xls';
         detectedFormat = 'XLS_OLE2';
       } else if (buffer.length >= 4 && buffer[0] === 0x50 && buffer[1] === 0x4b && buffer[2] === 0x03 && buffer[3] === 0x04) {
@@ -92,15 +115,15 @@ const server = http.createServer((req, res) => {
       }
 
       const inputPath = path.join(workDir, inputFilename);
-      const expectedPdfName = inputFilename.replace(/\.[^.]+$/, '.pdf');
-      const outputPath = path.join(workDir, expectedPdfName);
+      const expectedOutputName = inputFilename.replace(/\.[^.]+$/, `.${outputExtension}`);
+      const outputPath = path.join(workDir, expectedOutputName);
 
       fs.writeFileSync(inputPath, buffer);
 
       // Phase 3: LibreOffice conversion
       const loStart = Date.now();
       const profileUri = 'file://' + profileDir.replace(/\\/g, '/');
-      const cmd = `libreoffice "-env:UserInstallation=${profileUri}" --headless --invisible --nodefault --nofirststartwizard --nolockcheck --nologo --convert-to pdf "${inputPath}" --outdir "${workDir}"`;
+      const cmd = `libreoffice "-env:UserInstallation=${profileUri}" --headless --invisible --nodefault --nofirststartwizard --nolockcheck --nologo --convert-to ${outputExtension} "${inputPath}" --outdir "${workDir}"`;
 
       const result = await runCommand(cmd, { timeout: 30000 });
       timings.libreOfficeMs = Date.now() - loStart;
@@ -120,7 +143,7 @@ const server = http.createServer((req, res) => {
         timings.cleanupMs = Date.now() - cleanupStart;
 
         res.writeHead(200, {
-          'Content-Type': 'application/pdf',
+          'Content-Type': contentType,
           'X-LibreOffice-Exit-Code': '0',
           'X-LibreOffice-Duration-Ms': String(timings.libreOfficeMs),
           'X-Profile-Init-Ms': String(timings.profileInitMs),
@@ -129,6 +152,7 @@ const server = http.createServer((req, res) => {
           'X-Container-Instance-Id': CONTAINER_INSTANCE_ID,
           'X-Container-Process-Boot-Id': CONTAINER_PROCESS_BOOT_ID,
           'X-Detected-Format': detectedFormat,
+          'X-Output-Format': outputExtension,
           'X-LibreOffice-Stdout': Buffer.from(result.stdout || '').toString('base64'),
         });
         res.end(pdfBytes);

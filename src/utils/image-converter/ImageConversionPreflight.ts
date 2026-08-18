@@ -32,6 +32,31 @@ export class ImageConversionPreflight {
       bytes[11] === 0x50
     ) {
       mimeType = "image/webp";
+    } else if (bytes.length >= 4 && bytes[0] === 0x00 && bytes[1] === 0x00 && bytes[2] === 0x01 && bytes[3] === 0x00) {
+      mimeType = "image/x-icon";
+    } else if (
+      bytes.length >= 12 &&
+      bytes[4] === 0x66 &&
+      bytes[5] === 0x74 &&
+      bytes[6] === 0x79 &&
+      bytes[7] === 0x70
+    ) {
+      const brand = String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]);
+      if (brand === "avif" || brand === "avis") {
+        mimeType = "image/avif";
+      } else if (brand === "heic" || brand === "heix" || brand === "hevc" || brand === "mif1" || brand === "msf1") {
+        mimeType = "image/heic";
+      } else {
+        return {
+          width: 0,
+          height: 0,
+          mimeType: "unsupported",
+          isAnimated: false,
+          hasAlpha: false,
+          isValid: false,
+          error: "UNSUPPORTED_FORMAT: Unsupported image format."
+        };
+      }
     } else {
       return {
         width: 0,

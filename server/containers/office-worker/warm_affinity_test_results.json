@@ -1,0 +1,11 @@
+{
+  "engineFamily": "OFFICE_TO_PDF",
+  "batchRunId": "batch_warm_test_1785944174",
+  "coldFirstAttemptSuccess": "6/6",
+  "warmSeedSuccess": "6/6",
+  "warmCandidateSuccess": "6/6",
+  "genuineReuseCount": 6,
+  "retainedR2Objects": 0,
+  "objectKeyCollisions": 0,
+  "warmAffinityTest": "PASSED"
+}

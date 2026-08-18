@@ -1,4 +1,10 @@
-export type SupportedImageFormat = "image/jpeg" | "image/png" | "image/webp";
+export type SupportedImageFormat =
+  | "image/jpeg"
+  | "image/png"
+  | "image/webp"
+  | "image/x-icon"
+  | "image/heic"
+  | "image/avif";
 
 export type ImageConversionOutcome =
   | "CONVERSION_COMPLETED"

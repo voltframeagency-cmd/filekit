@@ -85,13 +85,14 @@ export function validateUploadedBuffer(
 
   const magicHex = buffer.subarray(0, 4).toString('hex').toUpperCase();
 
-  // Valid DOCX magic bytes: 504B0304 (ZIP container signature)
+  // Valid magic bytes: 504B0304 (ZIP/Office OpenXML) or 25504446 (%PDF-)
   const isZipMagic = magicHex === '504B0304';
+  const isPdfMagic = magicHex === '25504446';
 
-  if (!isZipMagic) {
+  if (!isZipMagic && !isPdfMagic) {
     return {
       valid: false,
-      errorReason: `Magic bytes mismatch. Expected PK ZIP header (504B0304), received (0x${magicHex}).`,
+      errorReason: `Magic bytes mismatch. Expected PK ZIP header (504B0304) or PDF header (25504446), received (0x${magicHex}).`,
       detectedMagic: magicHex,
     };
   }
@@ -99,14 +100,21 @@ export function validateUploadedBuffer(
   const mimeAllowlist = [
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/msword',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+    'application/pdf',
+    'application/x-pdf',
     'application/x-zip-compressed',
     'application/zip',
+    'application/octet-stream',
   ];
 
   if (!mimeAllowlist.includes(declaredMimeType)) {
     return {
       valid: false,
-      errorReason: `MIME type '${declaredMimeType}' is not in allowed Office document mime types.`,
+      errorReason: `MIME type '${declaredMimeType}' is not in allowed document mime types.`,
       detectedMagic: magicHex,
     };
   }

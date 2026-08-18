@@ -139,11 +139,12 @@ export default {
             !contentType.includes("application/vnd.ms-excel") &&
             !contentType.includes("application/vnd.ms-powerpoint") &&
             !contentType.includes("application/msword") &&
+            !contentType.includes("application/pdf") &&
             !contentType.includes("application/octet-stream") &&
             !contentType.includes("application/json")) {
           return new Response(JSON.stringify({
             error: "UNSUPPORTED_MEDIA_TYPE",
-            expected: "DOCX, XLSX, XLS, PPTX, PPT, or OCTET-STREAM"
+            expected: "DOCX, XLSX, XLS, PPTX, PPT, PDF, or OCTET-STREAM"
           }), {
             status: 415,
             headers: { "Content-Type": "application/json" }

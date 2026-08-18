@@ -58,10 +58,30 @@ export class ImageConversionEngine {
       }
 
       ctx.drawImage(bitmap, 0, 0, outWidth, outHeight);
-      bitmap.close();
 
-      const outBlob = await canvas.convertToBlob({ type: targetMime, quality: targetQuality });
-      outBuffer = await outBlob.arrayBuffer();
+      if (targetMime === "image/x-icon") {
+        const icoSizes = [16, 32, 48, 64];
+        const subImages = [];
+        for (const size of icoSizes) {
+          const subCanvas = new OffscreenCanvas(size, size);
+          const subCtx = subCanvas.getContext("2d");
+          if (subCtx) {
+            subCtx.imageSmoothingEnabled = true;
+            subCtx.imageSmoothingQuality = "high";
+            subCtx.drawImage(bitmap, 0, 0, size, size);
+            const subBlob = await subCanvas.convertToBlob({ type: "image/png" });
+            const subArr = new Uint8Array(await subBlob.arrayBuffer());
+            subImages.push({ width: size, height: size, pngBuffer: subArr });
+          }
+        }
+        bitmap.close();
+        const { IcoEncoder } = await import("./IcoEncoder");
+        outBuffer = IcoEncoder.encode(subImages);
+      } else {
+        bitmap.close();
+        const outBlob = await canvas.convertToBlob({ type: targetMime, quality: targetQuality });
+        outBuffer = await outBlob.arrayBuffer();
+      }
     } else if (typeof document !== "undefined") {
       const blob = new Blob([inputBuffer], { type: report.mimeType });
       const url = URL.createObjectURL(blob);
@@ -88,17 +108,42 @@ export class ImageConversionEngine {
         ctx.clearRect(0, 0, outWidth, outHeight);
       }
 
-      ctx.drawImage(img, 0, 0, outWidth, outHeight);
-      URL.revokeObjectURL(url);
-
-      const dataUrl = canvas.toDataURL(targetMime, targetQuality);
-      const base64 = dataUrl.split(",")[1];
-      const binaryStr = atob(base64);
-      const uint8 = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) {
-        uint8[i] = binaryStr.charCodeAt(i);
+      if (targetMime === "image/x-icon") {
+        const icoSizes = [16, 32, 48, 64];
+        const subImages = [];
+        for (const size of icoSizes) {
+          const subCanvas = document.createElement("canvas");
+          subCanvas.width = size;
+          subCanvas.height = size;
+          const subCtx = subCanvas.getContext("2d");
+          if (subCtx) {
+            subCtx.imageSmoothingEnabled = true;
+            subCtx.imageSmoothingQuality = "high";
+            subCtx.drawImage(img, 0, 0, size, size);
+            const dUrl = subCanvas.toDataURL("image/png");
+            const b64 = dUrl.split(",")[1];
+            const bin = atob(b64);
+            const u8 = new Uint8Array(bin.length);
+            for (let j = 0; j < bin.length; j++) {
+              u8[j] = bin.charCodeAt(j);
+            }
+            subImages.push({ width: size, height: size, pngBuffer: u8 });
+          }
+        }
+        URL.revokeObjectURL(url);
+        const { IcoEncoder } = await import("./IcoEncoder");
+        outBuffer = IcoEncoder.encode(subImages);
+      } else {
+        URL.revokeObjectURL(url);
+        const dataUrl = canvas.toDataURL(targetMime, targetQuality);
+        const base64 = dataUrl.split(",")[1];
+        const binaryStr = atob(base64);
+        const uint8 = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          uint8[i] = binaryStr.charCodeAt(i);
+        }
+        outBuffer = uint8.buffer;
       }
-      outBuffer = uint8.buffer;
     } else {
       throw new Error("Canvas environment not available.");
     }

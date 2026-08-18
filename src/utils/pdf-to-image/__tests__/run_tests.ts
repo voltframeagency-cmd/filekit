@@ -73,7 +73,7 @@ async function runPdfToImageTests() {
   console.log("Running Preflight Magic Bytes Tests...");
   const invalidBuffer = new Uint8Array([0x00, 0x01, 0x02, 0x03]).buffer;
   const pf = await PdfRasterizationPreflight.inspect(invalidBuffer);
-  if (pf.isValid || !pf.error?.includes("MALFORMED_PDF")) {
+  if (pf.isValid || !pf.error?.includes("INVALID_PDF")) {
     throw new Error(`Preflight failed to reject non-PDF buffer: ${JSON.stringify(pf)}`);
   }
   console.log("✓ Preflight magic bytes tests passed.");

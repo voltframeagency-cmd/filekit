@@ -13,8 +13,21 @@ async function runCatalogTests() {
   if (!catalogSitemapRoutes.includes("/jpg-to-png")) throw new Error("Indexable route missing from catalog sitemap: /jpg-to-png");
   if (!catalogSitemapRoutes.includes("/pdf-to-image")) throw new Error("Indexable route missing from catalog sitemap: /pdf-to-image");
   if (!catalogSitemapRoutes.includes("/image-to-pdf")) throw new Error("Indexable route missing from catalog sitemap: /image-to-pdf");
+  if (!catalogSitemapRoutes.includes("/word-to-pdf")) throw new Error("Indexable route missing from catalog sitemap: /word-to-pdf");
+  if (!catalogSitemapRoutes.includes("/ocr-pdf")) throw new Error("Indexable route missing from catalog sitemap: /ocr-pdf");
+  if (!catalogSitemapRoutes.includes("/pdf-to-word")) throw new Error("Indexable route missing from catalog sitemap: /pdf-to-word");
+  if (!catalogSitemapRoutes.includes("/pdf-to-excel")) throw new Error("Indexable route missing from catalog sitemap: /pdf-to-excel");
+  if (!catalogSitemapRoutes.includes("/pdf-to-powerpoint")) throw new Error("Indexable route missing from catalog sitemap: /pdf-to-powerpoint");
+  if (!catalogSitemapRoutes.includes("/svg-to-png")) throw new Error("Indexable route missing from catalog sitemap: /svg-to-png");
+  if (!catalogSitemapRoutes.includes("/crop-image")) throw new Error("Indexable route missing from catalog sitemap: /crop-image");
+  if (!catalogSitemapRoutes.includes("/resize-image")) throw new Error("Indexable route missing from catalog sitemap: /resize-image");
+  if (!catalogSitemapRoutes.includes("/avif-to-png")) throw new Error("Indexable route missing from catalog sitemap: /avif-to-png");
+  if (!catalogSitemapRoutes.includes("/svg-to-jpg")) throw new Error("Indexable route missing from catalog sitemap: /svg-to-jpg");
+  if (!catalogSitemapRoutes.includes("/ico-to-png")) throw new Error("Indexable route missing from catalog sitemap: /ico-to-png");
+  if (!catalogSitemapRoutes.includes("/rotate-image")) throw new Error("Indexable route missing from catalog sitemap: /rotate-image");
+  if (!catalogSitemapRoutes.includes("/flip-image")) throw new Error("Indexable route missing from catalog sitemap: /flip-image");
 
-  if (catalogSitemapRoutes.includes("/word-to-pdf")) throw new Error("Unbuilt PLANNED route incorrectly included in catalog sitemap: /word-to-pdf");
+  if (catalogSitemapRoutes.includes("/docx-to-pdf")) throw new Error("Unbuilt/alias route incorrectly included in catalog sitemap: /docx-to-pdf");
   if (catalogSitemapRoutes.includes("/pdf-to-jpeg")) throw new Error("REDIRECT_ALIAS route incorrectly included in catalog sitemap: /pdf-to-jpeg");
   if (catalogSitemapRoutes.includes("/pdf-to-picture")) throw new Error("REDIRECT_ALIAS route incorrectly included in catalog sitemap: /pdf-to-picture");
   console.log("✓ Catalog sitemap inclusion & exclusion rules verified.");
@@ -30,14 +43,14 @@ async function runCatalogTests() {
     if (!hasMatch) throw new Error(`Site-wide sitemap missing core route: ${path}`);
   });
 
-  // Must contain all 13 indexable conversion routes
+  // Must contain all indexable conversion routes
   catalogSitemapRoutes.forEach((path) => {
     const hasMatch = fullUrls.some((u) => u.endsWith(path));
     if (!hasMatch) throw new Error(`Site-wide sitemap missing conversion route: ${path}`);
   });
 
   // Must NOT contain any planned or alias routes
-  if (fullUrls.some((u) => u.endsWith("/word-to-pdf"))) throw new Error("Site-wide sitemap contains PLANNED route: /word-to-pdf");
+  if (fullUrls.some((u) => u.endsWith("/docx-to-pdf"))) throw new Error("Site-wide sitemap contains ALIAS route: /docx-to-pdf");
   if (fullUrls.some((u) => u.endsWith("/pdf-to-jpeg"))) throw new Error("Site-wide sitemap contains ALIAS route: /pdf-to-jpeg");
 
   console.log(`✓ Site-wide sitemap composition verified: Total ${fullSitemap.length} sitemap URLs.`);
@@ -55,9 +68,9 @@ async function runCatalogTests() {
 
   // 4. Catalog Statistics Audit
   const stats = getCatalogStats();
-  console.log(`✓ Functional production-frozen tools: ${stats.productionFrozenCount}`);
-  console.log(`✓ Redirect aliases: ${stats.redirectAliasCount}`);
-  console.log(`✓ Planned tools: ${stats.plannedCount}`);
+  console.log(`✓ Functional production-frozen tools: ${stats.canonicalFunctionalRoutes}`);
+  console.log(`✓ Redirect aliases: ${stats.activeFunctionalAliases}`);
+  console.log(`✓ Planned tools: ${stats.plannedCanonicalRoutes + stats.quarantinedPlannedAliases}`);
   console.log(`✓ Total catalog entries: ${stats.totalEntries}`);
 
   console.log("--------------------------------------------------");

@@ -56,7 +56,19 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "JPG to WebP", href: "/jpg-to-webp" },
       { label: "PNG to WebP", href: "/png-to-webp" },
       { label: "WebP to JPG", href: "/webp-to-jpg" },
-      { label: "WebP to PNG", href: "/webp-to-png" }
+      { label: "WebP to PNG", href: "/webp-to-png" },
+      { label: "PNG to ICO", href: "/png-to-ico" },
+      { label: "HEIC to JPG", href: "/heic-to-jpg" },
+      { label: "HEIC to PNG", href: "/heic-to-png" },
+      { label: "AVIF to JPG", href: "/avif-to-jpg" },
+      { label: "AVIF to PNG", href: "/avif-to-png" },
+      { label: "SVG to PNG", href: "/svg-to-png" },
+      { label: "SVG to JPG", href: "/svg-to-jpg" },
+      { label: "ICO to PNG", href: "/ico-to-png" },
+      { label: "Crop Image", href: "/crop-image" },
+      { label: "Resize Image", href: "/resize-image" },
+      { label: "Rotate Image", href: "/rotate-image" },
+      { label: "Flip Image", href: "/flip-image" }
     ]
   },
   {
@@ -205,7 +217,7 @@ export const MAIN_NAVIGATION: TopNavItem[] = [
   {
     id: "resize",
     label: "Resize",
-    href: "/#resize"
+    href: "/resize-image"
   },
   {
     id: "pdf-tools",
