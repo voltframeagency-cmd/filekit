@@ -37,7 +37,6 @@ class MockAudioBuffer implements AudioBuffer {
   }
 }
 
-// Mock AudioContext for Node.js test environment
 class MockAudioContext {
   sampleRate = 44100;
   createBuffer(numberOfChannels: number, length: number, sampleRate: number): AudioBuffer {
@@ -47,99 +46,118 @@ class MockAudioContext {
 
 export function runAudioEngineTests() {
   console.log("--------------------------------------------------");
-  console.log("Starting FileKit In-Browser Audio Engine Verification");
+  console.log("Starting Production-Hardened Audio Engine Verification");
   console.log("--------------------------------------------------");
 
   const mockCtx = new MockAudioContext() as unknown as AudioContext;
+  let totalAssertions = 0;
 
-  // 1. Test RIFF / WAVE Binary Header & Format
-  console.log("Running RIFF/WAVE Binary Header Tests...");
-  const sampleRate = 44100;
-  const numChannels = 2;
-  const numSamples = 1000;
-  const buffer = new MockAudioBuffer(numChannels, numSamples, sampleRate);
+  // 1. RIFF/WAVE Binary Header & Format Verification
+  console.log("▶ Testing RIFF/WAVE Binary Format & PCM Encoding...");
+  const sampleRates = [8000, 22050, 44100, 48000, 96000, 192000];
+  const channelConfigs = [1, 2, 4, 6]; // Mono, Stereo, Quad, 5.1
 
-  // Fill buffer with 440Hz sine wave
-  const left = buffer.getChannelData(0);
-  const right = buffer.getChannelData(1);
-  for (let i = 0; i < numSamples; i++) {
-    const sample = Math.sin((2 * Math.PI * 440 * i) / sampleRate);
-    left[i] = sample;
-    right[i] = sample * 0.8;
-  }
+  for (const rate of sampleRates) {
+    for (const ch of channelConfigs) {
+      const numSamples = 500;
+      const buf = new MockAudioBuffer(ch, numSamples, rate);
+      const wavBytes = AudioEngine.encodeWav(buf);
+      const view = new DataView(wavBytes.buffer);
 
-  const wavBytes = AudioEngine.encodeWav(buffer);
-  const dataView = new DataView(wavBytes.buffer);
+      const riff = String.fromCharCode(wavBytes[0], wavBytes[1], wavBytes[2], wavBytes[3]);
+      const wave = String.fromCharCode(wavBytes[8], wavBytes[9], wavBytes[10], wavBytes[11]);
+      const fmt = String.fromCharCode(wavBytes[12], wavBytes[13], wavBytes[14], wavBytes[15]);
+      const dataTag = String.fromCharCode(wavBytes[36], wavBytes[37], wavBytes[38], wavBytes[39]);
 
-  // Assert standard 44-byte WAV header
-  const riff = String.fromCharCode(wavBytes[0], wavBytes[1], wavBytes[2], wavBytes[3]);
-  if (riff !== "RIFF") throw new Error(`Invalid RIFF header: ${riff}`);
+      if (riff !== "RIFF" || wave !== "WAVE" || fmt !== "fmt " || dataTag !== "data") {
+        throw new Error(`Invalid WAV magic headers for rate ${rate}, ch ${ch}`);
+      }
+      if (view.getUint16(20, true) !== 1) throw new Error("Format is not PCM 1");
+      if (view.getUint16(22, true) !== ch) throw new Error(`Channel mismatch: expected ${ch}`);
+      if (view.getUint32(24, true) !== rate) throw new Error(`Sample rate mismatch: expected ${rate}`);
+      if (view.getUint16(34, true) !== 16) throw new Error("Bit depth is not 16");
 
-  const wave = String.fromCharCode(wavBytes[8], wavBytes[9], wavBytes[10], wavBytes[11]);
-  if (wave !== "WAVE") throw new Error(`Invalid WAVE header: ${wave}`);
-
-  const fmt = String.fromCharCode(wavBytes[12], wavBytes[13], wavBytes[14], wavBytes[15]);
-  if (fmt !== "fmt ") throw new Error(`Invalid fmt header: ${fmt}`);
-
-  const format = dataView.getUint16(20, true);
-  if (format !== 1) throw new Error(`Expected PCM format 1, got ${format}`);
-
-  const channels = dataView.getUint16(22, true);
-  if (channels !== 2) throw new Error(`Expected 2 channels, got ${channels}`);
-
-  const rate = dataView.getUint32(24, true);
-  if (rate !== 44100) throw new Error(`Expected 44100 rate, got ${rate}`);
-
-  const bitDepth = dataView.getUint16(34, true);
-  if (bitDepth !== 16) throw new Error(`Expected 16 bit depth, got ${bitDepth}`);
-
-  const dataTag = String.fromCharCode(wavBytes[36], wavBytes[37], wavBytes[38], wavBytes[39]);
-  if (dataTag !== "data") throw new Error(`Invalid data tag: ${dataTag}`);
-
-  const expectedDataSize = numSamples * numChannels * 2;
-  const actualDataSize = dataView.getUint32(40, true);
-  if (actualDataSize !== expectedDataSize) {
-    throw new Error(`Data size mismatch: expected ${expectedDataSize}, got ${actualDataSize}`);
-  }
-  console.log("✓ RIFF/WAVE 16-bit PCM binary headers verified.");
-
-  // 2. Test Waveform Peaks Extraction & Normalization
-  console.log("Running Waveform Peak Extraction Tests...");
-  const peaks = AudioEngine.extractWaveformPeaks(buffer, 100);
-  if (peaks.peaks.length !== 100) {
-    throw new Error(`Expected 100 peaks, got ${peaks.peaks.length}`);
-  }
-  for (const p of peaks.peaks) {
-    if (p < 0 || p > 1.0) {
-      throw new Error(`Peak value out of normalized bounds [0, 1]: ${p}`);
+      const expectedDataSize = numSamples * ch * 2;
+      if (view.getUint32(40, true) !== expectedDataSize) {
+        throw new Error(`Data size mismatch: expected ${expectedDataSize}`);
+      }
+      totalAssertions += 7;
     }
   }
-  console.log("✓ Waveform peak extraction and normalization verified.");
+  console.log(`✓ Verified 24 sample-rate & multi-channel combinations (${totalAssertions} assertions).`);
 
-  // 3. Test AudioBuffer Slicing
-  console.log("Running AudioBuffer Slice Tests...");
-  const sliced = AudioEngine.sliceAudioBuffer(buffer, 0.005, 0.015, mockCtx);
-  const expectedSlicedLength = Math.floor(0.015 * sampleRate) - Math.floor(0.005 * sampleRate);
-  if (sliced.length !== expectedSlicedLength) {
-    throw new Error(`Sliced buffer length mismatch: expected ${expectedSlicedLength}, got ${sliced.length}`);
-  }
-  console.log("✓ AudioBuffer millisecond slicing verified.");
+  // 2. Float Sample Clamping & Integer Wrap-Around Guard
+  console.log("▶ Testing Sample Clamping & Float-to-Int16 Normalization...");
+  const clampBuf = new MockAudioBuffer(1, 4, 44100);
+  const clampChannel = clampBuf.getChannelData(0);
+  clampChannel[0] = 1.5;   // Overdrive positive -> must clamp to +32767
+  clampChannel[1] = -2.0;  // Overdrive negative -> must clamp to -32768
+  clampChannel[2] = 0.0;   // Zero -> 0
+  clampChannel[3] = 0.5;   // Normal -> +16383
 
-  // 4. Test AudioBuffer Concatenation
-  console.log("Running AudioBuffer Concatenation Tests...");
-  const bufA = new MockAudioBuffer(2, 500, sampleRate);
-  const bufB = new MockAudioBuffer(2, 700, sampleRate);
-  const merged = AudioEngine.concatenateAudioBuffers([bufA, bufB], mockCtx);
-  if (merged.length !== 1200) {
-    throw new Error(`Merged buffer length mismatch: expected 1200, got ${merged.length}`);
+  const clampedWav = AudioEngine.encodeWav(clampBuf);
+  const clampView = new DataView(clampedWav.buffer);
+
+  if (clampView.getInt16(44, true) !== 32767) throw new Error("Failed to clamp +1.5 sample to +32767");
+  if (clampView.getInt16(46, true) !== -32768) throw new Error("Failed to clamp -2.0 sample to -32768");
+  if (clampView.getInt16(48, true) !== 0) throw new Error("Failed to encode 0.0 sample to 0");
+  if (Math.abs(clampView.getInt16(50, true) - 16383) > 1) throw new Error("Failed to scale 0.5 sample");
+  totalAssertions += 4;
+  console.log("✓ Overdrive float sample clamping & int16 wrap-around guard verified.");
+
+  // 3. Waveform Peak Extraction & Normalization
+  console.log("▶ Testing Waveform Peak Extraction & Normalization...");
+  const peakBuf = new MockAudioBuffer(2, 10000, 44100);
+  const left = peakBuf.getChannelData(0);
+  for (let i = 0; i < 10000; i++) {
+    left[i] = (Math.random() * 2) - 1; // [-1.0, 1.0]
   }
-  if (merged.numberOfChannels !== 2) {
-    throw new Error(`Merged channels mismatch: expected 2, got ${merged.numberOfChannels}`);
+
+  const peakCounts = [50, 100, 200, 500];
+  for (const count of peakCounts) {
+    const p = AudioEngine.extractWaveformPeaks(peakBuf, count);
+    if (p.peaks.length !== count) throw new Error(`Expected ${count} peaks, got ${p.peaks.length}`);
+    for (const val of p.peaks) {
+      if (val < 0.0 || val > 1.0 || isNaN(val)) {
+        throw new Error(`Invalid peak amplitude value: ${val}`);
+      }
+    }
+    totalAssertions += count + 1;
   }
-  console.log("✓ AudioBuffer multi-track concatenation verified.");
+  console.log(`✓ Waveform peak extraction verified across multi-resolution bins.`);
+
+  // 4. Slice Boundary & Edge Cases
+  console.log("▶ Testing Buffer Slicing Boundary & Out-of-Bounds Guards...");
+  const sliceSrc = new MockAudioBuffer(2, 44100, 44100); // 1.0 second
+
+  // Sub-slice
+  const s1 = AudioEngine.sliceAudioBuffer(sliceSrc, 0.25, 0.75, mockCtx);
+  if (s1.length !== 22050) throw new Error("Sub-slice length mismatch");
+
+  // Slice past EOF -> clamped to buffer end
+  const s2 = AudioEngine.sliceAudioBuffer(sliceSrc, 0.5, 2.5, mockCtx);
+  if (s2.length !== 22050) throw new Error("Past-EOF slice length mismatch");
+
+  // Slice start = end -> minimum 1 sample
+  const s3 = AudioEngine.sliceAudioBuffer(sliceSrc, 0.5, 0.5, mockCtx);
+  if (s3.length < 1) throw new Error("Zero-length slice guard failed");
+  totalAssertions += 3;
+  console.log("✓ Sub-second, past-EOF, and zero-length slice guards verified.");
+
+  // 5. Multi-Track Concatenation
+  console.log("▶ Testing Multi-Track Audio Concatenation...");
+  const track1 = new MockAudioBuffer(1, 1000, 44100); // Mono
+  const track2 = new MockAudioBuffer(2, 2000, 44100); // Stereo
+  const track3 = new MockAudioBuffer(2, 3000, 44100); // Stereo
+
+  const merged = AudioEngine.concatenateAudioBuffers([track1, track2, track3], mockCtx);
+  if (merged.length !== 6000) throw new Error(`Merged length mismatch: expected 6000, got ${merged.length}`);
+  if (merged.numberOfChannels !== 2) throw new Error("Merged channels mismatch");
+  totalAssertions += 2;
+  console.log("✓ Multi-channel upmixing and sequential concatenation verified.");
 
   console.log("--------------------------------------------------");
-  console.log("ALL IN-BROWSER AUDIO ENGINE TESTS PASSED!");
+  console.log(`✅ All ${totalAssertions} Production-Hardened Audio Engine assertions passed!`);
   console.log("--------------------------------------------------");
 }
 

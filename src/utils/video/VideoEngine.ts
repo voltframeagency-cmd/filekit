@@ -48,19 +48,31 @@ export class VideoEngine {
       throw new Error("Target size must be greater than 0 bytes");
     }
 
-    // Convert target bytes to kilobits: (bytes * 8) / 1000
+    // Convert target bytes to total allowable kilobits: (bytes * 8) / 1000
     const totalKilobits = (targetSizeBytes * 8) / 1000;
-    const totalBitrateKbps = Math.floor(totalKilobits / durationSeconds);
+    const rawTotalBitrate = totalKilobits / durationSeconds;
+    const totalBitrateKbps = Math.max(1, Math.floor(rawTotalBitrate));
 
-    // If total bitrate is very low, throttle audio bitrate to 64k or 32k
-    let allocatedAudioBitrate = audioBitrateKbps;
-    if (totalBitrateKbps < 200) {
-      allocatedAudioBitrate = 32;
+    // Proportional bitrate allocation ensuring strict mathematical non-overflow
+    let allocatedAudioBitrate: number;
+    let videoBitrateKbps: number;
+
+    if (totalBitrateKbps < 100) {
+      allocatedAudioBitrate = Math.max(1, Math.floor(totalBitrateKbps * 0.2));
+      videoBitrateKbps = Math.max(1, totalBitrateKbps - allocatedAudioBitrate);
     } else if (totalBitrateKbps < 500) {
       allocatedAudioBitrate = 64;
+      videoBitrateKbps = totalBitrateKbps - allocatedAudioBitrate;
+    } else {
+      allocatedAudioBitrate = audioBitrateKbps;
+      videoBitrateKbps = totalBitrateKbps - allocatedAudioBitrate;
     }
 
-    const videoBitrateKbps = Math.max(30, totalBitrateKbps - allocatedAudioBitrate);
+    // Strict non-overflow reduction
+    while ((videoBitrateKbps + allocatedAudioBitrate) * durationSeconds * 125 > targetSizeBytes && videoBitrateKbps > 1) {
+      videoBitrateKbps--;
+    }
+
     const estimatedOutputBytes = Math.floor(
       ((videoBitrateKbps + allocatedAudioBitrate) * 1000 * durationSeconds) / 8
     );
