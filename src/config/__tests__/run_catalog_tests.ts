@@ -44,6 +44,11 @@ async function runCatalogTests() {
   if (!catalogSitemapRoutes.includes("/invert-image")) throw new Error("Indexable route missing from catalog sitemap: /invert-image");
   if (!catalogSitemapRoutes.includes("/blur-image")) throw new Error("Indexable route missing from catalog sitemap: /blur-image");
   if (!catalogSitemapRoutes.includes("/tiff-to-pdf")) throw new Error("Indexable route missing from catalog sitemap: /tiff-to-pdf");
+  if (!catalogSitemapRoutes.includes("/convert-audio")) throw new Error("Indexable route missing from catalog sitemap: /convert-audio");
+  if (!catalogSitemapRoutes.includes("/compress-audio")) throw new Error("Indexable route missing from catalog sitemap: /compress-audio");
+  if (!catalogSitemapRoutes.includes("/video-to-mp3")) throw new Error("Indexable route missing from catalog sitemap: /video-to-mp3");
+  if (!catalogSitemapRoutes.includes("/trim-audio")) throw new Error("Indexable route missing from catalog sitemap: /trim-audio");
+  if (!catalogSitemapRoutes.includes("/merge-audio")) throw new Error("Indexable route missing from catalog sitemap: /merge-audio");
 
   if (catalogSitemapRoutes.includes("/docx-to-pdf")) throw new Error("Unbuilt/alias route incorrectly included in catalog sitemap: /docx-to-pdf");
   if (catalogSitemapRoutes.includes("/pdf-to-jpeg")) throw new Error("REDIRECT_ALIAS route incorrectly included in catalog sitemap: /pdf-to-jpeg");

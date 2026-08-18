@@ -103,6 +103,19 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "PNG to PDF", href: "/png-to-pdf" },
       { label: "TIFF to PDF", href: "/tiff-to-pdf" }
     ]
+  },
+  {
+    id: "audio-tools",
+    label: "AUDIO TOOLS",
+    compactLabel: "AUDIO",
+    accessibleLabel: "Audio conversion, compression, and editing tools",
+    links: [
+      { label: "Convert Audio", href: "/convert-audio" },
+      { label: "Compress Audio", href: "/compress-audio" },
+      { label: "Video to MP3", href: "/video-to-mp3" },
+      { label: "Trim Audio", href: "/trim-audio" },
+      { label: "Merge Audio", href: "/merge-audio" }
+    ]
   }
 ];
 

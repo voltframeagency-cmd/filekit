@@ -1229,6 +1229,71 @@ export const CONVERSION_CATALOG: Record<string, ConversionCatalogEntry> = {
     navigationEnabled: false,
     sitemapEnabled: false,
     localizationEnabled: false
+  },
+  "/convert-audio": {
+    slug: "/convert-audio",
+    inputFormat: "Audio (WAV/MP3/AAC/OGG)",
+    outputFormat: "Audio (WAV/MP3)",
+    family: "media",
+    engineId: "shared-audio-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true
+  },
+  "/compress-audio": {
+    slug: "/compress-audio",
+    inputFormat: "Audio (WAV/MP3/AAC)",
+    outputFormat: "Compressed Audio",
+    family: "media",
+    engineId: "shared-audio-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true
+  },
+  "/video-to-mp3": {
+    slug: "/video-to-mp3",
+    inputFormat: "Video (MP4/WebM/MOV)",
+    outputFormat: "Audio (MP3/WAV)",
+    family: "media",
+    engineId: "shared-audio-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true
+  },
+  "/trim-audio": {
+    slug: "/trim-audio",
+    inputFormat: "Audio (WAV/MP3/AAC)",
+    outputFormat: "Trimmed Audio",
+    family: "media",
+    engineId: "shared-audio-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true
+  },
+  "/merge-audio": {
+    slug: "/merge-audio",
+    inputFormat: "Multiple Audio Files",
+    outputFormat: "Merged Audio",
+    family: "media",
+    engineId: "shared-audio-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true
   }
 };
 
