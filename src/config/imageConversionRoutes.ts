@@ -170,5 +170,83 @@ export const IMAGE_CONVERSION_ROUTES: Record<string, ImageConversionRouteConfig>
     jsonLdTitle: "FileKit Convert AVIF to PNG",
     metaTitle: "Convert AVIF to PNG Online — Free Local Image Converter | FileKit",
     metaDescription: "Convert AVIF images to PNG format with full alpha transparency directly on your device."
+  },
+  "/image-to-webp": {
+    slug: "/image-to-webp",
+    mode: "FIXED_PAIR",
+    expectedInputFormat: "image/jpeg",
+    fixedOutputFormat: "image/webp",
+    navigationLabel: "Image to WebP",
+    h1: "Convert Image to WebP",
+    supportingCopy: "Convert images to ultra-compressed modern WebP format with zero server uploads.",
+    analyticsOperation: "image_to_webp",
+    jsonLdTitle: "FileKit Convert Image to WebP",
+    metaTitle: "Convert Image to WebP Online — Free Image Compressor & Converter | FileKit",
+    metaDescription: "Convert JPG, PNG, and photos to modern WebP format directly in your browser."
+  },
+  "/jpg-to-ico": {
+    slug: "/jpg-to-ico",
+    mode: "FIXED_PAIR",
+    expectedInputFormat: "image/jpeg",
+    fixedOutputFormat: "image/x-icon",
+    navigationLabel: "JPG to ICO",
+    h1: "Convert JPG to ICO Favicon",
+    supportingCopy: "Convert JPG pictures into multi-resolution Windows ICO and web favicon files locally.",
+    analyticsOperation: "jpg_to_ico",
+    jsonLdTitle: "FileKit Convert JPG to ICO",
+    metaTitle: "Convert JPG to ICO Online — Free Windows Favicon Generator | FileKit",
+    metaDescription: "Convert JPG photos into multi-resolution Windows ICO favicon files directly on your device."
+  },
+  "/bmp-to-png": {
+    slug: "/bmp-to-png",
+    mode: "FIXED_PAIR",
+    expectedInputFormat: "image/bmp",
+    fixedOutputFormat: "image/png",
+    navigationLabel: "BMP to PNG",
+    h1: "Convert BMP to PNG",
+    supportingCopy: "Convert Windows Bitmap (BMP) files to compressed lossless PNG format locally in browser memory.",
+    analyticsOperation: "bmp_to_png",
+    jsonLdTitle: "FileKit Convert BMP to PNG",
+    metaTitle: "Convert BMP to PNG Online — Free Local Bitmap Converter | FileKit",
+    metaDescription: "Convert uncompressed BMP bitmap images to lightweight PNG format directly in your browser."
+  },
+  "/bmp-to-jpg": {
+    slug: "/bmp-to-jpg",
+    mode: "FIXED_PAIR",
+    expectedInputFormat: "image/bmp",
+    fixedOutputFormat: "image/jpeg",
+    navigationLabel: "BMP to JPG",
+    h1: "Convert BMP to JPG",
+    supportingCopy: "Convert Windows Bitmap (BMP) images to universal JPEG format locally with complete privacy.",
+    analyticsOperation: "bmp_to_jpg",
+    jsonLdTitle: "FileKit Convert BMP to JPG",
+    metaTitle: "Convert BMP to JPG Online — Free Local Image Converter | FileKit",
+    metaDescription: "Convert BMP images to standard JPG format directly in your browser with zero file uploads."
+  },
+  "/png-to-bmp": {
+    slug: "/png-to-bmp",
+    mode: "FIXED_PAIR",
+    expectedInputFormat: "image/png",
+    fixedOutputFormat: "image/bmp",
+    navigationLabel: "PNG to BMP",
+    h1: "Convert PNG to BMP",
+    supportingCopy: "Convert PNG images to standard 24-bit Windows Bitmap (BMP) files directly on your device.",
+    analyticsOperation: "png_to_bmp",
+    jsonLdTitle: "FileKit Convert PNG to BMP",
+    metaTitle: "Convert PNG to BMP Online — Free Local Image Converter | FileKit",
+    metaDescription: "Export PNG graphics as uncompressed Windows BMP bitmap files with complete privacy."
+  },
+  "/jpg-to-bmp": {
+    slug: "/jpg-to-bmp",
+    mode: "FIXED_PAIR",
+    expectedInputFormat: "image/jpeg",
+    fixedOutputFormat: "image/bmp",
+    navigationLabel: "JPG to BMP",
+    h1: "Convert JPG to BMP",
+    supportingCopy: "Convert JPG photos into standard Windows Bitmap (BMP) format locally in browser memory.",
+    analyticsOperation: "jpg_to_bmp",
+    jsonLdTitle: "FileKit Convert JPG to BMP",
+    metaTitle: "Convert JPG to BMP Online — Free Local Image Converter | FileKit",
+    metaDescription: "Convert JPEG photos into Windows BMP bitmap format directly in your browser."
   }
 };

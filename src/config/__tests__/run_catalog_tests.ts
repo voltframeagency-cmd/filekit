@@ -32,6 +32,12 @@ async function runCatalogTests() {
   if (!catalogSitemapRoutes.includes("/pdf-to-text")) throw new Error("Indexable route missing from catalog sitemap: /pdf-to-text");
   if (!catalogSitemapRoutes.includes("/extract-images-from-pdf")) throw new Error("Indexable route missing from catalog sitemap: /extract-images-from-pdf");
   if (!catalogSitemapRoutes.includes("/flatten-pdf")) throw new Error("Indexable route missing from catalog sitemap: /flatten-pdf");
+  if (!catalogSitemapRoutes.includes("/image-to-webp")) throw new Error("Indexable route missing from catalog sitemap: /image-to-webp");
+  if (!catalogSitemapRoutes.includes("/jpg-to-ico")) throw new Error("Indexable route missing from catalog sitemap: /jpg-to-ico");
+  if (!catalogSitemapRoutes.includes("/bmp-to-png")) throw new Error("Indexable route missing from catalog sitemap: /bmp-to-png");
+  if (!catalogSitemapRoutes.includes("/bmp-to-jpg")) throw new Error("Indexable route missing from catalog sitemap: /bmp-to-jpg");
+  if (!catalogSitemapRoutes.includes("/png-to-bmp")) throw new Error("Indexable route missing from catalog sitemap: /png-to-bmp");
+  if (!catalogSitemapRoutes.includes("/jpg-to-bmp")) throw new Error("Indexable route missing from catalog sitemap: /jpg-to-bmp");
 
   if (catalogSitemapRoutes.includes("/docx-to-pdf")) throw new Error("Unbuilt/alias route incorrectly included in catalog sitemap: /docx-to-pdf");
   if (catalogSitemapRoutes.includes("/pdf-to-jpeg")) throw new Error("REDIRECT_ALIAS route incorrectly included in catalog sitemap: /pdf-to-jpeg");

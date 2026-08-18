@@ -4,7 +4,8 @@ export type SupportedImageFormat =
   | "image/webp"
   | "image/x-icon"
   | "image/heic"
-  | "image/avif";
+  | "image/avif"
+  | "image/bmp";
 
 export type ImageConversionOutcome =
   | "CONVERSION_COMPLETED"

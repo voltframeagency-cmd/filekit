@@ -133,6 +133,12 @@ export class ImageConversionEngine {
         URL.revokeObjectURL(url);
         const { IcoEncoder } = await import("./IcoEncoder");
         outBuffer = IcoEncoder.encode(subImages);
+      } else if (targetMime === "image/bmp") {
+        URL.revokeObjectURL(url);
+        const { BmpEncoder } = await import("./BmpEncoder");
+        const imgData = ctx.getImageData(0, 0, outWidth, outHeight);
+        const bmpBytes = BmpEncoder.encode(imgData);
+        outBuffer = bmpBytes.buffer as ArrayBuffer;
       } else {
         URL.revokeObjectURL(url);
         const dataUrl = canvas.toDataURL(targetMime, targetQuality);
