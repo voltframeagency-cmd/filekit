@@ -116,6 +116,19 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "Trim Audio", href: "/trim-audio" },
       { label: "Merge Audio", href: "/merge-audio" }
     ]
+  },
+  {
+    id: "video-tools",
+    label: "VIDEO TOOLS",
+    compactLabel: "VIDEO",
+    accessibleLabel: "Video compression, conversion, GIF, and trimming tools",
+    links: [
+      { label: "Compress Video", href: "/compress-video" },
+      { label: "Convert Video", href: "/convert-video" },
+      { label: "Video to GIF", href: "/video-to-gif" },
+      { label: "Trim Video", href: "/trim-video" },
+      { label: "Mute Video", href: "/mute-video" }
+    ]
   }
 ];
 

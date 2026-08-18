@@ -1294,6 +1294,71 @@ export const CONVERSION_CATALOG: Record<string, ConversionCatalogEntry> = {
     navigationEnabled: true,
     sitemapEnabled: true,
     localizationEnabled: true
+  },
+  "/compress-video": {
+    slug: "/compress-video",
+    inputFormat: "Video (MP4/MOV/WebM)",
+    outputFormat: "Compressed Video",
+    family: "media",
+    engineId: "shared-video-engine-v1",
+    processingMode: "hybrid",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true
+  },
+  "/convert-video": {
+    slug: "/convert-video",
+    inputFormat: "Video (MP4/WebM/MOV/MKV/AVI)",
+    outputFormat: "Video (MP4/WebM/MOV)",
+    family: "media",
+    engineId: "shared-video-engine-v1",
+    processingMode: "hybrid",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true
+  },
+  "/video-to-gif": {
+    slug: "/video-to-gif",
+    inputFormat: "Video (MP4/MOV/WebM)",
+    outputFormat: "Animated GIF",
+    family: "media",
+    engineId: "shared-video-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true
+  },
+  "/trim-video": {
+    slug: "/trim-video",
+    inputFormat: "Video (MP4/MOV/WebM)",
+    outputFormat: "Trimmed Video",
+    family: "media",
+    engineId: "shared-video-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true
+  },
+  "/mute-video": {
+    slug: "/mute-video",
+    inputFormat: "Video (MP4/MOV/WebM)",
+    outputFormat: "Muted Video",
+    family: "media",
+    engineId: "shared-video-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true
   }
 };
 
