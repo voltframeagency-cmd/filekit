@@ -242,9 +242,15 @@ export const MAIN_NAVIGATION: TopNavItem[] = [
               label: "Page Manipulation",
               items: [
                 { label: "Reorder Pages", href: "/reorder-pdf-pages" },
+                { label: "Reverse PDF", href: "/reverse-pdf" },
+                { label: "Add Blank Page", href: "/add-blank-page-to-pdf" },
+                { label: "Duplicate Pages", href: "/duplicate-pdf-pages" },
                 { label: "Rotate Pages", href: "/rotate-pdf-pages" },
                 { label: "Delete Pages", href: "/delete-pdf-pages" },
                 { label: "Extract Pages", href: "/extract-pdf-pages" },
+                { label: "PDF to Text", href: "/pdf-to-text" },
+                { label: "Extract Images", href: "/extract-images-from-pdf" },
+                { label: "Flatten PDF", href: "/flatten-pdf" },
                 { label: "Add Watermark", href: "/watermark-pdf" }
               ]
             }
