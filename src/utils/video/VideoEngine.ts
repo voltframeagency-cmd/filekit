@@ -29,6 +29,16 @@ export interface VideoFrameSample {
 
 export class VideoEngine {
   /**
+   * Clamps video dimensions to even numbers (divisible by 2) to strictly satisfy
+   * H.264 / libx264 encoding requirements and avoid fatal encoder crashes.
+   */
+  static clampEvenDimensions(width: number, height: number): { width: number; height: number } {
+    const safeW = Math.max(2, Math.floor(width) - (Math.floor(width) % 2));
+    const safeH = Math.max(2, Math.floor(height) - (Math.floor(height) % 2));
+    return { width: safeW, height: safeH };
+  }
+
+  /**
    * Calculates the exact video and audio bitrates required to compress a video
    * to fit strictly within a target maximum file size (in MB or Bytes).
    * 

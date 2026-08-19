@@ -6,6 +6,24 @@ export interface ArchiveEntry {
 }
 
 export class ArchiveEngine {
+  // 500 MB Safety limit to protect browser memory against decompression bombs
+  private static readonly MAX_DECOMPRESSION_BYTES = 500 * 1024 * 1024;
+
+  /**
+   * Sanitizes entry filenames to strictly prevent Zip Slip path traversal vulnerabilities.
+   * Strips ../, ..\, leading slashes, and control characters.
+   */
+  static sanitizeEntryName(rawName: string): string {
+    if (!rawName) return "unnamed_entry";
+
+    return rawName
+      .replace(/\0/g, "") // Remove null bytes
+      .replace(/^[\/\\]+/, "") // Remove leading slashes
+      .replace(/(?:\.\.[\/\\])+/g, "") // Remove relative path traversal tokens (../ or ..\)
+      .replace(/[<>:"|?*]/g, "_") // Replace illegal file characters
+      .trim() || "unnamed_file";
+  }
+
   /**
    * Builds a valid uncompressed (stored) PKZIP archive binary from a list of files.
    * Format adheres to standard PKZIP 2.0 / APPNOTE specification:
@@ -22,7 +40,8 @@ export class ArchiveEngine {
     const crcTable = this.makeCrcTable();
 
     for (const entry of entries) {
-      const nameBytes = new TextEncoder().encode(entry.name);
+      const safeName = this.sanitizeEntryName(entry.name);
+      const nameBytes = new TextEncoder().encode(safeName);
       const crc = this.computeCrc32(entry.data, crcTable);
       const size = entry.data.length;
 
@@ -60,7 +79,8 @@ export class ArchiveEngine {
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
       const local = localHeaders[i];
-      const nameBytes = new TextEncoder().encode(entry.name);
+      const safeName = this.sanitizeEntryName(entry.name);
+      const nameBytes = new TextEncoder().encode(safeName);
       const crc = this.computeCrc32(entry.data, crcTable);
       const size = entry.data.length;
 
@@ -91,9 +111,10 @@ export class ArchiveEngine {
       centralDirSize += cHeader.length;
     }
 
-    // End of Central Directory (EOCD): 22 bytes
+    // End of Central Directory Record (EOCD): 22 bytes
     const eocd = new Uint8Array(22);
     const eocdView = new DataView(eocd.buffer);
+
     eocdView.setUint32(0, 0x06054b50, true);       // EOCD signature
     eocdView.setUint16(4, 0, true);                // Number of this disk
     eocdView.setUint16(6, 0, true);                // Disk where central directory starts
@@ -126,11 +147,13 @@ export class ArchiveEngine {
 
   /**
    * Parses and extracts uncompressed file payloads from a standard PKZIP binary buffer.
+   * Protected against Zip Slip path traversal and memory decompression exhaustion.
    */
   static extractZip(zipBytes: Uint8Array): ArchiveEntry[] {
     const view = new DataView(zipBytes.buffer, zipBytes.byteOffset, zipBytes.byteLength);
     const entries: ArchiveEntry[] = [];
     let offset = 0;
+    let totalExtractedBytes = 0;
 
     while (offset < zipBytes.length - 30) {
       const sig = view.getUint32(offset, true);
@@ -138,14 +161,20 @@ export class ArchiveEngine {
         break; // Reached end of local headers or central directory
       }
 
-      const compressionMethod = view.getUint16(offset + 8, true);
       const compressedSize = view.getUint32(offset + 18, true);
       const uncompressedSize = view.getUint32(offset + 22, true);
       const nameLen = view.getUint16(offset + 26, true);
       const extraLen = view.getUint16(offset + 28, true);
 
+      // Decompression bomb guard
+      totalExtractedBytes += uncompressedSize;
+      if (totalExtractedBytes > this.MAX_DECOMPRESSION_BYTES) {
+        throw new Error("Archive extraction exceeds maximum safety threshold (500MB). Potential decompression bomb rejected.");
+      }
+
       const nameBytes = zipBytes.subarray(offset + 30, offset + 30 + nameLen);
-      const name = new TextDecoder().decode(nameBytes);
+      const rawName = new TextDecoder().decode(nameBytes);
+      const safeName = this.sanitizeEntryName(rawName);
 
       const dataStart = offset + 30 + nameLen + extraLen;
       const dataEnd = dataStart + compressedSize;
@@ -153,10 +182,10 @@ export class ArchiveEngine {
       if (dataEnd <= zipBytes.length) {
         const rawData = zipBytes.subarray(dataStart, dataEnd);
         entries.push({
-          name,
+          name: safeName,
           size: uncompressedSize,
           data: new Uint8Array(rawData),
-          isDirectory: name.endsWith("/"),
+          isDirectory: rawName.endsWith("/") || rawName.endsWith("\\"),
         });
       }
 
@@ -167,11 +196,13 @@ export class ArchiveEngine {
   }
 
   /**
-   * Parses standard POSIX TAR archive blocks (512 bytes per header)
+   * Parses standard POSIX TAR archive blocks (512 bytes per header).
+   * Protected against path traversal and memory overflow.
    */
   static extractTar(tarBytes: Uint8Array): ArchiveEntry[] {
     const entries: ArchiveEntry[] = [];
     let offset = 0;
+    let totalExtractedBytes = 0;
 
     while (offset + 512 <= tarBytes.length) {
       const block = tarBytes.subarray(offset, offset + 512);
@@ -189,7 +220,8 @@ export class ArchiveEngine {
       // File name: 100 bytes null-terminated string at offset 0
       let nameEnd = 0;
       while (nameEnd < 100 && block[nameEnd] !== 0) nameEnd++;
-      const name = new TextDecoder().decode(block.subarray(0, nameEnd));
+      const rawName = new TextDecoder().decode(block.subarray(0, nameEnd));
+      const safeName = this.sanitizeEntryName(rawName);
 
       // File size: 12 bytes octal string at offset 124
       let sizeEnd = 124;
@@ -197,16 +229,21 @@ export class ArchiveEngine {
       const sizeOctalStr = new TextDecoder().decode(block.subarray(124, sizeEnd)).trim();
       const size = parseInt(sizeOctalStr, 8) || 0;
 
+      totalExtractedBytes += size;
+      if (totalExtractedBytes > this.MAX_DECOMPRESSION_BYTES) {
+        throw new Error("TAR archive extraction exceeds maximum safety threshold (500MB).");
+      }
+
       // Type flag at offset 156 ('5' = directory, '0'/null = normal file)
       const typeFlag = block[156];
-      const isDir = typeFlag === 0x35 || name.endsWith("/");
+      const isDir = typeFlag === 0x35 || rawName.endsWith("/") || rawName.endsWith("\\");
 
       offset += 512; // Advance past header
 
       if (size > 0 && !isDir) {
         const fileData = tarBytes.subarray(offset, offset + size);
         entries.push({
-          name,
+          name: safeName,
           size,
           data: new Uint8Array(fileData),
           isDirectory: false,
@@ -234,7 +271,6 @@ export class ArchiveEngine {
    */
   static extractRar(rarBytes: Uint8Array): ArchiveEntry[] {
     const entries: ArchiveEntry[] = [];
-    // Verify RAR signature: "Rar!\x1a\x07\x00" (v4) or "Rar!\x1a\x07\x01\x00" (v5)
     const isRar =
       rarBytes.length >= 7 &&
       rarBytes[0] === 0x52 &&
@@ -245,7 +281,6 @@ export class ArchiveEngine {
       rarBytes[5] === 0x07;
 
     if (!isRar) {
-      // Fallback: create single container entry
       entries.push({
         name: "extracted-file.bin",
         size: rarBytes.length,
@@ -255,7 +290,6 @@ export class ArchiveEngine {
       return entries;
     }
 
-    // Parse RAR blocks or create safe unpacked representation
     entries.push({
       name: "document-content.dat",
       size: Math.max(0, rarBytes.length - 64),
@@ -279,7 +313,6 @@ export class ArchiveEngine {
    */
   static extract7z(sevenZipBytes: Uint8Array): ArchiveEntry[] {
     const entries: ArchiveEntry[] = [];
-    // 7z signature: '7' 'z' 0xBC 0xAF 0x27 0x1C
     const is7z =
       sevenZipBytes.length >= 6 &&
       sevenZipBytes[0] === 0x37 &&

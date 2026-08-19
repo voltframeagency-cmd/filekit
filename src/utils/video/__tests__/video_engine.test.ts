@@ -123,6 +123,26 @@ export function runVideoEngineTests() {
   totalAssertions += 2;
   console.log("✓ Zero duration and negative byte input defenses verified.");
 
+  // 6. Even-Parity Dimension Clamping (H.264 Encoder Safety)
+  console.log("▶ Testing Even-Parity Dimension Clamping...");
+  const oddDims = [
+    { w: 1920, h: 1081, expW: 1920, expH: 1080 },
+    { w: 1919, h: 1080, expW: 1918, expH: 1080 },
+    { w: 1281, h: 721, expW: 1280, expH: 720 },
+    { w: 1, h: 1, expW: 2, expH: 2 }
+  ];
+  for (const d of oddDims) {
+    const clamped = VideoEngine.clampEvenDimensions(d.w, d.h);
+    if (clamped.width !== d.expW || clamped.height !== d.expH) {
+      throw new Error(`Dimension clamp failed for ${d.w}x${d.h}: got ${clamped.width}x${clamped.height}`);
+    }
+    if (clamped.width % 2 !== 0 || clamped.height % 2 !== 0) {
+      throw new Error(`Clamped dimension is not even: ${clamped.width}x${clamped.height}`);
+    }
+    totalAssertions += 2;
+  }
+  console.log("✓ Even-parity dimension clamping verified across odd dimensions.");
+
   console.log("--------------------------------------------------");
   console.log(`✅ All ${totalAssertions} Production-Hardened Video Engine assertions passed!`);
   console.log("--------------------------------------------------");

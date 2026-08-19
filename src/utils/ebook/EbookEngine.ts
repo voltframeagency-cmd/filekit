@@ -10,6 +10,23 @@ export interface EbookMetadata {
 
 export class EbookEngine {
   /**
+   * Transliterates smart Unicode typography to standard ASCII WinAnsi characters
+   * to ensure pdf-lib standard fonts never crash on curly quotes, em-dashes, or ellipses.
+   */
+  static sanitizeTypographyToAscii(text: string): string {
+    if (!text) return "";
+    return text
+      .replace(/[\u2018\u2019\u201A\u201B]/g, "'") // Single smart quotes
+      .replace(/[\u201C\u201D\u201E\u201F]/g, '"') // Double smart quotes
+      .replace(/[\u2013\u2014]/g, "--")             // En-dash and Em-dash
+      .replace(/\u2026/g, "...")                    // Ellipsis
+      .replace(/\u00A0/g, " ")                      // Non-breaking space
+      .replace(/[\r\n\t]+/g, " ")
+      .replace(/[^\x20-\x7E]/g, " ")
+      .trim();
+  }
+
+  /**
    * Converts an EPUB e-book package into a clean printable vector PDF.
    */
   static async epubToPdf(epubBytes: Uint8Array): Promise<Uint8Array> {
@@ -57,11 +74,8 @@ export class EbookEngine {
     const usableHeight = pageHeight - margin * 2;
     const maxLinesPerPage = Math.floor(usableHeight / lineHeight);
 
-    // Sanitize text to WinAnsi single-line words
-    const sanitizedText = extractedText
-      .replace(/[\r\n\t]+/g, " ")
-      .replace(/[^\x20-\x7E]/g, " ")
-      .trim();
+    // Sanitize text with smart typography transliteration
+    const sanitizedText = this.sanitizeTypographyToAscii(extractedText);
     const words = sanitizedText.split(" ").filter(Boolean);
     const lines: string[] = [];
     let currentLine = "";

@@ -52,6 +52,19 @@ export async function runEbookEngineTests() {
   totalAssertions += 2;
   console.log("✓ Kindle MOBI/AZW3 parser and PDF renderer verified.");
 
+  // 4. Unicode Typography WinAnsi Transliteration Defense
+  console.log("▶ Testing Unicode Typography WinAnsi Transliteration...");
+  const richUnicodeText = `“Smart Quotes” and ‘Single Quotes’ — with Em-Dashes and Ellipses…`;
+  const asciiClean = EbookEngine.sanitizeTypographyToAscii(richUnicodeText);
+  if (asciiClean.includes("“") || asciiClean.includes("”") || asciiClean.includes("—") || asciiClean.includes("…")) {
+    throw new Error(`Unicode typography was not transliterated: ${asciiClean}`);
+  }
+  if (!asciiClean.includes('"Smart Quotes"') || !asciiClean.includes("'Single Quotes'") || !asciiClean.includes("--") || !asciiClean.includes("...")) {
+    throw new Error(`Transliteration output mismatch: ${asciiClean}`);
+  }
+  totalAssertions += 2;
+  console.log("✓ Smart typography transliteration to ASCII verified.");
+
   console.log("--------------------------------------------------");
   console.log(`✅ All ${totalAssertions} E-Book Engine assertions passed cleanly!`);
   console.log("--------------------------------------------------");
