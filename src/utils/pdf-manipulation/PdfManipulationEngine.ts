@@ -216,4 +216,32 @@ export class PdfManipulationEngine {
 
     return images;
   }
+
+  /**
+   * Validates that the input buffer contains valid PDF magic bytes (%PDF-)
+   * and inspects whether encryption is present.
+   */
+  static validatePdfIntegrity(pdfBytes: Uint8Array): { isValid: boolean; isEncrypted: boolean; error?: string } {
+    if (!pdfBytes || pdfBytes.length < 5) {
+      return { isValid: false, isEncrypted: false, error: "File is empty or corrupted (missing PDF header)" };
+    }
+
+    // Check %PDF- magic bytes
+    const header = String.fromCharCode(pdfBytes[0], pdfBytes[1], pdfBytes[2], pdfBytes[3], pdfBytes[4]);
+    if (!header.startsWith("%PDF-")) {
+      return { isValid: false, isEncrypted: false, error: "Invalid PDF format: Missing %PDF- magic bytes" };
+    }
+
+    // Scan for /Encrypt dictionary in trailer / xref
+    const textDecoder = new TextDecoder("latin1");
+    const rawString = textDecoder.decode(pdfBytes.subarray(Math.max(0, pdfBytes.length - 4096)));
+    const hasEncrypt = rawString.includes("/Encrypt") || textDecoder.decode(pdfBytes.subarray(0, 4096)).includes("/Encrypt");
+
+    return {
+      isValid: true,
+      isEncrypted: hasEncrypt,
+      error: hasEncrypt ? "This PDF is password-protected. Please unlock the file before editing." : undefined
+    };
+  }
 }
+

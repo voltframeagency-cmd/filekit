@@ -48,15 +48,37 @@ export default function AudioWorkspace({
   const startOffsetRef = useRef<number>(0);
   const animFrameRef = useRef<number | null>(null);
 
-  // Initialize from active file if available
+  // Cleanup on unmount
   useEffect(() => {
-    const active = fileManager.getActiveFile();
-    if (active && files.length === 0) {
-      handleFileSelected(active);
+    return () => {
+      stopPlayback();
+      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+        try {
+          audioContextRef.current.close();
+        } catch {}
+      }
+      if (outputUrl) {
+        URL.revokeObjectURL(outputUrl);
+      }
+    };
+  }, [outputUrl]);
+
+  // Waveform seek handler for both mouse and touch events
+  const handleWaveformSeek = (clientX: number, target: HTMLElement) => {
+    const rect = target.getBoundingClientRect();
+    const clickX = clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, clickX / rect.width));
+    const newTime = pct * duration;
+    setCurrentTime(newTime);
+    if (isPlaying) {
+      stopPlayback();
     }
-  }, []);
+  };
 
   const handleFileSelected = async (file: File) => {
+    if (outputUrl) {
+      URL.revokeObjectURL(outputUrl);
+    }
     setLoading(true);
     setErrorMessage(null);
     setOutputUrl(null);
@@ -313,16 +335,13 @@ export default function AudioWorkspace({
               <div className="flex flex-col gap-4">
                 {/* Waveform Canvas */}
                 <div
-                  className="relative h-32 bg-slate-50 border border-slate-200 rounded-fk-lg p-2 cursor-pointer select-none"
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    const pct = Math.max(0, Math.min(1, clickX / rect.width));
-                    const newTime = pct * duration;
-                    setCurrentTime(newTime);
-                    if (isPlaying) {
-                      stopPlayback();
-                    }
+                  className="relative h-32 bg-slate-50 border border-slate-200 rounded-fk-lg p-2 cursor-pointer select-none touch-none"
+                  onClick={(e) => handleWaveformSeek(e.clientX, e.currentTarget)}
+                  onTouchStart={(e) => {
+                    if (e.touches[0]) handleWaveformSeek(e.touches[0].clientX, e.currentTarget);
+                  }}
+                  onTouchMove={(e) => {
+                    if (e.touches[0]) handleWaveformSeek(e.touches[0].clientX, e.currentTarget);
                   }}
                 >
                   <canvas ref={canvasRef} className="w-full h-full" />

@@ -40,6 +40,14 @@ export default function VideoWorkspace({
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (videoSrc) URL.revokeObjectURL(videoSrc);
+      if (outputUrl) URL.revokeObjectURL(outputUrl);
+    };
+  }, [videoSrc, outputUrl]);
+
   useEffect(() => {
     const active = fileManager.getActiveFile();
     if (active && !file) {
@@ -48,6 +56,9 @@ export default function VideoWorkspace({
   }, []);
 
   const handleFileSelected = (selectedFile: File) => {
+    if (videoSrc) URL.revokeObjectURL(videoSrc);
+    if (outputUrl) URL.revokeObjectURL(outputUrl);
+
     setLoading(true);
     setErrorMessage(null);
     setOutputUrl(null);

@@ -424,4 +424,71 @@ export class ImageTransformEngine {
     ctx.filter = "none";
     return canvas;
   }
+
+  /**
+   * Maximum safe dimension for HTML5 canvas elements across desktop and mobile browsers.
+   */
+  static readonly MAX_SAFE_CANVAS_DIMENSION = 8192;
+
+  /**
+   * Scales down extreme image dimensions (e.g. 12000px camera photos) to stay within
+   * safe browser memory budgets without altering aspect ratio.
+   */
+  static getSafeDimensions(width: number, height: number): { width: number; height: number; scaled: boolean } {
+    if (width <= this.MAX_SAFE_CANVAS_DIMENSION && height <= this.MAX_SAFE_CANVAS_DIMENSION) {
+      return { width, height, scaled: false };
+    }
+
+    const ratio = width / height;
+    if (width > height) {
+      const safeW = this.MAX_SAFE_CANVAS_DIMENSION;
+      const safeH = Math.max(1, Math.round(safeW / ratio));
+      return { width: safeW, height: safeH, scaled: true };
+    } else {
+      const safeH = this.MAX_SAFE_CANVAS_DIMENSION;
+      const safeW = Math.max(1, Math.round(safeH * ratio));
+      return { width: safeW, height: safeH, scaled: true };
+    }
+  }
+
+  /**
+   * Prepares a canvas for export, automatically compositing transparent alpha pixels
+   * onto a solid white matte background when exporting to non-alpha formats (JPEG, BMP)
+   * to eliminate black background artifacts.
+   */
+  static prepareCanvasForExport(
+    sourceCanvas: HTMLCanvasElement | OffscreenCanvas | ImageBitmap | HTMLImageElement,
+    targetMimeType: string = "image/jpeg",
+    matteColor: string = "#FFFFFF"
+  ): HTMLCanvasElement | OffscreenCanvas {
+    const srcW = "width" in sourceCanvas ? sourceCanvas.width : (sourceCanvas as any).naturalWidth;
+    const srcH = "height" in sourceCanvas ? sourceCanvas.height : (sourceCanvas as any).naturalHeight;
+
+    const isOpaqueTarget = targetMimeType === "image/jpeg" || targetMimeType === "image/bmp";
+
+    let canvas: HTMLCanvasElement | OffscreenCanvas;
+    let ctx: any;
+
+    if (typeof OffscreenCanvas !== "undefined") {
+      canvas = new OffscreenCanvas(srcW, srcH);
+      ctx = canvas.getContext("2d");
+    } else if (typeof document !== "undefined") {
+      canvas = document.createElement("canvas");
+      canvas.width = srcW;
+      canvas.height = srcH;
+      ctx = canvas.getContext("2d");
+    } else {
+      throw new Error("No canvas context available");
+    }
+
+    if (isOpaqueTarget) {
+      // Fill background with solid white matte before drawing transparent source
+      ctx.fillStyle = matteColor;
+      ctx.fillRect(0, 0, srcW, srcH);
+    }
+
+    ctx.drawImage(sourceCanvas, 0, 0);
+    return canvas;
+  }
 }
+
