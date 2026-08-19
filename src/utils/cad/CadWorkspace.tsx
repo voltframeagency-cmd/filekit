@@ -18,6 +18,7 @@ interface CadWorkspaceProps {
   targetFormat?: "PDF" | "DXF" | "PNG";
   mode?: "dwg-to-pdf" | "dxf-to-pdf" | "dwg-to-dxf" | "eps-to-pdf" | "eps-to-png" | "psd-to-png" | "ai-to-pdf" | "ai-to-png";
   title?: string;
+  embedded?: boolean;
 }
 
 export function CadWorkspace({
@@ -28,6 +29,7 @@ export function CadWorkspace({
   targetFormat,
   mode,
   title,
+  embedded = false,
 }: CadWorkspaceProps) {
   // Normalize parameters
   const effectiveSlug = toolSlug || (mode ? `/${mode}` : "/dwg-to-pdf");
@@ -45,6 +47,18 @@ export function CadWorkspace({
     else if (mode.startsWith("eps")) { effectiveExt = ".eps"; effectiveLabel = "PostScript EPS Vector"; }
     else if (mode.startsWith("psd")) { effectiveExt = ".psd"; effectiveLabel = "Adobe Photoshop PSD"; }
     else if (mode.startsWith("ai")) { effectiveExt = ".ai"; effectiveLabel = "Adobe Illustrator AI"; }
+  }
+
+  if (embedded) {
+    return (
+      <OfficeConverterWorkspace
+        toolTitle={effectiveTitle}
+        toolSlug={effectiveSlug}
+        apiEndpoint="/api/internal/convert/word-to-pdf"
+        acceptedExtensions={effectiveExt}
+        documentTypeLabel={effectiveLabel}
+      />
+    );
   }
 
   const jsonLd = SchemaGenerator.generateFullStructuredData({

@@ -103,6 +103,7 @@ export default function LocalizedToolPage() {
           mode={mode}
           title={meta.title}
           description={meta.description}
+          embedded={true}
         />
       );
     }
