@@ -1443,6 +1443,62 @@ export const CONVERSION_CATALOG: Record<string, ConversionCatalogEntry> = {
     sitemapEnabled: true,
     localizationEnabled: true,
     uniqueOutcomeDefinition: "Decompresses WOFF/WOFF2 web fonts back into standard TTF TrueType fonts for desktop use."
+  },
+  "/epub-to-pdf": {
+    slug: "/epub-to-pdf",
+    inputFormat: "EPUB",
+    outputFormat: "PDF",
+    family: "media",
+    engineId: "shared-ebook-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true,
+    uniqueOutcomeDefinition: "Converts EPUB digital e-books into clean, formatted, printable vector PDF documents."
+  },
+  "/pdf-to-epub": {
+    slug: "/pdf-to-epub",
+    inputFormat: "PDF",
+    outputFormat: "EPUB",
+    family: "media",
+    engineId: "shared-ebook-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true,
+    uniqueOutcomeDefinition: "Converts fixed-layout PDF documents into responsive e-reader EPUB 3.0 books."
+  },
+  "/mobi-to-pdf": {
+    slug: "/mobi-to-pdf",
+    inputFormat: "MOBI",
+    outputFormat: "PDF",
+    family: "media",
+    engineId: "shared-ebook-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true,
+    uniqueOutcomeDefinition: "Converts Amazon Kindle MOBI e-books into standard printable PDF documents."
+  },
+  "/azw3-to-pdf": {
+    slug: "/azw3-to-pdf",
+    inputFormat: "AZW3",
+    outputFormat: "PDF",
+    family: "media",
+    engineId: "shared-ebook-engine-v1",
+    processingMode: "local",
+    implementationStatus: "PRODUCTION_FROZEN",
+    indexabilityStatus: "INDEXABLE",
+    navigationEnabled: true,
+    sitemapEnabled: true,
+    localizationEnabled: true,
+    uniqueOutcomeDefinition: "Converts Kindle KF8 / AZW3 formatted e-books into universal PDF documents."
   }
 };
 

@@ -60,6 +60,10 @@ async function runCatalogTests() {
   if (!catalogSitemapRoutes.includes("/strip-exif")) throw new Error("Indexable route missing from catalog sitemap: /strip-exif");
   if (!catalogSitemapRoutes.includes("/ttf-to-woff2")) throw new Error("Indexable route missing from catalog sitemap: /ttf-to-woff2");
   if (!catalogSitemapRoutes.includes("/woff2-to-ttf")) throw new Error("Indexable route missing from catalog sitemap: /woff2-to-ttf");
+  if (!catalogSitemapRoutes.includes("/epub-to-pdf")) throw new Error("Indexable route missing from catalog sitemap: /epub-to-pdf");
+  if (!catalogSitemapRoutes.includes("/pdf-to-epub")) throw new Error("Indexable route missing from catalog sitemap: /pdf-to-epub");
+  if (!catalogSitemapRoutes.includes("/mobi-to-pdf")) throw new Error("Indexable route missing from catalog sitemap: /mobi-to-pdf");
+  if (!catalogSitemapRoutes.includes("/azw3-to-pdf")) throw new Error("Indexable route missing from catalog sitemap: /azw3-to-pdf");
 
   if (catalogSitemapRoutes.includes("/docx-to-pdf")) throw new Error("Unbuilt/alias route incorrectly included in catalog sitemap: /docx-to-pdf");
   if (catalogSitemapRoutes.includes("/pdf-to-jpeg")) throw new Error("REDIRECT_ALIAS route incorrectly included in catalog sitemap: /pdf-to-jpeg");

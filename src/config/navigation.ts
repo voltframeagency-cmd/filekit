@@ -143,6 +143,18 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "TTF to WOFF2", href: "/ttf-to-woff2" },
       { label: "WOFF2 to TTF", href: "/woff2-to-ttf" }
     ]
+  },
+  {
+    id: "ebook-tools",
+    label: "E-BOOK TOOLS",
+    compactLabel: "E-BOOK",
+    accessibleLabel: "EPUB to PDF, PDF to EPUB, Kindle MOBI, and AZW3 conversion tools",
+    links: [
+      { label: "EPUB to PDF", href: "/epub-to-pdf" },
+      { label: "PDF to EPUB", href: "/pdf-to-epub" },
+      { label: "MOBI to PDF", href: "/mobi-to-pdf" },
+      { label: "AZW3 to PDF", href: "/azw3-to-pdf" }
+    ]
   }
 ];
 
