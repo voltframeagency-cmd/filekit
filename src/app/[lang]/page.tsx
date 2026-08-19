@@ -9,7 +9,7 @@ import TrustPanel from "@/components/layout/TrustPanel";
 import UploadDropzone from "@/components/upload/UploadDropzone";
 import ActionChooser from "@/components/layout/ActionChooser";
 import { useLanguage } from "@/components/layout/LanguageContext";
-import { SupportedLocale, NON_DEFAULT_LOCALES } from "@/config/i18n/locales";
+import { SupportedLocale, NON_DEFAULT_LOCALES, getLocaleDirection } from "@/config/i18n/locales";
 import { UI_TRANSLATIONS } from "@/config/i18n/translations";
 import { buildCanonicalUrl } from "@/utils/siteUrl";
 import { fileManager } from "@/utils/fileManager";
@@ -19,6 +19,7 @@ export default function LocalizedHomePage() {
   const router = useRouter();
   const rawLang = (params?.lang as string) || "en";
   const locale = (NON_DEFAULT_LOCALES.includes(rawLang as SupportedLocale) ? rawLang : "en") as SupportedLocale;
+  const direction = getLocaleDirection(locale);
 
   const { setLanguage } = useLanguage();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -27,7 +28,7 @@ export default function LocalizedHomePage() {
   const ui = UI_TRANSLATIONS[locale] || UI_TRANSLATIONS.en;
 
   useEffect(() => {
-    setLanguage(locale === "sv" ? "sv" : locale === "es" ? "en" : "en");
+    setLanguage(locale);
   }, [locale, setLanguage]);
 
   const handleFileSelect = (file: File) => {
@@ -56,7 +57,7 @@ export default function LocalizedHomePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-fk-bg" lang={locale} dir="ltr">
+    <div className="flex flex-col min-h-screen bg-fk-bg" lang={locale} dir={direction}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

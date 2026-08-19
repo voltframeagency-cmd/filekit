@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import AppHeader from "@/components/layout/AppHeader";
 import AppFooter from "@/components/layout/AppFooter";
 import TrustPanel from "@/components/layout/TrustPanel";
-import { SupportedLocale, NON_DEFAULT_LOCALES } from "@/config/i18n/locales";
+import { SupportedLocale, NON_DEFAULT_LOCALES, getLocaleDirection } from "@/config/i18n/locales";
 import { getLocalizedToolMeta, getHreflangLinks } from "@/utils/i18nHelper";
 import { PdfEditorRouteTarget } from "@/utils/pdf-editor/types";
 import { ImageTransformMode } from "@/utils/image-transform/types";
@@ -367,7 +367,7 @@ export default function LocalizedToolPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-fk-bg" lang={locale} dir="ltr">
+    <div className="flex flex-col min-h-screen bg-fk-bg" lang={locale} dir={getLocaleDirection(locale)}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

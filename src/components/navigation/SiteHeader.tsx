@@ -7,17 +7,17 @@ import { MAIN_NAVIGATION, TopNavItem } from "@/config/navigation";
 import DesktopMegaMenu from "./DesktopMegaMenu";
 import MobileNavigation from "./MobileNavigation";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { SUPPORTED_LOCALES, SupportedLocale } from "@/config/i18n/locales";
 import FileKitLogo from "../common/FileKitLogo";
 
-const LANGUAGES = [
-  { code: "en", label: "English", codeBadge: "EN", flag: "🇺🇸", path: "/" },
-  { code: "es", label: "Español", codeBadge: "ES", flag: "🇪🇸", path: "/es" },
-  { code: "de", label: "Deutsch", codeBadge: "DE", flag: "🇩🇪", path: "/de" },
-  { code: "fr", label: "Français", codeBadge: "FR", flag: "🇫🇷", path: "/fr" },
-  { code: "pt", label: "Português", codeBadge: "PT", flag: "🇵🇹", path: "/pt" },
-  { code: "it", label: "Italiano", codeBadge: "IT", flag: "🇮🇹", path: "/it" },
-  { code: "sv", label: "Svenska", codeBadge: "SV", flag: "🇸🇪", path: "/sv" }
-] as const;
+const LANGUAGES = Object.values(SUPPORTED_LOCALES).map((loc) => ({
+  code: loc.code,
+  label: loc.nativeName,
+  codeBadge: loc.code.toUpperCase(),
+  flag: loc.flag,
+  path: loc.code === "en" ? "/" : `/${loc.code}`,
+  region: loc.region,
+}));
 
 // Tool search database for live header auto-complete
 const ALL_SEARCHABLE_TOOLS = [
@@ -221,7 +221,7 @@ export default function SiteHeader() {
           {/* Interactive Language Dropdown with Active Flag & Code */}
           <div className="relative" ref={langMenuRef}>
             {(() => {
-              const pathLocaleMatch = pathname.match(/^\/(es|de|fr|pt|it|sv)(\/|$)/);
+              const pathLocaleMatch = pathname.match(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/);
               const currentLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
               const activeLang = LANGUAGES.find(l => l.code === currentLocale) || LANGUAGES[0];
 
@@ -244,29 +244,40 @@ export default function SiteHeader() {
             })()}
 
             {isLangOpen && (
-              <div className="absolute top-full ltr:right-0 rtl:left-0 mt-2 w-44 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in duration-100 divide-y divide-slate-100">
-                <div className="py-1">
-                  {LANGUAGES.map((lang) => (
-                    <Link
-                      key={lang.code}
-                      href={lang.path}
-                      onClick={() => setIsLangOpen(false)}
-                      className={`w-full text-left ltr:text-left rtl:text-right px-3 py-2 text-[13px] font-bold flex items-center justify-between transition-colors hover:bg-slate-50 ${
-                        pathname.startsWith(lang.path) && (lang.path !== "/" || pathname === "/")
-                          ? "text-blue-600 bg-blue-50/70"
-                          : "text-slate-800"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-base leading-none">{lang.flag}</span>
-                        <span>{lang.label}</span>
+              <div className="absolute top-full ltr:right-0 rtl:left-0 mt-2 w-64 max-h-96 overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in duration-150 divide-y divide-slate-100">
+                {(["Americas", "Europe", "Asia-Pacific", "Middle East & Africa"] as const).map((region) => {
+                  const regionLangs = LANGUAGES.filter((l) => l.region === region);
+                  if (regionLangs.length === 0) return null;
+                  return (
+                    <div key={region} className="py-1.5 first:pt-0 last:pb-0">
+                      <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        {region}
                       </div>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold">
-                        {lang.codeBadge}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
+                      <div className="space-y-0.5 mt-0.5">
+                        {regionLangs.map((lang) => (
+                          <Link
+                            key={lang.code}
+                            href={lang.path}
+                            onClick={() => setIsLangOpen(false)}
+                            className={`w-full text-left ltr:text-left rtl:text-right px-3 py-1.5 rounded-xl text-[12px] font-bold flex items-center justify-between transition-colors hover:bg-slate-50 ${
+                              pathname.startsWith(lang.path) && (lang.path !== "/" || pathname === "/")
+                                ? "text-blue-600 bg-blue-50/70"
+                                : "text-slate-800"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base leading-none">{lang.flag}</span>
+                              <span className="truncate">{lang.label}</span>
+                            </div>
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold shrink-0">
+                              {lang.codeBadge}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

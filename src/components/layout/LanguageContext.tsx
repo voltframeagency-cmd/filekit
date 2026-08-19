@@ -1,18 +1,19 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { SupportedLocale, getLocaleDirection, isValidLocale, SUPPORTED_LOCALES } from "@/config/i18n/locales";
 
-type Language = "en" | "ar" | "tr" | "sv";
-type Direction = "ltr" | "rtl";
+export type Language = SupportedLocale;
+export type Direction = "ltr" | "rtl";
 
-interface LanguageContextType {
+export interface LanguageContextType {
   language: Language;
   direction: Direction;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
 }
 
-const translations: Record<Language, Record<string, string>> = {
+const translations: Partial<Record<Language, Record<string, string>>> = {
   en: {
     "nav.allTools": "All Tools",
     "nav.compress": "Compress",
@@ -449,23 +450,28 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Check local storage or document attributes
-    const savedLang = localStorage.getItem("fk-lang") as Language;
-    if (savedLang && ["en", "ar", "tr", "sv"].includes(savedLang)) {
-      setLanguage(savedLang);
+    if (typeof window !== "undefined") {
+      const savedLang = localStorage.getItem("fk-lang") as Language;
+      if (savedLang && isValidLocale(savedLang)) {
+        setLanguage(savedLang);
+      }
     }
   }, []);
 
   const setLanguage = (lang: Language) => {
+    if (!isValidLocale(lang)) return;
     setLanguageState(lang);
-    localStorage.setItem("fk-lang", lang);
-    const dir = lang === "ar" ? "rtl" : "ltr";
-    setDirection(dir);
-    document.documentElement.dir = dir;
-    document.documentElement.lang = lang;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("fk-lang", lang);
+      const dir = getLocaleDirection(lang);
+      setDirection(dir);
+      document.documentElement.dir = dir;
+      document.documentElement.lang = lang;
+    }
   };
 
   const t = (key: string): string => {
-    return translations[language][key] || translations["en"][key] || key;
+    return translations[language as "en"]?.[key] || translations["en"]?.[key] || key;
   };
 
   return (
