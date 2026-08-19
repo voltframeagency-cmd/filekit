@@ -26,7 +26,9 @@ import SubtitleWorkspace from "@/utils/subtitles/SubtitleWorkspace";
 import CadWorkspace from "@/utils/cad/CadWorkspace";
 import PdfCompressionWorkspace from "@/components/pdf-tools/PdfCompressionWorkspace";
 import ImageCompressionWorkspace from "@/components/image-tools/ImageCompressionWorkspace";
+import ImageConverterWorkspace from "@/components/image-tools/ImageConverterWorkspace";
 import { PDF_COMPRESSION_ROUTES } from "@/config/pdfCompressionRoutes";
+import { IMAGE_CONVERSION_ROUTES } from "@/config/imageConversionRoutes";
 import { SchemaGenerator } from "@/utils/seo/SchemaGenerator";
 import { HowToStepSection } from "@/components/seo/HowToStepSection";
 import { AeoFaqSection } from "@/components/seo/AeoFaqSection";
@@ -64,6 +66,15 @@ export default function LocalizedToolPage() {
     if (normSlug.startsWith("/compress-image")) {
       return (
         <ImageCompressionWorkspace initialMode="BALANCED" />
+      );
+    }
+
+    // 0.05 Image Converter Suite (AVIF, HEIC, PNG, JPG, WebP, BMP, ICO)
+    if (IMAGE_CONVERSION_ROUTES[normSlug]) {
+      return (
+        <ImageConverterWorkspace
+          routeConfig={IMAGE_CONVERSION_ROUTES[normSlug]}
+        />
       );
     }
 
@@ -365,7 +376,17 @@ export default function LocalizedToolPage() {
         <link key={h.hrefLang} rel="alternate" hrefLang={h.hrefLang} href={h.href} />
       ))}
       <AppHeader />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8 space-y-6">
+        <section className="flex flex-col gap-1.5 max-w-[840px] mx-auto w-full text-left ltr:text-left rtl:text-right px-2">
+          <span className="text-[12px] font-bold uppercase tracking-wider text-blue-200">{seoContent.category}</span>
+          <h1 className="text-[clamp(1.75rem,7vw,2.25rem)] font-black text-white leading-[1.1] drop-shadow-sm tracking-tight">
+            {meta.title}
+          </h1>
+          <p className="text-[13px] md:text-[15px] font-medium text-blue-100 leading-relaxed">
+            {meta.description}
+          </p>
+        </section>
+
         {renderWorkspace()}
         <HowToStepSection toolTitle={meta.title} steps={seoContent.howToSteps} />
         <AeoFaqSection toolTitle={meta.title} faqs={seoContent.faqs} />

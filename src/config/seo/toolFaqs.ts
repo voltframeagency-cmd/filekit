@@ -62,7 +62,7 @@ export function getToolSeoContent(slug: string, toolTitle: string): ToolSeoConte
   }
 
   // 2. Professional Vector & Adobe Formats (EPS, PSD, AI)
-  if (normSlug.includes("eps") || normSlug.includes("psd") || normSlug.includes("ai")) {
+  if (normSlug.includes("eps") || normSlug.includes("psd") || normSlug.includes("/ai-")) {
     return {
       category: "Vector & Graphics",
       entityDefinition: `FileKit ${toolTitle} converts professional Adobe Photoshop (PSD), Illustrator (AI), and PostScript (EPS) graphics into web-ready images and vector PDFs.`,
@@ -165,8 +165,69 @@ export function getToolSeoContent(slug: string, toolTitle: string): ToolSeoConte
     };
   }
 
-  // 5. Video & Media Tools (MP4, MOV, MKV, WebM, GIF, Trim, Audio)
-  if (normSlug.includes("video") || normSlug.includes("mp4") || normSlug.includes("mov") || normSlug.includes("mkv") || normSlug.includes("webm") || normSlug.includes("avi") || normSlug.includes("audio") || normSlug.includes("mp3") || normSlug.includes("wav") || normSlug.includes("flac")) {
+  // 5. Image Tools & Converters (AVIF, HEIC, WEBP, PNG, JPG, BMP, ICO, TIFF)
+  if (
+    normSlug.includes("avif") ||
+    normSlug.includes("heic") ||
+    normSlug.includes("webp") ||
+    normSlug.includes("image") ||
+    normSlug.includes("png-to-") ||
+    normSlug.includes("jpg-to-") ||
+    normSlug.includes("jpeg-to-") ||
+    normSlug.includes("bmp") ||
+    normSlug.includes("ico") ||
+    normSlug.includes("tiff")
+  ) {
+    return {
+      category: "Image Converters",
+      entityDefinition: `FileKit ${toolTitle} converts high-efficiency photos, WebP, AVIF, HEIC, PNG, and JPG images 100% locally in your browser memory without uploading to third-party servers.`,
+      howToSteps: [
+        {
+          title: "Choose your photo or image",
+          description: "Drag and drop your image file into the browser workspace.",
+        },
+        {
+          title: "Render and transcode in browser",
+          description: "Our in-browser canvas engine converts color profiles, adjusts compression levels, and preserves alpha channels.",
+        },
+        {
+          title: "Save high-quality image",
+          description: "Download your clean, optimized image instantly with zero quality loss.",
+        },
+      ],
+      faqs: [
+        {
+          question: "Can I convert iPhone HEIC and next-gen AVIF photos to standard JPG?",
+          answer: "Yes. FileKit decodes modern AVIF and Apple HEIC image containers directly inside your browser and outputs universal high-quality JPG or PNG files.",
+        },
+        {
+          question: "Are my private personal photos uploaded to a server?",
+          answer: "No. FileKit processes image conversions locally on your computer using client-side JavaScript and WebAssembly, ensuring complete privacy.",
+        },
+        {
+          question: "Does image conversion support batch conversion?",
+          answer: "Yes. You can upload multiple image files simultaneously and convert them in parallel in your browser.",
+        },
+      ],
+    };
+  }
+
+  // 6. Video & Audio Tools (MP4, MOV, MKV, WebM, AVI, GIF, Trim, MP3, WAV, FLAC)
+  if (
+    normSlug.includes("video") ||
+    normSlug.includes("mp4") ||
+    normSlug.includes("mov") ||
+    normSlug.includes("mkv") ||
+    normSlug.includes("webm") ||
+    normSlug.includes("/avi-") ||
+    normSlug.endsWith("-avi") ||
+    normSlug.includes("audio") ||
+    normSlug.includes("mp3") ||
+    normSlug.includes("wav") ||
+    normSlug.includes("flac") ||
+    normSlug.includes("m4a") ||
+    normSlug.includes("ogg")
+  ) {
     return {
       category: "Audio & Video",
       entityDefinition: `FileKit ${toolTitle} is a privacy-first media processing engine utilizing zero-CPU stream copy and hardware acceleration to convert and compress media files.`,
@@ -197,7 +258,7 @@ export function getToolSeoContent(slug: string, toolTitle: string): ToolSeoConte
     };
   }
 
-  // 6. Generic PDF & Document Suite Default
+  // 7. Generic PDF & Document Suite Default
   return {
     category: "PDF & Document Utilities",
     entityDefinition: `FileKit ${toolTitle} is a fast, 100% private in-browser document utility engineered for secure client-side processing without file uploads.`,
