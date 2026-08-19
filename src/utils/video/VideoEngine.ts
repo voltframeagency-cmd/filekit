@@ -142,6 +142,53 @@ export class VideoEngine {
   }
 
   /**
+   * Evaluates if a video conversion can bypass expensive re-encoding
+   * and execute as an ultra-fast zero-CPU stream copy (e.g. MOV/MKV to MP4).
+   */
+  static isStreamCopyEligible(
+    sourceExt: string,
+    targetExt: string,
+    hasVideoFilter = false
+  ): boolean {
+    if (hasVideoFilter) return false;
+
+    const normSrc = sourceExt.toLowerCase().replace(/^\./, "");
+    const normTgt = targetExt.toLowerCase().replace(/^\./, "");
+
+    // Remuxing between compatible MP4/MOV/MKV/M4V containers with H.264/AAC
+    const remuxCompatible = ["mov", "mkv", "mp4", "m4v"];
+    return remuxCompatible.includes(normSrc) && remuxCompatible.includes(normTgt);
+  }
+
+  /**
+   * Generates optimized FFmpeg command arguments using the LED Light / Stream-Copy principle.
+   */
+  static buildOptimizedFfmpegCommand(
+    sourceExt: string,
+    targetExt: string,
+    options: { targetBitrateKbps?: number; isMuted?: boolean; hasFilters?: boolean } = {}
+  ): { args: string[]; executionTier: "STREAM_COPY_BYPASS" | "HARDWARE_ACCELERATED" | "FULL_TRANSCODE" } {
+    if (this.isStreamCopyEligible(sourceExt, targetExt, options.hasFilters) && !options.targetBitrateKbps && !options.isMuted) {
+      return {
+        args: ["-i", "input", "-c", "copy", "-movflags", "+faststart", "output." + targetExt],
+        executionTier: "STREAM_COPY_BYPASS",
+      };
+    }
+
+    if (options.isMuted) {
+      return {
+        args: ["-i", "input", "-c:v", "copy", "-an", "output." + targetExt],
+        executionTier: "STREAM_COPY_BYPASS",
+      };
+    }
+
+    return {
+      args: ["-i", "input", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23", "-c:a", "aac", "output." + targetExt],
+      executionTier: "HARDWARE_ACCELERATED",
+    };
+  }
+
+  /**
    * Creates a mock/container response object for local/server conversion jobs.
    */
   static createConversionJobPayload(
@@ -150,12 +197,17 @@ export class VideoEngine {
     mode: string,
     targetFormat: string
   ) {
+    const ext = fileName.split(".").pop() || "mp4";
+    const optimization = this.buildOptimizedFfmpegCommand(ext, targetFormat);
+
     return {
       jobId: `vid_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
       sourceFileName: fileName,
       sourceSizeBytes: fileSizeBytes,
       targetFormat,
       mode,
+      executionTier: optimization.executionTier,
+      ffmpegArgs: optimization.args,
       status: "COMPLETED",
       createdAt: new Date().toISOString()
     };

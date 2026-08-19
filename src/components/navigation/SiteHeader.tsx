@@ -10,9 +10,13 @@ import { useLanguage } from "@/components/layout/LanguageContext";
 import FileKitLogo from "../common/FileKitLogo";
 
 const LANGUAGES = [
-  { code: "en", label: "English", codeBadge: "EN" },
-  { code: "ar", label: "العربية", codeBadge: "AR" },
-  { code: "tr", label: "Türkçe", codeBadge: "TR" }
+  { code: "en", label: "English", codeBadge: "EN", flag: "🇺🇸", path: "/" },
+  { code: "es", label: "Español", codeBadge: "ES", flag: "🇪🇸", path: "/es" },
+  { code: "de", label: "Deutsch", codeBadge: "DE", flag: "🇩🇪", path: "/de" },
+  { code: "fr", label: "Français", codeBadge: "FR", flag: "🇫🇷", path: "/fr" },
+  { code: "pt", label: "Português", codeBadge: "PT", flag: "🇵🇹", path: "/pt" },
+  { code: "it", label: "Italiano", codeBadge: "IT", flag: "🇮🇹", path: "/it" },
+  { code: "sv", label: "Svenska", codeBadge: "SV", flag: "🇸🇪", path: "/sv" }
 ] as const;
 
 // Tool search database for live header auto-complete
@@ -235,23 +239,29 @@ export default function SiteHeader() {
             </button>
 
             {isLangOpen && (
-              <div className="absolute top-full ltr:right-0 rtl:left-0 mt-2 w-36 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-50 animate-in fade-in duration-100">
-                {LANGUAGES.map((lang) => (
-                  <button
-                    key={lang.code}
-                    type="button"
-                    onClick={() => {
-                      setLanguage(lang.code as any);
-                      setIsLangOpen(false);
-                    }}
-                    className={`w-full text-left ltr:text-left rtl:text-right px-3 py-2 text-[13px] font-bold flex items-center justify-between transition-colors hover:bg-slate-50 ${
-                      language === lang.code ? "text-blue-600 bg-blue-50/70" : "text-slate-800"
-                    }`}
-                  >
-                    <span>{lang.label}</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold">{lang.codeBadge}</span>
-                  </button>
-                ))}
+              <div className="absolute top-full ltr:right-0 rtl:left-0 mt-2 w-44 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in duration-100 divide-y divide-slate-100">
+                <div className="py-1">
+                  {LANGUAGES.map((lang) => (
+                    <Link
+                      key={lang.code}
+                      href={lang.path}
+                      onClick={() => setIsLangOpen(false)}
+                      className={`w-full text-left ltr:text-left rtl:text-right px-3 py-2 text-[13px] font-bold flex items-center justify-between transition-colors hover:bg-slate-50 ${
+                        pathname.startsWith(lang.path) && (lang.path !== "/" || pathname === "/")
+                          ? "text-blue-600 bg-blue-50/70"
+                          : "text-slate-800"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-base leading-none">{lang.flag}</span>
+                        <span>{lang.label}</span>
+                      </div>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold">
+                        {lang.codeBadge}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
           </div>
