@@ -129,6 +129,20 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "Trim Video", href: "/trim-video" },
       { label: "Mute Video", href: "/mute-video" }
     ]
+  },
+  {
+    id: "archive-tools",
+    label: "ARCHIVE & UTILITIES",
+    compactLabel: "ARCHIVE",
+    accessibleLabel: "ZIP extraction, creation, TAR conversion, font optimization, and privacy metadata stripping",
+    links: [
+      { label: "Extract ZIP", href: "/extract-zip" },
+      { label: "Create ZIP", href: "/create-zip" },
+      { label: "TAR to ZIP", href: "/tar-to-zip" },
+      { label: "Strip EXIF", href: "/strip-exif" },
+      { label: "TTF to WOFF2", href: "/ttf-to-woff2" },
+      { label: "WOFF2 to TTF", href: "/woff2-to-ttf" }
+    ]
   }
 ];
 

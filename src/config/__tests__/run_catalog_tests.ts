@@ -54,6 +54,12 @@ async function runCatalogTests() {
   if (!catalogSitemapRoutes.includes("/video-to-gif")) throw new Error("Indexable route missing from catalog sitemap: /video-to-gif");
   if (!catalogSitemapRoutes.includes("/trim-video")) throw new Error("Indexable route missing from catalog sitemap: /trim-video");
   if (!catalogSitemapRoutes.includes("/mute-video")) throw new Error("Indexable route missing from catalog sitemap: /mute-video");
+  if (!catalogSitemapRoutes.includes("/extract-zip")) throw new Error("Indexable route missing from catalog sitemap: /extract-zip");
+  if (!catalogSitemapRoutes.includes("/create-zip")) throw new Error("Indexable route missing from catalog sitemap: /create-zip");
+  if (!catalogSitemapRoutes.includes("/tar-to-zip")) throw new Error("Indexable route missing from catalog sitemap: /tar-to-zip");
+  if (!catalogSitemapRoutes.includes("/strip-exif")) throw new Error("Indexable route missing from catalog sitemap: /strip-exif");
+  if (!catalogSitemapRoutes.includes("/ttf-to-woff2")) throw new Error("Indexable route missing from catalog sitemap: /ttf-to-woff2");
+  if (!catalogSitemapRoutes.includes("/woff2-to-ttf")) throw new Error("Indexable route missing from catalog sitemap: /woff2-to-ttf");
 
   if (catalogSitemapRoutes.includes("/docx-to-pdf")) throw new Error("Unbuilt/alias route incorrectly included in catalog sitemap: /docx-to-pdf");
   if (catalogSitemapRoutes.includes("/pdf-to-jpeg")) throw new Error("REDIRECT_ALIAS route incorrectly included in catalog sitemap: /pdf-to-jpeg");
