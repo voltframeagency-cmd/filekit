@@ -66,7 +66,7 @@ export async function runI18nCatalogTests() {
   // 3. Multi-regional Sitemap Coverage
   console.log("▶ Testing Multi-regional Sitemap Coverage...");
   const sitemapEntries = siteSitemap();
-  const expectedTotalUrls = 120 * 7; // 120 tools × 7 locales = 840
+  const expectedTotalUrls = 130 * 7; // 130 tools × 7 locales = 910
   if (sitemapEntries.length !== expectedTotalUrls) {
     throw new Error(`Expected ${expectedTotalUrls} sitemap URLs, got ${sitemapEntries.length}`);
   }

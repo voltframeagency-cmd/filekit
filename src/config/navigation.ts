@@ -175,15 +175,29 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
     ]
   },
   {
-    id: "ebook-tools",
-    label: "E-BOOK TOOLS",
-    compactLabel: "E-BOOK",
-    accessibleLabel: "EPUB to PDF, PDF to EPUB, Kindle MOBI, and AZW3 conversion tools",
+    id: "cad-tools",
+    label: "CAD & VECTOR TOOLS",
+    compactLabel: "CAD",
+    accessibleLabel: "AutoCAD DWG, DXF, PostScript EPS, PSD, and Adobe Illustrator AI conversion tools",
     links: [
-      { label: "EPUB to PDF", href: "/epub-to-pdf" },
-      { label: "PDF to EPUB", href: "/pdf-to-epub" },
-      { label: "MOBI to PDF", href: "/mobi-to-pdf" },
-      { label: "AZW3 to PDF", href: "/azw3-to-pdf" }
+      { label: "DWG to PDF", href: "/dwg-to-pdf" },
+      { label: "DXF to PDF", href: "/dxf-to-pdf" },
+      { label: "DWG to DXF", href: "/dwg-to-dxf" },
+      { label: "EPS to PDF", href: "/eps-to-pdf" },
+      { label: "EPS to PNG", href: "/eps-to-png" },
+      { label: "PSD to PNG", href: "/psd-to-png" },
+      { label: "AI to PDF", href: "/ai-to-pdf" },
+      { label: "AI to PNG", href: "/ai-to-png" }
+    ]
+  },
+  {
+    id: "subtitle-tools",
+    label: "SUBTITLE TOOLS",
+    compactLabel: "SUBTITLES",
+    accessibleLabel: "SubRip SRT to WebVTT VTT conversion and timestamp tools",
+    links: [
+      { label: "SRT to VTT", href: "/srt-to-vtt" },
+      { label: "VTT to SRT", href: "/vtt-to-srt" }
     ]
   }
 ];

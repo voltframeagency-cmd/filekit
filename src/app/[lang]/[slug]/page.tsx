@@ -22,6 +22,7 @@ import { FontWorkspace } from "@/utils/font/FontWorkspace";
 import { EbookWorkspace } from "@/utils/ebook/EbookWorkspace";
 import AudioWorkspace from "@/utils/audio/AudioWorkspace";
 import VideoWorkspace from "@/utils/video/VideoWorkspace";
+import SubtitleWorkspace from "@/utils/subtitles/SubtitleWorkspace";
 
 export default function LocalizedToolPage() {
   const params = useParams();
@@ -222,7 +223,19 @@ export default function LocalizedToolPage() {
       );
     }
 
-    // 10. Image Transform & Converter
+    // 10. Subtitle Tools
+    if (normSlug === "/srt-to-vtt" || normSlug === "/vtt-to-srt") {
+      const subMode = normSlug === "/srt-to-vtt" ? "srt-to-vtt" : "vtt-to-srt";
+      return (
+        <SubtitleWorkspace
+          mode={subMode}
+          title={meta.title}
+          subtitle={meta.description}
+        />
+      );
+    }
+
+    // 11. Image Transform & Converter
     if (
       normSlug === "/resize-image" ||
       normSlug === "/crop-image" ||
@@ -257,16 +270,31 @@ export default function LocalizedToolPage() {
       );
     }
 
-    // 11. Office & Universal Document Converter Fallback
+    // 12. Office, CAD & Universal Document Converter Fallback
     const isWord = normSlug.includes("word") || normSlug.includes("docx") || normSlug.includes("doc");
     const isExcel = normSlug.includes("excel") || normSlug.includes("xlsx") || normSlug.includes("xls");
+    const isCad = normSlug.includes("dwg") || normSlug.includes("dxf") || normSlug.includes("eps") || normSlug.includes("psd") || normSlug.includes("ai");
     const endpoint = isWord
       ? "/api/internal/convert/word-to-pdf"
       : isExcel
       ? "/api/internal/convert/excel-to-pdf"
+      : isCad
+      ? "/api/internal/convert/word-to-pdf"
       : "/api/internal/convert/powerpoint-to-pdf";
-    const extensions = isWord ? ".docx,.doc" : isExcel ? ".xlsx,.xls" : ".pptx,.ppt";
-    const label = isWord ? "Word Document" : isExcel ? "Excel Spreadsheet" : "PowerPoint Presentation";
+    const extensions = isWord
+      ? ".docx,.doc"
+      : isExcel
+      ? ".xlsx,.xls"
+      : isCad
+      ? ".dwg,.dxf,.eps,.psd,.ai"
+      : ".pptx,.ppt";
+    const label = isWord
+      ? "Word Document"
+      : isExcel
+      ? "Excel Spreadsheet"
+      : isCad
+      ? "CAD / Vector Document"
+      : "PowerPoint Presentation";
 
     return (
       <OfficeConverterWorkspace
