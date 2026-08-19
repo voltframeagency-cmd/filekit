@@ -146,6 +146,44 @@ export class HeavyComputePipeline {
       return is7z ? { valid: true, detectedFormat: "7z" } : { valid: false, reason: "Invalid 7-Zip archive signature." };
     }
 
+    // DWG: AC10 (0x41 0x43 0x31 0x30)
+    if (fmt === "dwg") {
+      const isDwg = buffer.length >= 6 && buffer[0] === 0x41 && buffer[1] === 0x43 && buffer[2] === 0x31 && buffer[3] === 0x30;
+      return isDwg ? { valid: true, detectedFormat: "dwg" } : { valid: false, reason: "Invalid AutoCAD DWG binary signature." };
+    }
+
+    // PSD: 8BPS (0x38 0x42 0x50 0x53)
+    if (fmt === "psd") {
+      const isPsd = buffer.length >= 4 && buffer[0] === 0x38 && buffer[1] === 0x42 && buffer[2] === 0x50 && buffer[3] === 0x53;
+      return isPsd ? { valid: true, detectedFormat: "psd" } : { valid: false, reason: "Invalid Adobe Photoshop PSD signature." };
+    }
+
+    // EPS: %!PS-Adobe (0x25 0x21 0x50 0x53) or Binary EPS (0xC5 0xD0 0xD3 0xC6)
+    if (fmt === "eps") {
+      const isAsciiEps = buffer.length >= 4 && buffer[0] === 0x25 && buffer[1] === 0x21 && buffer[2] === 0x50 && buffer[3] === 0x53;
+      const isBinEps = buffer.length >= 4 && buffer[0] === 0xc5 && buffer[1] === 0xd0 && buffer[2] === 0xd3 && buffer[3] === 0xc6;
+      return (isAsciiEps || isBinEps) ? { valid: true, detectedFormat: "eps" } : { valid: false, reason: "Invalid PostScript EPS signature." };
+    }
+
+    // AI: %PDF- (0x25 0x50 0x44 0x46) or %!PS-Adobe
+    if (fmt === "ai") {
+      const isAiPdf = buffer.length >= 4 && buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46;
+      const isAiPs = buffer.length >= 4 && buffer[0] === 0x25 && buffer[1] === 0x21 && buffer[2] === 0x50 && buffer[3] === 0x53;
+      return (isAiPdf || isAiPs) ? { valid: true, detectedFormat: "ai" } : { valid: false, reason: "Invalid Adobe Illustrator AI signature." };
+    }
+
+    // DXF: ASCII text
+    if (fmt === "dxf") {
+      const isDxf = buffer.length >= 4;
+      return isDxf ? { valid: true, detectedFormat: "dxf" } : { valid: false, reason: "Malformed DXF payload." };
+    }
+
+    // VTT: WEBVTT (0x57 0x45 0x42 0x56 0x54 0x54)
+    if (fmt === "vtt") {
+      const isVtt = buffer.length >= 6 && buffer[0] === 0x57 && buffer[1] === 0x45 && buffer[2] === 0x42 && buffer[3] === 0x56 && buffer[4] === 0x54 && buffer[5] === 0x54;
+      return isVtt ? { valid: true, detectedFormat: "vtt" } : { valid: false, reason: "Missing WEBVTT header." };
+    }
+
     // Pass-through generic validation
     return { valid: true, detectedFormat: fmt };
   }
