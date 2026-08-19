@@ -9,10 +9,23 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/dev/"]
+        disallow: ["/dev/", "/api/internal/"]
       },
+      // Explicit AI Answer Engines & LLM RAG Crawlers (AEO / AIO / GEO)
       {
-        userAgent: "OAI-SearchBot",
+        userAgent: [
+          "GPTBot",
+          "ChatGPT-User",
+          "ClaudeBot",
+          "Claude-Web",
+          "PerplexityBot",
+          "Google-Extended",
+          "Applebot",
+          "Applebot-Extended",
+          "Meta-ExternalAgent",
+          "OAI-SearchBot",
+          "Bingbot"
+        ],
         allow: "/"
       }
     ],

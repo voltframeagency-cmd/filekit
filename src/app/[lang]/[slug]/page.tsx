@@ -23,6 +23,10 @@ import { EbookWorkspace } from "@/utils/ebook/EbookWorkspace";
 import AudioWorkspace from "@/utils/audio/AudioWorkspace";
 import VideoWorkspace from "@/utils/video/VideoWorkspace";
 import SubtitleWorkspace from "@/utils/subtitles/SubtitleWorkspace";
+import { SchemaGenerator } from "@/utils/seo/SchemaGenerator";
+import { HowToStepSection } from "@/components/seo/HowToStepSection";
+import { AeoFaqSection } from "@/components/seo/AeoFaqSection";
+import { getToolSeoContent } from "@/config/seo/toolFaqs";
 
 export default function LocalizedToolPage() {
   const params = useParams();
@@ -33,17 +37,14 @@ export default function LocalizedToolPage() {
   const locale = (NON_DEFAULT_LOCALES.includes(rawLang as SupportedLocale) ? rawLang : "en") as SupportedLocale;
   const meta = getLocalizedToolMeta(normSlug, locale);
   const hreflangs = getHreflangLinks(normSlug);
+  const seoContent = getToolSeoContent(normSlug, meta.title);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": meta.title,
-    "url": meta.canonicalUrl,
-    "description": meta.description,
-    "applicationCategory": "UtilitiesApplication",
-    "operatingSystem": "All",
-    "inLanguage": locale
-  };
+  const jsonLd = SchemaGenerator.generateFullStructuredData({
+    slug: normSlug,
+    title: meta.title,
+    description: meta.description,
+    locale
+  });
 
   // Render workspace based on slug
   const renderWorkspace = () => {
@@ -319,6 +320,8 @@ export default function LocalizedToolPage() {
       <AppHeader />
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
         {renderWorkspace()}
+        <HowToStepSection toolTitle={meta.title} steps={seoContent.howToSteps} />
+        <AeoFaqSection toolTitle={meta.title} faqs={seoContent.faqs} />
         <div className="mt-8">
           <TrustPanel />
         </div>
