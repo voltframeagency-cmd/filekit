@@ -218,25 +218,30 @@ export default function SiteHeader() {
             )}
           </div>
 
-          {/* Interactive Language Dropdown with Vector Globe SVG Icon */}
+          {/* Interactive Language Dropdown with Active Flag & Code */}
           <div className="relative" ref={langMenuRef}>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveMenuId(null);
-                setIsLangOpen(!isLangOpen);
-              }}
-              aria-expanded={isLangOpen}
-              aria-haspopup="true"
-              className="text-[12px] font-bold text-slate-700 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-xl flex items-center gap-2 bg-white transition-all shadow-sm hover:border-slate-300"
-            >
-              <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 014 9 15.3 15.3 0 01-4 9 15.3 15.3 0 01-4-9 15.3 15.3 0 014-9z" />
-              </svg>
-              <span>{language.toUpperCase()}</span>
-              <span className={`text-[9px] transition-transform duration-150 ${isLangOpen ? "rotate-180 text-blue-600" : "text-slate-400"}`}>▼</span>
-            </button>
+            {(() => {
+              const pathLocaleMatch = pathname.match(/^\/(es|de|fr|pt|it|sv)(\/|$)/);
+              const currentLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
+              const activeLang = LANGUAGES.find(l => l.code === currentLocale) || LANGUAGES[0];
+
+              return (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMenuId(null);
+                    setIsLangOpen(!isLangOpen);
+                  }}
+                  aria-expanded={isLangOpen}
+                  aria-haspopup="true"
+                  className="text-[12px] font-bold text-slate-700 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-xl flex items-center gap-1.5 bg-white transition-all shadow-xs hover:border-slate-300"
+                >
+                  <span className="text-sm leading-none">{activeLang.flag}</span>
+                  <span>{activeLang.codeBadge}</span>
+                  <span className={`text-[9px] transition-transform duration-150 ${isLangOpen ? "rotate-180 text-blue-600" : "text-slate-400"}`}>▼</span>
+                </button>
+              );
+            })()}
 
             {isLangOpen && (
               <div className="absolute top-full ltr:right-0 rtl:left-0 mt-2 w-44 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in duration-100 divide-y divide-slate-100">

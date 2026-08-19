@@ -23,6 +23,10 @@ import { EbookWorkspace } from "@/utils/ebook/EbookWorkspace";
 import AudioWorkspace from "@/utils/audio/AudioWorkspace";
 import VideoWorkspace from "@/utils/video/VideoWorkspace";
 import SubtitleWorkspace from "@/utils/subtitles/SubtitleWorkspace";
+import CadWorkspace from "@/utils/cad/CadWorkspace";
+import PdfCompressionWorkspace from "@/components/pdf-tools/PdfCompressionWorkspace";
+import ImageCompressionWorkspace from "@/components/image-tools/ImageCompressionWorkspace";
+import { PDF_COMPRESSION_ROUTES } from "@/config/pdfCompressionRoutes";
 import { SchemaGenerator } from "@/utils/seo/SchemaGenerator";
 import { HowToStepSection } from "@/components/seo/HowToStepSection";
 import { AeoFaqSection } from "@/components/seo/AeoFaqSection";
@@ -48,6 +52,49 @@ export default function LocalizedToolPage() {
 
   // Render workspace based on slug
   const renderWorkspace = () => {
+    // 0. PDF & Image Compression Tools
+    if (PDF_COMPRESSION_ROUTES[normSlug]) {
+      return (
+        <PdfCompressionWorkspace
+          routeConfig={PDF_COMPRESSION_ROUTES[normSlug]}
+        />
+      );
+    }
+
+    if (normSlug.startsWith("/compress-image")) {
+      return (
+        <ImageCompressionWorkspace initialMode="BALANCED" />
+      );
+    }
+
+    // 0.1 CAD & Vector Graphics Suite
+    if (
+      normSlug === "/dwg-to-pdf" ||
+      normSlug === "/dxf-to-pdf" ||
+      normSlug === "/dwg-to-dxf" ||
+      normSlug === "/eps-to-pdf" ||
+      normSlug === "/eps-to-png" ||
+      normSlug === "/psd-to-png" ||
+      normSlug === "/ai-to-pdf" ||
+      normSlug === "/ai-to-png"
+    ) {
+      let mode: "dwg-to-pdf" | "dxf-to-pdf" | "dwg-to-dxf" | "eps-to-pdf" | "eps-to-png" | "psd-to-png" | "ai-to-pdf" | "ai-to-png" = "dwg-to-pdf";
+      if (normSlug === "/dxf-to-pdf") mode = "dxf-to-pdf";
+      else if (normSlug === "/dwg-to-dxf") mode = "dwg-to-dxf";
+      else if (normSlug === "/eps-to-pdf") mode = "eps-to-pdf";
+      else if (normSlug === "/eps-to-png") mode = "eps-to-png";
+      else if (normSlug === "/psd-to-png") mode = "psd-to-png";
+      else if (normSlug === "/ai-to-pdf") mode = "ai-to-pdf";
+      else if (normSlug === "/ai-to-png") mode = "ai-to-png";
+
+      return (
+        <CadWorkspace
+          mode={mode}
+          title={meta.title}
+          description={meta.description}
+        />
+      );
+    }
     // 1. PDF Page Manipulation & Geometry
     if (
       normSlug === "/merge-pdf" ||
