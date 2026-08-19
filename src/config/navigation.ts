@@ -105,6 +105,21 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
     ]
   },
   {
+    id: "document-conversion",
+    label: "CONVERT TO PDF",
+    compactLabel: "DOCUMENTS",
+    accessibleLabel: "Word, Excel, PowerPoint, and Apple Pages conversion tools",
+    links: [
+      { label: "Word to PDF", href: "/word-to-pdf" },
+      { label: "Excel to PDF", href: "/excel-to-pdf" },
+      { label: "PowerPoint to PDF", href: "/powerpoint-to-pdf" },
+      { label: "Pages to PDF", href: "/pages-to-pdf" },
+      { label: "Pages to Word", href: "/pages-to-word" },
+      { label: "Numbers to Excel", href: "/numbers-to-excel" },
+      { label: "Keynote to PDF", href: "/keynote-to-pdf" }
+    ]
+  },
+  {
     id: "audio-tools",
     label: "AUDIO TOOLS",
     compactLabel: "AUDIO",
@@ -112,8 +127,11 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
     links: [
       { label: "Convert Audio", href: "/convert-audio" },
       { label: "Compress Audio", href: "/compress-audio" },
-      { label: "Video to MP3", href: "/video-to-mp3" },
+      { label: "M4A to MP3", href: "/m4a-to-mp3" },
+      { label: "FLAC to MP3", href: "/flac-to-mp3" },
+      { label: "OGG to MP3", href: "/ogg-to-mp3" },
       { label: "WAV to MP3", href: "/wav-to-mp3" },
+      { label: "MP4 to WAV", href: "/mp4-to-wav" },
       { label: "Boost Volume", href: "/boost-audio-volume" },
       { label: "Trim Audio", href: "/trim-audio" },
       { label: "Merge Audio", href: "/merge-audio" }
@@ -127,6 +145,9 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
     links: [
       { label: "Compress Video", href: "/compress-video" },
       { label: "Convert Video", href: "/convert-video" },
+      { label: "AVI to MP4", href: "/avi-to-mp4" },
+      { label: "WebM to MP4", href: "/webm-to-mp4" },
+      { label: "WMV to MP4", href: "/wmv-to-mp4" },
       { label: "MOV to MP4", href: "/mov-to-mp4" },
       { label: "MKV to MP4", href: "/mkv-to-mp4" },
       { label: "Change Speed", href: "/change-video-speed" },
@@ -140,9 +161,12 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
     id: "archive-tools",
     label: "ARCHIVE & UTILITIES",
     compactLabel: "ARCHIVE",
-    accessibleLabel: "ZIP extraction, creation, TAR conversion, font optimization, and privacy metadata stripping",
+    accessibleLabel: "ZIP, RAR, 7Z extraction, creation, TAR conversion, font optimization, and privacy metadata stripping",
     links: [
       { label: "Extract ZIP", href: "/extract-zip" },
+      { label: "Extract RAR", href: "/extract-rar" },
+      { label: "RAR to ZIP", href: "/rar-to-zip" },
+      { label: "7Z to ZIP", href: "/7z-to-zip" },
       { label: "Create ZIP", href: "/create-zip" },
       { label: "TAR to ZIP", href: "/tar-to-zip" },
       { label: "Strip EXIF", href: "/strip-exif" },

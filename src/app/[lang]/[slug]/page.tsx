@@ -98,8 +98,21 @@ export default function LocalizedToolPage() {
     }
 
     // 4. Archive Tools
-    if (normSlug === "/extract-zip" || normSlug === "/create-zip" || normSlug === "/tar-to-zip") {
-      const mode = normSlug === "/extract-zip" ? "extract" : normSlug === "/create-zip" ? "create" : "tar-to-zip";
+    if (
+      normSlug === "/extract-zip" ||
+      normSlug === "/create-zip" ||
+      normSlug === "/tar-to-zip" ||
+      normSlug === "/rar-to-zip" ||
+      normSlug === "/extract-rar" ||
+      normSlug === "/7z-to-zip"
+    ) {
+      let mode: "extract" | "create" | "tar-to-zip" | "rar-to-zip" | "extract-rar" | "7z-to-zip" = "extract";
+      if (normSlug === "/create-zip") mode = "create";
+      else if (normSlug === "/tar-to-zip") mode = "tar-to-zip";
+      else if (normSlug === "/rar-to-zip") mode = "rar-to-zip";
+      else if (normSlug === "/extract-rar") mode = "extract-rar";
+      else if (normSlug === "/7z-to-zip") mode = "7z-to-zip";
+
       return (
         <ArchiveWorkspace
           mode={mode}
@@ -155,7 +168,11 @@ export default function LocalizedToolPage() {
       normSlug === "/trim-audio" ||
       normSlug === "/merge-audio" ||
       normSlug === "/wav-to-mp3" ||
-      normSlug === "/boost-audio-volume"
+      normSlug === "/boost-audio-volume" ||
+      normSlug === "/m4a-to-mp3" ||
+      normSlug === "/flac-to-mp3" ||
+      normSlug === "/ogg-to-mp3" ||
+      normSlug === "/mp4-to-wav"
     ) {
       let audioMode: "convert" | "compress" | "trim" | "merge" | "boost" = "convert";
       if (normSlug === "/compress-audio") audioMode = "compress";
@@ -183,7 +200,10 @@ export default function LocalizedToolPage() {
       normSlug === "/mov-to-mp4" ||
       normSlug === "/mkv-to-mp4" ||
       normSlug === "/change-video-speed" ||
-      normSlug === "/rotate-video"
+      normSlug === "/rotate-video" ||
+      normSlug === "/avi-to-mp4" ||
+      normSlug === "/webm-to-mp4" ||
+      normSlug === "/wmv-to-mp4"
     ) {
       let videoMode: "convert" | "compress" | "gif" | "trim" | "mute" | "speed" | "rotate" = "convert";
       if (normSlug === "/compress-video") videoMode = "compress";

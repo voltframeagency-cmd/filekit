@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { ArchiveEngine, ArchiveEntry } from "./ArchiveEngine";
 
 interface ArchiveWorkspaceProps {
-  mode: "extract" | "create" | "tar-to-zip";
+  mode: "extract" | "create" | "tar-to-zip" | "rar-to-zip" | "extract-rar" | "7z-to-zip";
   title?: string;
   description?: string;
 }
@@ -33,35 +33,43 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
     setOutputUrl(null);
     setExtractedEntries([]);
 
-    if (mode === "extract" && selectedFiles.length > 0) {
+    if ((mode === "extract" || mode === "extract-rar") && selectedFiles.length > 0) {
       setLoading(true);
       try {
         const buf = new Uint8Array(await selectedFiles[0].arrayBuffer());
-        const entries = ArchiveEngine.extractZip(buf);
+        const entries = mode === "extract-rar" ? ArchiveEngine.extractRar(buf) : ArchiveEngine.extractZip(buf);
         if (entries.length === 0) {
-          setError("No uncompressed files found in ZIP archive or archive is empty.");
+          setError("No uncompressed files found in archive or archive is empty.");
         } else {
           setExtractedEntries(entries);
         }
       } catch (err) {
         console.error(err);
-        setError("Failed to read ZIP archive. Please ensure it is a valid .zip file.");
+        setError("Failed to read archive file.");
       } finally {
         setLoading(false);
       }
-    } else if (mode === "tar-to-zip" && selectedFiles.length > 0) {
+    } else if ((mode === "tar-to-zip" || mode === "rar-to-zip" || mode === "7z-to-zip") && selectedFiles.length > 0) {
       setLoading(true);
       try {
         const buf = new Uint8Array(await selectedFiles[0].arrayBuffer());
-        const zipBytes = ArchiveEngine.tarToZip(buf);
+        let zipBytes: Uint8Array;
+        if (mode === "rar-to-zip") {
+          zipBytes = ArchiveEngine.rarToZip(buf);
+        } else if (mode === "7z-to-zip") {
+          zipBytes = ArchiveEngine.sevenZipToZip(buf);
+        } else {
+          zipBytes = ArchiveEngine.tarToZip(buf);
+        }
+
         const blob = new Blob([zipBytes as unknown as BlobPart], { type: "application/zip" });
         const url = URL.createObjectURL(blob);
         setOutputBlob(blob);
         setOutputUrl(url);
-        setOutputFileName(selectedFiles[0].name.replace(/\.(tar|tar\.gz|tgz)$/i, "") + ".zip");
+        setOutputFileName(selectedFiles[0].name.replace(/\.(tar|tar\.gz|tgz|rar|7z)$/i, "") + ".zip");
       } catch (err) {
         console.error(err);
-        setError("Failed to convert TAR to ZIP archive.");
+        setError("Failed to convert archive to ZIP.");
       } finally {
         setLoading(false);
       }
