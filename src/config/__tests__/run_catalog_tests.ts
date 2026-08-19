@@ -64,6 +64,12 @@ async function runCatalogTests() {
   if (!catalogSitemapRoutes.includes("/pdf-to-epub")) throw new Error("Indexable route missing from catalog sitemap: /pdf-to-epub");
   if (!catalogSitemapRoutes.includes("/mobi-to-pdf")) throw new Error("Indexable route missing from catalog sitemap: /mobi-to-pdf");
   if (!catalogSitemapRoutes.includes("/azw3-to-pdf")) throw new Error("Indexable route missing from catalog sitemap: /azw3-to-pdf");
+  if (!catalogSitemapRoutes.includes("/mov-to-mp4")) throw new Error("Indexable route missing from catalog sitemap: /mov-to-mp4");
+  if (!catalogSitemapRoutes.includes("/mkv-to-mp4")) throw new Error("Indexable route missing from catalog sitemap: /mkv-to-mp4");
+  if (!catalogSitemapRoutes.includes("/change-video-speed")) throw new Error("Indexable route missing from catalog sitemap: /change-video-speed");
+  if (!catalogSitemapRoutes.includes("/rotate-video")) throw new Error("Indexable route missing from catalog sitemap: /rotate-video");
+  if (!catalogSitemapRoutes.includes("/wav-to-mp3")) throw new Error("Indexable route missing from catalog sitemap: /wav-to-mp3");
+  if (!catalogSitemapRoutes.includes("/boost-audio-volume")) throw new Error("Indexable route missing from catalog sitemap: /boost-audio-volume");
 
   if (catalogSitemapRoutes.includes("/docx-to-pdf")) throw new Error("Unbuilt/alias route incorrectly included in catalog sitemap: /docx-to-pdf");
   if (catalogSitemapRoutes.includes("/pdf-to-jpeg")) throw new Error("REDIRECT_ALIAS route incorrectly included in catalog sitemap: /pdf-to-jpeg");

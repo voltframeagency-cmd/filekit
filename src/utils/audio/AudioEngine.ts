@@ -211,6 +211,49 @@ export class AudioEngine {
     return new Uint8Array(arrayBuffer);
   }
 
+  /**
+   * Boosts audio buffer amplitude by gainFactor (e.g. 1.5 for 150%, 2.0 for 200%)
+   * with hyperbolic tangent soft-knee saturation to prevent harsh clipping distortion.
+   */
+  static boostVolume(
+    sourceBuffer: AudioBuffer,
+    gainFactor: number,
+    audioContext?: AudioContext | OfflineAudioContext
+  ): AudioBuffer {
+    const numChannels = sourceBuffer.numberOfChannels;
+    const length = sourceBuffer.length;
+    const sampleRate = sourceBuffer.sampleRate;
+
+    const ctx =
+      audioContext ||
+      new (typeof window !== "undefined" && (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext) || class {
+        createBuffer(ch: number, len: number, rate: number) {
+          const channels = Array.from({ length: ch }, () => new Float32Array(len));
+          return {
+            numberOfChannels: ch,
+            length: len,
+            sampleRate: rate,
+            getChannelData: (c: number) => channels[c]
+          } as unknown as AudioBuffer;
+        }
+      })();
+
+    const outputBuffer = ctx.createBuffer(numChannels, length, sampleRate);
+
+    for (let c = 0; c < numChannels; c++) {
+      const inputData = sourceBuffer.getChannelData(c);
+      const outputData = outputBuffer.getChannelData(c);
+
+      for (let i = 0; i < length; i++) {
+        const boosted = inputData[i] * gainFactor;
+        // Soft-knee tanh saturation when amplified beyond linear threshold
+        outputData[i] = Math.abs(boosted) > 0.85 ? Math.tanh(boosted) : boosted;
+      }
+    }
+
+    return outputBuffer;
+  }
+
   private static writeString(view: DataView, offset: number, str: string): void {
     for (let i = 0; i < str.length; i++) {
       view.setUint8(offset + i, str.charCodeAt(i));

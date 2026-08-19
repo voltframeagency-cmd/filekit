@@ -113,6 +113,8 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "Convert Audio", href: "/convert-audio" },
       { label: "Compress Audio", href: "/compress-audio" },
       { label: "Video to MP3", href: "/video-to-mp3" },
+      { label: "WAV to MP3", href: "/wav-to-mp3" },
+      { label: "Boost Volume", href: "/boost-audio-volume" },
       { label: "Trim Audio", href: "/trim-audio" },
       { label: "Merge Audio", href: "/merge-audio" }
     ]
@@ -125,6 +127,10 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
     links: [
       { label: "Compress Video", href: "/compress-video" },
       { label: "Convert Video", href: "/convert-video" },
+      { label: "MOV to MP4", href: "/mov-to-mp4" },
+      { label: "MKV to MP4", href: "/mkv-to-mp4" },
+      { label: "Change Speed", href: "/change-video-speed" },
+      { label: "Rotate Video", href: "/rotate-video" },
       { label: "Video to GIF", href: "/video-to-gif" },
       { label: "Trim Video", href: "/trim-video" },
       { label: "Mute Video", href: "/mute-video" }

@@ -6,7 +6,7 @@ import UploadDropzone from "@/components/upload/UploadDropzone";
 import { fileManager } from "@/utils/fileManager";
 
 export interface AudioWorkspaceProps {
-  mode: "convert" | "compress" | "trim" | "merge" | "video-to-mp3";
+  mode: "convert" | "compress" | "trim" | "merge" | "video-to-mp3" | "boost";
   title: string;
   subtitle: string;
   allowedAccept?: string;
@@ -32,6 +32,7 @@ export default function AudioWorkspace({
   const [trimRange, setTrimRange] = useState<[number, number]>([0, 0]);
 
   // Settings
+  const [gainFactor, setGainFactor] = useState<number>(1.5);
   const [targetBitrate, setTargetBitrate] = useState<number>(128); // kbps for compress
   const [targetFormat, setTargetFormat] = useState<string>("wav"); // wav / mp3
   const [channelsMode, setChannelsMode] = useState<"stereo" | "mono">("stereo");
@@ -273,6 +274,12 @@ export default function AudioWorkspace({
           trimRange[1],
           audioContextRef.current || undefined
         );
+      } else if (mode === "boost") {
+        finalBuffer = AudioEngine.boostVolume(
+          audioBuffers[0],
+          gainFactor,
+          audioContextRef.current || undefined
+        );
       }
 
       // Encode to WAV binary
@@ -434,6 +441,35 @@ export default function AudioWorkspace({
                       }`}
                     >
                       {rate} kbps {rate === 128 ? "(Recommended)" : ""}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {mode === "boost" && (
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-fk-lg flex flex-col gap-3">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Volume Boost Level
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { label: "125% (+2 dB)", factor: 1.25 },
+                    { label: "150% (+3.5 dB)", factor: 1.5 },
+                    { label: "200% (+6 dB)", factor: 2.0 },
+                    { label: "300% (+9.5 dB)", factor: 3.0 }
+                  ].map((item) => (
+                    <button
+                      key={item.factor}
+                      type="button"
+                      onClick={() => setGainFactor(item.factor)}
+                      className={`px-3 py-2 rounded-md font-bold text-sm border transition-all ${
+                        gainFactor === item.factor
+                          ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                          : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                      }`}
+                    >
+                      {item.label}
                     </button>
                   ))}
                 </div>

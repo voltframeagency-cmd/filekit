@@ -6,7 +6,7 @@ import UploadDropzone from "@/components/upload/UploadDropzone";
 import { fileManager } from "@/utils/fileManager";
 
 export interface VideoWorkspaceProps {
-  mode: "compress" | "convert" | "gif" | "trim" | "mute";
+  mode: "compress" | "convert" | "gif" | "trim" | "mute" | "speed" | "rotate";
   title: string;
   subtitle: string;
   allowedAccept?: string;
@@ -31,6 +31,8 @@ export default function VideoWorkspace({
   const [targetFormat, setTargetFormat] = useState<string>("mp4");
   const [gifFps, setGifFps] = useState<number>(10);
   const [trimRange, setTrimRange] = useState<[number, number]>([0, 0]);
+  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.5);
+  const [rotationAngle, setRotationAngle] = useState<number>(90);
 
   // Output
   const [outputUrl, setOutputUrl] = useState<string | null>(null);
@@ -346,6 +348,64 @@ export default function VideoWorkspace({
                 <span className="text-xs text-blue-900 font-medium">
                   Zero-Reencode Audio Stripping: Audio tracks will be completely purged while preserving 100% original video stream quality.
                 </span>
+              </div>
+            )}
+
+            {mode === "speed" && (
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-fk-lg flex flex-col gap-3">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Playback Speed Multiplier
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {[
+                    { label: "0.5x (Slow-Mo)", val: 0.5 },
+                    { label: "0.75x", val: 0.75 },
+                    { label: "1.25x", val: 1.25 },
+                    { label: "1.5x (Fast)", val: 1.5 },
+                    { label: "2.0x (2x Speed)", val: 2.0 }
+                  ].map((item) => (
+                    <button
+                      key={item.val}
+                      type="button"
+                      onClick={() => setSpeedMultiplier(item.val)}
+                      className={`px-3 py-2 rounded-md font-bold text-sm border transition-all ${
+                        speedMultiplier === item.val
+                          ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                          : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {mode === "rotate" && (
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-fk-lg flex flex-col gap-3">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Video Rotation Angle
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: "90° Clockwise", val: 90 },
+                    { label: "180° Flip", val: 180 },
+                    { label: "270° (90° CCW)", val: 270 }
+                  ].map((item) => (
+                    <button
+                      key={item.val}
+                      type="button"
+                      onClick={() => setRotationAngle(item.val)}
+                      className={`px-3 py-2 rounded-md font-bold text-sm border transition-all ${
+                        rotationAngle === item.val
+                          ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                          : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
