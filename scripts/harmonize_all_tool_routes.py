@@ -14,15 +14,12 @@ for e in sorted(entries):
             continue
 
         slug = f"/{e}"
-        # Convert slug to PascalCase function name e.g. /png-to-ico -> PngToIcoPage
-        pascal_name = "".join(part.capitalize() for part in e.split("-")) + "Page"
-
         content = f'''"use client";
 
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function {pascal_name}() {{
+export default function Page() {{
   return <UniversalToolPage slug="{slug}" locale="en" />;
 }}
 '''

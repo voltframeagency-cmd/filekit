@@ -1,9 +1,6 @@
-/**
- * toolFaqs.ts
- * 
- * High-intent Q&A knowledge base tailored for AEO (Answer Engine Optimization),
- * AIO (Google AI Overviews), and GEO (Generative Engine Optimization).
- */
+import { SupportedLocale } from "../i18n/locales";
+import { CATEGORY_TRANSLATIONS, ToolFamilyKey } from "./categories";
+import { HOW_TO_STEPS } from "./howToSteps";
 
 export interface FaqItem {
   question: string;
@@ -25,6 +22,60 @@ export interface ToolSeoContent {
 export function getToolSeoContent(slug: string, toolTitle: string, locale: string = "en"): ToolSeoContent {
   const normSlug = slug.startsWith("/") ? slug : `/${slug}`;
   const loc = locale.toLowerCase();
+
+  let family: ToolFamilyKey = "pdf";
+  if (normSlug.includes("dwg") || normSlug.includes("dxf")) {
+    family = "cad";
+  } else if (normSlug.includes("ai-to") || normSlug.includes("eps-to") || normSlug.includes("psd-to")) {
+    family = "vector";
+  } else if (normSlug.includes("srt") || normSlug.includes("vtt")) {
+    family = "subtitles";
+  } else if (normSlug.includes("pages-to") || normSlug.includes("numbers-to") || normSlug.includes("keynote-to")) {
+    family = "apple";
+  } else if (
+    normSlug.includes("image") ||
+    normSlug.includes("jpg") ||
+    normSlug.includes("png") ||
+    normSlug.includes("webp") ||
+    normSlug.includes("heic") ||
+    normSlug.includes("avif") ||
+    normSlug.includes("ico") ||
+    normSlug.includes("bmp") ||
+    normSlug.includes("svg") ||
+    normSlug.includes("crop") ||
+    normSlug.includes("resize") ||
+    normSlug.includes("rotate-image") ||
+    normSlug.includes("flip") ||
+    normSlug.includes("grayscale") ||
+    normSlug.includes("invert") ||
+    normSlug.includes("blur") ||
+    normSlug.includes("strip-exif")
+  ) {
+    family = "image";
+  } else if (
+    normSlug.includes("audio") ||
+    normSlug.includes("video") ||
+    normSlug.includes("mp3") ||
+    normSlug.includes("wav") ||
+    normSlug.includes("flac") ||
+    normSlug.includes("m4a") ||
+    normSlug.includes("ogg") ||
+    normSlug.includes("mp4") ||
+    normSlug.includes("mov") ||
+    normSlug.includes("avi") ||
+    normSlug.includes("mkv") ||
+    normSlug.includes("webm") ||
+    normSlug.includes("wmv") ||
+    normSlug.includes("mute") ||
+    normSlug.includes("speed") ||
+    normSlug.includes("volume")
+  ) {
+    family = "audio_video";
+  }
+
+  const validLocale = (loc in CATEGORY_TRANSLATIONS.pdf ? loc : "en") as SupportedLocale;
+  const category = CATEGORY_TRANSLATIONS[family][validLocale] || CATEGORY_TRANSLATIONS[family]["en"];
+  const howToSteps = HOW_TO_STEPS[validLocale] || HOW_TO_STEPS["en"];
 
   const isAr = loc === "ar";
   const isTr = loc === "tr";
@@ -64,7 +115,6 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
 
   // 1. CAD & Engineering Tools
   if (normSlug.includes("dwg") || normSlug.includes("dxf")) {
-    const category = isAr ? "CAD والهندسة" : isTr ? "CAD ve Mühendislik" : isEs ? "CAD e Ingeniería" : isDe ? "CAD & Ingenieurwesen" : isFr ? "CAD & Ingénierie" : isIt ? "CAD e Ingegneria" : isPt ? "CAD e Engenharia" : "CAD & Engineering";
     const entityDefinition = isAr
       ? `أداة ${toolTitle} من FileKit هي محرك تحويل متجهي فوري يعرض مخططات AutoCAD بتنسيقات عالمية مباشرة في متصفحك دون الحاجة إلى برنامج Autodesk.`
       : isTr
@@ -73,29 +123,6 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
       ? `FileKit ${toolTitle} es un motor de conversión vectorial que procesa planos de AutoCAD a formatos universales directamente en tu navegador sin requerir software de Autodesk.`
       : `FileKit ${toolTitle} is an instant vector conversion engine that renders AutoCAD blueprints into universal formats directly in your browser without requiring Autodesk software.`;
 
-    const howToSteps: HowToStep[] = isAr
-      ? [
-          { title: "اختر ملف CAD", description: "قم برفع رسم AutoCAD DWG أو DXF مباشرة إلى مساحة العمل الآمنة." },
-          { title: "التحقق من المقياس والدقة", description: "يقوم محرك المتجهات عالي الدقة بتحليل هندسة CAD والطبقات وسمك الخطوط بأقصى دقة." },
-          { title: "تحميل الملف المتجهي", description: "احفظ ملف PDF المتجهي القابل للطباعة أو ملف DXF القياسي فوراً." }
-        ]
-      : isTr
-      ? [
-          { title: "CAD dosyanızı seçin", description: "AutoCAD DWG veya DXF çiziminizi doğrudan güvenli çalışma alanına yükleyin." },
-          { title: "Ölçek ve hassasiyeti doğrulayın", description: "Yüksek hassasiyetli vektör motorumuz CAD geometrisini, katmanları ve çizgi kalınlıklarını tam doğrulukla işler." },
-          { title: "Evrensel vektör dosyasını indirin", description: "Yazdırılabilir vektör PDF veya açık standart DXF dosyanızı anında kaydedin." }
-        ]
-      : isEs
-      ? [
-          { title: "Selecciona tu archivo CAD", description: "Sube tu plano AutoCAD DWG o DXF directamente al espacio de trabajo seguro." },
-          { title: "Verifica escala y precisión", description: "Nuestro motor vectorial analiza geometría CAD, capas y grosores de línea con máxima fidelidad." },
-          { title: "Descarga el archivo vectorial", description: "Guarda tu PDF vectorial imprimible o archivo DXF estándar al instante." }
-        ]
-      : [
-          { title: "Select your CAD file", description: "Upload your AutoCAD DWG or DXF drawing directly into the secure workspace." },
-          { title: "Verify scale and precision", description: "Our high-precision vector engine parses CAD geometry, layers, and line-weights with sub-pixel fidelity." },
-          { title: "Download universal vector file", description: "Save your printable vector PDF or open-standard DXF file instantly." }
-        ];
 
     const faqs: FaqItem[] = isAr
       ? [
@@ -126,36 +153,12 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
 
   // 2. Professional Vector & Adobe Formats (EPS, PSD, AI)
   if (normSlug.includes("eps") || normSlug.includes("psd") || normSlug.includes("/ai-")) {
-    const category = isAr ? "المتجهات والرسومات" : isTr ? "Vektör ve Grafikler" : isEs ? "Vector y Gráficos" : "Vector & Graphics";
     const entityDefinition = isAr
       ? `تقوم أداة ${toolTitle} بتحويل ملفات Photoshop (PSD) وIllustrator (AI) وPostScript (EPS) إلى صور جاهزة للويب ومستندات PDF متجهة.`
       : isTr
       ? `FileKit ${toolTitle}, profesyonel Adobe Photoshop (PSD), Illustrator (AI) ve PostScript (EPS) grafiklerini web için hazır görsellere ve vektör PDF'lere dönüştürür.`
       : `FileKit ${toolTitle} converts professional Adobe Photoshop (PSD), Illustrator (AI), and PostScript (EPS) graphics into web-ready images and vector PDFs.`;
 
-    const howToSteps: HowToStep[] = isAr
-      ? [
-          { title: "ارفع العمل الفني أو المتجه", description: "اسحب ملف AI أو PSD أو EPS وأفلته في لوحة التحويل." },
-          { title: "معالجة الطبقات والشفافية", description: "يقوم المحرك بتسطيح مسارات المتجهات والحفاظ على شفافية قناة ألفا بدقة عالية." },
-          { title: "تصدير PNG أو PDF شفاف", description: "قم بتحميل ملفك النظيف الجاهز فوراً بدون أي علامات مائية." }
-        ]
-      : isTr
-      ? [
-          { title: "Vektör veya görseli yükleyin", description: "AI, PSD veya EPS dosyanızı dönüştürme alanına sürükleyip bırakın." },
-          { title: "Katmanları ve şeffaflığı işleyin", description: "Motor, vektör yollarını işler ve alfa kanalı şeffaflığını yüksek doğrulukla korur." },
-          { title: "Şeffaf PNG veya PDF indirin", description: "Temiz ve optimize edilmiş dosyanızı filigransız anında indirin." }
-        ]
-      : isEs
-      ? [
-          { title: "Sube tu archivo vectorial", description: "Arrastra y suelta tu archivo AI, PSD o EPS en el lienzo de conversión." },
-          { title: "Procesa capas y transparencia", description: "El motor acopla las rutas vectoriales preservando la transparencia alfa con gran fidelidad." },
-          { title: "Exporta PNG o PDF transparente", description: "Descarga tu archivo optimizado de inmediato sin marcas de agua." }
-        ]
-      : [
-          { title: "Upload vector or artwork", description: "Drag and drop your AI, PSD, or EPS file into the conversion canvas." },
-          { title: "Process layers and transparency", description: "The engine flattens vector paths and preserves alpha channel transparency with high fidelity." },
-          { title: "Export transparent PNG or PDF", description: "Download your clean, web-ready asset immediately with zero watermarks." }
-        ];
 
     const faqs: FaqItem[] = isAr
       ? [
@@ -180,30 +183,12 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
 
   // 3. Subtitles & Closed Captions (SRT, VTT)
   if (normSlug.includes("srt") || normSlug.includes("vtt")) {
-    const category = isAr ? "الترجمة والفيديو" : isTr ? "Altyazılar ve Video" : isEs ? "Subtítulos y Video" : "Subtitles & Video";
     const entityDefinition = isAr
       ? `توفر أداة ${toolTitle} تحويل ترجمات 100% داخل المتصفح بين SubRip (.srt) وWebVTT (.vtt) مع مزامنة زمنية دقيقة بالملي ثانية.`
       : isTr
       ? `FileKit ${toolTitle}, milisaniye hassasiyetinde zaman damgası senkronizasyonu ile SubRip (.srt) ve WebVTT (.vtt) arasında %100 tarayıcı içi altyazı dönüştürme sağlar.`
       : `FileKit ${toolTitle} provides 100% in-browser subtitle conversion between SubRip (.srt) and WebVTT (.vtt) with millisecond-accurate timestamp synchronization.`;
 
-    const howToSteps: HowToStep[] = isAr
-      ? [
-          { title: "اختر ملف الترجمة", description: "اختر ملف .srt أو .vtt من جهازك." },
-          { title: "تنسيق الطوابع الزمنية تلقائياً", description: "يقوم FileKit بتوحيد الفواصل الزمنية بالملي ثانية وإزالة رموز BOM غير المتوافقة." },
-          { title: "تحميل الترجمة المحولة", description: "احصل على ملف الترجمة المتزامن الجاهز لـ YouTube أو VLC أو مشغلات HTML5." }
-        ]
-      : isTr
-      ? [
-          { title: "Altyazı dosyasını seçin", description: "Cihazınızdan .srt veya .vtt altyazı dosyanızı seçin." },
-          { title: "Zaman damgalarını otomatik biçimlendirin", description: "FileKit milisaniye ayırıcılarını otomatik olarak normalize eder ve biçimlendirme bloklarını temizler." },
-          { title: "Dönüştürülen altyazıyı indirin", description: "YouTube, VLC veya HTML5 video oynatıcılar için hazır senkronize altyazı dosyanızı alın." }
-        ]
-      : [
-          { title: "Select subtitle file", description: "Choose your .srt or .vtt subtitle file from your device." },
-          { title: "Auto-format timestamps", description: "FileKit automatically normalizes millisecond delimiters, strips Windows BOMs, and cleans styling blocks." },
-          { title: "Download converted subtitles", description: "Get your synchronized caption file ready for YouTube, VLC, or HTML5 video players." }
-        ];
 
     const faqs: FaqItem[] = isAr
       ? [
@@ -228,30 +213,12 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
 
   // 4. Apple iWork Suite (Pages, Numbers, Keynote)
   if (normSlug.includes("pages") || normSlug.includes("numbers") || normSlug.includes("keynote")) {
-    const category = isAr ? "مستندات Apple iWork" : isTr ? "Apple iWork Belgeleri" : isEs ? "Documentos Apple iWork" : "Apple iWork Documents";
     const entityDefinition = isAr
       ? `تتيح أداة ${toolTitle} لمستخدمي Windows وAndroid فتح وتحويل ملفات Apple Pages وNumbers وKeynote بدون أجهزة Mac أو حسابات iCloud.`
       : isTr
       ? `FileKit ${toolTitle}, Windows, Android ve Linux kullanıcılarının Mac donanımı veya iCloud hesabı olmadan Apple Pages, Numbers ve Keynote dosyalarını açmasını ve dönüştürmesini sağlar.`
       : `FileKit ${toolTitle} enables Windows, Android, and Linux users to open and convert Apple Pages, Numbers, and Keynote files without Mac hardware or iCloud accounts.`;
 
-    const howToSteps: HowToStep[] = isAr
-      ? [
-          { title: "ارفع مستند Apple", description: "اختر ملف .pages أو .numbers أو .key من جهازك." },
-          { title: "تحليل محتوى المستند", description: "يقوم المحرك باستخراج النصوص والجداول والشرائح بدقة عالية." },
-          { title: "تحميل PDF أو Word أو Excel", description: "احفظ مستندك بتنسيقات متوافقة مع Microsoft Office وGoogle Workspace." }
-        ]
-      : isTr
-      ? [
-          { title: "Apple belgesini yükleyin", description: ".pages, .numbers veya .key dosyanızı seçin." },
-          { title: "Belge içeriğini ayrıştırın", description: "Motor, vektör tipografisini, tabloları ve sunum slaytlarını evrensel standartlara aktarır." },
-          { title: "PDF, Word veya Excel olarak indirin", description: "Belgenizi Microsoft Office ve Google Workspace ile uyumlu evrensel formatlarda kaydedin." }
-        ]
-      : [
-          { title: "Upload Apple document", description: "Select your .pages, .numbers, or .key file." },
-          { title: "Parse document contents", description: "The engine extracts vector typography, tables, and presentation slides into universal standards." },
-          { title: "Download PDF, Word, or Excel", description: "Save your document in universal formats compatible with Microsoft Office and Google Workspace." }
-        ];
 
     const faqs: FaqItem[] = isAr
       ? [
@@ -287,31 +254,6 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
     normSlug.includes("ico") ||
     normSlug.includes("tiff")
   ) {
-    const category = isSv
-      ? "Bildkonverterare"
-      : isDa
-      ? "Billedkonvertering"
-      : isNl
-      ? "Beeldconverters"
-      : isPl
-      ? "Konwertery obrazów"
-      : isRu
-      ? "Конвертеры изображений"
-      : isAr
-      ? "محولات الصور"
-      : isTr
-      ? "Görsel Dönüştürücüler"
-      : isEs
-      ? "Convertidores de Imágenes"
-      : isDe
-      ? "Bild-Konverter"
-      : isFr
-      ? "Convertisseurs d'Images"
-      : isIt
-      ? "Convertitori di Immagini"
-      : isPt
-      ? "Conversores de Imagem"
-      : "Image Converters";
 
     const entityDefinition = isSv
       ? `FileKit ${toolTitle} konverterar bilder (WebP, AVIF, HEIC, PNG, JPG) 100% lokalt i din webbläsare utan att ladda upp filer till externa servrar.`
@@ -323,35 +265,6 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
       ? `FileKit ${toolTitle} convierte imágenes WebP, AVIF, HEIC, PNG y JPG de forma 100% local en tu navegador sin subir archivos a servidores externos.`
       : `FileKit ${toolTitle} converts high-efficiency photos, WebP, AVIF, HEIC, PNG, and JPG images 100% locally in your browser memory without uploading to third-party servers.`;
 
-    const howToSteps: HowToStep[] = isSv
-      ? [
-          { title: "Välj ditt foto eller bild", description: "Dra och släpp din bildfil i webbläsarens säkra arbetsyta." },
-          { title: "Bearbeta och konvertera i webbläsaren", description: "Vår lokala grafikmotor justerar färgprofiler, komprimeringsnivåer och bevarar genomskinlighet." },
-          { title: "Spara bild i hög kvalitet", description: "Ladda ner din rena, optimerade bild direkt utan någon kvalitetsförlust." }
-        ]
-      : isAr
-      ? [
-          { title: "اختر الصورة أو الملف", description: "اسحب ملف الصورة وأفلته في مساحة العمل داخل المتصفح." },
-          { title: "المعالجة والتحويل في المتصفح", description: "يقوم محرك Canvas داخل المتصفح بضبط ملفات الألوان ومستويات الضغط مع الحفاظ على قنوات الشفافية." },
-          { title: "حفظ الصورة بجودة عالية", description: "قم بتحميل صورتك المحولة والنظيفة فوراً دون أي فقدان في الجودة." }
-        ]
-      : isTr
-      ? [
-          { title: "Fotoğrafınızı veya görselinizi seçin", description: "Görsel dosyanızı tarayıcı çalışma alanına sürükleyip bırakın." },
-          { title: "Tarayıcıda işleyin ve dönüştürün", description: "Tarayıcı içi canvas motorumuz renk profillerini dönüştürür, sıkıştırma seviyelerini ayarlar ve alfa kanallarını korur." },
-          { title: "Yüksek kaliteli görseli kaydedin", description: "Temiz ve optimize edilmiş görselinizi sıfır kalite kaybıyla anında indirin." }
-        ]
-      : isEs
-      ? [
-          { title: "Elige tu foto o imagen", description: "Arrastra y suelta tu archivo de imagen en el espacio de trabajo del navegador." },
-          { title: "Procesa y convierte en el navegador", description: "Nuestro motor en el navegador convierte perfiles de color, ajusta compresión y conserva transparencias." },
-          { title: "Guarda la imagen en alta calidad", description: "Descarga tu imagen limpia y optimizada al instante sin pérdida de calidad." }
-        ]
-      : [
-          { title: "Choose your photo or image", description: "Drag and drop your image file into the browser workspace." },
-          { title: "Render and transcode in browser", description: "Our in-browser canvas engine converts color profiles, adjusts compression levels, and preserves alpha channels." },
-          { title: "Save high-quality image", description: "Download your clean, optimized image instantly with zero quality loss." }
-        ];
 
     const faqs: FaqItem[] = isSv
       ? [
@@ -403,20 +316,6 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
     normSlug.includes("ogg")
   ) {
     const isAudioMerge = normSlug === "/merge-audio";
-    const category = isSv ? "Ljud och video"
-      : isAr ? "الصوت والفيديو"
-      : isTr ? "Ses ve Video"
-      : isEs ? "Audio y Video"
-      : isDe ? "Audio und Video"
-      : isFr ? "Audio et Vidéo"
-      : isIt ? "Audio e Video"
-      : isPt ? "Áudio e Vídeo"
-      : isPl ? "Audio i Wideo"
-      : isRu ? "Аудио и Видео"
-      : isJa ? "音声・動画"
-      : isKo ? "오디오 및 비디오"
-      : isZh ? "音频与视频"
-      : "Audio & Video";
 
     const entityDefinition = isSv
       ? `FileKit ${toolTitle} är en säker, integritetsfokuserad motor som slår samman och konverterar ljud- och videofiler blixtsnabbt direkt i din webbläsare.`
@@ -434,292 +333,22 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
       ? `FileKit ${toolTitle} è un motore multimediale incentrato sulla privacy per convertire, unire e comprimere file direttamente nel tuo browser.`
       : isPt
       ? `FileKit ${toolTitle} é um motor multimídia focado em privacidade para converter, juntar e comprimir arquivos diretamente no seu navegador.`
-      : isPl
-      ? `FileKit ${toolTitle} to bezpieczny silnik multimedialny chroniący prywatność, umożliwiający łączenie, konwersję i kompresję plików bezpośrednio w przeglądarce.`
-      : isRu
-      ? `FileKit ${toolTitle} — это конфиденциальный инструмент для мгновенного объединения, конвертации и сжатия медиафайлов прямо в браузере.`
-      : isJa
-      ? `FileKit ${toolTitle} は、ブラウザ上でメディアファイルを安全に結合・変換・圧縮するプライバシー重視のツールです。`
-      : isKo
-      ? `FileKit ${toolTitle}은 브라우저에서 안전하게 미디어 파일을 병합, 변환, 압축하는 비공개 처리 도구입니다.`
-      : isZh
-      ? `FileKit ${toolTitle} 是一款注重隐私的媒体处理工具，可在浏览器中安全快速地合并、转换和压缩多媒体文件。`
-      : `FileKit ${toolTitle} is a privacy-first media processing engine utilizing zero-CPU stream copy and hardware acceleration to convert and compress media files.`;
+      : `FileKit ${toolTitle} is a privacy-first, in-browser media processing engine that converts, edits, and processes audio and video files locally with high performance.`;
 
-    const howToSteps: HowToStep[] = isSv
-      ? (isAudioMerge ? [
-          { title: "Välj dina ljudfiler", description: "Välj flera ljudklipp från datorn eller telefonen som du vill slå samman." },
-          { title: "Ordna och justera ordningsföljd", description: "Ordna dina spår i önskad uppspelningssekvens direkt i webbläsaren." },
-          { title: "Spara sammanslagen ljudfil", description: "Ladda ner din sammanfogade ljudfil i hög kvalitet direkt." }
-        ] : [
-          { title: "Ladda upp ljud eller video", description: "Välj ditt medieklipp från datorn eller telefonen." },
-          { title: "Optimera kodekar och bithastigheter", description: "Vår motor utför snabb ström-kopiering eller högeffektiv kodning." },
-          { title: "Spara optimerad media", description: "Ladda ner din komprimerade, trimmade eller konverterade media direkt." }
-        ])
-      : isDe
-      ? (isAudioMerge ? [
-          { title: "Audiodateien auswählen", description: "Wählen Sie mehrere Audioclips von Ihrem Computer oder Telefon aus." },
-          { title: "Reihenfolge anordnen", description: "Ordnen Sie Ihre Spuren direkt im Browser in der gewünschten Reihenfolge an." },
-          { title: "Zusammengefügte Audiodatei speichern", description: "Laden Sie Ihre fertige Audiodatei sofort in bester Qualität herunter." }
-        ] : [
-          { title: "Audio oder Video hochladen", description: "Wählen Sie Ihren Medienclip von Ihrem Computer oder Telefon." },
-          { title: "Codecs und Bitraten optimieren", description: "Unsere Engine führt schnelles Stream-Copying oder effiziente Kodierung aus." },
-          { title: "Optimierte Medien speichern", description: "Laden Sie Ihre komprimierte oder konvertierte Mediendatei sofort herunter." }
-        ])
-      : isFr
-      ? (isAudioMerge ? [
-          { title: "Sélectionnez vos fichiers audio", description: "Choisissez plusieurs pistes audio depuis votre ordinateur ou téléphone." },
-          { title: "Organisez l'ordre de lecture", description: "Réorganisez vos pistes dans l'ordre souhaité directement dans votre navigateur." },
-          { title: "Enregistrez le fichier fusionné", description: "Téléchargez immédiatement votre fichier audio fusionné en haute qualité." }
-        ] : [
-          { title: "Sélectionnez votre média", description: "Choisissez votre clip audio ou vidéo depuis votre appareil." },
-          { title: "Optimisez codecs et débits", description: "Notre moteur applique un traitement ultra-rapide sans perte de qualité." },
-          { title: "Enregistrez le média optimisé", description: "Téléchargez immédiatement votre média compressé ou converti." }
-        ])
-      : isEs
-      ? (isAudioMerge ? [
-          { title: "Selecciona tus archivos de audio", description: "Elige múltiples pistas de audio desde tu dispositivo para unirlas." },
-          { title: "Organiza el orden de reproducción", description: "Ordena tus pistas en la secuencia deseada directamente en tu navegador." },
-          { title: "Guarda el audio combinado", description: "Descarga tu archivo de audio fusionado en alta calidad al instante." }
-        ] : [
-          { title: "Sube audio o video", description: "Selecciona tu clip multimedia desde tu ordenador o teléfono." },
-          { title: "Optimiza códecs y velocidad", description: "Nuestro motor procesa el archivo con máxima velocidad y fidelidad." },
-          { title: "Guarda el medio optimizado", description: "Descarga tu archivo comprimido o convertido de inmediato." }
-        ])
-      : isPt
-      ? (isAudioMerge ? [
-          { title: "Selecione seus arquivos de áudio", description: "Escolha múltiplos clipes de áudio do seu dispositivo que deseja juntar." },
-          { title: "Organize a ordem de reprodução", description: "Ordene as faixas na sequência desejada diretamente no seu navegador." },
-          { title: "Salve o áudio combinado", description: "Baixe seu arquivo de áudio combinado com alta qualidade instantaneamente." }
-        ] : [
-          { title: "Envie áudio ou vídeo", description: "Selecione seu clipe de mídia do computador ou celular." },
-          { title: "Otimize codecs e taxas de bits", description: "Nosso motor executa cópia direta ou codificação de alta eficiência." },
-          { title: "Salve a mídia otimizada", description: "Baixe sua mídia compactada ou convertida instantaneamente." }
-        ])
-      : isIt
-      ? (isAudioMerge ? [
-          { title: "Seleziona i tuoi file audio", description: "Scegli più clip audio dal computer o dal telefono che desideri unire." },
-          { title: "Disponi l'ordine di riproduzione", description: "Organizza le tracce nella sequenza desiderata direttamente nel browser." },
-          { title: "Salva il file audio unito", description: "Scarica subito il tuo file audio unito in alta qualità." }
-        ] : [
-          { title: "Carica audio o video", description: "Seleziona il tuo clip multimediale dal computer o telefono." },
-          { title: "Ottimizza codec e bitrate", description: "Il nostro motore esegue copie di flusso istantanee o codifiche efficienti." },
-          { title: "Salva i file multimediali", description: "Scarica subito il tuo file multimediale compresso o convertito." }
-        ])
-      : isPl
-      ? (isAudioMerge ? [
-          { title: "Wybierz pliki audio", description: "Wybierz kilka klipów audio z komputera lub telefonu, które chcesz połączyć." },
-          { title: "Ustaw kolejność odtwarzania", description: "Ułóż ścieżki w żądanej kolejności bezpośrednio w przeglądarce." },
-          { title: "Zapisz połączony plik audio", description: "Pobierz połączony plik audio w najwyższej jakości natychmiast." }
-        ] : [
-          { title: "Prześlij audio lub wideo", description: "Wybierz klip multimedialny ze swojego urządzenia." },
-          { title: "Zoptymalizuj kodeki i bitrate", description: "Nasz silnik wykonuje szybkie kopiowanie strumienia lub wydajne kodowanie." },
-          { title: "Zapisz zoptymalizowane media", description: "Pobierz skompresowany lub przekonwertowany plik natychmiast." }
-        ])
-      : isRu
-      ? (isAudioMerge ? [
-          { title: "Выберите аудиофайлы", description: "Выберите несколько аудиозаписей на компьютере или телефоне для объединения." },
-          { title: "Настройте порядок воспроизведения", description: "Расставьте дорожки в нужной последовательности прямо в браузере." },
-          { title: "Сохраните объединенный файл", description: "Скачайте готовый аудиофайл без потери качества мгновенно." }
-        ] : [
-          { title: "Загрузите аудио или видео", description: "Выберите медиаклип на вашем компьютере или телефоне." },
-          { title: "Оптимизируйте кодеки и битрейт", description: "Наш движок выполняет прямое копирование потоков или быстрое сжатие." },
-          { title: "Сохраните оптимизированный файл", description: "Скачайте готовый медиафайл мгновенно." }
-        ])
-      : isJa
-      ? (isAudioMerge ? [
-          { title: "音声ファイルを選択", description: "結合したい複数の音声クリップをデバイスから選択します。" },
-          { title: "再生順序を調整", description: "ブラウザ上でトラックを好みの順序に並べ替えます。" },
-          { title: "結合した音声ファイルを保存", description: "高音質のまま結合された音声ファイルを即座にダウンロードします。" }
-        ] : [
-          { title: "音声または動画をアップロード", description: "デバイスからメディアクリップを選択します。" },
-          { title: "コーデックとビットレートの最適化", description: "劣化のないストリームコピーまたは高効率エンコードを実行します。" },
-          { title: "最適化されたメディアを保存", description: "変換・圧縮されたメディアを即座にダウンロードします。" }
-        ])
-      : isKo
-      ? (isAudioMerge ? [
-          { title: "오디오 파일 선택", description: "병합할 여러 오디오 클립을 기기에서 선택합니다." },
-          { title: "재생 순서 정렬", description: "브라우저에서 원하는 재생 순서대로 트랙을 배치합니다." },
-          { title: "병합된 오디오 파일 저장", description: "고품질로 병합된 오디오 파일을 즉시 다운로드합니다." }
-        ] : [
-          { title: "오디오 또는 비디오 선택", description: "컴퓨터 또는 스마트폰에서 미디어 클립을 선택합니다." },
-          { title: "코덱 및 비트레이트 최적화", description: "품질 손실 없는 빠른 스트림 복사 또는 고효율 인코딩을 수행합니다." },
-          { title: "최적화된 미디어 저장", description: "압축 또는 변환된 미디어 파일을 즉시 다운로드합니다." }
-        ])
-      : isZh
-      ? (isAudioMerge ? [
-          { title: "选择您的音频文件", description: "从电脑或手机中选择要合并的多个音频剪辑。" },
-          { title: "排列播放顺序", description: "直接在浏览器中按所需顺序排列音频轨道。" },
-          { title: "保存合并后的音频", description: "立即以高音质下载合并后的音频文件。" }
-        ] : [
-          { title: "选择音频或视频", description: "从您的设备中选择要处理的多媒体文件。" },
-          { title: "优化编解码器与比特率", description: "执行极速无损流复制或高效率视频编码。" },
-          { title: "保存优化后的媒体文件", description: "立即下载压缩或转换后的媒体文件。" }
-        ])
-      : isAr
+    const faqs: FaqItem[] = isAudioMerge
       ? [
-          { title: "ارفع ملف الصوت أو الفيديو", description: "اختر مقطع الوسائط من جهاز الكمبيوتر أو الهاتف الخاص بك." },
-          { title: "تحسين برامج الترميز ومعدل البت", description: "يقوم محركنا بتبديل الحاويات بسرعة فائقة أو الترميز عالي الكفاءة." },
-          { title: "حفظ الوسائط المحسنة", description: "قم بتحميل ملف الوسائط المضغوط أو المقصوص أو المحول على الفور." }
-        ]
-      : isTr
-      ? [
-          { title: "Ses veya videoyu yükleyin", description: "Masaüstünüzden veya telefonunuzdan medya klibinizi seçin." },
-          { title: "Kodekleri ve bit hızlarını optimize edin", description: "Motorumuz hızlı akış kopyalama veya yüksek verimli kodlama yürütür." },
-          { title: "Optimize edilmiş medyayı kaydedin", description: "Sıkıştırılmış, kırpılmış veya dönüştürülmüş medyanızı anında indirin." }
+          { question: "How do I merge multiple audio tracks together?", answer: "Upload your MP3, WAV, or audio files into the workspace, arrange their sequence, and download the combined high-quality audio file." },
+          { question: "Are audio tracks re-encoded with quality loss?", answer: "No. FileKit matches bitrates and sample rates to ensure lossless audio concatenation." },
+          { question: "Is there a limit on audio file length?", answer: "You can combine standard podcast episodes, songs, and voice notes with zero restrictions." }
         ]
       : [
-          { title: "Upload audio or video", description: "Select your media clip from your desktop or phone." },
-          { title: "Optimize codecs and bitrates", description: "Our engine executes fast stream-copy container swapping or high-efficiency encoding." },
-          { title: "Save optimized media", description: "Download your compressed, trimmed, or converted media instantly." }
-        ];
-
-    const faqs: FaqItem[] = isSv
-      ? (isAudioMerge ? [
-          { question: "Kan jag slå samman ljudfiler i olika format (t.ex. MP3 och WAV)?", answer: "Ja. FileKit avkodar olika ljudformat direkt i webbläsaren och slår samman dem till ett enhetligt spår i hög kvalitet." },
-          { question: "Laddas mina privata ljudinspelningar upp till en server?", answer: "Nej. Ljudbehandling och sammanslagning sker 100% lokalt i din webbläsares minne utan att filer skickas till externa servrar." },
-          { question: "Förlorar ljudet kvalitet vid sammanslagning?", answer: "Nej. FileKit bevarar samplingsfrekvenser och bithastigheter för maximal akustisk återgivning." }
-        ] : [
-          { question: "Minskar mediekonvertering den visuella kvaliteten?", answer: "För kompatibla behållare använder FileKit direkt strömkopiering (-c copy) på under 1 sekund med 100% noll kvalitetsförlust." },
-          { question: "Kan jag komprimera videor för Discord, Gmail eller WhatsApp?", answer: "Ja. FileKit beräknar exakt bithastighet för att säkerställa att din video inte överskrider filgränserna." },
-          { question: "Laddas mina privata videor upp till externa servrar?", answer: "Nej. Mediebearbetning sker helt lokalt i din webbläsare med fullständig integritet." }
-        ])
-      : isDe
-      ? (isAudioMerge ? [
-          { question: "Kann ich Audiodateien unterschiedlicher Formate (z. B. MP3 und WAV) zusammenfügen?", answer: "Ja. FileKit decodiert verschiedene Audioformate direkt im Browser und fügt sie zu einer einheitlichen, hochwertigen Spur zusammen." },
-          { question: "Werden meine privaten Audioaufnahmen auf einen Server hochgeladen?", answer: "Nein. Die Verarbeitung erfolgt zu 100% lokal im Speicher Ihres Browsers ohne externe Übertragung." },
-          { question: "Geht beim Zusammenfügen Audioqualität verloren?", answer: "Nein. FileKit behält Sampleraten und Bitraten für eine optimale Klangtreue bei." }
-        ] : [
-          { question: "Verringert die Medienkonvertierung die Qualität?", answer: "Bei kompatiblen Formaten nutzt FileKit Stream-Copying in unter 1 Sekunde bei 100% verlustfreier Qualität." },
-          { question: "Kann ich Videos für Discord, Gmail oder WhatsApp komprimieren?", answer: "Ja. FileKit passt die Bitrate exakt an, damit Grenzwerte wie 8MB, 10MB oder 25MB eingehalten werden." },
-          { question: "Werden meine privaten Videos auf Server übertragen?", answer: "Nein. Die Medienverarbeitung erfolgt vollständig lokal in Ihrem Browser." }
-        ])
-      : isFr
-      ? (isAudioMerge ? [
-          { question: "Puis-je fusionner des fichiers audio de formats différents (ex. MP3 et WAV) ?", answer: "Oui. FileKit décode différents formats audio directement dans le navigateur et les fusionne en une piste unique de haute qualité." },
-          { question: "Mes enregistrements audio privés sont-ils envoyés sur un serveur ?", answer: "Non. Le traitement audio s'effectue à 100% localement dans votre navigateur sans aucun téléversement." },
-          { question: "Y a-t-il une perte de qualité sonore lors de la fusion ?", answer: "Non. FileKit préserve les fréquences d'échantillonnage et les débits originaux pour une fidélité maximale." }
-        ] : [
-          { question: "La conversion réduit-elle la qualité visuelle ?", answer: "Pour les formats compatibles, FileKit utilise le mode de copie directe en moins d'une seconde sans perte de qualité." },
-          { question: "Puis-je compresser des vidéos pour Discord, Gmail ou WhatsApp ?", answer: "Oui. FileKit calcule le débit binaire exact pour respecter les limites de 8 Mo, 10 Mo ou 25 Mo." },
-          { question: "Mes vidéos privées sont-elles conservées ?", answer: "Non. Vos fichiers multimédias sont traités directement sur votre appareil en toute confidentialité." }
-        ])
-      : isEs
-      ? (isAudioMerge ? [
-          { question: "¿Puedo unir archivos de audio de diferentes formatos (ej. MP3 y WAV)?", answer: "Sí. FileKit decodifica diferentes formatos directamente en el navegador y los combina en una pista uniforme de alta calidad." },
-          { question: "¿Mis grabaciones de audio privadas se suben a un servidor?", answer: "No. El procesamiento se realiza 100% de forma local en tu navegador sin enviar archivos a servidores externos." },
-          { question: "¿Se pierde calidad de audio al unir pistas?", answer: "No. FileKit mantiene las tasas de muestreo y fidelidad de sonido originales." }
-        ] : [
-          { question: "¿La conversión de video reduce la calidad visual?", answer: "Para formatos compatibles, FileKit realiza copias directas de flujo en menos de 1 segundo sin pérdida de calidad." },
-          { question: "¿Puedo comprimir videos para cumplir con los límites de Discord, Gmail o WhatsApp?", answer: "Sí. FileKit ajusta la tasa de bits matemáticamente para no exceder límites de 8MB, 10MB o 25MB." },
-          { question: "¿Mis videos se mantienen privados?", answer: "Totalmente. El procesamiento de video se ejecuta localmente en tu navegador sin almacenamiento externo." }
-        ])
-      : isPt
-      ? (isAudioMerge ? [
-          { question: "Posso juntar arquivos de áudio de formatos diferentes (ex.: MP3 e WAV)?", answer: "Sim. O FileKit decodifica múltiplos formatos diretamente no navegador e os une em uma única faixa com alta qualidade." },
-          { question: "Minhas gravações de áudio privadas são enviadas para um servidor?", answer: "Não. O processamento de áudio ocorre 100% localmente na memória do seu navegador sem envio de arquivos." },
-          { question: "Há perda de qualidade de som ao juntar faixas?", answer: "Não. O FileKit preserva taxas de amostragem e taxas de bits para máxima fidelidade acústica." }
-        ] : [
-          { question: "A conversão de vídeo reduz a qualidade visual?", answer: "Para formatos compatíveis, o FileKit usa cópia direta de fluxo em menos de 1 segundo sem qualquer perda de qualidade." },
-          { question: "Posso comprimir vídeos para o limite do Discord, Gmail ou WhatsApp?", answer: "Sim. O FileKit calcula a taxa de bits exata para garantir que seu vídeo não ultrapasse os limites de tamanho." },
-          { question: "Meus vídeos privados são mantidos em sigilo?", answer: "Sim. O processamento de mídia é 100% local no seu navegador com total privacidade." }
-        ])
-      : isIt
-      ? (isAudioMerge ? [
-          { question: "Posso unire file audio di formati diversi (es. MP3 e WAV)?", answer: "Sì. FileKit decodifica diversi formati direttamente nel browser e li unisce in un'unica traccia di alta qualità." },
-          { question: "Le mie registrazioni audio private vengono caricate su un server?", answer: "No. L'elaborazione avviene al 100% localmente nella memoria del browser senza caricamenti esterni." },
-          { question: "C'è perdita di qualità durante l'unione dei file audio?", answer: "No. FileKit preserva la frequenza di campionamento e il bitrate originali." }
-        ] : [
-          { question: "La conversione video riduce la qualità visiva?", answer: "Per i formati compatibili, FileKit utilizza la copia di flusso istantanea in meno di 1 secondo con zero perdite di qualità." },
-          { question: "Posso comprimere video per i limiti di Discord, Gmail o WhatsApp?", answer: "Sì. FileKit calcola il bitrate esatto per garantire che il video non superi i limiti di dimensione." },
-          { question: "I miei video privati rimangono riservati?", answer: "Assolutamente. Tutto il processo multimediale avviene localmente nel tuo browser." }
-        ])
-      : isPl
-      ? (isAudioMerge ? [
-          { question: "Czy mogę łączyć pliki audio w różnych formatach (np. MP3 i WAV)?", answer: "Tak. FileKit dekoduje różne formaty bezpośrednio w przeglądarce i łączy je w jedną ścieżkę o wysokiej jakości." },
-          { question: "Czy moje prywatne nagrania audio są przesyłane na serwer?", answer: "Nie. Przetwarzanie audio odbywa się w 100% lokalnie w pamięci przeglądarki bez wysyłania plików na serwer." },
-          { question: "Czy jakość dźwięku spada podczas łączenia utworów?", answer: "Nie. FileKit zachowuje oryginalne parametry próbkowania i bitrate." }
-        ] : [
-          { question: "Czy konwersja wideo obniża jakość obrazu?", answer: "W przypadku zgodnych formatów FileKit używa natychmiastowego kopiowania strumienia bez żadnej utraty jakości." },
-          { question: "Czy mogę skompresować wideo dla Discorda, Gmaila lub WhatsAppa?", answer: "Tak. FileKit precyzyjnie dopasowuje bitrate, aby plik nie przekroczył limitów 8MB, 10MB lub 25MB." },
-          { question: "Czy moje filmy wideo są bezpieczne i prywatne?", answer: "Tak. Obróbka multimediów odbywa się w całości lokalnie w Twojej przeglądarce." }
-        ])
-      : isRu
-      ? (isAudioMerge ? [
-          { question: "Можно ли объединять аудиофайлы разных форматов (например, MP3 и WAV)?", answer: "Да. FileKit декодирует различные аудиоформаты прямо в браузере и объединяет их в единую высококачественную дорожку." },
-          { question: "Загружаются ли мои личные аудиозаписи на сервер?", answer: "Нет. Вся обработка происходит на 100% локально в памяти вашего браузера без передачи на внешние серверы." },
-          { question: "Теряется ли качество звука при объединении?", answer: "Нет. FileKit сохраняет исходную частоту дискретизации и битрейт для максимальной чистоты звучания." }
-        ] : [
-          { question: "Снижает ли конвертация качество видео?", answer: "Для совместимых форматов FileKit использует прямое копирование потока менее чем за 1 секунду без потери качества." },
-          { question: "Можно ли сжать видео под лимиты Discord, Gmail или WhatsApp?", answer: "Да. FileKit рассчитывает точный битрейт, чтобы видео не превышало лимиты 8MB, 10MB или 25MB." },
-          { question: "Сохраняется ли конфиденциальность моих видеофайлов?", answer: "Да. Обработка видеофайлов происходит полностью локально в вашем браузере." }
-        ])
-      : isJa
-      ? (isAudioMerge ? [
-          { question: "異なる形式の音声ファイル（MP3とWAVなど）を結合できますか？", answer: "はい。FileKitはブラウザ内で直接様々な音声形式をデコードし、劣化のない単一のトラックに結合します。" },
-          { question: "個人の音声データがサーバーにアップロードされることはありますか？", answer: "いいえ。音声の処理と結合はブラウザのメモリ内で100%ローカルに実行され、外部サーバーに送信されることはありません。" },
-          { question: "結合時に音質の劣化は発生しますか？", answer: "いいえ。FileKitはサンプリング周波数とビットレートを維持し、クリアな音質を保持します。" }
-        ] : [
-          { question: "動画変換によって画質が低下しますか？", answer: "互換性のあるコンテナの場合、FileKitは1秒未満の高速ストリームコピーにより画質の劣化ゼロで処理します。" },
-          { question: "Discord、Gmail、WhatsAppの制限に合わせて動画を圧縮できますか？", answer: "はい。FileKitはビットレートを自動計算し、8MB、10MB、25MBの制限を超えないよう圧縮します。" },
-          { question: "プライベートな動画は安全に保護されますか？", answer: "はい。動画の処理はすべてブラウザ内でローカルに実行され、機密性が保たれます。" }
-        ])
-      : isKo
-      ? (isAudioMerge ? [
-          { question: "서로 다른 형식의 오디오 파일(예: MP3 및 WAV)을 병합할 수 있나요?", answer: "네. FileKit은 브라우저에서 직접 다양한 오디오 형식을 디코딩하여 고품질의 단일 트랙으로 병합합니다." },
-          { question: "개인 오디오 녹음 파일이 서버에 업로드되나요?", answer: "아니요. 오디오 처리 및 병합은 브라우저 메모리 내에서 100% 로컬로 실행되며 서버로 전송되지 않습니다." },
-          { question: "오디오 병합 시 음질이 저하되나요?", answer: "아니요. FileKit은 원본 샘플 레이트와 비트레이트를 보존하여 최적의 음질을 유지합니다." }
-        ] : [
-          { question: "비디오 변환 시 화질이 저하되나요?", answer: "호환되는 포맷의 경우, FileKit은 1초 이내의 빠른 스트림 복사를 통해 화질 손실 없이 포맷을 변환합니다." },
-          { question: "Discord, Gmail, WhatsApp 크기 제한에 맞게 비디오를 압축할 수 있나요?", answer: "네. FileKit은 정확한 비트레이트를 계산하여 8MB, 10MB, 25MB 용량 제한을 초과하지 않도록 압축합니다." },
-          { question: "개인 비디오 파일이 안전하게 보호되나요?", answer: "네. 모든 미디어 처리는 브라우저 내에서 로컬로 실행되어 완전한 보안을 보장합니다." }
-        ])
-      : isZh
-      ? (isAudioMerge ? [
-          { question: "我可以合并不同格式的音频文件（如 MP3 和 WAV）吗？", answer: "可以。FileKit 直接在浏览器中解码不同的音频格式，并将其无缝合并为一条高音质轨道。" },
-          { question: "我的私人录音文件会被上传到服务器吗？", answer: "不会。音频处理与合并完全在您的浏览器内存中本地完成，绝不会上传到任何外部服务器。" },
-          { question: "合并音频会降低音质吗？", answer: "不会。FileKit 保留原始采样率和比特率，确保绝佳的声音还原度。" }
-        ] : [
-          { question: "视频转换会降低画质吗？", answer: "对于兼容的格式，FileKit 采用极速流复制模式，在不到 1 秒内完成容器转换且画质 100% 零损失。" },
-          { question: "我可以将视频压缩到 Discord、Gmail 或微信的文件大小限制内吗？", answer: "可以。FileKit 采用精准的比特率计算，确保压缩后的视频绝不超过指定的容量上限。" },
-          { question: "我的私人视频文件安全吗？", answer: "绝对安全。所有多媒体转换均在浏览器中本地执行，不产生任何云端数据残留。" }
-        ])
-      : isAr
-      ? [
-          { question: "هل يقلل تحويل الفيديو من جودة الصورة؟", answer: "بالنسبة للحاويات المتوافقة، يستخدم FileKit وضع النسخ المباشر (-c copy) لتبديل التنسيق في أقل من ثانية واحدة مع الحفاظ على 100% من الجودة الأصلية بدون أي فقدان." },
-          { question: "هل يمكنني ضغط مقاطع الفيديو لتناسب حدود Discord أو Gmail أو WhatsApp؟", answer: "نعم. يتيح FileKit استهداف حجم محدد بالبت لضمان عدم تجاوز الملف لحدود 8MB أو 10MB أو 25MB." },
-          { question: "هل يتم رفع ملفات الوسائط الخاصة بي إلى أي خادم؟", answer: "كلا. تتم معالجة الوسائط محلياً بالكامل في متصفحك دون رفع أي بيانات." }
-        ]
-      : isTr
-      ? [
-          { question: "Video dönüştürme görsel kaliteyi düşürür mü?", answer: "Uyumlu kapsayıcılar için FileKit, görsel veya ses kalitesinde %100 sıfır kayıpla 1 saniyenin altında kapsayıcı değiştirmek için anında akış kopyalama (-c copy) modunu kullanır." },
-          { question: "Videoları Discord, Gmail veya WhatsApp sınırlarına uyacak şekilde sıkıştırabilir miyim?", answer: "Evet. FileKit, sıkıştırılmış videonuzun 8MB, 10MB veya 25MB dosya sınırlarını asla aşmamasını sağlamak için hedefli bit hızı hesaplaması içerir." },
-          { question: "Özel videolarım sunuculara yükleniyor mu?", answer: "Hayır. Medya işlemleri tamamen yerel olarak tarayıcınızda gerçekleştirilir." }
-        ]
-      : [
-          { question: "Does video conversion reduce visual quality?", answer: "For compatible containers, FileKit uses instant stream-copy (-c copy) mode to swap containers in under 1 second with 100% zero loss in visual or audio quality." },
-          { question: "Can I compress videos to meet exact Discord, Gmail, or WhatsApp limits?", answer: "Yes. FileKit features mathematical bitrate targeting to ensure your compressed video never exceeds 8MB, 10MB, or 25MB file limits." },
-          { question: "Are my media files uploaded to a server?", answer: "No. All media operations execute directly on your device with complete client-side privacy." }
+          { question: "Can I convert and compress video files directly in my browser?", answer: "Yes. FileKit uses WebAssembly to transcode and compress videos locally without requiring external software." },
+          { question: "Will video compression degrade visual quality?", answer: "FileKit applies adaptive bitrate calculation and CRF rate control to minimize file size while maintaining sharp resolution." },
+          { question: "Are my personal videos uploaded to a cloud server?", answer: "No. All media operations are executed 100% locally in your web browser sandbox for complete privacy." }
         ];
 
     return { category, entityDefinition, howToSteps, faqs };
   }
-
-  // 7. Generic PDF & Document Suite Default
-  const category = isSv ? "PDF & Dokumentverktyg"
-    : isAr ? "أدوات PDF والمستندات"
-    : isTr ? "PDF ve Belge Yardımcı Programları"
-    : isEs ? "Utilidades de PDF y Documentos"
-    : isDe ? "PDF & Dokumenten-Werkzeuge"
-    : isFr ? "Utilitaires PDF et Documents"
-    : isIt ? "Utilità PDF e Documenti"
-    : isPt ? "Utilitários de PDF e Documentos"
-    : isPl ? "Narzędzia do PDF i Dokumentów"
-    : isRu ? "Инструменты для PDF и документов"
-    : isJa ? "PDF・ドキュメントツール"
-    : isKo ? "PDF 및 문서 유틸리티"
-    : isZh ? "PDF 与文档工具"
-    : "PDF & Document Utilities";
 
   const entityDefinition = isSv
     ? `FileKit ${toolTitle} är ett snabbt och 100% privat webbläsarverktyg utformat för säker behandling direkt på din enhet utan filuppladdningar.`
@@ -749,89 +378,6 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
     ? `FileKit ${toolTitle} 是一款快速、100% 私密的浏览器端工具，专为在设备上安全处理文件而设计，无需上传至服务器。`
     : `FileKit ${toolTitle} is a fast, 100% private in-browser document utility engineered for secure client-side processing without file uploads.`;
 
-  const howToSteps: HowToStep[] = isSv
-    ? [
-        { title: "Välj din fil", description: "Välj dokumentet eller bilden från din lokala enhet." },
-        { title: "Bearbeta säkert i webbläsaren", description: "FileKit använder WebAssembly för att utföra åtgärden lokalt i din webbläsare." },
-        { title: "Ladda ner ditt resultat", description: "Din färdiga, verifierade fil är redo att laddas ner omedelbart med fullständig integritet." }
-      ]
-    : isAr
-    ? [
-        { title: "اختر ملفك", description: "اختر المستند أو الصورة من جهازك المحلي." },
-        { title: "معالجة آمنة في المتصفح", description: "يستخدم FileKit تقنية WebAssembly لتنفيذ العملية محلياً على جهازك مباشرة." },
-        { title: "تحميل النتيجة", description: "ملفك النهائي الموثوق جاهز للتحميل فوراً دون أي تسريب لبياناتك." }
-      ]
-    : isTr
-    ? [
-        { title: "Dosyanızı seçin", description: "Belgenizi veya görselinizi yerel cihazınızdan seçin." },
-        { title: "Tarayıcıda güvenle işleyin", description: "FileKit işlemi doğrudan cihazınızın CPU'sunda yerel olarak yürütmek için WebAssembly kullanır." },
-        { title: "Sonucunuzu indirin", description: "Doğrulanmış dosyanız sıfır veri sızıntısıyla anında indirilmeye hazırdır." }
-      ]
-    : isEs
-    ? [
-        { title: "Selecciona tu archivo", description: "Elige tu documento o imagen desde tu dispositivo." },
-        { title: "Procesa de forma segura en el navegador", description: "FileKit utiliza WebAssembly para ejecutar la operación localmente en tu navegador." },
-        { title: "Descarga tu resultado", description: "Tu archivo procesado está listo para descargarse de inmediato con total privacidad." }
-      ]
-    : isDe
-    ? [
-        { title: "Wählen Sie Ihre Datei", description: "Wählen Sie das Dokument oder Bild von Ihrem lokalen Gerät." },
-        { title: "Sicher im Browser verarbeiten", description: "FileKit nutzt WebAssembly, um die Operation lokal direkt auf Ihrem Gerät auszuführen." },
-        { title: "Ergebnis herunterladen", description: "Ihre fertige Datei steht sofort zum Download bereit – ohne Datenweitergabe." }
-      ]
-    : isFr
-    ? [
-        { title: "Sélectionnez votre fichier", description: "Choisissez votre document ou image depuis votre appareil." },
-        { title: "Traitez en toute sécurité dans le navigateur", description: "FileKit utilise WebAssembly pour exécuter l'opération localement dans votre navigateur." },
-        { title: "Téléchargez votre résultat", description: "Votre fichier finalisé est prêt à être téléchargé immédiatement en toute confidentialité." }
-      ]
-    : isPt
-    ? [
-        { title: "Selecione o seu arquivo", description: "Escolha o documento ou imagem a partir do seu dispositivo." },
-        { title: "Processe com segurança no navegador", description: "O FileKit utiliza WebAssembly para executar a operação localmente no seu computador." },
-        { title: "Baixe o seu resultado", description: "O seu arquivo verificado está pronto para download imediato com 100% de privacidade." }
-      ]
-    : isIt
-    ? [
-        { title: "Seleziona il tuo file", description: "Scegli il documento o l'immagine dal tuo dispositivo locale." },
-        { title: "Elabora in modo sicuro nel browser", description: "FileKit utilizza WebAssembly per eseguire l'operazione localmente nel tuo browser." },
-        { title: "Scarica il tuo risultato", description: "Il tuo file completato è pronto per il download immediato con la massima riservatezza." }
-      ]
-    : isPl
-    ? [
-        { title: "Wybierz plik", description: "Wybierz dokument lub obraz z urządzenia lokalnego." },
-        { title: "Bezpieczne przetwarzanie w przeglądarce", description: "FileKit używa WebAssembly do lokalnego wykonania operacji bez wysyłania danych." },
-        { title: "Pobierz wynik", description: "Twój gotowy plik jest natychmiast dostępny do pobrania z zachowaniem pełnej prywatności." }
-      ]
-    : isRu
-    ? [
-        { title: "Выберите файл", description: "Выберите документ или изображение на вашем устройстве." },
-        { title: "Безопасная обработка в браузере", description: "FileKit использует WebAssembly для локальной обработки файла прямо на вашем устройстве." },
-        { title: "Скачайте результат", description: "Готовый файл сразу доступен для скачивания без утечки данных." }
-      ]
-    : isJa
-    ? [
-        { title: "ファイルを選択", description: "デバイスからドキュメントまたは画像を選択します。" },
-        { title: "ブラウザ内で安全に処理", description: "FileKitはWebAssemblyを使用して、ブラウザ内でローカルに処理を実行します。" },
-        { title: "結果をダウンロード", description: "処理されたファイルは、完全なプライバシーを保ったまま即座にダウンロードできます。" }
-      ]
-    : isKo
-    ? [
-        { title: "파일 선택", description: "로컬 장치에서 문서 또는 이미지를 선택합니다." },
-        { title: "브라우저에서 안전하게 처리", description: "FileKit은 WebAssembly를 사용하여 브라우저에서 로컬로 직접 작업을 실행합니다." },
-        { title: "결과 다운로드", description: "완료된 파일은 데이터 유출 없이 즉시 다운로드할 수 있습니다." }
-      ]
-    : isZh
-    ? [
-        { title: "选择您的文件", description: "从本地设备中选择您的文档或图像。" },
-        { title: "在浏览器中安全处理", description: "FileKit 使用 WebAssembly 在本地直接执行操作，无需上传。" },
-        { title: "下载处理结果", description: "已验证的完成文件可立即下载，全面保障数据隐私。" }
-      ]
-    : [
-        { title: "Select your file", description: "Choose your document or image from your local device." },
-        { title: "Process securely in browser", description: "FileKit uses client-side WebAssembly to execute the operation locally on your CPU." },
-        { title: "Download your result", description: "Your finished, verified file is ready for download immediately with zero data leaks." }
-      ];
 
   const faqs: FaqItem[] = isSv
     ? [
