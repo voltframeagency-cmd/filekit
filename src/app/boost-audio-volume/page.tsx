@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function BoostAudioVolumePage() {
+export default function Page() {
   return <UniversalToolPage slug="/boost-audio-volume" locale="en" />;
 }

@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function RarToZipPage() {
+export default function Page() {
   return <UniversalToolPage slug="/rar-to-zip" locale="en" />;
 }

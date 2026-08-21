@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function FlacToMp3Page() {
+export default function Page() {
   return <UniversalToolPage slug="/flac-to-mp3" locale="en" />;
 }

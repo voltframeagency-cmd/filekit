@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function 7zToZipPage() {
+export default function Page() {
   return <UniversalToolPage slug="/7z-to-zip" locale="en" />;
 }

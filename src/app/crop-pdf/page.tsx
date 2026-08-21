@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function CropPdfPage() {
+export default function Page() {
   return <UniversalToolPage slug="/crop-pdf" locale="en" />;
 }

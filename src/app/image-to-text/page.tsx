@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function ImageToTextPage() {
+export default function Page() {
   return <UniversalToolPage slug="/image-to-text" locale="en" />;
 }

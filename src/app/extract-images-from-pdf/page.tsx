@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function ExtractImagesFromPdfPage() {
+export default function Page() {
   return <UniversalToolPage slug="/extract-images-from-pdf" locale="en" />;
 }

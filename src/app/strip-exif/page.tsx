@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function StripExifPage() {
+export default function Page() {
   return <UniversalToolPage slug="/strip-exif" locale="en" />;
 }

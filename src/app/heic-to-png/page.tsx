@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function HeicToPngPage() {
+export default function Page() {
   return <UniversalToolPage slug="/heic-to-png" locale="en" />;
 }

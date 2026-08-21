@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function OcrPdfPage() {
+export default function Page() {
   return <UniversalToolPage slug="/ocr-pdf" locale="en" />;
 }

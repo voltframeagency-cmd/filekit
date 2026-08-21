@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function M4aToMp3Page() {
+export default function Page() {
   return <UniversalToolPage slug="/m4a-to-mp3" locale="en" />;
 }

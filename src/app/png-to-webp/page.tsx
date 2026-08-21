@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function PngToWebpPage() {
+export default function Page() {
   return <UniversalToolPage slug="/png-to-webp" locale="en" />;
 }

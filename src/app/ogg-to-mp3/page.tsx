@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function OggToMp3Page() {
+export default function Page() {
   return <UniversalToolPage slug="/ogg-to-mp3" locale="en" />;
 }

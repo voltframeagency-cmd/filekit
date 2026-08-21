@@ -15,7 +15,7 @@ interface UploadDropzoneProps {
 }
 
 // Map pathnames to brand illustration assets
-function getRouteAssetName(pathname: string): FileKitAssetName {
+function getRouteAssetName(pathname: string): string {
   const segments = pathname.replace(/^\//, '').split('/').filter(Boolean);
   const route = (segments.length > 1 && segments[0].length <= 5) ? segments[1] : segments[0];
 

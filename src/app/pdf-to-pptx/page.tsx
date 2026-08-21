@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function PdfToPptxPage() {
+export default function Page() {
   return <UniversalToolPage slug="/pdf-to-pptx" locale="en" />;
 }

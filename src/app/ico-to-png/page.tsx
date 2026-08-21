@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function IcoToPngPage() {
+export default function Page() {
   return <UniversalToolPage slug="/ico-to-png" locale="en" />;
 }

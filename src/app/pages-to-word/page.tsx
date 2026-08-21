@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function PagesToWordPage() {
+export default function Page() {
   return <UniversalToolPage slug="/pages-to-word" locale="en" />;
 }

@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function CompressPdfToSizePage() {
+export default function Page() {
   return <UniversalToolPage slug="/compress-pdf-to-size" locale="en" />;
 }

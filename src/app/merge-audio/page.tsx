@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function MergeAudioPage() {
+export default function Page() {
   return <UniversalToolPage slug="/merge-audio" locale="en" />;
 }

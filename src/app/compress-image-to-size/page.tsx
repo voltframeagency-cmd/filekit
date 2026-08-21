@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function CompressImageToSizePage() {
+export default function Page() {
   return <UniversalToolPage slug="/compress-image-to-size" locale="en" />;
 }

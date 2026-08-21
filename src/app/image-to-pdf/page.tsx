@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function ImageToPdfPage() {
+export default function Page() {
   return <UniversalToolPage slug="/image-to-pdf" locale="en" />;
 }

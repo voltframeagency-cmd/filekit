@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function PngToJpgPage() {
+export default function Page() {
   return <UniversalToolPage slug="/png-to-jpg" locale="en" />;
 }

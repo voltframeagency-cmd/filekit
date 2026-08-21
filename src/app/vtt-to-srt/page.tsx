@@ -3,6 +3,6 @@
 import React from "react";
 import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
-export default function VttToSrtPage() {
+export default function Page() {
   return <UniversalToolPage slug="/vtt-to-srt" locale="en" />;
 }
