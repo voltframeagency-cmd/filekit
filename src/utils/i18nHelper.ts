@@ -18,7 +18,7 @@ export interface VerbDictionaryEntry {
 }
 
 // Action verbs and terms dictionary across all 39 world languages
-const VERB_DICTIONARY: Record<SupportedLocale, VerbDictionaryEntry> = {
+export const VERB_DICTIONARY: Record<SupportedLocale, VerbDictionaryEntry> = {
   en: {
     convert: "Convert", compress: "Compress", merge: "Merge", split: "Split", rotate: "Rotate", crop: "Crop", resize: "Resize", extract: "Extract", to: "to", from: "from", onlineFree: "Online Free", privacyNotice: "100% private in-browser processing with zero server uploads."
   },
@@ -98,7 +98,7 @@ const VERB_DICTIONARY: Record<SupportedLocale, VerbDictionaryEntry> = {
     convert: "Konvertuoti", compress: "Glaudinti", merge: "Sujungti", split: "Padalinti", rotate: "Pasukti", crop: "Apkarpyti", resize: "Keisti dydį", extract: "Išskleisti", to: "į", from: "iš", onlineFree: "Nemokamai Internete", privacyNotice: "100% privatus apdorojimas naršyklėje be failų įkėlimo į serverį."
   },
   tr: {
-    convert: "Dönüştür", compress: "Sıkıştır", merge: "Birleştir", split: "Böl", rotate: "Döndür", crop: "Kırp", resize: "Yeniden Boyutlandır", extract: "Ayıkla", to: ">", from: "-", onlineFree: "Ücretsiz Çevrimiçi", privacyNotice: "%100 gizli tarayıcı içi işlem, sunucuya dosya yüklenmez."
+    convert: "Dönüştür", compress: "Sıkıştır", merge: "Birleştir", split: "Böl", rotate: "Döndür", crop: "Kırp", resize: "Yeniden Boyutlandır", extract: "Ayıkla", to: "→", from: "-", onlineFree: "Ücretsiz Çevrimiçi", privacyNotice: "%100 gizli tarayıcı içi işlem, sunucuya dosya yüklenmez."
   },
   ar: {
     convert: "تحويل", compress: "ضغط", merge: "دمج", split: "تقسيم", rotate: "تدوير", crop: "قص", resize: "تغيير الحجم", extract: "استخراج", to: "إلى", from: "من", onlineFree: "مجاناً أونلاين", privacyNotice: "معالجة خاصة 100% داخل المتصفح بدون رفع الملفات إلى أي خادم."
@@ -221,6 +221,92 @@ export function getLocalizedToolMeta(
     localizedAction = dict.extract;
   }
 
+  // Noun dictionary for all 39 locales
+  const MEDIA_NOUNS: Record<SupportedLocale, { audio: string; video: string; files: string }> = {
+    en: { audio: "Audio", video: "Video", files: "Files" },
+    es: { audio: "Archivos de Audio", video: "Video", files: "Archivos" },
+    "es-419": { audio: "Archivos de Audio", video: "Video", files: "Archivos" },
+    de: { audio: "Audiodateien", video: "Video", files: "Dateien" },
+    fr: { audio: "Fichiers Audio", video: "Vidéo", files: "Fichiers" },
+    pt: { audio: "Arquivos de Áudio", video: "Vídeo", files: "Arquivos" },
+    "pt-BR": { audio: "Arquivos de Áudio", video: "Vídeo", files: "Arquivos" },
+    it: { audio: "File Audio", video: "Video", files: "File" },
+    nl: { audio: "Audiobestanden", video: "Video", files: "Bestanden" },
+    ca: { audio: "Fitxers d'Àudio", video: "Vídeo", files: "Fitxers" },
+    sv: { audio: "Ljudfiler", video: "Video", files: "Filer" },
+    da: { audio: "Lydfiler", video: "Video", files: "Filer" },
+    fi: { audio: "Äänitiedostot", video: "Video", files: "Tiedostot" },
+    no: { audio: "Lydfiler", video: "Video", files: "Filer" },
+    pl: { audio: "Pliki Audio", video: "Wideo", files: "Pliki" },
+    cs: { audio: "Zvukové Soubory", video: "Video", files: "Soubory" },
+    hu: { audio: "Hangfájlok", video: "Videó", files: "Fájlok" },
+    ro: { audio: "Fișiere Audio", video: "Video", files: "Fișiere" },
+    bg: { audio: "Аудио Файлове", video: "Видео", files: "Файлове" },
+    el: { audio: "Αρχεία Ήχου", video: "Βίντεο", files: "Αρχεία" },
+    sk: { audio: "Zvukové Súbory", video: "Video", files: "Súbory" },
+    sl: { audio: "Zvočne Datoteke", video: "Video", files: "Datoteke" },
+    ru: { audio: "Аудиофайлы", video: "Видео", files: "Файлы" },
+    uk: { audio: "Аудіофайли", video: "Відео", files: "Файли" },
+    lv: { audio: "Audio Faili", video: "Video", files: "Faili" },
+    lt: { audio: "Garso Failai", video: "Vaizdo Įrašai", files: "Failai" },
+    tr: { audio: "Ses Dosyaları", video: "Video", files: "Dosyalar" },
+    ar: { audio: "ملفات الصوت", video: "الفيديو", files: "الملفات" },
+    he: { audio: "קבצי אודיו", video: "וידאו", files: "קבצים" },
+    hi: { audio: "ऑडियो फाइलें", video: "वीडियो", files: "फाइलें" },
+    id: { audio: "Berkas Audio", video: "Video", files: "Berkas" },
+    ms: { audio: "Fail Audio", video: "Video", files: "Fail" },
+    th: { audio: "ไฟล์เสียง", video: "วิดีโอ", files: "ไฟล์" },
+    vi: { audio: "Tệp Âm thanh", video: "Video", files: "Tệp" },
+    fil: { audio: "Mga Audio File", video: "Video", files: "Mga File" },
+    ja: { audio: "音声ファイル", video: "動画", files: "ファイル" },
+    ko: { audio: "오디오 파일", video: "동영상", files: "파일" },
+    "zh-CN": { audio: "音频文件", video: "视频", files: "文件" },
+    "zh-TW": { audio: "音訊檔案", video: "影片", files: "檔案" }
+  };
+
+  // Handle specialized media or single-purpose tools (e.g. /merge-audio, /compress-video, /rotate-video, /mute-video)
+  const isSpecialNonPair =
+    normSlug === "/merge-audio" ||
+    normSlug === "/compress-video" ||
+    normSlug === "/compress-audio" ||
+    normSlug === "/trim-audio" ||
+    normSlug === "/trim-video" ||
+    normSlug === "/rotate-video" ||
+    normSlug === "/mute-video" ||
+    normSlug === "/change-video-speed" ||
+    normSlug === "/video-to-gif" ||
+    normSlug === "/boost-audio-volume" ||
+    normSlug === "/crop-image" ||
+    normSlug === "/rotate-image" ||
+    normSlug === "/flip-image" ||
+    normSlug === "/grayscale-image" ||
+    normSlug === "/blur-image" ||
+    normSlug === "/resize-image";
+
+  if (isSpecialNonPair) {
+    const nouns = MEDIA_NOUNS[locale] || MEDIA_NOUNS.en;
+    let toolNoun = nouns.files;
+    if (normSlug.includes("audio")) toolNoun = nouns.audio;
+    else if (normSlug.includes("video")) toolNoun = nouns.video;
+    else if (normSlug.includes("image")) toolNoun = nouns.files;
+
+    let localizedTitle = `${localizedAction} ${toolNoun} ${dict.onlineFree} | FileKit`;
+    if (locale === "ja" || locale === "ko" || locale === "zh-CN" || locale === "zh-TW") {
+      localizedTitle = `${toolNoun} ${localizedAction} (${dict.onlineFree}) | FileKit`;
+    }
+
+    const localizedDescription = `${localizedTitle.replace(/ \| FileKit$/, "")}. ${dict.privacyNotice}`;
+    const canonicalUrl = buildCanonicalUrl(normSlug);
+
+    return {
+      title: localizedTitle,
+      description: localizedDescription,
+      h1: localizedTitle.replace(/ \| FileKit$/, ""),
+      canonicalUrl,
+      locale
+    };
+  }
+
   // Pair extraction fallback (e.g. /dwg-to-pdf, /jpg-to-png)
   if (!localizedSource && normSlug.includes("-to-")) {
     const parts = normSlug.replace(/^\//, "").split("-to-");
@@ -280,4 +366,32 @@ export function getHreflangLinks(slug: string): Array<{ hrefLang: string; href: 
   }
 
   return links;
+}
+
+/**
+ * Returns a localized URL pathname preserving the current language context.
+ * Example: getLocalizedHref("/jpg-to-png", "es") => "/es/jpg-to-png"
+ * Example: getLocalizedHref("/#pricing", "ko") => "/ko#pricing"
+ * Example: getLocalizedHref("https://...", "de") => "https://..."
+ */
+export function getLocalizedHref(href: string, language?: string): string {
+  if (!href || href.startsWith("http") || !language || language === "en") {
+    return href;
+  }
+
+  // Handle in-page anchors like "/#pricing" or "#pricing"
+  if (href.startsWith("/#")) {
+    return `/${language}${href.substring(1)}`;
+  }
+  if (href.startsWith("#")) {
+    return `/${language}${href}`;
+  }
+
+  // Avoid double prefixing
+  const normalized = href.startsWith("/") ? href : `/${href}`;
+  if (normalized.startsWith(`/${language}/`) || normalized === `/${language}`) {
+    return normalized;
+  }
+
+  return `/${language}${normalized}`;
 }

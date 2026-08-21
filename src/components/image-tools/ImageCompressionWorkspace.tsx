@@ -7,6 +7,7 @@ import { ImageOptimizationEngine } from "@/utils/image-engine/ImageOptimizationE
 import { ImagePreflightInspector } from "@/utils/image-engine/ImagePreflightInspector";
 import { ImageCapabilityRouter } from "@/utils/image-engine/ImageCapabilityRouter";
 import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
+import { useLanguage } from "@/components/layout/LanguageContext";
 
 export type CompressionGoalMode = "BALANCED" | "TARGET_SIZE" | "MANUAL";
 export type QualityPriority = "BETTER_QUALITY" | "BALANCED" | "SMALLER_FILE";
@@ -26,6 +27,7 @@ export default function ImageCompressionWorkspace({
   initialTargetValue = "200",
   initialTargetUnit = "kb"
 }: ImageCompressionWorkspaceProps) {
+  const { language } = useLanguage();
   // Mode selection
   const [mode, setMode] = useState<CompressionGoalMode>(initialMode);
 
@@ -333,12 +335,24 @@ export default function ImageCompressionWorkspace({
             <svg className="w-12 h-12 text-fk-primary mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
-            <p className="text-[15px] font-bold text-fk-text">Drop your image here or browse</p>
+            <p className="text-[15px] font-bold text-fk-text">{(() => {
+              const l = (language || 'en').slice(0, 2);
+              const map: Record<string, string> = { en: 'Drop your image here or browse', ar: 'اسحب صورتك هنا أو تصفّح', tr: 'Görselinizi buraya bırakın veya seçin', sv: 'Dra och släpp din bild här eller bläddra', es: 'Suelta tu imagen aquí o busca', fr: 'Déposez votre image ici ou parcourir', de: 'Bild hier ablegen oder durchsuchen', pt: 'Solte a sua imagem aqui ou procure', it: 'Trascina la tua immagine qui o sfoglia', ja: '画像をここにドロップまたは参照', ko: '이미지를 여기에 놓거나 찾아보기' };
+              return map[l] || map.en;
+            })()}</p>
             <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
-              Supports JPG, PNG, and static WebP up to 50 MB
+              {(() => {
+                const l = (language || 'en').slice(0, 2);
+                const map: Record<string, string> = { en: 'Supports JPG, PNG, and static WebP up to 50 MB', ar: 'يدعم JPG وPNG وWebP حتى 50 ميجابايت', tr: 'JPG, PNG ve statik WebP destekler (50 MB\'a kadar)', sv: 'Stöder JPG, PNG och statisk WebP upp till 50 MB', es: 'Admite JPG, PNG y WebP estático hasta 50 MB', fr: 'Prend en charge JPG, PNG et WebP statique jusqu\'à 50 Mo', de: 'Unterstützt JPG, PNG und statisches WebP bis 50 MB', pt: 'Suporta JPG, PNG e WebP estático até 50 MB', it: 'Supporta JPG, PNG e WebP statico fino a 50 MB', ja: 'JPG、PNG、静的WebP（50 MBまで）をサポート', ko: 'JPG, PNG, 정적 WebP 지원 (50 MB까지)' };
+                return map[l] || map.en;
+              })()}
             </p>
             <p className="text-[11px] font-medium text-fk-text-subtle mt-2 bg-fk-surface-muted px-3 py-1 rounded-full border border-fk-border">
-              🔒 Your image is processed locally in your browser and is not uploaded.
+              {(() => {
+                const l = (language || 'en').slice(0, 2);
+                const map: Record<string, string> = { en: '🔒 Your image is processed locally in your browser and is not uploaded.', ar: '🔒 تتم معالجة صورتك محلياً في المتصفح ولا يتم رفعها.', tr: '🔒 Görseliniz tarayıcınızda yerel olarak işlenir ve yüklenmez.', sv: '🔒 Din bild bearbetas lokalt i webbläsaren och laddas inte upp.', es: '🔒 Tu imagen se procesa localmente en tu navegador y no se sube.', fr: '🔒 Votre image est traitée localement dans votre navigateur et n\'est pas téléchargée.', de: '🔒 Ihr Bild wird lokal in Ihrem Browser verarbeitet und nicht hochgeladen.', pt: '🔒 Sua imagem é processada localmente no navegador e não é enviada.', it: '🔒 La tua immagine viene elaborata localmente nel browser e non viene caricata.', ja: '🔒 画像はブラウザでローカルに処理され、アップロードされません。', ko: '🔒 이미지는 브라우저에서 로컬로 처리되며 업로드되지 않습니다.' };
+                return map[l] || map.en;
+              })()}
             </p>
           </div>
         </div>

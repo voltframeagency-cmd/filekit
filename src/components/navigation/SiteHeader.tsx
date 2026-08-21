@@ -8,6 +8,7 @@ import DesktopMegaMenu from "./DesktopMegaMenu";
 import MobileNavigation from "./MobileNavigation";
 import { useLanguage } from "@/components/layout/LanguageContext";
 import { SUPPORTED_LOCALES, SupportedLocale } from "@/config/i18n/locales";
+import { getLocalizedHref } from "@/utils/i18nHelper";
 import FileKitLogo from "../common/FileKitLogo";
 
 const LANGUAGES = Object.values(SUPPORTED_LOCALES).map((loc) => ({
@@ -54,7 +55,10 @@ const ALL_SEARCHABLE_TOOLS = [
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
+
+  const pathLocaleMatch = pathname.match(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/);
+  const activeLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
 
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [initialFocus, setInitialFocus] = useState<"FIRST" | "LAST" | undefined>(undefined);
@@ -107,24 +111,41 @@ export default function SiteHeader() {
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center group">
-          <FileKitLogo variant="horizontal" />
-        </Link>
+        {(() => {
+          const homeHref = activeLocale && activeLocale !== "en" ? `/${activeLocale}` : "/";
+          return (
+            <Link href={homeHref} className="flex items-center group">
+              <FileKitLogo variant="horizontal" />
+            </Link>
+          );
+        })()}
 
         {/* Desktop Navigation */}
         <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-1.5 relative">
           {MAIN_NAVIGATION.map((item: TopNavItem) => {
             const hasMega = Boolean(item.megaMenu);
             const isOpen = activeMenuId === item.id;
+            const itemLabel = item.id === "compress"
+              ? (t("nav.compress", activeLocale as any) || item.label)
+              : item.id === "convert"
+              ? (t("nav.convert", activeLocale as any) || item.label)
+              : item.id === "pdf-tools"
+              ? (t("nav.organize", activeLocale as any) || item.label)
+              : item.id === "resize"
+              ? (t("nav.resize", activeLocale as any) || t("tool.resize.title", activeLocale as any) || item.label)
+              : item.id === "pricing"
+              ? (t("nav.pricing", activeLocale as any) || item.label)
+              : item.label;
 
             if (!hasMega) {
+              const localizedHref = getLocalizedHref(item.href || "/", activeLocale);
               return (
                 <Link
                   key={item.id}
-                  href={item.href || "/"}
+                  href={localizedHref}
                   className="px-4 py-2 rounded-xl text-[14px] font-bold text-slate-700 hover:text-blue-600 hover:bg-slate-100/80 transition-colors"
                 >
-                  {item.label}
+                  {itemLabel}
                 </Link>
               );
             }
@@ -146,7 +167,7 @@ export default function SiteHeader() {
                       : "text-slate-700 hover:text-blue-600 hover:bg-slate-100/80"
                   }`}
                 >
-                  <span>{item.label}</span>
+                  <span>{itemLabel}</span>
                   <span className={`text-[10px] transition-transform duration-200 ${isOpen ? "rotate-180 text-blue-600" : "text-slate-400"}`}>
                     ▼
                   </span>
@@ -173,7 +194,7 @@ export default function SiteHeader() {
           <div className="relative hidden sm:block" ref={searchRef}>
             <input
               type="text"
-              placeholder="Search tools (e.g. merge, png)..."
+              placeholder={t("nav.searchPlaceholder") || "Search tools (e.g. merge, png)..."}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -196,23 +217,26 @@ export default function SiteHeader() {
                   <span>{filteredTools.length} found</span>
                 </div>
                 <div className="max-h-64 overflow-y-auto space-y-1 py-1">
-                  {filteredTools.map((t, idx) => (
-                    <Link
-                      key={idx}
-                      href={t.route}
-                      onClick={() => {
-                        setIsSearchOpen(false);
-                        setSearchQuery("");
-                      }}
-                      className="px-3 py-2 rounded-xl text-left block hover:bg-blue-50/80 transition-colors group"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[13px] font-bold text-slate-900 group-hover:text-blue-600">{t.name}</span>
-                        <span className="text-[9px] font-mono bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-bold">{t.tag}</span>
-                      </div>
-                      <span className="text-[11px] text-slate-500 line-clamp-1 block mt-0.5 font-normal">{t.desc}</span>
-                    </Link>
-                  ))}
+                  {filteredTools.map((tItem, idx) => {
+                    const searchHref = getLocalizedHref(tItem.route, language);
+                    return (
+                      <Link
+                        key={idx}
+                        href={searchHref}
+                        onClick={() => {
+                          setIsSearchOpen(false);
+                          setSearchQuery("");
+                        }}
+                        className="px-3 py-2 rounded-xl text-left block hover:bg-blue-50/80 transition-colors group"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[13px] font-bold text-slate-900 group-hover:text-blue-600">{tItem.name}</span>
+                          <span className="text-[9px] font-mono bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-bold">{tItem.tag}</span>
+                        </div>
+                        <span className="text-[11px] text-slate-500 line-clamp-1 block mt-0.5 font-normal">{tItem.desc}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -225,70 +249,93 @@ export default function SiteHeader() {
               const currentLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
               const activeLang = LANGUAGES.find(l => l.code === currentLocale) || LANGUAGES[0];
 
+              // Extract current tool slug from pathname (e.g., "/png-to-jpg" or "/es/png-to-jpg" -> "png-to-jpg")
+              const currentSlug = pathname.replace(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/, "").replace(/^\//, "");
+
               return (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveMenuId(null);
-                    setIsLangOpen(!isLangOpen);
-                  }}
-                  aria-expanded={isLangOpen}
-                  aria-haspopup="true"
-                  className="text-[12px] font-bold text-slate-700 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-xl flex items-center gap-1.5 bg-white transition-all shadow-xs hover:border-slate-300"
-                >
-                  <span className="text-sm leading-none">{activeLang.flag}</span>
-                  <span>{activeLang.codeBadge}</span>
-                  <span className={`text-[9px] transition-transform duration-150 ${isLangOpen ? "rotate-180 text-blue-600" : "text-slate-400"}`}>▼</span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveMenuId(null);
+                      setIsLangOpen(!isLangOpen);
+                    }}
+                    aria-expanded={isLangOpen}
+                    aria-haspopup="true"
+                    className="text-[12px] font-bold text-slate-700 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-xl flex items-center gap-1.5 bg-white transition-all shadow-xs hover:border-slate-300"
+                  >
+                    <span className="text-sm leading-none">{activeLang.flag}</span>
+                    <span>{activeLang.codeBadge}</span>
+                    <span className={`text-[9px] transition-transform duration-150 ${isLangOpen ? "rotate-180 text-blue-600" : "text-slate-400"}`}>▼</span>
+                  </button>
+
+                  {isLangOpen && (
+                    <div className="absolute top-full ltr:right-0 rtl:left-0 mt-2 w-64 max-h-96 overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in duration-150 divide-y divide-slate-100">
+                      {(["Americas", "Europe", "Asia-Pacific", "Middle East & Africa"] as const).map((region) => {
+                        const regionLangs = LANGUAGES.filter((l) => l.region === region);
+                        if (regionLangs.length === 0) return null;
+                        return (
+                          <div key={region} className="py-1.5 first:pt-0 last:pb-0">
+                            <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                              {region}
+                            </div>
+                            <div className="space-y-0.5 mt-0.5">
+                              {regionLangs.map((lang) => {
+                                // Compute route-preserving target href
+                                const targetHref = lang.code === "en"
+                                  ? (currentSlug ? `/${currentSlug}` : "/")
+                                  : (currentSlug ? `/${lang.code}/${currentSlug}` : `/${lang.code}`);
+
+                                return (
+                                  <Link
+                                    key={lang.code}
+                                    href={targetHref}
+                                    onClick={() => {
+                                      setIsLangOpen(false);
+                                      setLanguage(lang.code as SupportedLocale);
+                                    }}
+                                    className={`w-full text-left ltr:text-left rtl:text-right px-3 py-1.5 rounded-xl text-[12px] font-bold flex items-center justify-between transition-colors hover:bg-slate-50 ${
+                                      currentLocale === lang.code
+                                        ? "text-blue-600 bg-blue-50/70"
+                                        : "text-slate-800"
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <span className="text-base leading-none">{lang.flag}</span>
+                                      <span className="truncate">{lang.label}</span>
+                                    </div>
+                                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold shrink-0">
+                                      {lang.codeBadge}
+                                    </span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
               );
             })()}
-
-            {isLangOpen && (
-              <div className="absolute top-full ltr:right-0 rtl:left-0 mt-2 w-64 max-h-96 overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in duration-150 divide-y divide-slate-100">
-                {(["Americas", "Europe", "Asia-Pacific", "Middle East & Africa"] as const).map((region) => {
-                  const regionLangs = LANGUAGES.filter((l) => l.region === region);
-                  if (regionLangs.length === 0) return null;
-                  return (
-                    <div key={region} className="py-1.5 first:pt-0 last:pb-0">
-                      <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        {region}
-                      </div>
-                      <div className="space-y-0.5 mt-0.5">
-                        {regionLangs.map((lang) => (
-                          <Link
-                            key={lang.code}
-                            href={lang.path}
-                            onClick={() => setIsLangOpen(false)}
-                            className={`w-full text-left ltr:text-left rtl:text-right px-3 py-1.5 rounded-xl text-[12px] font-bold flex items-center justify-between transition-colors hover:bg-slate-50 ${
-                              pathname.startsWith(lang.path) && (lang.path !== "/" || pathname === "/")
-                                ? "text-blue-600 bg-blue-50/70"
-                                : "text-slate-800"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="text-base leading-none">{lang.flag}</span>
-                              <span className="truncate">{lang.label}</span>
-                            </div>
-                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-bold shrink-0">
-                              {lang.codeBadge}
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
           {/* All Tools Button */}
-          <Link
-            href="/#all-tools"
-            className="hidden md:inline-flex items-center px-4 h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[13px] font-bold shadow-sm transition-all hover:shadow-md"
-          >
-            All tools
-          </Link>
+          {(() => {
+            const pathLocaleMatch = pathname.match(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/);
+            const currentLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
+            const allToolsHref = currentLocale && currentLocale !== "en" ? `/${currentLocale}/#all-tools` : "/#all-tools";
+
+            return (
+              <Link
+                href={allToolsHref}
+                className="hidden md:inline-flex items-center px-4 h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[13px] font-bold shadow-sm transition-all hover:shadow-md"
+              >
+                {t("nav.allTools") || "All tools"}
+              </Link>
+            );
+          })()}
 
           {/* Mobile Menu Trigger */}
           <button

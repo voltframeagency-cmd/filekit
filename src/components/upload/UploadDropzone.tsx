@@ -16,12 +16,13 @@ interface UploadDropzoneProps {
 
 // Map pathnames to brand illustration assets
 function getRouteAssetName(pathname: string): FileKitAssetName {
-  const route = pathname.replace(/^\//, '').split('/')[0];
+  const segments = pathname.replace(/^\//, '').split('/').filter(Boolean);
+  const route = (segments.length > 1 && segments[0].length <= 5) ? segments[1] : segments[0];
 
   if (!route) return 'step-upload';
 
-  // Direct mapping check
-  if (route in fileKitAssets) {
+  // Direct mapping check or format conversion slug
+  if (route in fileKitAssets || route.match(/^[a-z0-9]+-to-[a-z0-9]+$/i)) {
     return route as FileKitAssetName;
   }
 
@@ -33,8 +34,9 @@ function getRouteAssetName(pathname: string): FileKitAssetName {
   if (route.includes('reorder')) return 'reorder-pdf';
   if (route.includes('watermark')) return 'watermark-pdf';
   if (route.includes('compress-pdf')) return 'compress-pdf';
-  if (route.includes('compress-image')) return 'step-2-compress';
-  if (route.includes('convert-image')) return 'png-to-jpg';
+  if (route.includes('compress-image') || route.includes('compress-jpg') || route.includes('compress-png')) {
+    return 'compress-image';
+  }
 
   return 'step-upload';
 }
@@ -115,12 +117,12 @@ export default function UploadDropzone({
 
       {/* Main Drop Text */}
       <h3 className="text-[20px] font-bold text-fk-text leading-tight mb-1">
-        {isGeneric ? t("homepage.dropAnywhere") : t("workspace.dropHere")}
+        {isGeneric ? (t("homepage.dropzoneTitle") || t("homepage.dropAnywhere")) : (t("workspace.selectFile") || t("workspace.dropHere"))}
       </h3>
 
       {/* Sub Drop Text */}
       <p className="text-[13px] text-fk-text-muted mb-5 leading-normal">
-        {t("homepage.orChoose")}
+        {isGeneric ? (t("homepage.dropzoneSubtitle") || t("homepage.orChoose")) : t("workspace.pdfOnly")}
       </p>
 
       {/* Choose File Button */}
@@ -129,12 +131,12 @@ export default function UploadDropzone({
         onClick={onButtonClick}
         className="h-[48px] px-8 bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fk-primary focus-visible:ring-offset-2 mb-4"
       >
-        {t("homepage.chooseFile")}
+        {t("workspace.selectFile") || t("homepage.chooseFile")}
       </button>
 
       {/* Small Help Text */}
       <p className="text-[11px] text-fk-text-subtle max-w-[380px] mx-auto leading-normal">
-        {isGeneric ? t("homepage.methodShown") : t("workspace.pdfOnly")}
+        {isGeneric ? (t("trust.badge1") || t("homepage.methodShown")) : t("workspace.freeNotice")}
       </p>
     </div>
   );

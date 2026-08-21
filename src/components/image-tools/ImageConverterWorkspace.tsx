@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/components/layout/LanguageContext";
 import TrustPanel from "@/components/layout/TrustPanel";
 import ImageComparisonSlider from "@/components/image-tools/ImageComparisonSlider";
 import { ImageConversionEngine } from "@/utils/image-converter/ImageConversionEngine";
@@ -17,6 +18,7 @@ export interface ImageConverterWorkspaceProps {
 
 export default function ImageConverterWorkspace({ routeConfig }: ImageConverterWorkspaceProps) {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   // Target format state
   const [targetFormat, setTargetFormat] = useState<SupportedImageFormat>(
@@ -46,11 +48,12 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
   const settingsSectionRef = useRef<HTMLDivElement | null>(null);
   const resultHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
-  // Compute route asset name dynamically
-  const routeSlug = pathname.replace(/^\//, '').split('/')[0];
-  const assetName: FileKitAssetName = (routeSlug in fileKitAssets)
-    ? (routeSlug as FileKitAssetName)
-    : 'png-to-jpg';
+  // Compute route asset name dynamically (handling /ar/png-to-ico or /png-to-ico)
+  const pathSegments = pathname.replace(/^\//, '').split('/').filter(Boolean);
+  const routeSlug = (pathSegments.length > 1 && pathSegments[0].length <= 5)
+    ? pathSegments[1]
+    : pathSegments[0] || routeConfig.slug.replace(/^\//, '');
+  const assetName = routeSlug || 'png-to-jpg';
 
   // Privacy-compliant analytics logger
   const trackEvent = (eventName: string, payload?: Record<string, any>) => {
@@ -282,12 +285,14 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                 alt="Tool operation illustration"
               />
             </div>
-            <p className="text-[15px] font-bold text-fk-text">Drop your image here to convert</p>
+            <p className="text-[15px] font-bold text-fk-text">
+              {t("homepage.dropzoneTitle") || "Drop your image here to convert"}
+            </p>
             <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
-              Supports JPG, PNG, and static WebP up to 50 MB
+              {t("homepage.dropzoneSubtitle") || "Supports JPG, PNG, and static WebP up to 50 MB"}
             </p>
             <p className="text-[11px] font-medium text-fk-text-subtle mt-2 bg-fk-surface-muted px-3 py-1 rounded-full border border-fk-border">
-              🔒 Your image is converted locally in your browser memory and is not uploaded.
+              🔒 {t("workspace.freeNotice") || "Your image is converted locally in your browser memory and is not uploaded."}
             </p>
             {error && (
               <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-[13px] rounded-fk-md font-medium">

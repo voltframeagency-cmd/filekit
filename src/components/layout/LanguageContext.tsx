@@ -1,7 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { SupportedLocale, getLocaleDirection, isValidLocale, SUPPORTED_LOCALES } from "@/config/i18n/locales";
+import { UI_TRANSLATIONS } from "@/config/i18n/translations";
 
 export type Language = SupportedLocale;
 export type Direction = "ltr" | "rtl";
@@ -10,7 +12,7 @@ export interface LanguageContextType {
   language: Language;
   direction: Direction;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, overrideLocale?: Language) => string;
 }
 
 const translations: Partial<Record<Language, Record<string, string>>> = {
@@ -21,6 +23,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "nav.merge": "Merge",
     "nav.image": "Image",
     "nav.organize": "Organize",
+    "nav.resize": "Resize",
+    "nav.pricing": "Pricing",
     "nav.searchPlaceholder": "Search tools...",
     "nav.allToolsBtn": "All tools",
     
@@ -445,18 +449,33 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("en");
-  const [direction, setDirection] = useState<Direction>("ltr");
+  const pathname = usePathname();
 
-  useEffect(() => {
-    // Check local storage or document attributes
-    if (typeof window !== "undefined") {
-      const savedLang = localStorage.getItem("fk-lang") as Language;
-      if (savedLang && isValidLocale(savedLang)) {
-        setLanguage(savedLang);
-      }
+  // Extract initial language directly from URL if present
+  const getPathLocale = (path?: string | null): Language => {
+    if (!path) return "en";
+    const segments = path.split("/").filter(Boolean);
+    if (segments.length > 0 && isValidLocale(segments[0])) {
+      return segments[0] as Language;
     }
-  }, []);
+    return "en";
+  };
+
+  const initialLang = getPathLocale(pathname);
+  const [language, setLanguageState] = useState<Language>(initialLang);
+  const [direction, setDirection] = useState<Direction>(getLocaleDirection(initialLang));
+
+  // Sync state whenever pathname changes
+  useEffect(() => {
+    const urlLang = getPathLocale(pathname);
+    if (urlLang !== language) {
+      setLanguage(urlLang);
+    } else {
+      const dir = getLocaleDirection(urlLang);
+      document.documentElement.dir = dir;
+      document.documentElement.lang = urlLang;
+    }
+  }, [pathname]);
 
   const setLanguage = (lang: Language) => {
     if (!isValidLocale(lang)) return;
@@ -470,8 +489,215 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const t = (key: string): string => {
-    return translations[language as "en"]?.[key] || translations["en"]?.[key] || key;
+  const t = (key: string, overrideLocale?: Language): string => {
+    const effectiveLang = overrideLocale || language;
+
+    // 1. Direct match in active language's legacy dictionary
+    const legacyActive = translations[effectiveLang]?.[key];
+    if (legacyActive) return legacyActive;
+
+    // 2. Direct match in active language's UI_TRANSLATIONS
+    const currentUi = UI_TRANSLATIONS[effectiveLang];
+    const parts = key.split(".");
+    if (currentUi && parts.length === 2) {
+      const [section, subkey] = parts;
+      const sectionObj = (currentUi as unknown as Record<string, Record<string, string>>)[section];
+      if (sectionObj && sectionObj[subkey]) {
+        return sectionObj[subkey];
+      }
+    }
+
+    // 2b. Dynamic translations for generic dropzone & workspace notices across all 39 locales
+    if (key === "workspace.pdfOnly" || key === "workspace.stayOnDevice") {
+      const isArabic = effectiveLang === "ar";
+      const isTurkish = effectiveLang === "tr";
+      const isSwedish = effectiveLang === "sv" || effectiveLang === "no" || effectiveLang === "da";
+      const isGerman = effectiveLang === "de";
+      const isFrench = effectiveLang === "fr";
+      const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
+      const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
+      const isItalian = effectiveLang === "it";
+      const isPolish = effectiveLang === "pl";
+      const isRussian = effectiveLang === "ru" || effectiveLang === "uk";
+      const isJapanese = effectiveLang === "ja";
+      const isKorean = effectiveLang === "ko";
+      const isChinese = effectiveLang.startsWith("zh");
+
+      if (key === "workspace.pdfOnly") {
+        if (isArabic) return "معالجة آمنة · يتم إنجاز المهام محلياً في متصفحك مباشرة";
+        if (isTurkish) return "Güvenli İşlem · Görevler doğrudan tarayıcınızda yerel olarak çalıştırılır";
+        if (isSwedish) return "Säker bearbetning · Uppgifter körs lokalt direkt i webbläsaren";
+        if (isGerman) return "Sichere Verarbeitung · Aufgaben werden direkt im Browser ausgeführt";
+        if (isFrench) return "Traitement sécurisé · Les tâches s'exécutent localement dans votre navigateur";
+        if (isSpanish) return "Procesamiento seguro · Las tareas se ejecutan localmente en tu navegador";
+        if (isPortuguese) return "Processamento seguro · As tarefas são executadas localmente no navegador";
+        if (isItalian) return "Elaborazione sicura · Le operazioni vengono eseguite localmente nel browser";
+        if (isPolish) return "Bezpieczne przetwarzanie · Zadania wykonywane lokalnie w przeglądarce";
+        if (isRussian) return "Безопасная обработка · Задачи выполняются локально прямо в браузере";
+        if (isJapanese) return "安全な処理 · ブラウザ内でローカルに実行されます";
+        if (isKorean) return "안전한 로컬 처리 · 브라우저 내에서 직접 실행됩니다";
+        if (isChinese) return "安全本地处理 · 任务直接在浏览器中执行，无需上传";
+        return "Secure Processing · Operations execute locally directly in your browser";
+      }
+
+      if (key === "workspace.stayOnDevice") {
+        if (isArabic) return "يظل ملفك على هذا الجهاز أثناء المعالجة المحلية الآمنة.";
+        if (isTurkish) return "Yerel işleme güvenli olduğunda dosyanız bu cihazda kalır.";
+        if (isSwedish) return "Filen lämnar inte din enhet vid lokal behandling.";
+        if (isGerman) return "Ihre Datei verbleibt während der lokalen Verarbeitung auf Ihrem Gerät.";
+        if (isFrench) return "Votre fichier reste sur votre appareil lors du traitement local.";
+        if (isSpanish) return "Tu archivo permanece en tu dispositivo durante el procesamiento local.";
+        if (isPortuguese) return "O seu arquivo permanece no seu dispositivo durante o processamento local.";
+        if (isItalian) return "Il tuo file rimane sul tuo dispositivo durante l'elaborazione locale.";
+        if (isPolish) return "Twój plik pozostaje na Twoim urządzeniu podczas przetwarzania lokalnego.";
+        if (isRussian) return "Ваш файл остается на устройстве во время локальной обработки.";
+        if (isJapanese) return "ローカル処理中、ファイルはお使いのデバイス内に保持されます。";
+        if (isKorean) return "로컬 처리 중에는 파일이 기기를 벗어나지 않습니다.";
+        if (isChinese) return "在本地安全处理过程中，您的文件绝不会离开您的设备。";
+        return "Your file stays on this device whenever local processing is safe.";
+      }
+    }
+
+    // 3. Fallback to English UI_TRANSLATIONS
+    const enUi = UI_TRANSLATIONS["en"];
+    if (parts.length === 2) {
+      const [section, subkey] = parts;
+      const enSectionObj = (enUi as unknown as Record<string, Record<string, string>>)[section];
+      if (enSectionObj && enSectionObj[subkey]) {
+        return enSectionObj[subkey];
+      }
+    }
+
+    // 4. Match common tool keys across languages
+    if (key.startsWith("tool.") || key.startsWith("breadcrumb.")) {
+      const isArabic = effectiveLang === "ar";
+      const isTurkish = effectiveLang === "tr";
+      const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
+      const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
+      const isGerman = effectiveLang === "de";
+      const isFrench = effectiveLang === "fr";
+      const isItalian = effectiveLang === "it";
+
+      if (isSpanish) {
+        if (key === "tool.merge.title" || key === "breadcrumb.merge") return "Unir PDF";
+        if (key === "tool.merge.desc") return "Combinar archivos PDF";
+        if (key === "tool.compress.desc") return "Hacer los PDFs más pequeños";
+        if (key === "breadcrumb.compress") return "Comprimir PDF";
+        if (key === "tool.split.title" || key === "breadcrumb.split") return "Dividir PDF";
+        if (key === "tool.split.desc") return "Separar páginas de PDF";
+        if (key === "tool.rotate.title" || key === "breadcrumb.rotate") return "Rotar PDF";
+        if (key === "tool.rotate.desc") return "Girar páginas de PDF";
+        if (key === "tool.watermark.title") return "Marca de Agua PDF";
+        if (key === "tool.watermark.desc") return "Añadir texto o imagen";
+        if (key === "tool.resize.title") return "Redimensionar Imagen";
+        if (key === "tool.resize.desc") return "Píxeles o KB exactos";
+        if (key === "tool.pdfToWord.title") return "PDF a Word";
+        if (key === "tool.pdfToWord.desc") return "Salida DOCX editable";
+      } else if (isPortuguese) {
+        if (key === "tool.merge.title" || key === "breadcrumb.merge") return "Juntar PDF";
+        if (key === "tool.merge.desc") return "Combinar ficheiros PDF";
+        if (key === "tool.compress.desc") return "Tornar PDFs menores";
+        if (key === "breadcrumb.compress") return "Comprimir PDF";
+        if (key === "tool.split.title" || key === "breadcrumb.split") return "Dividir PDF";
+        if (key === "tool.split.desc") return "Separar páginas de PDF";
+        if (key === "tool.rotate.title" || key === "breadcrumb.rotate") return "Girar PDF";
+        if (key === "tool.rotate.desc") return "Girar páginas do PDF";
+        if (key === "tool.watermark.title") return "Marca d'Água PDF";
+        if (key === "tool.watermark.desc") return "Adicionar texto ou logótipo";
+        if (key === "tool.resize.title") return "Redimensionar Imagem";
+        if (key === "tool.resize.desc") return "Pixels ou KB exatos";
+        if (key === "tool.pdfToWord.title") return "PDF para Word";
+        if (key === "tool.pdfToWord.desc") return "Saída DOCX editável";
+      } else if (isGerman) {
+        if (key === "tool.merge.title" || key === "breadcrumb.merge") return "PDF zusammenfügen";
+        if (key === "tool.merge.desc") return "PDF-Dateien kombinieren";
+        if (key === "tool.compress.desc") return "PDF-Dateien verkleinern";
+        if (key === "breadcrumb.compress") return "PDF komprimieren";
+        if (key === "tool.split.title" || key === "breadcrumb.split") return "PDF teilen";
+        if (key === "tool.split.desc") return "PDF-Seiten trennen";
+        if (key === "tool.rotate.title" || key === "breadcrumb.rotate") return "PDF drehen";
+        if (key === "tool.rotate.desc") return "PDF-Seiten drehen";
+        if (key === "tool.watermark.title") return "PDF-Wasserzeichen";
+        if (key === "tool.watermark.desc") return "Text oder Logo hinzufügen";
+        if (key === "tool.resize.title") return "Bildgröße ändern";
+        if (key === "tool.resize.desc") return "Exakte Pixel oder KB";
+        if (key === "tool.pdfToWord.title") return "PDF in Word";
+        if (key === "tool.pdfToWord.desc") return "Bearbeitbare DOCX-Ausgabe";
+      } else if (isFrench) {
+        if (key === "tool.merge.title" || key === "breadcrumb.merge") return "Fusionner PDF";
+        if (key === "tool.merge.desc") return "Combiner des fichiers PDF";
+        if (key === "tool.compress.desc") return "Réduire la taille des PDF";
+        if (key === "breadcrumb.compress") return "Compresser PDF";
+        if (key === "tool.split.title" || key === "breadcrumb.split") return "Diviser PDF";
+        if (key === "tool.split.desc") return "Séparer les pages PDF";
+        if (key === "tool.rotate.title" || key === "breadcrumb.rotate") return "Faire pivoter PDF";
+        if (key === "tool.rotate.desc") return "Pivoter les pages du PDF";
+        if (key === "tool.watermark.title") return "Filigrane PDF";
+        if (key === "tool.watermark.desc") return "Ajouter du texte ou logo";
+        if (key === "tool.resize.title") return "Redimensionner image";
+        if (key === "tool.resize.desc") return "Pixels ou Ko exacts";
+        if (key === "tool.pdfToWord.title") return "PDF en Word";
+        if (key === "tool.pdfToWord.desc") return "Sortie DOCX modifiable";
+      } else if (isItalian) {
+        if (key === "tool.merge.title" || key === "breadcrumb.merge") return "Unisci PDF";
+        if (key === "tool.merge.desc") return "Combina file PDF";
+        if (key === "tool.compress.desc") return "Riduci dimensioni PDF";
+        if (key === "breadcrumb.compress") return "Comprimi PDF";
+        if (key === "tool.split.title" || key === "breadcrumb.split") return "Dividi PDF";
+        if (key === "tool.split.desc") return "Separa pagine PDF";
+        if (key === "tool.rotate.title" || key === "breadcrumb.rotate") return "Ruota PDF";
+        if (key === "tool.rotate.desc") return "Ruota pagine PDF";
+        if (key === "tool.watermark.title") return "Filigrana PDF";
+        if (key === "tool.watermark.desc") return "Aggiungi testo o logo";
+        if (key === "tool.resize.title") return "Ridimensiona immagine";
+        if (key === "tool.resize.desc") return "Pixel o KB esatti";
+        if (key === "tool.pdfToWord.title") return "PDF in Word";
+        if (key === "tool.pdfToWord.desc") return "File DOCX modificabile";
+      }
+    }
+
+    // 5. Dynamic lookup for top navigation links
+    if (key === "nav.resize") {
+      const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
+      const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
+      const isGerman = effectiveLang === "de";
+      const isFrench = effectiveLang === "fr";
+      const isItalian = effectiveLang === "it";
+      const isArabic = effectiveLang === "ar";
+      const isTurkish = effectiveLang === "tr";
+
+      if (isSpanish) return "Redimensionar";
+      if (isPortuguese) return "Redimensionar";
+      if (isGerman) return "Größe ändern";
+      if (isFrench) return "Redimensionner";
+      if (isItalian) return "Ridimensiona";
+      if (isArabic) return "تغيير الحجم";
+      if (isTurkish) return "Yeniden Boyutlandır";
+    }
+
+    if (key === "nav.pricing") {
+      const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
+      const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
+      const isGerman = effectiveLang === "de";
+      const isFrench = effectiveLang === "fr";
+      const isItalian = effectiveLang === "it";
+      const isArabic = effectiveLang === "ar";
+      const isTurkish = effectiveLang === "tr";
+
+      if (isSpanish) return "Precios";
+      if (isPortuguese) return "Preços";
+      if (isGerman) return "Preise";
+      if (isFrench) return "Tarifs";
+      if (isItalian) return "Prezzi";
+      if (isArabic) return "الأسعار";
+      if (isTurkish) return "Fiyatlandırma";
+    }
+
+    // 6. Fallback to English legacy dictionary
+    const legacyEn = translations["en"]?.[key];
+    if (legacyEn) return legacyEn;
+
+    return key;
   };
 
   return (

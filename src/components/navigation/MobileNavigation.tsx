@@ -4,6 +4,8 @@ import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MAIN_NAVIGATION, CONVERTER_NAVIGATION_GROUPS } from "@/config/navigation";
+import { useLanguage } from "../layout/LanguageContext";
+import { getLocalizedHref } from "@/utils/i18nHelper";
 import FileKitLogo from "../common/FileKitLogo";
 
 export interface MobileNavigationProps {
@@ -14,6 +16,9 @@ export interface MobileNavigationProps {
 
 export default function MobileNavigation({ isOpen, onClose, triggerRef }: MobileNavigationProps) {
   const pathname = usePathname();
+  const { language, t } = useLanguage();
+  const pathLocaleMatch = pathname.match(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/);
+  const activeLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
   const [openAccordion, setOpenAccordion] = useState<string | null>("compress");
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -77,6 +82,8 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
 
   if (!isOpen) return null;
 
+  const homeHref = activeLocale && activeLocale !== "en" ? `/${activeLocale}` : "/";
+
   return (
     <div
       ref={drawerRef}
@@ -87,7 +94,7 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
     >
       {/* Header Bar */}
       <div className="flex items-center justify-between p-4 border-b border-fk-border">
-        <Link href="/" onClick={handleLinkClick} className="flex items-center">
+        <Link href={homeHref} onClick={handleLinkClick} className="flex items-center">
           <FileKitLogo variant="horizontal" />
         </Link>
 
@@ -110,15 +117,163 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
       {/* Accordion Content */}
       <div className="flex-1 p-6 flex flex-col gap-4">
         {MAIN_NAVIGATION.map((item) => {
+          const itemLabel = item.id === "compress"
+            ? (t("nav.compress") || item.label)
+            : item.id === "convert"
+            ? (t("nav.convert") || item.label)
+            : item.id === "pdf-tools"
+            ? (t("nav.organize") || item.label)
+            : item.id === "resize"
+            ? (t("nav.resize") || item.label)
+            : item.id === "pricing"
+            ? (t("nav.pricing") || item.label)
+            : item.label;
+
+          // Helper for localized group titles
+          const getCategoryHeader = (label: string): string => {
+            const isArabic = activeLocale === "ar";
+            const isTurkish = activeLocale === "tr";
+            const isSpanish = activeLocale === "es" || activeLocale === "es-419";
+            const isFrench = activeLocale === "fr";
+            const isGerman = activeLocale === "de";
+            const isPortuguese = activeLocale === "pt" || activeLocale === "pt-BR";
+            const isItalian = activeLocale === "it";
+
+            if (label.includes("IMAGE")) {
+              if (isArabic) return "تحويل الصور";
+              if (isTurkish) return "GÖRSEL";
+              if (isSpanish) return "IMAGEN";
+              if (isFrench) return "IMAGE";
+              if (isGerman) return "BILD";
+              if (isPortuguese) return "IMAGEM";
+              if (isItalian) return "IMMAGINE";
+            }
+            if (label.includes("PDF")) {
+              if (isArabic) return "ملفات PDF";
+              if (isTurkish) return "PDF";
+              if (isSpanish) return "PDF";
+              if (isFrench) return "PDF";
+              if (isGerman) return "PDF";
+            }
+            if (label.includes("VIDEO")) {
+              if (isArabic) return "أدوات الفيديو";
+              if (isTurkish) return "VİDEO";
+              if (isSpanish) return "VIDEO";
+              if (isFrench) return "VIDÉO";
+              if (isGerman) return "VIDEO";
+            }
+            if (label.includes("SUBTITLE")) {
+              if (isArabic) return "أدوات الترجمة";
+              if (isTurkish) return "ALTYAZI";
+              if (isSpanish) return "SUBTÍTULOS";
+              if (isFrench) return "SOUS-TITRES";
+              if (isGerman) return "UNTERTITEL";
+            }
+            if (label.includes("DOCUMENTS") || label.includes("DOCUMENT")) {
+              if (isArabic) return "المستندات والكتب";
+              if (isTurkish) return "BELGELER";
+              if (isSpanish) return "DOCUMENTOS";
+              if (isFrench) return "DOCUMENTS";
+              if (isGerman) return "DOKUMENTE";
+            }
+            if (label.includes("CAD")) {
+              if (isArabic) return "CAD والمتجهات";
+              if (isTurkish) return "CAD VE VEKTÖR";
+              if (isSpanish) return "CAD Y VECTOR";
+              if (isFrench) return "CAD & VECTORIEL";
+              if (isGerman) return "CAD & VEKTOR";
+            }
+            if (label.includes("AUDIO")) {
+              if (isArabic) return "أدوات الصوت";
+              if (isTurkish) return "SES";
+              if (isSpanish) return "AUDIO";
+              if (isFrench) return "AUDIO";
+              if (isGerman) return "AUDIO";
+            }
+            if (label.includes("ARCHIVE")) {
+              if (isArabic) return "الأرشيف والأدوات";
+              if (isTurkish) return "ARŞİV";
+              if (isSpanish) return "ARCHIVOS";
+              if (isFrench) return "ARCHIVES";
+              if (isGerman) return "ARCHIV";
+            }
+            return label;
+          };
+
+          // Helper for localized link titles
+          const getLocalizedLinkLabel = (label: string): string => {
+            if (activeLocale === "en") return label;
+            const isArabic = activeLocale === "ar";
+            const isTurkish = activeLocale === "tr";
+            const isSpanish = activeLocale === "es" || activeLocale === "es-419";
+            const isPortuguese = activeLocale === "pt" || activeLocale === "pt-BR";
+            const isGerman = activeLocale === "de";
+            const isFrench = activeLocale === "fr";
+            const isItalian = activeLocale === "it";
+
+            const toPrep = isArabic ? "إلى" : isSpanish ? "a" : isPortuguese ? "para" : isGerman ? "in" : isFrench ? "en" : isItalian ? "in" : isTurkish ? "→" : "to";
+
+            if (label.includes(" to ")) {
+              const [source, target] = label.split(" to ");
+              if (source && target) {
+                return `${source} ${toPrep} ${target}`;
+              }
+            }
+
+            if (label.startsWith("Compress ")) {
+              const item = label.replace("Compress ", "");
+              if (isArabic) return `ضغط ${item}`;
+              if (isSpanish) return `Comprimir ${item}`;
+              if (isTurkish) return `${item} Sıkıştır`;
+              if (isFrench) return `Compresser ${item}`;
+              if (isGerman) return `${item} komprimieren`;
+            }
+            if (label.startsWith("Convert ")) {
+              const item = label.replace("Convert ", "");
+              if (isArabic) return `تحويل ${item}`;
+              if (isSpanish) return `Convertir ${item}`;
+              if (isTurkish) return `${item} Dönüştür`;
+              if (isFrench) return `Convertir ${item}`;
+              if (isGerman) return `${item} konvertieren`;
+            }
+            if (label.startsWith("Extract ")) {
+              const item = label.replace("Extract ", "");
+              if (isArabic) return `استخراج ${item}`;
+              if (isSpanish) return `Extraer ${item}`;
+              if (isTurkish) return `${item} Ayıkla`;
+              if (isFrench) return `Extraire ${item}`;
+              if (isGerman) return `${item} extrahieren`;
+            }
+            if (label.startsWith("Rotate ")) {
+              const item = label.replace("Rotate ", "");
+              if (isArabic) return `تدوير ${item}`;
+              if (isSpanish) return `Rotar ${item}`;
+              if (isTurkish) return `${item} Döndür`;
+              if (isFrench) return `Faire pivoter ${item}`;
+              if (isGerman) return `${item} drehen`;
+            }
+            if (label.startsWith("Trim ")) {
+              const item = label.replace("Trim ", "");
+              if (isArabic) return `قص ${item}`;
+              if (isSpanish) return `Recortar ${item}`;
+              if (isTurkish) return `${item} Kırp`;
+              if (isFrench) return `Couper ${item}`;
+              if (isGerman) return `${item} schneiden`;
+            }
+
+            return label;
+          };
+
           if (!item.megaMenu) {
+            const itemHref = getLocalizedHref(item.href || "/", activeLocale);
             return (
               <Link
                 key={item.id}
-                href={item.href || "/"}
+                href={itemHref}
                 onClick={handleLinkClick}
                 className="text-[16px] font-bold text-fk-text py-2 border-b border-fk-border"
               >
-                {item.label}
+                {itemLabel}
               </Link>
             );
           }
@@ -133,7 +288,7 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
                 aria-expanded={isExpanded}
                 className="flex items-center justify-between text-[16px] font-bold text-fk-text py-2 text-left ltr:text-left rtl:text-right"
               >
-                <span>{item.label}</span>
+                <span>{itemLabel}</span>
                 <span className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}>
                   ▼
                 </span>
@@ -145,22 +300,24 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
                     CONVERTER_NAVIGATION_GROUPS.map((group) => (
                       <div key={group.id} className="flex flex-col gap-2">
                         <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
-                          {group.compactLabel || group.label}
+                          {getCategoryHeader(group.compactLabel || group.label)}
                         </span>
                         <div className="flex flex-col gap-1.5">
                           {group.links.map((subLink, sIdx) => {
-                            const isActive = pathname === subLink.href;
+                            const localizedSubHref = getLocalizedHref(subLink.href, activeLocale);
+                            const isActive = pathname === subLink.href || pathname === localizedSubHref;
+                            const localizedSubLabel = getLocalizedLinkLabel(subLink.label);
                             return (
                               <Link
                                 key={sIdx}
-                                href={subLink.href}
+                                href={localizedSubHref}
                                 onClick={handleLinkClick}
                                 aria-current={isActive ? "page" : undefined}
                                 className={`text-[13px] font-bold py-1 ${
                                   isActive ? "text-fk-primary" : "text-fk-text"
                                 }`}
                               >
-                                {"\u2066"}{subLink.label}{"\u2069"}
+                                {"\u2066"}{localizedSubLabel}{"\u2069"}
                               </Link>
                             );
                           })}
@@ -171,47 +328,59 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
                     item.megaMenu.groups.map((group, gIdx) => (
                       <div key={gIdx} className="flex flex-col gap-2">
                         <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
-                          {group.title}
+                          {getCategoryHeader(group.title)}
                         </span>
 
-                        {group.primaryLink && (
-                          <Link
-                            href={group.primaryLink.href}
-                            onClick={handleLinkClick}
-                            aria-current={pathname === group.primaryLink.href ? "page" : undefined}
-                            className={`text-[14px] font-bold py-1 ${
-                              pathname === group.primaryLink.href ? "text-fk-primary" : "text-fk-text"
-                            }`}
-                          >
-                            {group.primaryLink.label}
-                          </Link>
-                        )}
+                        {group.primaryLink && (() => {
+                          const localizedPrimary = getLocalizedHref(group.primaryLink.href, activeLocale);
+                          const localizedPrimaryLabel = getLocalizedLinkLabel(group.primaryLink.label);
+                          return (
+                            <Link
+                              href={localizedPrimary}
+                              onClick={handleLinkClick}
+                              aria-current={pathname === group.primaryLink.href || pathname === localizedPrimary ? "page" : undefined}
+                              className={`text-[14px] font-bold py-1 ${
+                                pathname === group.primaryLink.href || pathname === localizedPrimary ? "text-fk-primary" : "text-fk-text"
+                              }`}
+                            >
+                              {localizedPrimaryLabel}
+                            </Link>
+                          );
+                        })()}
 
-                        {group.secondaryLink && (
-                          <Link
-                            href={group.secondaryLink.href}
-                            onClick={handleLinkClick}
-                            aria-current={pathname === group.secondaryLink.href ? "page" : undefined}
-                            className={`text-[13px] font-medium py-1 ${
-                              pathname === group.secondaryLink.href ? "text-fk-primary" : "text-fk-text-muted"
-                            }`}
-                          >
-                            {group.secondaryLink.label}
-                          </Link>
-                        )}
+                        {group.secondaryLink && (() => {
+                          const localizedSecondary = getLocalizedHref(group.secondaryLink.href, activeLocale);
+                          const localizedSecondaryLabel = getLocalizedLinkLabel(group.secondaryLink.label);
+                          return (
+                            <Link
+                              href={localizedSecondary}
+                              onClick={handleLinkClick}
+                              aria-current={pathname === group.secondaryLink.href || pathname === localizedSecondary ? "page" : undefined}
+                              className={`text-[13px] font-medium py-1 ${
+                                pathname === group.secondaryLink.href || pathname === localizedSecondary ? "text-fk-primary" : "text-fk-text-muted"
+                              }`}
+                            >
+                              {localizedSecondaryLabel}
+                            </Link>
+                          );
+                        })()}
 
                         {group.subgroups?.map((sg, sIdx) => (
                           <div key={sIdx} className="flex flex-col gap-2 mt-2">
-                            <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
-                              {sg.label}
-                            </span>
+                            {sg.label && (
+                              <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
+                                {getCategoryHeader(sg.label)}
+                              </span>
+                            )}
                             <div className="grid grid-cols-2 gap-2">
                               {sg.items.map((subItem, iIdx) => {
-                                const isActive = pathname === subItem.href;
+                                const localizedSubItem = getLocalizedHref(subItem.href, activeLocale);
+                                const isActive = pathname === subItem.href || pathname === localizedSubItem;
+                                const localizedSubItemLabel = getLocalizedLinkLabel(subItem.label);
                                 return (
                                   <Link
                                     key={iIdx}
-                                    href={subItem.href}
+                                    href={localizedSubItem}
                                     onClick={handleLinkClick}
                                     aria-current={isActive ? "page" : undefined}
                                     className={`px-3 py-2 rounded-fk-md text-[12px] font-bold text-center border ${
@@ -220,7 +389,7 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
                                         : "bg-fk-surface-muted text-fk-text border-fk-border"
                                     }`}
                                   >
-                                    {"\u2066"}{subItem.label}{"\u2069"}
+                                    {"\u2066"}{localizedSubItemLabel}{"\u2069"}
                                   </Link>
                                 );
                               })}

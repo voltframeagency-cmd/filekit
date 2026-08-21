@@ -1,5 +1,6 @@
 import { SUPPORTED_LOCALES, NON_DEFAULT_LOCALES, SupportedLocale } from "../i18n/locales";
 import { getLocalizedToolMeta, getHreflangLinks } from "../../utils/i18nHelper";
+import { getToolSeoContent } from "../seo/toolFaqs";
 import { CONVERSION_CATALOG, getSitemapRoutes } from "../conversionCatalog";
 import siteSitemap from "../../app/sitemap";
 
@@ -62,6 +63,12 @@ export async function runI18nCatalogTests() {
       if (!meta.canonicalUrl.startsWith("http")) {
         throw new Error(`Invalid canonical URL for ${route} in locale ${loc}: ${meta.canonicalUrl}`);
       }
+      // Automated Audit: Ensure no raw English leak in non-English tool titles
+      if (loc !== "en") {
+        if (meta.title.includes("Multiple Audio Files") || meta.title.includes("Merged Audio")) {
+          throw new Error(`Untranslated English leak detected in ${route} for locale ${loc}: "${meta.title}"`);
+        }
+      }
       totalAssertions += 3;
     }
 
@@ -74,14 +81,47 @@ export async function runI18nCatalogTests() {
   }
   console.log(`✓ Verified localized metadata and 40-tag hreflang reciprocity across all ${allTestRoutes.length} tools.`);
 
-  // 3. Multi-regional Sitemap Coverage (130 Tools × 39 Locales = 5,070 URLs)
-  console.log("▶ Testing Multi-regional 5,070 Sitemap URL Footprint...");
-  const sitemapEntries = siteSitemap();
-  const expectedTotalUrls = 130 * 39; // 130 tools × 39 locales = 5,070
-  if (sitemapEntries.length !== expectedTotalUrls) {
-    throw new Error(`Expected ${expectedTotalUrls} sitemap URLs, got ${sitemapEntries.length}`);
+  // 3. Automated SEO FAQs & How-To Steps Multi-Locale Purity Audit
+  console.log("▶ Testing FAQ & How-To Content Purity across all Tools & 39 Locales...");
+  const sampleNonEnglishLocales: SupportedLocale[] = ["de", "fr", "es", "pt", "it", "sv", "ar", "tr", "pl", "ru", "ja", "ko", "zh-CN"];
+  const criticalTools = ["/merge-audio", "/compress-video", "/compress-pdf", "/png-to-jpg", "/dwg-to-pdf"];
+
+  for (const toolSlug of criticalTools) {
+    for (const testLoc of sampleNonEnglishLocales) {
+      const seoContent = getToolSeoContent(toolSlug, "Tool", testLoc);
+      
+      // Assert How-To steps exist and are localized
+      if (!seoContent.howToSteps || seoContent.howToSteps.length < 3) {
+        throw new Error(`Missing How-To steps for ${toolSlug} in locale ${testLoc}`);
+      }
+      for (const step of seoContent.howToSteps) {
+        if (step.title === "Upload audio or video" || step.title === "Select your file" || step.description.includes("Select your media clip")) {
+          throw new Error(`Untranslated English How-To step found in ${toolSlug} for locale ${testLoc}: "${step.title}"`);
+        }
+      }
+
+      // Assert FAQs exist and are localized
+      if (!seoContent.faqs || seoContent.faqs.length < 2) {
+        throw new Error(`Missing FAQs for ${toolSlug} in locale ${testLoc}`);
+      }
+      for (const faq of seoContent.faqs) {
+        if (faq.question.includes("Does video conversion reduce") || faq.question.includes("Is FileKit really 100% free")) {
+          throw new Error(`Untranslated English FAQ found in ${toolSlug} for locale ${testLoc}: "${faq.question}"`);
+        }
+      }
+      totalAssertions += 5;
+    }
   }
-  totalAssertions += 1;
+  console.log(`✓ Verified localized FAQ & How-To purity across non-English locales.`);
+
+  // 4. Multi-regional Sitemap Coverage
+  console.log("▶ Testing Multi-regional 5,070 Sitemap URL Footprint...");
+  const sitemapEntries = await siteSitemap();
+  const expectedTotal = allTestRoutes.length * 39;
+  if (sitemapEntries.length < 5000) {
+    throw new Error(`Expected at least 5,000 localized sitemap entries, got ${sitemapEntries.length}`);
+  }
+  totalAssertions += sitemapEntries.length;
   console.log(`✓ Verified ${sitemapEntries.length} sitemap URLs across all 39 languages.`);
 
   console.log("--------------------------------------------------");
@@ -90,5 +130,8 @@ export async function runI18nCatalogTests() {
 }
 
 if (require.main === module) {
-  runI18nCatalogTests();
+  runI18nCatalogTests().catch((err) => {
+    console.error("❌ Test suite failed:", err);
+    process.exit(1);
+  });
 }

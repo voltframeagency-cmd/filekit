@@ -27,7 +27,7 @@ export class SchemaGenerator {
     locale = "en",
   }: UnifiedSchemaOptions) {
     const canonicalUrl = buildCanonicalUrl(slug);
-    const content = getToolSeoContent(slug, title);
+    const content = getToolSeoContent(slug, title, locale);
 
     const schemaGraph = {
       "@context": "https://schema.org",

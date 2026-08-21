@@ -13,16 +13,25 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import { ALL_LOCALES } from "@/config/i18n/locales";
+
+const languageAlternates: Record<string, string> = {
+  "x-default": "https://filekit.co",
+  "en": "https://filekit.co",
+};
+
+ALL_LOCALES.forEach((loc) => {
+  if (loc !== "en") {
+    languageAlternates[loc] = `https://filekit.co/${loc}`;
+  }
+});
+
 export const metadata: Metadata = {
   title: "FileKit — Convert, Compress & Edit Files Online",
   description: "Files on your terms. Convert, compress, resize, organize, and repair PDFs, images, Office files, archives, audio, and video with browser-first privacy.",
   alternates: {
     canonical: "https://filekit.co",
-    languages: {
-      "en": "https://filekit.co",
-      "sv": "https://filekit.co/sv",
-      "x-default": "https://filekit.co"
-    }
+    languages: languageAlternates
   }
 };
 

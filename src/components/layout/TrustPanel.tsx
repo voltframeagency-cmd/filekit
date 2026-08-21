@@ -17,12 +17,10 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.privateTitle")}
+              {t("trust.badge4")}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("trust.privateDesc1")}
-              <br />
-              {t("trust.privateDesc2")}
+              {t("trust.badge1")}
             </span>
           </div>
         </div>
@@ -46,12 +44,10 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.localTitle")}
+              {t("trust.badge1")}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("trust.localDesc1")}
-              <br />
-              {t("trust.localDesc2")}
+              {t("workspace.processing")}
             </span>
           </div>
         </div>
@@ -75,12 +71,10 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.tempTitle")}
+              {t("trust.badge2")}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("trust.tempDesc1")}
-              <br />
-              {t("trust.tempDesc2")}
+              {t("homepage.popularTools")}
             </span>
           </div>
         </div>
@@ -92,12 +86,10 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.trialTitle")}
+              {t("trust.badge3")}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("trust.trialDesc1")}
-              <br />
-              {t("trust.trialDesc2")}
+              {t("workspace.freeNotice")}
             </span>
           </div>
         </div>

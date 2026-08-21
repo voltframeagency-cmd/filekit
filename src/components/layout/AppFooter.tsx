@@ -5,7 +5,8 @@ import { useLanguage } from "./LanguageContext";
 import Link from "next/link";
 
 export default function AppFooter() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const basePrefix = language && language !== "en" ? `/${language}` : "";
 
   return (
     <footer className="w-full py-8 mt-auto border-t border-blue-400/30 bg-[#0866d4]">
@@ -14,20 +15,16 @@ export default function AppFooter() {
           {t("homepage.footerNote")}
         </p>
         <div className="flex items-center gap-4 text-[12px] text-blue-200/80">
-          <Link href="#" className="hover:text-white transition-colors duration-150">
-            Privacy
+          <Link href={`${basePrefix}/#privacy`} className="hover:text-white transition-colors duration-150">
+            {t("trust.badge4") || "Privacy"}
           </Link>
           <span className="text-blue-300/50">·</span>
-          <Link href="#" className="hover:text-white transition-colors duration-150">
+          <Link href={`${basePrefix}/#pricing`} className="hover:text-white transition-colors duration-150">
             Pricing
           </Link>
           <span className="text-blue-300/50">·</span>
-          <Link href="#" className="hover:text-white transition-colors duration-150">
-            Terms
-          </Link>
-          <span className="text-blue-300/50">·</span>
-          <Link href="#" className="hover:text-white transition-colors duration-150">
-            Languages
+          <Link href={`${basePrefix}/#all-tools`} className="hover:text-white transition-colors duration-150">
+            {t("nav.allTools") || "All Tools"}
           </Link>
         </div>
       </div>

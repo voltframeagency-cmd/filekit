@@ -28,23 +28,18 @@ export default function ToolHero() {
 
   return (
     <div className="flex flex-col gap-6 max-w-[560px] w-full text-left ltr:text-left rtl:text-right">
-      {/* Brand Tagline Pill */}
-      <div className="flex items-center">
-        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-[12px] font-bold uppercase tracking-wider text-blue-100 shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          {t("hero.tagline")}
-        </span>
-      </div>
-
       {/* Headings — White on #0977fd blue canvas */}
       <h1 className="text-[40px] md:text-[50px] font-black leading-[1.08] tracking-tight text-white font-sans drop-shadow-sm">
-        <span>{t("hero.title1")}</span>{" "}
-        <span className="text-blue-100">{t("hero.title2")}</span>
+        {t("homepage.heroTitle") || (
+          <>
+            <span>{t("hero.title1")}</span> <span className="text-blue-100">{t("hero.title2")}</span>
+          </>
+        )}
       </h1>
 
       {/* Paragraph Description — Soft white on blue */}
       <p className="text-[15px] md:text-[16px] font-medium text-blue-100 leading-relaxed">
-        {t("hero.subtitle1")} {t("hero.subtitle2")}
+        {t("homepage.heroSubtitle") || `${t("hero.subtitle1")} ${t("hero.subtitle2")}`}
       </p>
 
       {/* Main Large Search Box */}
@@ -110,7 +105,7 @@ export default function ToolHero() {
       </div>
 
       {/* Trust Mini Badges Grid — White cards on blue canvas */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 w-full max-w-[530px] mt-1">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-[530px] mt-1">
         {/* 1. Browser-first processing */}
         <div className="flex items-center gap-2.5 p-2.5 bg-white/95 backdrop-blur-sm border border-white/30 rounded-fk-lg shadow-sm hover:shadow transition-all duration-150">
           <div className="p-1.5 rounded-md bg-blue-50 text-blue-700 shrink-0">
@@ -144,18 +139,6 @@ export default function ToolHero() {
           </div>
           <span className="text-[12px] font-bold text-slate-800 leading-tight">
             {t("trust.badge3")}
-          </span>
-        </div>
-
-        {/* 4. Verified results */}
-        <div className="flex items-center gap-2.5 p-2.5 bg-white/95 backdrop-blur-sm border border-white/30 rounded-fk-lg shadow-sm hover:shadow transition-all duration-150">
-          <div className="p-1.5 rounded-md bg-blue-50 text-blue-700 shrink-0">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
-            </svg>
-          </div>
-          <span className="text-[12px] font-bold text-slate-800 leading-tight">
-            {t("trust.badge4")}
           </span>
         </div>
       </div>

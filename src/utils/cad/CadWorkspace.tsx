@@ -9,6 +9,7 @@ import { SchemaGenerator } from "@/utils/seo/SchemaGenerator";
 import { HowToStepSection } from "@/components/seo/HowToStepSection";
 import { AeoFaqSection } from "@/components/seo/AeoFaqSection";
 import { getToolSeoContent } from "@/config/seo/toolFaqs";
+import { useLanguage } from "@/components/layout/LanguageContext";
 
 interface CadWorkspaceProps {
   toolSlug?: string;
@@ -67,7 +68,8 @@ export function CadWorkspace({
     description,
   });
 
-  const seoContent = getToolSeoContent(effectiveSlug, effectiveTitle);
+  const { language } = useLanguage();
+  const seoContent = getToolSeoContent(effectiveSlug, effectiveTitle, language);
 
   return (
     <div className="flex flex-col min-h-screen bg-fk-bg">

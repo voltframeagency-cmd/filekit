@@ -32,7 +32,10 @@ import { IMAGE_CONVERSION_ROUTES } from "@/config/imageConversionRoutes";
 import { SchemaGenerator } from "@/utils/seo/SchemaGenerator";
 import { HowToStepSection } from "@/components/seo/HowToStepSection";
 import { AeoFaqSection } from "@/components/seo/AeoFaqSection";
+import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
+import { toolContentRegistry } from "@/lib/seo/contentRegistry";
 import { getToolSeoContent } from "@/config/seo/toolFaqs";
+import { useLanguage } from "@/components/layout/LanguageContext";
 
 export default function LocalizedToolPage() {
   const params = useParams();
@@ -43,7 +46,18 @@ export default function LocalizedToolPage() {
   const locale = (NON_DEFAULT_LOCALES.includes(rawLang as SupportedLocale) ? rawLang : "en") as SupportedLocale;
   const meta = getLocalizedToolMeta(normSlug, locale);
   const hreflangs = getHreflangLinks(normSlug);
-  const seoContent = getToolSeoContent(normSlug, meta.title);
+  const seoContent = getToolSeoContent(normSlug, meta.title, locale);
+
+  const { language, setLanguage } = useLanguage();
+
+  React.useEffect(() => {
+    if (locale && language !== locale) {
+      setLanguage(locale);
+    }
+    if (meta.title && typeof document !== "undefined") {
+      document.title = meta.title;
+    }
+  }, [locale, language, setLanguage, meta.title]);
 
   const jsonLd = SchemaGenerator.generateFullStructuredData({
     slug: normSlug,

@@ -7,7 +7,8 @@ import { FileKitAsset } from "@/components/visuals/FileKitAsset";
 import { FileKitAssetName } from "@/components/visuals/assetRegistry";
 
 export default function ToolGrid() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const basePrefix = language && language !== "en" ? `/${language}` : "";
 
   const popularTools: Array<{
     id: string;
@@ -82,10 +83,10 @@ export default function ToolGrid() {
           {t("homepage.popularTools")}
         </h2>
         <a
-          href="#"
+          href={`${basePrefix}/#all-tools`}
           className="text-[13px] font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-150"
         >
-          {t("homepage.browseAll")}
+          {t("homepage.viewAll") || t("homepage.browseAll")}
         </a>
       </div>
 

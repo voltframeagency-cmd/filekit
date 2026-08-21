@@ -96,23 +96,23 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
     id: "image-to-pdf-conversion",
     label: "CONVERT TO PDF",
     compactLabel: "TO PDF",
-    accessibleLabel: "Image to PDF document conversion tools",
+    accessibleLabel: "Document and image to PDF conversion tools",
     links: [
-      { label: "Image to PDF", href: "/image-to-pdf" },
+      { label: "Word to PDF", href: "/word-to-pdf" },
       { label: "JPG to PDF", href: "/jpg-to-pdf" },
       { label: "PNG to PDF", href: "/png-to-pdf" },
+      { label: "Image to PDF", href: "/image-to-pdf" },
+      { label: "Excel to PDF", href: "/excel-to-pdf" },
+      { label: "PowerPoint to PDF", href: "/powerpoint-to-pdf" },
       { label: "TIFF to PDF", href: "/tiff-to-pdf" }
     ]
   },
   {
     id: "document-conversion",
-    label: "CONVERT TO PDF",
+    label: "DOCUMENTS & EBOOKS",
     compactLabel: "DOCUMENTS",
-    accessibleLabel: "Word, Excel, PowerPoint, and Apple Pages conversion tools",
+    accessibleLabel: "Apple iWork, Office, and eBook document conversion tools",
     links: [
-      { label: "Word to PDF", href: "/word-to-pdf" },
-      { label: "Excel to PDF", href: "/excel-to-pdf" },
-      { label: "PowerPoint to PDF", href: "/powerpoint-to-pdf" },
       { label: "Pages to PDF", href: "/pages-to-pdf" },
       { label: "Pages to Word", href: "/pages-to-word" },
       { label: "Numbers to Excel", href: "/numbers-to-excel" },

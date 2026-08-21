@@ -22,11 +22,17 @@ export default function ToolCard({
   iconColor,
   iconPath,
 }: ToolCardProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const targetHref = route.startsWith("http") || route.startsWith("#")
+    ? route
+    : language && language !== "en"
+      ? `/${language}${route.startsWith("/") ? route : `/${route}`}`
+      : route;
 
   return (
     <Link
-      href={route}
+      href={targetHref}
       className="flex items-center justify-between p-4 bg-white border border-fk-border hover:border-fk-primary rounded-fk-xl shadow-sm hover:shadow-md transition-all duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fk-primary focus-visible:ring-offset-2"
     >
       <div className="flex items-center gap-4 min-w-0">

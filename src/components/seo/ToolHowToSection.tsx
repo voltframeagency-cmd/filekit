@@ -114,6 +114,160 @@ const labelTranslations: Record<string, {
     yourFilePdf: 'ihre datei.pdf',
     yourImageFile: 'ihre bild.png',
   },
+  it: {
+    dragDrop: 'Trascina e rilascia o sfoglia',
+    addText: 'Aggiungi testo',
+    editText: 'Modifica testo',
+    sign: 'Firma',
+    compress: 'Comprimi',
+    resize: 'Ridimensiona',
+    convert: 'Converti',
+    chooseFormat: 'Formato',
+    targetFormat: 'JPG / PNG',
+    email: 'E-mail',
+    share: 'Condividi',
+    download: 'Scarica',
+    yourFilePdf: 'tuo file.pdf',
+    yourImageFile: 'tua immagine.png',
+  },
+  tr: {
+    dragDrop: 'Sürükleyip bırakın veya seçin',
+    addText: 'Metin ekle',
+    editText: 'Metni düzenle',
+    sign: 'İmzala',
+    compress: 'Sıkıştır',
+    resize: 'Yeniden Boyutlandır',
+    convert: 'Dönüştür',
+    chooseFormat: 'Format',
+    targetFormat: 'JPG / PNG',
+    email: 'E-posta',
+    share: 'Paylaş',
+    download: 'İndir',
+    yourFilePdf: 'dosyanız.pdf',
+    yourImageFile: 'görseliniz.png',
+  },
+  ar: {
+    dragDrop: 'اسحب وأفلت أو تصفح',
+    addText: 'إضافة نص',
+    editText: 'تعديل النص',
+    sign: 'توقيع',
+    compress: 'ضغط',
+    resize: 'تغيير الحجم',
+    convert: 'تحويل',
+    chooseFormat: 'الصيغة',
+    targetFormat: 'JPG / PNG',
+    email: 'البريد',
+    share: 'مشاركة',
+    download: 'تحميل',
+    yourFilePdf: 'ملفك.pdf',
+    yourImageFile: 'صورتك.png',
+  },
+};
+
+// Localized dynamic step translations
+const stepTranslations: Record<string, {
+  chooseFile: (fmt: string) => { title: string; text: string };
+  processFile: (fromFmt: string, toFmt: string) => { title: string; text: string };
+  downloadFile: (fmt: string) => { title: string; text: string };
+}> = {
+  pt: {
+    chooseFile: (fmt) => ({
+      title: `Escolha o arquivo ${fmt}`,
+      text: `Selecione ou arraste sua imagem ${fmt} para a caixa de conversão acima.`
+    }),
+    processFile: (fromFmt, toFmt) => ({
+      title: 'Converta instantaneamente',
+      text: `Nosso motor local no navegador converte seu arquivo para ${toFmt} em milissegundos.`
+    }),
+    downloadFile: (fmt) => ({
+      title: `Baixar ${fmt}`,
+      text: `Salve seu novo arquivo ${fmt} diretamente no seu computador ou dispositivo móvel.`
+    })
+  },
+  es: {
+    chooseFile: (fmt) => ({
+      title: `Elige el archivo ${fmt}`,
+      text: `Selecciona o arrastra tu imagen ${fmt} al cuadro de conversión de arriba.`
+    }),
+    processFile: (fromFmt, toFmt) => ({
+      title: 'Convierte al instante',
+      text: `Nuestro motor local en el navegador convierte tu archivo a ${toFmt} en milisegundos.`
+    }),
+    downloadFile: (fmt) => ({
+      title: `Descargar ${fmt}`,
+      text: `Guarda tu nuevo archivo ${fmt} directamente en tu ordenador o móvil.`
+    })
+  },
+  fr: {
+    chooseFile: (fmt) => ({
+      title: `Choisir le fichier ${fmt}`,
+      text: `Sélectionnez ou glissez votre image ${fmt} dans la boîte de conversion ci-dessus.`
+    }),
+    processFile: (fromFmt, toFmt) => ({
+      title: 'Convertir instantanément',
+      text: `Notre moteur local dans le navigateur convertit votre fichier en ${toFmt} en quelques millisecondes.`
+    }),
+    downloadFile: (fmt) => ({
+      title: `Télécharger ${fmt}`,
+      text: `Enregistrez votre nouveau fichier ${fmt} directement sur votre ordinateur ou mobile.`
+    })
+  },
+  de: {
+    chooseFile: (fmt) => ({
+      title: `${fmt}-Datei auswählen`,
+      text: `Wählen Sie Ihr ${fmt}-Bild aus oder ziehen Sie es in das Konvertierungsfeld oben.`
+    }),
+    processFile: (fromFmt, toFmt) => ({
+      title: 'Sofort konvertieren',
+      text: `Unsere lokale Browser-Engine konvertiert Ihre Datei in Millisekunden in ${toFmt}.`
+    }),
+    downloadFile: (fmt) => ({
+      title: `${fmt} herunterladen`,
+      text: `Speichern Sie Ihre neue ${fmt}-Datei direkt auf Ihrem Computer oder Smartphone.`
+    })
+  },
+  it: {
+    chooseFile: (fmt) => ({
+      title: `Scegli il file ${fmt}`,
+      text: `Seleziona o trascina la tua immagine ${fmt} nel riquadro di conversione in alto.`
+    }),
+    processFile: (fromFmt, toFmt) => ({
+      title: 'Converti all\'istante',
+      text: `Il nostro motore locale nel browser converte il tuo file in ${toFmt} in pochi millisecondi.`
+    }),
+    downloadFile: (fmt) => ({
+      title: `Scarica ${fmt}`,
+      text: `Salva il tuo nuovo file ${fmt} direttamente sul tuo computer o smartphone.`
+    })
+  },
+  tr: {
+    chooseFile: (fmt) => ({
+      title: `${fmt} Dosyasını Seçin`,
+      text: `${fmt} görselinizi seçin veya yukarıdaki dönüştürücü kutusuna sürükleyip bırakın.`
+    }),
+    processFile: (fromFmt, toFmt) => ({
+      title: 'Anında Dönüştürün',
+      text: `Yerel tarayıcı motorumuz görselinizi milisaniyeler içinde ${toFmt} formatına dönüştürür.`
+    }),
+    downloadFile: (fmt) => ({
+      title: `${fmt} İndir`,
+      text: `Yeni ${fmt} dosyanızı doğrudan bilgisayarınıza veya mobil cihazınıza kaydedin.`
+    })
+  },
+  ar: {
+    chooseFile: (fmt) => ({
+      title: `اختر ملف ${fmt}`,
+      text: `حدد أو اسحب صورة ${fmt} وأفلتها في مربع التحويل أعلاه.`
+    }),
+    processFile: (fromFmt, toFmt) => ({
+      title: 'التحويل الفوري',
+      text: `يقوم محرك المتصفح المحلي بتحويل صورتك إلى صيغة ${toFmt} في أجزاء من الثانية.`
+    }),
+    downloadFile: (fmt) => ({
+      title: `تحميل ${fmt}`,
+      text: `احفظ ملف ${fmt} الجديد مباشرة على جهاز الكمبيوتر أو الهاتف الخاص بك.`
+    })
+  }
 };
 
 export const ToolHowToSection: React.FC<ToolHowToSectionProps> = ({
@@ -131,18 +285,61 @@ export const ToolHowToSection: React.FC<ToolHowToSectionProps> = ({
 
   const fileNameLabel = isImageRoute || isCompressRoute ? labels.yourImageFile : labels.yourFilePdf;
 
+  // Heading translations
+  const getSectionTitle = () => {
+    switch (currentLang) {
+      case 'pt':
+        return 'Comece em 3 passos simples';
+      case 'es':
+        return 'Comienza en 3 sencillos pasos';
+      case 'fr':
+        return 'Commencez en 3 étapes simples';
+      case 'de':
+        return 'In 3 einfachen Schritten starten';
+      case 'it':
+        return 'Inizia in 3 semplici passaggi';
+      case 'tr':
+        return '3 Basit Adımda Başlayın';
+      case 'ar':
+        return 'ابدأ في 3 خطوات بسيطة';
+      default:
+        return 'Start In 3 Easy Steps';
+    }
+  };
+
+  const getSectionSubtitle = () => {
+    switch (currentLang) {
+      case 'pt':
+        return 'Siga estas etapas rápidas para processar seus arquivos com segurança no FileKit.';
+      case 'es':
+        return 'Sigue estos sencillos pasos para procesar tus archivos de forma segura con FileKit.';
+      case 'fr':
+        return 'Suivez ces étapes rapides pour traiter vos fichiers en toute sécurité avec FileKit.';
+      case 'de':
+        return 'Befolgen Sie diese schnellen Schritte, um Ihre Dateien sicher mit FileKit zu verarbeiten.';
+      case 'it':
+        return 'Segui questi semplici passaggi per elaborare i tuoi file in sicurezza con FileKit.';
+      case 'tr':
+        return 'Dosyalarınızı FileKit ile güvenli bir şekilde işlemek için bu hızlı adımları izleyin.';
+      case 'ar':
+        return 'اتبع هذه الخطوات البسيطة لتحويل ومعالجة ملفاتك بأمان تام عبر متصفحك.';
+      default:
+        return 'Follow these quick steps to process your files securely with FileKit.';
+    }
+  };
+
   return (
     <section className="my-16 bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8 text-center">
       <div className="space-y-2 max-w-2xl mx-auto">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight font-sans">
-          Start In 3 Easy Steps
+          {getSectionTitle()}
         </h2>
         <p className="text-xs sm:text-sm text-slate-600 font-sans">
-          Follow these quick steps to process your files securely with FileKit.
+          {getSectionSubtitle()}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left ltr:text-left rtl:text-right">
         {steps.map((step, idx) => {
           let pngPath = pngMockupMap[step.iconAsset];
 
@@ -167,16 +364,27 @@ export const ToolHowToSection: React.FC<ToolHowToSectionProps> = ({
                   {idx === 0 && (
                     <svg viewBox="0 0 451.97 330.33" className="block h-full w-full" aria-hidden="true">
                       <image href="/brand-assets/how-it-works/zendocs-step-6.svg" width="100%" height="100%" />
+                      {/* Pill backing to cleanly cover underlying artwork without overlap */}
+                      <rect
+                        x="110"
+                        y="207"
+                        width="232"
+                        height="26"
+                        rx="13"
+                        fill="#ffffff"
+                        stroke="#e2e8f0"
+                        strokeWidth="1"
+                      />
                       <text
                         x="226"
-                        y="219.5"
+                        y="220"
                         textAnchor="middle"
                         dominantBaseline="central"
                         style={{
                           fontFamily: 'Inter, sans-serif',
-                          fill: 'rgba(30, 41, 59, 0.65)',
-                          fontSize: '0.82rem',
-                          fontWeight: 500,
+                          fill: 'rgba(30, 41, 59, 0.75)',
+                          fontSize: '11.5px',
+                          fontWeight: 600,
                         }}
                       >
                         {labels.dragDrop}
@@ -249,6 +457,8 @@ export const ToolHowToSection: React.FC<ToolHowToSectionProps> = ({
                           {/* Bottom Pills */}
                           <rect fill="#e2ecfe" x="90" y="296" width="54" height="15" rx="6" />
                           <rect fill="#e2ecfe" x="308" y="296" width="54" height="15" rx="6" />
+                          <circle fill="#2563eb" cx="117" cy="303" r="3.5" />
+                          <circle fill="#16a34a" cx="335" cy="303" r="3.5" />
                         </g>
                       ) : isConvertRoute ? (
                         <g id="convert-pixel-perfect-step2">
@@ -486,12 +696,29 @@ export const ToolHowToSection: React.FC<ToolHowToSectionProps> = ({
                 </div>
               </div>
 
-              <div className="p-6 space-y-2 bg-white flex-1 flex flex-col justify-start">
+              {/* Step Title and Body Description */}
+              <div className="p-6 space-y-2 bg-white flex-1 flex flex-col justify-start ltr:text-left rtl:text-right" dir="auto">
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans tracking-tight">
-                  {stepTitle}
+                  {(() => {
+                    const trans = stepTranslations[currentLang];
+                    if (trans) {
+                      if (idx === 0) return `${idx + 1}. ${trans.chooseFile('JPG').title}`;
+                      if (idx === 1) return `${idx + 1}. ${trans.processFile('JPG', 'PNG').title}`;
+                      if (idx === 2) return `${idx + 1}. ${trans.downloadFile('PNG').title}`;
+                    }
+                    return stepTitle;
+                  })()}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
-                  {step.text}
+                  {(() => {
+                    const trans = stepTranslations[currentLang];
+                    if (trans) {
+                      if (idx === 0) return trans.chooseFile('JPG').text;
+                      if (idx === 1) return trans.processFile('JPG', 'PNG').text;
+                      if (idx === 2) return trans.downloadFile('PNG').text;
+                    }
+                    return step.text;
+                  })()}
                 </p>
               </div>
             </div>

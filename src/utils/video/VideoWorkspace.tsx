@@ -156,16 +156,6 @@ export default function VideoWorkspace({
 
   return (
     <div className="flex flex-col gap-8 max-w-4xl mx-auto w-full">
-      {/* Title & Subtitle */}
-      <div className="text-center">
-        <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-          {title}
-        </h1>
-        <p className="text-slate-500 mt-2 text-base md:text-lg max-w-2xl mx-auto">
-          {subtitle}
-        </p>
-      </div>
-
       {/* Main Container */}
       <div className="bg-white border border-fk-border rounded-fk-xl shadow-sm p-6 md:p-8 flex flex-col gap-6">
         {!file ? (
