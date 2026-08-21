@@ -33,6 +33,7 @@ import { HowToStepSection } from "@/components/seo/HowToStepSection";
 import { AeoFaqSection } from "@/components/seo/AeoFaqSection";
 import { getToolSeoContent } from "@/config/seo/toolFaqs";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { buildCanonicalUrl } from "@/utils/siteUrl";
 import * as PDFLib from "pdf-lib";
 
 export interface UniversalToolPageProps {
@@ -395,6 +396,17 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
       {hreflangs.map((h) => (
         <link key={h.hrefLang} rel="alternate" hrefLang={h.hrefLang} href={h.href} />
       ))}
+      <meta property="og:title" content={meta.title} />
+      <meta property="og:description" content={meta.description} />
+      <meta property="og:url" content={buildCanonicalUrl(locale === "en" ? normSlug : `/${locale}${normSlug}`)} />
+      <meta property="og:type" content="website" />
+      <meta property="og:image" content="https://filekit.co/brand-assets/hero/client-side-privacy-hero.png" />
+      <meta property="og:site_name" content="FileKit" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={meta.title} />
+      <meta name="twitter:description" content={meta.description} />
+      <meta name="twitter:image" content="https://filekit.co/brand-assets/hero/client-side-privacy-hero.png" />
+      <meta name="twitter:creator" content="@filekit_app" />
       <AppHeader />
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8 space-y-6">
         <section className="flex flex-col gap-1.5 max-w-[840px] mx-auto w-full text-left ltr:text-left rtl:text-right px-2">

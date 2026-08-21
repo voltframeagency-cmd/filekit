@@ -27,12 +27,50 @@ ALL_LOCALES.forEach((loc) => {
 });
 
 export const metadata: Metadata = {
-  title: "FileKit — Convert, Compress & Edit Files Online",
+  metadataBase: new URL("https://filekit.co"),
+  title: {
+    default: "FileKit — Convert, Compress & Edit Files Online Free",
+    template: "%s – FileKit",
+  },
   description: "Files on your terms. Convert, compress, resize, organize, and repair PDFs, images, Office files, archives, audio, and video with browser-first privacy.",
   alternates: {
     canonical: "https://filekit.co",
     languages: languageAlternates
-  }
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://filekit.co",
+    siteName: "FileKit",
+    title: "FileKit — 100% Private In-Browser File Tools",
+    description: "Convert, compress, and edit PDFs, images, CAD drawings, video, and audio directly in your browser with zero data retention.",
+    images: [
+      {
+        url: "/brand-assets/hero/client-side-privacy-hero.png",
+        width: 1200,
+        height: 630,
+        alt: "FileKit – 100% Private In-Browser File Converter & Utility Suite",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FileKit — 100% Private In-Browser File Tools",
+    description: "Convert, compress, and edit PDFs, images, CAD drawings, video, and audio directly in your browser with zero data retention.",
+    images: ["/brand-assets/hero/client-side-privacy-hero.png"],
+    creator: "@filekit_app",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
