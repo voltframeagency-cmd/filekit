@@ -1,5 +1,8 @@
-import { permanentRedirect } from "next/navigation";
+"use client";
 
-export default function PdfToXlsRedirectPage() {
-  permanentRedirect("/pdf-to-excel");
+import React from "react";
+import UniversalToolPage from "@/components/layout/UniversalToolPage";
+
+export default function PdfToXlsPage() {
+  return <UniversalToolPage slug="/pdf-to-xls" locale="en" />;
 }

@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation";
+"use client";
 
-export default function PlannedRoutePage() {
-  // Product-Access Governance: Return HTTP 404 for PLANNED routes
-  // until workspace, engine connection, and release evidence pass.
-  notFound();
+import React from "react";
+import UniversalToolPage from "@/components/layout/UniversalToolPage";
+
+export default function SignPdfPage() {
+  return <UniversalToolPage slug="/sign-pdf" locale="en" />;
 }

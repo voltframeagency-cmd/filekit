@@ -1,5 +1,8 @@
-import { permanentRedirect } from "next/navigation";
+"use client";
 
-export default function PdfToJpegRedirectPage() {
-  permanentRedirect("/pdf-to-jpg");
+import React from "react";
+import UniversalToolPage from "@/components/layout/UniversalToolPage";
+
+export default function PdfToJpegPage() {
+  return <UniversalToolPage slug="/pdf-to-jpeg" locale="en" />;
 }

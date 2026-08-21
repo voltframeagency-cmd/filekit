@@ -1,5 +1,8 @@
-import { permanentRedirect } from "next/navigation";
+"use client";
 
-export default function PptxToPdfRedirectPage() {
-  permanentRedirect("/powerpoint-to-pdf");
+import React from "react";
+import UniversalToolPage from "@/components/layout/UniversalToolPage";
+
+export default function PptxToPdfPage() {
+  return <UniversalToolPage slug="/pptx-to-pdf" locale="en" />;
 }

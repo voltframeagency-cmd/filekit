@@ -1,16 +1,8 @@
 "use client";
 
 import React from "react";
-import { CadWorkspace } from "@/utils/cad/CadWorkspace";
+import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
 export default function DwgToPdfPage() {
-  return (
-    <CadWorkspace
-      toolSlug="/dwg-to-pdf"
-      toolTitle="Convert AutoCAD DWG to PDF Online Free"
-      description="Convert AutoCAD DWG engineering drawings into universal high-resolution vector PDF blueprints online."
-      sourceFormat="DWG"
-      targetFormat="PDF"
-    />
-  );
+  return <UniversalToolPage slug="/dwg-to-pdf" locale="en" />;
 }

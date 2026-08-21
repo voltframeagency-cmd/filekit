@@ -1,7 +1,8 @@
-import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
-import ExactImageTargetPage from "@/components/image-tools/ExactImageTargetPage";
-import { EXACT_IMAGE_ROUTES } from "@/config/exactImageRoutes";
+"use client";
+
+import React from "react";
+import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
 export default function CompressImageTo500kbPage() {
-  return <ExactImageTargetPage config={EXACT_IMAGE_ROUTES["500kb"]} />;
+  return <UniversalToolPage slug="/compress-image-to-500kb" locale="en" />;
 }

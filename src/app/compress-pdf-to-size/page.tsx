@@ -1,11 +1,8 @@
-import { ToolContentRenderer } from "@/components/seo/ToolContentRenderer";
-import React, { Suspense } from "react";
-import CustomTargetPdfPage from "@/components/pdf-tools/CustomTargetPdfPage";
+"use client";
+
+import React from "react";
+import UniversalToolPage from "@/components/layout/UniversalToolPage";
 
 export default function CompressPdfToSizePage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-fk-bg" />}>
-      <CustomTargetPdfPage />
-    </Suspense>
-  );
+  return <UniversalToolPage slug="/compress-pdf-to-size" locale="en" />;
 }

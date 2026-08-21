@@ -32,6 +32,17 @@ export class SchemaGenerator {
     const schemaGraph = {
       "@context": "https://schema.org",
       "@graph": [
+        // 0. WebSite Entity
+        {
+          "@type": "WebSite",
+          "@id": "https://filekit.co/#website",
+          "url": "https://filekit.co",
+          "name": "FileKit",
+          "publisher": {
+            "@id": "https://filekit.co/#organization"
+          }
+        },
+
         // 1. Organization / Brand Trust Entity
         {
           "@type": "Organization",

@@ -208,16 +208,19 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
     const faqs: FaqItem[] = isAr
       ? [
           { question: "ما الفرق بين تنسيقي SRT وWebVTT؟", answer: "يستخدم SRT الفواصل العشرية بالأجزاء من الألف (00:00:01,000)، بينما يستخدم WebVTT النقطة (00:00:01.000) مع ترويسة مخصصة لمشغلات الويب الحديثة." },
-          { question: "هل يمكنني استخدام ترجمات WebVTT على مشغلات الفيديو HTML5؟", answer: "نعم. WebVTT هو التنسيق القياسي المعتمد من W3C المدعوم أصلاً في جميع المتصفحات الحديثة." }
+          { question: "هل يمكنني استخدام ترجمات WebVTT على مشغلات الفيديو HTML5؟", answer: "نعم. WebVTT هو التنسيق القياسي المعتمد من W3C المدعوم أصلاً في جميع المتصفحات الحديثة." },
+          { question: "هل يتم رفع ملفات الترجمة إلى خوادم خارجية؟", answer: "كلا. تتم معالجة وتنسيق الترجمات محلياً 100% داخل متصفحك دون رفع أي بيانات." }
         ]
       : isTr
       ? [
           { question: "SRT ve WebVTT formatları arasındaki fark nedir?", answer: "SRT (SubRip) virgülle ayrılmış milisaniyeleri (00:00:01,000) ve sıralı numaralandırmayı kullanırken, WebVTT (Web Video Text Tracks) nokta ayırıcıları (00:00:01.000) kullanır ve HTML5 oynatıcılar için bir 'WEBVTT' başlığı ile başlar." },
-          { question: "HTML5 web video oynatıcılarında WebVTT altyazılarını kullanabilir miyim?", answer: "Evet. WebVTT, tüm modern web tarayıcıları ve video etiketleri tarafından yerel olarak desteklenen resmi W3C standart formatıdır." }
+          { question: "HTML5 web video oynatıcılarında WebVTT altyazılarını kullanabilir miyim?", answer: "Evet. WebVTT, tüm modern web tarayıcıları ve video etiketleri tarafından yerel olarak desteklenen resmi W3C standart formatıdır." },
+          { question: "Altyazı dosyaları bir sunucuya yükleniyor mu?", answer: "Hayır. Tüm altyazı dönüştürmeleri ve zaman damgası biçimlendirmesi %100 yerel olarak tarayıcınızda gerçekleşir." }
         ]
       : [
           { question: "What is the difference between SRT and WebVTT format?", answer: "SRT (SubRip) uses comma-separated milliseconds (00:00:01,000) and sequential numbering, whereas WebVTT uses dot delimiters (00:00:01.000) and begins with a 'WEBVTT' header for HTML5 web players." },
-          { question: "Can I use WebVTT subtitles on modern HTML5 web video players?", answer: "Yes. WebVTT is the official W3C standard format supported natively by all modern web browsers and video elements." }
+          { question: "Can I use WebVTT subtitles on modern HTML5 web video players?", answer: "Yes. WebVTT is the official W3C standard format supported natively by all modern web browsers and video elements." },
+          { question: "Are subtitle files uploaded to any server?", answer: "No. All subtitle conversions and timestamp formatting take place 100% locally in your browser memory." }
         ];
 
     return { category, entityDefinition, howToSteps, faqs };
@@ -253,16 +256,19 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
     const faqs: FaqItem[] = isAr
       ? [
           { question: "كيف أفتح ملف .pages على نظام Windows؟", answer: "يمكنك تحويل مستندات Apple .pages إلى PDF أو Word (.docx) باستخدام FileKit مباشرة في متصفحك دون حساب Apple." },
-          { question: "هل يمكن تحويل جداول Numbers إلى Excel مباشرة؟", answer: "نعم. يقوم FileKit بتحويل ملفات Numbers إلى صيغة .xlsx مع الحفاظ على البيانات والجداول." }
+          { question: "هل يمكن تحويل جداول Numbers إلى Excel مباشرة؟", answer: "نعم. يقوم FileKit بتحويل ملفات Numbers إلى صيغة .xlsx مع الحفاظ على البيانات والجداول." },
+          { question: "هل تحويل المستندات آمن وخاص؟", answer: "نعم. تتم معالجة المستندات بأمان تام مع عدم الاحتفاظ بأي بيانات للحفاظ على سرية ملفاتك." }
         ]
       : isTr
       ? [
           { question: "Windows PC'de bir Apple .pages dosyasını nasıl açabilirim?", answer: "Apple .pages belgelerini, bir Apple Kimliği veya iCloud girişi olmadan doğrudan web tarayıcınızda FileKit kullanarak PDF veya Microsoft Word (.docx) formatına dönüştürebilirsiniz." },
-          { question: "Apple Numbers dosyaları doğrudan Microsoft Excel'e dönüştürülebilir mi?", answer: "Evet. FileKit, Apple Numbers elektronik tablolarını hücreleri, formülleri ve tablo verilerini koruyarak standart .xlsx elektronik tablolarına dönüştürür." }
+          { question: "Apple Numbers dosyaları doğrudan Microsoft Excel'e dönüştürülebilir mi?", answer: "Evet. FileKit, Apple Numbers elektronik tablolarını hücreleri, formülleri ve tablo verilerini koruyarak standart .xlsx elektronik tablolarına dönüştürür." },
+          { question: "Belge dönüştürme güvenli ve gizli mi?", answer: "Evet. Belgeler, verileriniz kaydedilmeden güvenli bir şekilde işlenir." }
         ]
       : [
           { question: "How do I open an Apple .pages file on a Windows PC?", answer: "You can convert Apple .pages documents into PDF or Microsoft Word (.docx) using FileKit directly in your web browser without an Apple ID or iCloud login." },
-          { question: "Can Apple Numbers files be converted directly to Microsoft Excel?", answer: "Yes. FileKit converts Apple Numbers spreadsheets into standard .xlsx spreadsheets, preserving cells, formulas, and tabular data." }
+          { question: "Can Apple Numbers files be converted directly to Microsoft Excel?", answer: "Yes. FileKit converts Apple Numbers spreadsheets into standard .xlsx spreadsheets, preserving cells, formulas, and tabular data." },
+          { question: "Is document conversion secure and private?", answer: "Yes. Documents are parsed securely with zero data retention, keeping your spreadsheets and presentations confidential." }
         ];
 
     return { category, entityDefinition, howToSteps, faqs };
@@ -571,104 +577,129 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
     const faqs: FaqItem[] = isSv
       ? (isAudioMerge ? [
           { question: "Kan jag slå samman ljudfiler i olika format (t.ex. MP3 och WAV)?", answer: "Ja. FileKit avkodar olika ljudformat direkt i webbläsaren och slår samman dem till ett enhetligt spår i hög kvalitet." },
-          { question: "Laddas mina privata ljudinspelningar upp till en server?", answer: "Nej. Ljudbehandling och sammanslagning sker 100% lokalt i din webbläsares minne utan att filer skickas till externa servrar." }
+          { question: "Laddas mina privata ljudinspelningar upp till en server?", answer: "Nej. Ljudbehandling och sammanslagning sker 100% lokalt i din webbläsares minne utan att filer skickas till externa servrar." },
+          { question: "Förlorar ljudet kvalitet vid sammanslagning?", answer: "Nej. FileKit bevarar samplingsfrekvenser och bithastigheter för maximal akustisk återgivning." }
         ] : [
           { question: "Minskar mediekonvertering den visuella kvaliteten?", answer: "För kompatibla behållare använder FileKit direkt strömkopiering (-c copy) på under 1 sekund med 100% noll kvalitetsförlust." },
-          { question: "Kan jag komprimera videor för Discord, Gmail eller WhatsApp?", answer: "Ja. FileKit beräknar exakt bithastighet för att säkerställa att din video inte överskrider filgränserna." }
+          { question: "Kan jag komprimera videor för Discord, Gmail eller WhatsApp?", answer: "Ja. FileKit beräknar exakt bithastighet för att säkerställa att din video inte överskrider filgränserna." },
+          { question: "Laddas mina privata videor upp till externa servrar?", answer: "Nej. Mediebearbetning sker helt lokalt i din webbläsare med fullständig integritet." }
         ])
       : isDe
       ? (isAudioMerge ? [
           { question: "Kann ich Audiodateien unterschiedlicher Formate (z. B. MP3 und WAV) zusammenfügen?", answer: "Ja. FileKit decodiert verschiedene Audioformate direkt im Browser und fügt sie zu einer einheitlichen, hochwertigen Spur zusammen." },
-          { question: "Werden meine privaten Audioaufnahmen auf einen Server hochgeladen?", answer: "Nein. Die Verarbeitung erfolgt zu 100% lokal im Speicher Ihres Browsers ohne externe Übertragung." }
+          { question: "Werden meine privaten Audioaufnahmen auf einen Server hochgeladen?", answer: "Nein. Die Verarbeitung erfolgt zu 100% lokal im Speicher Ihres Browsers ohne externe Übertragung." },
+          { question: "Geht beim Zusammenfügen Audioqualität verloren?", answer: "Nein. FileKit behält Sampleraten und Bitraten für eine optimale Klangtreue bei." }
         ] : [
           { question: "Verringert die Medienkonvertierung die Qualität?", answer: "Bei kompatiblen Formaten nutzt FileKit Stream-Copying in unter 1 Sekunde bei 100% verlustfreier Qualität." },
-          { question: "Kann ich Videos für Discord, Gmail oder WhatsApp komprimieren?", answer: "Ja. FileKit passt die Bitrate exakt an, damit Grenzwerte wie 8MB, 10MB oder 25MB eingehalten werden." }
+          { question: "Kann ich Videos für Discord, Gmail oder WhatsApp komprimieren?", answer: "Ja. FileKit passt die Bitrate exakt an, damit Grenzwerte wie 8MB, 10MB oder 25MB eingehalten werden." },
+          { question: "Werden meine privaten Videos auf Server übertragen?", answer: "Nein. Die Medienverarbeitung erfolgt vollständig lokal in Ihrem Browser." }
         ])
       : isFr
       ? (isAudioMerge ? [
           { question: "Puis-je fusionner des fichiers audio de formats différents (ex. MP3 et WAV) ?", answer: "Oui. FileKit décode différents formats audio directement dans le navigateur et les fusionne en une piste unique de haute qualité." },
-          { question: "Mes enregistrements audio privés sont-ils envoyés sur un serveur ?", answer: "Non. Le traitement audio s'effectue à 100% localement dans votre navigateur sans aucun téléversement." }
+          { question: "Mes enregistrements audio privés sont-ils envoyés sur un serveur ?", answer: "Non. Le traitement audio s'effectue à 100% localement dans votre navigateur sans aucun téléversement." },
+          { question: "Y a-t-il une perte de qualité sonore lors de la fusion ?", answer: "Non. FileKit préserve les fréquences d'échantillonnage et les débits originaux pour une fidélité maximale." }
         ] : [
           { question: "La conversion réduit-elle la qualité visuelle ?", answer: "Pour les formats compatibles, FileKit utilise le mode de copie directe en moins d'une seconde sans perte de qualité." },
-          { question: "Puis-je compresser des vidéos pour Discord, Gmail ou WhatsApp ?", answer: "Oui. FileKit calcule le débit binaire exact pour respecter les limites de 8 Mo, 10 Mo ou 25 Mo." }
+          { question: "Puis-je compresser des vidéos pour Discord, Gmail ou WhatsApp ?", answer: "Oui. FileKit calcule le débit binaire exact pour respecter les limites de 8 Mo, 10 Mo ou 25 Mo." },
+          { question: "Mes vidéos privées sont-elles conservées ?", answer: "Non. Vos fichiers multimédias sont traités directement sur votre appareil en toute confidentialité." }
         ])
       : isEs
       ? (isAudioMerge ? [
           { question: "¿Puedo unir archivos de audio de diferentes formatos (ej. MP3 y WAV)?", answer: "Sí. FileKit decodifica diferentes formatos directamente en el navegador y los combina en una pista uniforme de alta calidad." },
-          { question: "¿Mis grabaciones de audio privadas se suben a un servidor?", answer: "No. El procesamiento se realiza 100% de forma local en tu navegador sin enviar archivos a servidores externos." }
+          { question: "¿Mis grabaciones de audio privadas se suben a un servidor?", answer: "No. El procesamiento se realiza 100% de forma local en tu navegador sin enviar archivos a servidores externos." },
+          { question: "¿Se pierde calidad de audio al unir pistas?", answer: "No. FileKit mantiene las tasas de muestreo y fidelidad de sonido originales." }
         ] : [
           { question: "¿La conversión de video reduce la calidad visual?", answer: "Para formatos compatibles, FileKit realiza copias directas de flujo en menos de 1 segundo sin pérdida de calidad." },
-          { question: "¿Puedo comprimir videos para cumplir con los límites de Discord, Gmail o WhatsApp?", answer: "Sí. FileKit ajusta la tasa de bits matemáticamente para no exceder límites de 8MB, 10MB o 25MB." }
+          { question: "¿Puedo comprimir videos para cumplir con los límites de Discord, Gmail o WhatsApp?", answer: "Sí. FileKit ajusta la tasa de bits matemáticamente para no exceder límites de 8MB, 10MB o 25MB." },
+          { question: "¿Mis videos se mantienen privados?", answer: "Totalmente. El procesamiento de video se ejecuta localmente en tu navegador sin almacenamiento externo." }
         ])
       : isPt
       ? (isAudioMerge ? [
           { question: "Posso juntar arquivos de áudio de formatos diferentes (ex.: MP3 e WAV)?", answer: "Sim. O FileKit decodifica múltiplos formatos diretamente no navegador e os une em uma única faixa com alta qualidade." },
-          { question: "Minhas gravações de áudio privadas são enviadas para um servidor?", answer: "Não. O processamento de áudio ocorre 100% localmente na memória do seu navegador sem envio de arquivos." }
+          { question: "Minhas gravações de áudio privadas são enviadas para um servidor?", answer: "Não. O processamento de áudio ocorre 100% localmente na memória do seu navegador sem envio de arquivos." },
+          { question: "Há perda de qualidade de som ao juntar faixas?", answer: "Não. O FileKit preserva taxas de amostragem e taxas de bits para máxima fidelidade acústica." }
         ] : [
           { question: "A conversão de vídeo reduz a qualidade visual?", answer: "Para formatos compatíveis, o FileKit usa cópia direta de fluxo em menos de 1 segundo sem qualquer perda de qualidade." },
-          { question: "Posso comprimir vídeos para o limite do Discord, Gmail ou WhatsApp?", answer: "Sim. O FileKit calcula a taxa de bits exata para garantir que seu vídeo não ultrapasse os limites de tamanho." }
+          { question: "Posso comprimir vídeos para o limite do Discord, Gmail ou WhatsApp?", answer: "Sim. O FileKit calcula a taxa de bits exata para garantir que seu vídeo não ultrapasse os limites de tamanho." },
+          { question: "Meus vídeos privados são mantidos em sigilo?", answer: "Sim. O processamento de mídia é 100% local no seu navegador com total privacidade." }
         ])
       : isIt
       ? (isAudioMerge ? [
           { question: "Posso unire file audio di formati diversi (es. MP3 e WAV)?", answer: "Sì. FileKit decodifica diversi formati direttamente nel browser e li unisce in un'unica traccia di alta qualità." },
-          { question: "Le mie registrazioni audio private vengono caricate su un server?", answer: "No. L'elaborazione avviene al 100% localmente nella memoria del browser senza caricamenti esterni." }
+          { question: "Le mie registrazioni audio private vengono caricate su un server?", answer: "No. L'elaborazione avviene al 100% localmente nella memoria del browser senza caricamenti esterni." },
+          { question: "C'è perdita di qualità durante l'unione dei file audio?", answer: "No. FileKit preserva la frequenza di campionamento e il bitrate originali." }
         ] : [
           { question: "La conversione video riduce la qualità visiva?", answer: "Per i formati compatibili, FileKit utilizza la copia di flusso istantanea in meno di 1 secondo con zero perdite di qualità." },
-          { question: "Posso comprimere video per i limiti di Discord, Gmail o WhatsApp?", answer: "Sì. FileKit calcola il bitrate esatto per garantire che il video non superi i limiti di dimensione." }
+          { question: "Posso comprimere video per i limiti di Discord, Gmail o WhatsApp?", answer: "Sì. FileKit calcola il bitrate esatto per garantire che il video non superi i limiti di dimensione." },
+          { question: "I miei video privati rimangono riservati?", answer: "Assolutamente. Tutto il processo multimediale avviene localmente nel tuo browser." }
         ])
       : isPl
       ? (isAudioMerge ? [
           { question: "Czy mogę łączyć pliki audio w różnych formatach (np. MP3 i WAV)?", answer: "Tak. FileKit dekoduje różne formaty bezpośrednio w przeglądarce i łączy je w jedną ścieżkę o wysokiej jakości." },
-          { question: "Czy moje prywatne nagrania audio są przesyłane na serwer?", answer: "Nie. Przetwarzanie audio odbywa się w 100% lokalnie w pamięci przeglądarki bez wysyłania plików na serwer." }
+          { question: "Czy moje prywatne nagrania audio są przesyłane na serwer?", answer: "Nie. Przetwarzanie audio odbywa się w 100% lokalnie w pamięci przeglądarki bez wysyłania plików na serwer." },
+          { question: "Czy jakość dźwięku spada podczas łączenia utworów?", answer: "Nie. FileKit zachowuje oryginalne parametry próbkowania i bitrate." }
         ] : [
           { question: "Czy konwersja wideo obniża jakość obrazu?", answer: "W przypadku zgodnych formatów FileKit używa natychmiastowego kopiowania strumienia bez żadnej utraty jakości." },
-          { question: "Czy mogę skompresować wideo dla Discorda, Gmaila lub WhatsAppa?", answer: "Tak. FileKit precyzyjnie dopasowuje bitrate, aby plik nie przekroczył limitów 8MB, 10MB lub 25MB." }
+          { question: "Czy mogę skompresować wideo dla Discorda, Gmaila lub WhatsAppa?", answer: "Tak. FileKit precyzyjnie dopasowuje bitrate, aby plik nie przekroczył limitów 8MB, 10MB lub 25MB." },
+          { question: "Czy moje filmy wideo są bezpieczne i prywatne?", answer: "Tak. Obróbka multimediów odbywa się w całości lokalnie w Twojej przeglądarce." }
         ])
       : isRu
       ? (isAudioMerge ? [
           { question: "Можно ли объединять аудиофайлы разных форматов (например, MP3 и WAV)?", answer: "Да. FileKit декодирует различные аудиоформаты прямо в браузере и объединяет их в единую высококачественную дорожку." },
-          { question: "Загружаются ли мои личные аудиозаписи на сервер?", answer: "Нет. Вся обработка происходит на 100% локально в памяти вашего браузера без передачи на внешние серверы." }
+          { question: "Загружаются ли мои личные аудиозаписи на сервер?", answer: "Нет. Вся обработка происходит на 100% локально в памяти вашего браузера без передачи на внешние серверы." },
+          { question: "Теряется ли качество звука при объединении?", answer: "Нет. FileKit сохраняет исходную частоту дискретизации и битрейт для максимальной чистоты звучания." }
         ] : [
           { question: "Снижает ли конвертация качество видео?", answer: "Для совместимых форматов FileKit использует прямое копирование потока менее чем за 1 секунду без потери качества." },
-          { question: "Можно ли сжать видео под лимиты Discord, Gmail или WhatsApp?", answer: "Да. FileKit рассчитывает точный битрейт, чтобы видео не превышало лимиты 8MB, 10MB или 25MB." }
+          { question: "Можно ли сжать видео под лимиты Discord, Gmail или WhatsApp?", answer: "Да. FileKit рассчитывает точный битрейт, чтобы видео не превышало лимиты 8MB, 10MB или 25MB." },
+          { question: "Сохраняется ли конфиденциальность моих видеофайлов?", answer: "Да. Обработка видеофайлов происходит полностью локально в вашем браузере." }
         ])
       : isJa
       ? (isAudioMerge ? [
           { question: "異なる形式の音声ファイル（MP3とWAVなど）を結合できますか？", answer: "はい。FileKitはブラウザ内で直接様々な音声形式をデコードし、劣化のない単一のトラックに結合します。" },
-          { question: "個人の音声データがサーバーにアップロードされることはありますか？", answer: "いいえ。音声の処理と結合はブラウザのメモリ内で100%ローカルに実行され、外部サーバーに送信されることはありません。" }
+          { question: "個人の音声データがサーバーにアップロードされることはありますか？", answer: "いいえ。音声の処理と結合はブラウザのメモリ内で100%ローカルに実行され、外部サーバーに送信されることはありません。" },
+          { question: "結合時に音質の劣化は発生しますか？", answer: "いいえ。FileKitはサンプリング周波数とビットレートを維持し、クリアな音質を保持します。" }
         ] : [
           { question: "動画変換によって画質が低下しますか？", answer: "互換性のあるコンテナの場合、FileKitは1秒未満の高速ストリームコピーにより画質の劣化ゼロで処理します。" },
-          { question: "Discord、Gmail、WhatsAppの制限に合わせて動画を圧縮できますか？", answer: "はい。FileKitはビットレートを自動計算し、8MB、10MB、25MBの制限を超えないよう圧縮します。" }
+          { question: "Discord、Gmail、WhatsAppの制限に合わせて動画を圧縮できますか？", answer: "はい。FileKitはビットレートを自動計算し、8MB、10MB、25MBの制限を超えないよう圧縮します。" },
+          { question: "プライベートな動画は安全に保護されますか？", answer: "はい。動画の処理はすべてブラウザ内でローカルに実行され、機密性が保たれます。" }
         ])
       : isKo
       ? (isAudioMerge ? [
           { question: "서로 다른 형식의 오디오 파일(예: MP3 및 WAV)을 병합할 수 있나요?", answer: "네. FileKit은 브라우저에서 직접 다양한 오디오 형식을 디코딩하여 고품질의 단일 트랙으로 병합합니다." },
-          { question: "개인 오디오 녹음 파일이 서버에 업로드되나요?", answer: "아니요. 오디오 처리 및 병합은 브라우저 메모리 내에서 100% 로컬로 실행되며 서버로 전송되지 않습니다." }
+          { question: "개인 오디오 녹음 파일이 서버에 업로드되나요?", answer: "아니요. 오디오 처리 및 병합은 브라우저 메모리 내에서 100% 로컬로 실행되며 서버로 전송되지 않습니다." },
+          { question: "오디오 병합 시 음질이 저하되나요?", answer: "아니요. FileKit은 원본 샘플 레이트와 비트레이트를 보존하여 최적의 음질을 유지합니다." }
         ] : [
           { question: "비디오 변환 시 화질이 저하되나요?", answer: "호환되는 포맷의 경우, FileKit은 1초 이내의 빠른 스트림 복사를 통해 화질 손실 없이 포맷을 변환합니다." },
-          { question: "Discord, Gmail, WhatsApp 크기 제한에 맞게 비디오를 압축할 수 있나요?", answer: "네. FileKit은 정확한 비트레이트를 계산하여 8MB, 10MB, 25MB 용량 제한을 초과하지 않도록 압축합니다." }
+          { question: "Discord, Gmail, WhatsApp 크기 제한에 맞게 비디오를 압축할 수 있나요?", answer: "네. FileKit은 정확한 비트레이트를 계산하여 8MB, 10MB, 25MB 용량 제한을 초과하지 않도록 압축합니다." },
+          { question: "개인 비디오 파일이 안전하게 보호되나요?", answer: "네. 모든 미디어 처리는 브라우저 내에서 로컬로 실행되어 완전한 보안을 보장합니다." }
         ])
       : isZh
       ? (isAudioMerge ? [
           { question: "我可以合并不同格式的音频文件（如 MP3 和 WAV）吗？", answer: "可以。FileKit 直接在浏览器中解码不同的音频格式，并将其无缝合并为一条高音质轨道。" },
-          { question: "我的私人录音文件会被上传到服务器吗？", answer: "不会。音频处理与合并完全在您的浏览器内存中本地完成，绝不会上传到任何外部服务器。" }
+          { question: "我的私人录音文件会被上传到服务器吗？", answer: "不会。音频处理与合并完全在您的浏览器内存中本地完成，绝不会上传到任何外部服务器。" },
+          { question: "合并音频会降低音质吗？", answer: "不会。FileKit 保留原始采样率和比特率，确保绝佳的声音还原度。" }
         ] : [
           { question: "视频转换会降低画质吗？", answer: "对于兼容的格式，FileKit 采用极速流复制模式，在不到 1 秒内完成容器转换且画质 100% 零损失。" },
-          { question: "我可以将视频压缩到 Discord、Gmail 或微信的文件大小限制内吗？", answer: "可以。FileKit 采用精准的比特率计算，确保压缩后的视频绝不超过指定的容量上限。" }
+          { question: "我可以将视频压缩到 Discord、Gmail 或微信的文件大小限制内吗？", answer: "可以。FileKit 采用精准的比特率计算，确保压缩后的视频绝不超过指定的容量上限。" },
+          { question: "我的私人视频文件安全吗？", answer: "绝对安全。所有多媒体转换均在浏览器中本地执行，不产生任何云端数据残留。" }
         ])
       : isAr
       ? [
           { question: "هل يقلل تحويل الفيديو من جودة الصورة؟", answer: "بالنسبة للحاويات المتوافقة، يستخدم FileKit وضع النسخ المباشر (-c copy) لتبديل التنسيق في أقل من ثانية واحدة مع الحفاظ على 100% من الجودة الأصلية بدون أي فقدان." },
-          { question: "هل يمكنني ضغط مقاطع الفيديو لتناسب حدود Discord أو Gmail أو WhatsApp؟", answer: "نعم. يتيح FileKit استهداف حجم محدد بالبت لضمان عدم تجاوز الملف لحدود 8MB أو 10MB أو 25MB." }
+          { question: "هل يمكنني ضغط مقاطع الفيديو لتناسب حدود Discord أو Gmail أو WhatsApp؟", answer: "نعم. يتيح FileKit استهداف حجم محدد بالبت لضمان عدم تجاوز الملف لحدود 8MB أو 10MB أو 25MB." },
+          { question: "هل يتم رفع ملفات الوسائط الخاصة بي إلى أي خادم؟", answer: "كلا. تتم معالجة الوسائط محلياً بالكامل في متصفحك دون رفع أي بيانات." }
         ]
       : isTr
       ? [
           { question: "Video dönüştürme görsel kaliteyi düşürür mü?", answer: "Uyumlu kapsayıcılar için FileKit, görsel veya ses kalitesinde %100 sıfır kayıpla 1 saniyenin altında kapsayıcı değiştirmek için anında akış kopyalama (-c copy) modunu kullanır." },
-          { question: "Videoları Discord, Gmail veya WhatsApp sınırlarına uyacak şekilde sıkıştırabilir miyim?", answer: "Evet. FileKit, sıkıştırılmış videonuzun 8MB, 10MB veya 25MB dosya sınırlarını asla aşmamasını sağlamak için hedefli bit hızı hesaplaması içerir." }
+          { question: "Videoları Discord, Gmail veya WhatsApp sınırlarına uyacak şekilde sıkıştırabilir miyim?", answer: "Evet. FileKit, sıkıştırılmış videonuzun 8MB, 10MB veya 25MB dosya sınırlarını asla aşmamasını sağlamak için hedefli bit hızı hesaplaması içerir." },
+          { question: "Özel videolarım sunuculara yükleniyor mu?", answer: "Hayır. Medya işlemleri tamamen yerel olarak tarayıcınızda gerçekleştirilir." }
         ]
       : [
           { question: "Does video conversion reduce visual quality?", answer: "For compatible containers, FileKit uses instant stream-copy (-c copy) mode to swap containers in under 1 second with 100% zero loss in visual or audio quality." },
-          { question: "Can I compress videos to meet exact Discord, Gmail, or WhatsApp limits?", answer: "Yes. FileKit features mathematical bitrate targeting to ensure your compressed video never exceeds 8MB, 10MB, or 25MB file limits." }
+          { question: "Can I compress videos to meet exact Discord, Gmail, or WhatsApp limits?", answer: "Yes. FileKit features mathematical bitrate targeting to ensure your compressed video never exceeds 8MB, 10MB, or 25MB file limits." },
+          { question: "Are my media files uploaded to a server?", answer: "No. All media operations execute directly on your device with complete client-side privacy." }
         ];
 
     return { category, entityDefinition, howToSteps, faqs };
@@ -881,11 +912,10 @@ export function getToolSeoContent(slug: string, toolTitle: string, locale: strin
         { question: "FileKit 是否支持批量处理多个文件？", answer: "是的。您可以直接在浏览器工作区中同时上传并批量处理多个文件。" }
       ]
     : [
-        { title: "Select your file", description: "Choose your document or image from your local device." },
         { question: "Is FileKit really 100% free and private?", answer: "Yes. FileKit operates primarily in your web browser using WebAssembly. Your confidential documents never leave your computer for local operations." },
         { question: "Do I need to create an account or provide an email?", answer: "No account, email, or credit card is required. You get immediate access to the tool with zero friction." },
         { question: "Does FileKit support bulk batch conversions?", answer: "Yes. You can process multiple files simultaneously directly within your browser workspace." }
-      ] as any;
+      ];
 
   return { category, entityDefinition, howToSteps, faqs };
 }

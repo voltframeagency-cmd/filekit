@@ -31,11 +31,14 @@ export function runSchemaGeneratorTests() {
   if (graphData["@context"] !== "https://schema.org") {
     throw new Error("Schema context must be https://schema.org");
   }
-  if (!Array.isArray(graphData["@graph"]) || graphData["@graph"].length !== 5) {
-    throw new Error(`Expected 5 entities in @graph, got ${graphData["@graph"]?.length}`);
+  if (!Array.isArray(graphData["@graph"]) || graphData["@graph"].length !== 6) {
+    throw new Error(`Expected 6 entities in @graph, got ${graphData["@graph"]?.length}`);
   }
 
   const types = graphData["@graph"].map((node: any) => node["@type"]);
+  if (!types.includes("WebSite")) {
+    throw new Error("WebSite entity missing from schema graph");
+  }
   if (!types.some((t: any) => Array.isArray(t) && t.includes("WebApplication"))) {
     throw new Error("WebApplication entity missing from schema graph");
   }
@@ -51,8 +54,8 @@ export function runSchemaGeneratorTests() {
   if (!types.includes("Organization")) {
     throw new Error("Organization entity missing from schema graph");
   }
-  totalAssertions += 6;
-  console.log("✓ Unified JSON-LD graph structure and all 5 Schema.org entities verified.");
+  totalAssertions += 7;
+  console.log("✓ Unified JSON-LD graph structure and all 6 Schema.org entities verified.");
 
   // 2. High-Intent AEO FAQ & HowTo Knowledge Base Across Format Families
   console.log("▶ Testing AEO Knowledge Base across All Tool Families...");

@@ -1,5 +1,8 @@
-import { permanentRedirect } from "next/navigation";
+"use client";
 
-export default function PdfToDocxRedirectPage() {
-  permanentRedirect("/pdf-to-word");
+import React from "react";
+import UniversalToolPage from "@/components/layout/UniversalToolPage";
+
+export default function PdfToDocxPage() {
+  return <UniversalToolPage slug="/pdf-to-docx" locale="en" />;
 }
