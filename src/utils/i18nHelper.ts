@@ -364,12 +364,44 @@ export function getLocalizedToolMeta(
     }
   }
 
+  if (normSlug === "/strip-exif") {
+    let titleText = "";
+    if (locale === "de") {
+      titleText = "EXIF- und GPS-Metadaten aus Bildern entfernen Kostenlos Online";
+    } else if (locale === "es" || locale === "es-419") {
+      titleText = "Eliminar metadatos EXIF de imágenes Gratis en Línea";
+    } else if (locale === "fr") {
+      titleText = "Supprimer les métadonnées EXIF des images Gratuit en Ligne";
+    } else if (locale === "it") {
+      titleText = "Rimuovere metadati EXIF dalle immagini Online Gratis";
+    } else if (locale === "pt" || locale === "pt-BR") {
+      titleText = "Remover metadados EXIF de imagens Grátis Online";
+    } else if (locale === "ca") {
+      titleText = "Eliminar metadades EXIF d'imatges Gratis en Línia";
+    } else {
+      titleText = "Strip Image EXIF Metadata Online Free";
+    }
+
+    const localizedTitle = `${titleText} | FileKit`;
+    const localizedDescription = `${titleText}. ${dict.privacyNotice}`;
+    return {
+      title: localizedTitle,
+      description: localizedDescription,
+      h1: titleText,
+      canonicalUrl: buildCanonicalUrl(normSlug),
+      locale
+    };
+  }
+
   let localizedTitle = "";
   if (localizedSource && localizedTarget && localizedSource !== localizedTarget) {
     if (locale === "zh-CN" || locale === "zh-TW") {
       localizedTitle = `${localizedSource} ${dict.to} ${localizedTarget} ${localizedAction} (${dict.onlineFree}) | FileKit`;
     } else if (locale === "ja" || locale === "ko") {
       localizedTitle = `${localizedSource} ${localizedTarget} ${localizedAction} (${dict.onlineFree}) | FileKit`;
+    } else if (locale === "de") {
+      const verb = localizedAction.charAt(0).toLowerCase() + localizedAction.slice(1);
+      localizedTitle = `${localizedSource} in ${localizedTarget} ${verb} ${dict.onlineFree} | FileKit`;
     } else {
       localizedTitle = `${localizedAction} ${localizedSource} ${dict.to} ${localizedTarget} ${dict.onlineFree} | FileKit`;
     }

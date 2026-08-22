@@ -243,7 +243,43 @@ export default function DesktopMegaMenu({
     const isRussian = activeLocale === "ru";
     const isPolish = activeLocale === "pl";
 
-    if (label === "IMAGE CONVERT" || label === "IMAGE" || label === "IMAGE CONVERSION") {
+    if (label === "IMAGE COMPRESSION") {
+      if (isGerman) return "BILD KOMPRIMIEREN";
+      if (isSpanish) return "COMPRIMIR IMAGEN";
+      if (isFrench) return "COMPRESSER L'IMAGE";
+      if (isItalian) return "COMPRIMI IMMAGINE";
+      if (isPortuguese) return "COMPRIMIR IMAGEM";
+      if (isDutch) return "AFBEELDING COMPRIMEREN";
+      if (isCatalan) return "COMPRIMIR IMATGE";
+      if (isTurkish) return "GÖRSEL SIKIŞTIRMA";
+      if (isArabic) return "ضغط الصور";
+    }
+    if (label === "IMAGE CONVERT" || label === "IMAGE CONVERSION") {
+      if (isSwedish) return "BILD KONVERTERING";
+      if (isDanish) return "BILLEDKONVERTERING";
+      if (isDutch) return "BEELD CONVERTEREN";
+      if (isRussian) return "КОНВЕРТАЦИЯ ИЗОБРАЖЕНИЙ";
+      if (isPolish) return "KONWERSJA OBRAZÓW";
+      if (isArabic) return "تحويل الصور";
+      if (isTurkish) return "GÖRSEL DÖNÜŞTÜRME";
+      if (isSpanish) return "CONVERTIR IMAGEN";
+      if (isFrench) return "CONVERSION D'IMAGE";
+      if (isGerman) return "BILD KONVERTIEREN";
+      if (isPortuguese) return "CONVERTER IMAGEM";
+      if (isItalian) return "CONVERTI IMMAGINE";
+    }
+    if (label === "IMAGE") {
+      if (navItem.id === "compress") {
+        if (isGerman) return "BILD KOMPRIMIEREN";
+        if (isSpanish) return "COMPRIMIR IMAGEN";
+        if (isFrench) return "COMPRESSER L'IMAGE";
+        if (isItalian) return "COMPRIMI IMMAGINE";
+        if (isPortuguese) return "COMPRIMIR IMAGEM";
+        if (isDutch) return "AFBEELDING COMPRIMEREN";
+        if (isCatalan) return "COMPRIMIR IMATGE";
+        if (isTurkish) return "GÖRSEL SIKIŞTIRMA";
+        if (isArabic) return "ضغط الصور";
+      }
       if (isSwedish) return "BILD KONVERTERING";
       if (isDanish) return "BILLEDKONVERTERING";
       if (isDutch) return "BEELD CONVERTEREN";
@@ -1024,6 +1060,12 @@ export default function DesktopMegaMenu({
           if (target === "Image") target = "imagen";
           if (target === "Text") target = "texto";
           if (target === "Picture") target = "imagen";
+        }
+        if (isGerman) {
+          if (source === "Image") source = "Bild";
+          if (target === "Image") target = "Bild";
+          if (target === "Text") target = "Text";
+          if (target === "Picture") target = "Bild";
         }
 
         return `${source} ${toPrep} ${target}`;

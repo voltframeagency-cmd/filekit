@@ -34,6 +34,9 @@ export function HowToStepSection({ toolTitle, steps }: HowToStepSectionProps) {
     .replace(/^تحويل /i, "")
     .replace(/^Convertir /i, "")
     .replace(/^Convert /i, "")
+    .replace(/^Konvertieren /i, "")
+    .replace(/ konvertieren$/i, "")
+    .replace(/^Image \(JPG\/PNG\/WebP\) in Sanitized Image/i, "EXIF-Metadaten entfernen")
     .replace(/\s+/g, " ")
     .trim();
 

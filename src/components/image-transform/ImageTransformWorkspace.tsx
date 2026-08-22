@@ -31,6 +31,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
 }) => {
   const { language } = useLanguage();
   const isSpanish = language === "es" || language === "es-419";
+  const isGerman = language === "de";
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceDataUrl, setSourceDataUrl] = useState<string | null>(null);
@@ -449,12 +450,16 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isSpanish
+              {isGerman
+                ? `Wählen Sie ${mode.startsWith("svg") ? "SVG-Datei" : mode === "ico-to-png" ? "ICO-Icon" : "Bilddatei"}`
+                : isSpanish
                 ? `Selecciona ${mode.startsWith("svg") ? "archivo SVG" : mode === "ico-to-png" ? "icono ICO" : "imagen"}`
                 : `Select ${mode.startsWith("svg") ? "SVG File" : mode === "ico-to-png" ? "ICO Favicon" : "Image"}`}
             </h2>
             <p className="text-sm text-slate-400">
-              {isSpanish
+              {isGerman
+                ? "100% private Verarbeitung im Speicher Ihres Browsers."
+                : isSpanish
                 ? "Procesamiento 100% privado en la memoria de tu navegador."
                 : mode === "svg-to-png"
                 ? "Convert scalable vector SVG graphics into crisp PNG raster images."
@@ -472,7 +477,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isSpanish ? "Elegir archivo" : "Choose File"}
+            {isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
             <input
               type="file"
               accept={allowedExtensions.join(",")}
@@ -510,7 +515,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isSpanish ? "Cambiar archivo" : "Change File"}
+                {isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>

@@ -14,6 +14,7 @@ interface EbookWorkspaceProps {
 export function EbookWorkspace({ mode, title, description, embedded = true }: EbookWorkspaceProps) {
   const { language } = useLanguage();
   const isSpanish = language === "es" || language === "es-419";
+  const isGerman = language === "de";
 
   const [file, setFile] = useState<File | null>(null);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -28,6 +29,13 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
     };
   }, [outputUrl]);
 
+  const getAcceptExtensions = () => {
+    if (mode === "epub-to-pdf") return ".epub";
+    if (mode === "mobi-to-pdf") return ".mobi";
+    if (mode === "azw3-to-pdf") return ".azw3,.azw";
+    return ".epub,.mobi,.azw3,.azw";
+  };
+
   const handleFileSelected = async (selectedFile: File) => {
     if (outputUrl) URL.revokeObjectURL(outputUrl);
 
@@ -39,56 +47,33 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
 
     try {
       const buf = new Uint8Array(await selectedFile.arrayBuffer());
-      let outBytes: Uint8Array;
-      let outExt = "pdf";
-      let mimeType = "application/pdf";
+      let pdfBytes: Uint8Array;
 
-      if (mode === "epub-to-pdf") {
-        outBytes = await EbookEngine.epubToPdf(buf);
-        outExt = "pdf";
-        mimeType = "application/pdf";
-      } else if (mode === "pdf-to-epub") {
-        outBytes = await EbookEngine.pdfToEpub(buf, selectedFile.name.replace(/\.[^/.]+$/, ""));
-        outExt = "epub";
-        mimeType = "application/epub+zip";
-      } else if (mode === "mobi-to-pdf") {
-        outBytes = await EbookEngine.mobiToPdf(buf);
-        outExt = "pdf";
-        mimeType = "application/pdf";
+      if (mode === "mobi-to-pdf") {
+        pdfBytes = await EbookEngine.mobiToPdf(buf);
+      } else if (mode === "azw3-to-pdf") {
+        pdfBytes = await EbookEngine.azw3ToPdf(buf);
       } else {
-        outBytes = await EbookEngine.azw3ToPdf(buf);
-        outExt = "pdf";
-        mimeType = "application/pdf";
+        pdfBytes = await EbookEngine.epubToPdf(buf);
       }
 
-      const blob = new Blob([outBytes as unknown as BlobPart], { type: mimeType });
+      const blob = new Blob([pdfBytes as unknown as BlobPart], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
 
       setOutputBlob(blob);
       setOutputUrl(url);
-      setOutputFileName(selectedFile.name.replace(/\.[^/.]+$/, "") + `.${outExt}`);
+      setOutputFileName(selectedFile.name.replace(/\.[^/.]+$/, "") + ".pdf");
     } catch (err) {
       console.error(err);
       setError(
-        isSpanish
-          ? "Error al convertir el libro electrónico. Asegúrate de que el archivo no tenga protección DRM."
-          : "Failed to convert e-book. Please ensure the file is not DRM-locked."
+        isGerman
+          ? "Fehler beim Konvertieren des E-Books in PDF. Bitte stellen Sie sicher, dass die Datei nicht DRM-geschützt ist."
+          : isSpanish
+          ? "Error al convertir el libro electrónico a PDF. Asegúrate de que el archivo no tenga DRM."
+          : "Failed to convert eBook to PDF. Please ensure the file is DRM-free."
       );
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getAcceptExtensions = () => {
-    switch (mode) {
-      case "epub-to-pdf":
-        return ".epub";
-      case "pdf-to-epub":
-        return ".pdf";
-      case "mobi-to-pdf":
-        return ".mobi,.prc";
-      case "azw3-to-pdf":
-        return ".azw,.azw3,.kf8";
     }
   };
 
@@ -97,10 +82,10 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
       {!embedded && (
         <div className="text-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            {title || "E-Book Converter"}
+            {title || (mode === "epub-to-pdf" ? "Convert EPUB to PDF" : mode === "mobi-to-pdf" ? "Convert MOBI to PDF" : "Convert AZW3 to PDF")}
           </h2>
           <p className="text-slate-500 text-sm mt-1">
-            {description || "100% In-Browser · Formatted for Kindle, Kobo, and Print"}
+            {description || "High-Fidelity Document Rendering · 100% In-Browser & Private"}
           </p>
         </div>
       )}
@@ -121,20 +106,24 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
             input.click();
           }}
         >
-          <div className="w-14 h-14 mx-auto mb-3 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center">
+          <div className="w-14 h-14 mx-auto mb-3 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            {isSpanish
-              ? `Selecciona libro electrónico (${getAcceptExtensions()})`
-              : `Select E-Book File (${getAcceptExtensions()})`}
+            {isGerman
+              ? `E-Book-Datei auswählen (${getAcceptExtensions().toUpperCase()})`
+              : isSpanish
+              ? `Selecciona archivo de eBook (${getAcceptExtensions().toUpperCase()})`
+              : `Select eBook File (${getAcceptExtensions().toUpperCase()})`}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            {isSpanish
-              ? "Sin subidas a servidores · Conversión privada en el navegador"
-              : "Zero server uploads · Private in-browser conversion"}
+            {isGerman
+              ? "Kein Server-Upload · Private Konvertierung im Browser"
+              : isSpanish
+              ? "Sin subida a servidores · Conversión privada en el navegador"
+              : "Zero Server Uploads · 100% In-Browser Private Conversion"}
           </span>
         </div>
       ) : (
@@ -152,25 +141,31 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isSpanish ? "Cambiar archivo" : "Change File"}
+              {isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
             </button>
           </div>
 
-          {loading ? (
-            <div className="py-12 text-center">
-              <div className="w-10 h-10 border-3 border-amber-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <span className="text-sm font-semibold text-slate-700">Converting e-book formatting...</span>
+          {loading && (
+            <div className="p-6 bg-slate-50 rounded-fk-lg border border-slate-200 text-center flex flex-col items-center justify-center gap-3">
+              <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-sm font-bold text-slate-700">
+                {isGerman ? "E-Book wird in PDF gerendert..." : isSpanish ? "Renderizando libro a PDF..." : "Rendering eBook pages to PDF..."}
+              </span>
             </div>
-          ) : outputUrl ? (
+          )}
+
+          {outputUrl && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-amber-900 block">
-                  {isSpanish ? `✓ Convertido exitosamente: ${outputFileName}` : `✓ Converted Successfully: ${outputFileName}`}
+                  {isGerman ? `✓ Konvertiert: ${outputFileName}` : isSpanish ? `✓ Convertido: ${outputFileName}` : `✓ Converted: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-amber-700">
-                  {isSpanish
-                    ? `Tamaño: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% En el navegador`
-                    : `Size: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% In-Browser`}
+                  {isGerman
+                    ? `Größe: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · PDF`
+                    : isSpanish
+                    ? `Tamaño: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · PDF`
+                    : `Size: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · PDF Document`}
                 </span>
               </div>
               <a
@@ -178,10 +173,10 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isSpanish ? "Descargar archivo" : "Download File"}
+                {isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
               </a>
             </div>
-          ) : null}
+          )}
 
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-fk-md">

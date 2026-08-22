@@ -14,6 +14,7 @@ interface FontWorkspaceProps {
 export function FontWorkspace({ mode, title, description, embedded = true }: FontWorkspaceProps) {
   const { language } = useLanguage();
   const isSpanish = language === "es" || language === "es-419";
+  const isGerman = language === "de";
 
   const [file, setFile] = useState<File | null>(null);
   const [fontMeta, setFontMeta] = useState<FontMetadata | null>(null);
@@ -24,7 +25,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
   const [error, setError] = useState<string | null>(null);
 
   const [previewText, setPreviewText] = useState<string>(
-    isSpanish
+    isGerman
+      ? "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern 1234567890"
+      : isSpanish
       ? "El veloz murciélago hindú comía feliz cardillo y kiwi 1234567890"
       : "The quick brown fox jumps over the lazy dog 1234567890"
   );
@@ -70,7 +73,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
     } catch (err) {
       console.error(err);
       setError(
-        isSpanish
+        isGerman
+          ? "Fehler beim Konvertieren der Schriftart. Bitte stellen Sie sicher, dass es sich um eine gültige TTF-, OTF- oder WOFF-Datei handelt."
+          : isSpanish
           ? "Error al convertir la fuente. Asegúrate de que sea un archivo TTF, OTF o WOFF válido."
           : "Failed to convert font. Please ensure it is a valid TTF, OTF, or WOFF file."
       );
@@ -114,10 +119,18 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            {isSpanish ? "Selecciona archivo de fuente (TTF, OTF, WOFF)" : "Select Font File (TTF, OTF, WOFF)"}
+            {isGerman
+              ? "Schriftartdatei auswählen (TTF, OTF, WOFF)"
+              : isSpanish
+              ? "Selecciona archivo de fuente (TTF, OTF, WOFF)"
+              : "Select Font File (TTF, OTF, WOFF)"}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            {isSpanish ? "Optimizado para la web (0% almacenamiento en servidor)" : "Optimized for fast web delivery (Zero server tracking)"}
+            {isGerman
+              ? "Für das Web optimiert (Kein Server-Tracking)"
+              : isSpanish
+              ? "Optimizado para la web (0% almacenamiento en servidor)"
+              : "Optimized for fast web delivery (Zero server tracking)"}
           </span>
         </div>
       ) : (
@@ -127,7 +140,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
             <div>
               <span className="text-sm font-bold text-slate-800 block truncate">{file.name}</span>
               <span className="text-xs text-slate-500">
-                {isSpanish
+                {isGerman
+                  ? `Format: ${fontMeta?.format.toUpperCase()} · Tabellen: ${fontMeta?.numTables} · Größe: ${(file.size / 1024).toFixed(1)} KB`
+                  : isSpanish
                   ? `Formato: ${fontMeta?.format.toUpperCase()} · Tablas: ${fontMeta?.numTables} · Tamaño: ${(file.size / 1024).toFixed(1)} KB`
                   : `Format: ${fontMeta?.format.toUpperCase()} · Tables: ${fontMeta?.numTables} · Size: ${(file.size / 1024).toFixed(1)} KB`}
               </span>
@@ -140,7 +155,7 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isSpanish ? "Cambiar fuente" : "Change Font"}
+              {isGerman ? "Schriftart ändern" : isSpanish ? "Cambiar fuente" : "Change Font"}
             </button>
           </div>
 
@@ -148,10 +163,12 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                {isSpanish ? "Vista previa interactiva" : "Live Font Preview"}
+                {isGerman ? "Interaktive Vorschau" : isSpanish ? "Vista previa interactiva" : "Live Font Preview"}
               </label>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400">{isSpanish ? "Tamaño:" : "Size:"} {fontSize}px</span>
+                <span className="text-xs text-slate-400">
+                  {isGerman ? "Größe:" : isSpanish ? "Tamaño:" : "Size:"} {fontSize}px
+                </span>
                 <input
                   type="range"
                   min="16"
@@ -177,10 +194,16 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
             <div className="p-4 bg-purple-50 border border-purple-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-purple-900 block">
-                  {isSpanish ? `✓ Fuente convertida: ${outputFileName}` : `✓ Font Converted: ${outputFileName}`}
+                  {isGerman
+                    ? `✓ Schriftart konvertiert: ${outputFileName}`
+                    : isSpanish
+                    ? `✓ Fuente convertida: ${outputFileName}`
+                    : `✓ Font Converted: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-purple-700">
-                  {isSpanish
+                  {isGerman
+                    ? `Größe: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% Im Browser`
+                    : isSpanish
                     ? `Tamaño: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% En el navegador`
                     : `Size: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% In-Browser`}
                 </span>
@@ -190,7 +213,7 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isSpanish ? "Descargar fuente" : "Download Font"}
+                {isGerman ? "Schriftart herunterladen" : isSpanish ? "Descargar fuente" : "Download Font"}
               </a>
             </div>
           )}

@@ -14,6 +14,7 @@ interface SubtitleWorkspaceProps {
 export default function SubtitleWorkspace({ mode, title, subtitle, embedded = true }: SubtitleWorkspaceProps) {
   const { language } = useLanguage();
   const isSpanish = language === "es" || language === "es-419";
+  const isGerman = language === "de";
 
   const [file, setFile] = useState<File | null>(null);
   const [inputText, setInputText] = useState<string>("");
@@ -60,7 +61,13 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
       setDownloadUrl(url);
     } catch (err: any) {
       console.error(err);
-      setError(isSpanish ? "Error al procesar y convertir el archivo de subtítulos." : "Failed to parse and convert subtitle file.");
+      setError(
+        isGerman
+          ? "Fehler beim Verarbeiten und Konvertieren der Untertiteldatei."
+          : isSpanish
+          ? "Error al procesar y convertir el archivo de subtítulos."
+          : "Failed to parse and convert subtitle file."
+      );
     } finally {
       setLoading(false);
     }
@@ -94,12 +101,18 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
             <span className="text-base font-bold text-slate-800">
               {file
                 ? file.name
+                : isGerman
+                ? `Untertiteldatei auswählen (${mode === "srt-to-vtt" ? ".SRT" : ".VTT"})`
                 : isSpanish
                 ? `Selecciona archivo de subtítulos ${mode === "srt-to-vtt" ? ".SRT" : ".VTT"}`
                 : `Select ${mode === "srt-to-vtt" ? ".SRT" : ".VTT"} subtitle file`}
             </span>
             <span className="text-xs text-slate-400">
-              {isSpanish ? "100% En el navegador · Conversión instantánea y privada" : "100% In-Browser · Private & Instant Conversion"}
+              {isGerman
+                ? "100% Im Browser · Private & sofortige Konvertierung"
+                : isSpanish
+                ? "100% En el navegador · Conversión instantánea y privada"
+                : "100% In-Browser · Private & Instant Conversion"}
             </span>
           </label>
         </div>
@@ -114,14 +127,24 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
           <div className="space-y-4 pt-4 border-t border-slate-100">
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-slate-700">
-                {isSpanish ? "Vista previa de la conversión:" : "Conversion Preview:"}
+                {isGerman
+                  ? "Vorschau der Konvertierung:"
+                  : isSpanish
+                  ? "Vista previa de la conversión:"
+                  : "Conversion Preview:"}
               </span>
               <a
                 href={downloadUrl}
                 download={downloadName}
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-sm transition-all inline-flex items-center gap-2"
               >
-                <span>{isSpanish ? `Descargar ${downloadName}` : `Download ${downloadName}`}</span>
+                <span>
+                  {isGerman
+                    ? `${downloadName} herunterladen`
+                    : isSpanish
+                    ? `Descargar ${downloadName}`
+                    : `Download ${downloadName}`}
+                </span>
                 <span className="text-xs">↓</span>
               </a>
             </div>
