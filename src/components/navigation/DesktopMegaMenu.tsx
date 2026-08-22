@@ -1067,6 +1067,12 @@ export default function DesktopMegaMenu({
           if (target === "Text") target = "Text";
           if (target === "Picture") target = "Bild";
         }
+        if (isFrench) {
+          if (source === "Image") source = "Image";
+          if (target === "Image") target = "Image";
+          if (target === "Text") target = "Texte";
+          if (target === "Picture") target = "Image";
+        }
 
         return `${source} ${toPrep} ${target}`;
       }

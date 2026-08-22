@@ -22,6 +22,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
   const { language } = useLanguage();
   const isSpanish = language === "es" || language === "es-419";
   const isGerman = language === "de";
+  const isFrench = language === "fr";
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -61,7 +62,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
     setIsProcessing(true);
     setErrorMessage(null);
     setProgressStage(
-      isGerman
+      isFrench
+        ? "Connexion à la microVM isolée..."
+        : isGerman
         ? "Verbindung zur isolierten MicroVM wird hergestellt..."
         : isSpanish
         ? "Conectando a microVM aislada..."
@@ -73,7 +76,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
       formData.append("file", sourceFile);
 
       setProgressStage(
-        isGerman
+        isFrench
+          ? "Rendu des pages du document..."
+          : isGerman
           ? "Dokumentseiten werden gerendert..."
           : isSpanish
           ? "Renderizando páginas del documento..."
@@ -89,7 +94,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
         const errJson = await response.json().catch(() => ({}));
         throw new Error(
           errJson.error ||
-            (isGerman
+            (isFrench
+              ? `Erreur de conversion sur le serveur (${response.status})`
+              : isGerman
               ? `Server-Konvertierungsfehler (${response.status})`
               : isSpanish
               ? `Error en la conversión del servidor (${response.status})`
@@ -98,7 +105,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
       }
 
       setProgressStage(
-        isGerman
+        isFrench
+          ? "Vérification du flux PDF..."
+          : isGerman
           ? "PDF-Ausgabe wird überprüft..."
           : isSpanish
           ? "Verificando archivo PDF resultante..."
@@ -109,7 +118,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
       if (!data.success) {
         throw new Error(
           data.error ||
-            (isGerman
+            (isFrench
+              ? "Échec de la conversion du document."
+              : isGerman
               ? "Fehler beim Konvertieren des Dokuments."
               : isSpanish
               ? "Error al convertir el documento."
@@ -126,7 +137,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
     } catch (err: any) {
       setErrorMessage(
         err?.message ||
-          (isGerman
+          (isFrench
+            ? "Une erreur inattendue est survenue lors de la conversion."
+            : isGerman
             ? "Ein unerwarteter Fehler ist bei der Konvertierung aufgetreten."
             : isSpanish
             ? "Ocurrió un error inesperado durante la conversión."
@@ -158,14 +171,18 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isGerman
+              {isFrench
+                ? "Sélectionner le document à convertir"
+                : isGerman
                 ? "Dokument zum Konvertieren auswählen"
                 : isSpanish
                 ? "Selecciona el documento para convertir"
                 : `Select ${documentTypeLabel}`}
             </h2>
             <p className="text-sm text-slate-400">
-              {isGerman
+              {isFrench
+                ? "Conversion haute fidélité via microVM isolée et 0% de rétention de données."
+                : isGerman
                 ? "Hochpräzise Konvertierung in isolierter MicroVM mit 0% Datenspeicherung."
                 : isSpanish
                 ? "Conversión segura de alta fidelidad con microVM aislada y 0% de retención de datos."
@@ -173,7 +190,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : `Choose ${documentTypeLabel} File`}
+            {isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : `Choose ${documentTypeLabel} File`}
             <input type="file" accept={acceptedExtensions} className="hidden" onChange={handleFileChange} />
           </label>
         </div>
@@ -202,7 +219,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>
@@ -212,14 +229,18 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
             <span className="text-blue-400 text-lg">🛡️</span>
             <div className="text-xs text-slate-300 flex flex-col gap-1 leading-relaxed">
               <span className="font-bold text-white">
-                {isGerman
+                {isFrench
+                  ? "Bac à sable MicroVM éphémère"
+                  : isGerman
                   ? "Isolierte MicroVM-Sandbox"
                   : isSpanish
                   ? "Entorno aislado en microVM efímera"
                   : "Ephemeral MicroVM Sandbox"}
               </span>
               <span>
-                {isGerman
+                {isFrench
+                  ? "Le traitement du document s'exécute dans un conteneur microVM isolé. Les fichiers sont chiffrés en transit et purgés automatiquement de la mémoire immédiatement après la conversion."
+                  : isGerman
                   ? "Die Dokumentverarbeitung erfolgt in einer isolierten MicroVM. Dateien werden verschlüsselt übertragen und sofort nach der Konvertierung automatisch aus dem Speicher gelöscht."
                   : isSpanish
                   ? "El renderizado del documento se ejecuta en un contenedor aislado. Los archivos están cifrados en tránsito y se eliminan automáticamente de la memoria inmediatamente tras la conversión."
@@ -247,6 +268,8 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>{progressStage}</span>
                 </>
+              ) : isFrench ? (
+                "Convertir en PDF"
               ) : isGerman ? (
                 "In PDF konvertieren"
               ) : isSpanish ? (
@@ -266,14 +289,18 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">
-                    {isGerman
+                    {isFrench
+                      ? "Converti en PDF avec succès"
+                      : isGerman
                       ? "Erfolgreich in PDF konvertiert"
                       : isSpanish
                       ? "Convertido a PDF exitosamente"
                       : "Converted to PDF Successfully"}
                   </h4>
                   <p className="text-xs text-slate-400">
-                    {isGerman
+                    {isFrench
+                      ? `Rendu en ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} Ko • Conteneur éphémère purgé`
+                      : isGerman
                       ? `Gerendert in ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Container gelöscht`
                       : isSpanish
                       ? `Procesado en ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Contenedor purgado`
@@ -286,7 +313,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 onClick={handleDownload}
                 className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition shadow-lg"
               >
-                {isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
+                {isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
               </button>
             </div>
           )}
@@ -300,7 +327,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
             <div className="flex items-center gap-3 text-blue-400">
               <span className="text-2xl">🔒</span>
               <h3 className="font-bold text-white text-lg">
-                {isGerman
+                {isFrench
+                  ? "Avis de conversion sécurisée sur serveur"
+                  : isGerman
                   ? "Sicherer Server-Konvertierungshinweis"
                   : isSpanish
                   ? "Aviso de conversión segura en servidor"
@@ -308,7 +337,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
               </h3>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              {isGerman
+              {isFrench
+                ? "Cette conversion de document nécessite une microVM cloud isolée pour garantir une fidélité typographique et de mise en page totale. Votre fichier sera traité en mémoire et purgé immédiatement."
+                : isGerman
                 ? "Diese Dokumentkonvertierung erfordert eine isolierte MicroVM in der Cloud, um maximale Typografie- und Layout-Treue zu gewährleisten. Ihre Datei wird im Speicher verarbeitet und sofort danach gelöscht."
                 : isSpanish
                 ? "Este documento requiere conversión en una microVM aislada para garantizar la máxima fidelidad tipográfica y de diseño. Tu archivo se procesa en memoria y se elimina automáticamente inmediatamente después."
@@ -320,7 +351,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 onClick={() => setShowConsentModal(false)}
                 className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition"
               >
-                {isGerman ? "Abbrechen" : isSpanish ? "Cancelar" : "Cancel"}
+                {isFrench ? "Annuler" : isGerman ? "Abbrechen" : isSpanish ? "Cancelar" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -330,7 +361,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 }}
                 className="px-5 py-2 text-xs font-bold bg-fk-primary hover:bg-fk-primary/90 text-white rounded-lg shadow-lg transition"
               >
-                {isGerman ? "Autorisieren & Konvertieren" : isSpanish ? "Autorizar y convertir" : "Authorize & Convert"}
+                {isFrench ? "Autoriser et convertir" : isGerman ? "Autorisieren & Konvertieren" : isSpanish ? "Autorizar y convertir" : "Authorize & Convert"}
               </button>
             </div>
           </div>

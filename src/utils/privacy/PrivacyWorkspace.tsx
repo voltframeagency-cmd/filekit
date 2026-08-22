@@ -14,6 +14,7 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
   const { language } = useLanguage();
   const isSpanish = language === "es" || language === "es-419";
   const isGerman = language === "de";
+  const isFrench = language === "fr";
 
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -50,7 +51,9 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
     } catch (err) {
       console.error(err);
       setError(
-        isGerman
+        isFrench
+          ? "Échec de l'analyse des métadonnées du fichier."
+          : isGerman
           ? "Fehler beim Lesen der Dateimetadaten."
           : isSpanish
           ? "Error al inspeccionar los metadatos del archivo."
@@ -77,7 +80,9 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
     } catch (err) {
       console.error(err);
       setError(
-        isGerman
+        isFrench
+          ? "Échec de la suppression des métadonnées du fichier."
+          : isGerman
           ? "Fehler beim Entfernen der Metadaten."
           : isSpanish
           ? "Error al eliminar los metadatos del archivo."
@@ -123,14 +128,18 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            {isGerman
+            {isFrench
+              ? "Sélectionner une photo pour supprimer les métadonnées"
+              : isGerman
               ? "Foto auswählen, um Metadaten zu entfernen"
               : isSpanish
               ? "Selecciona foto para eliminar metadatos"
               : "Select Photo to Strip Metadata"}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            {isGerman
+            {isFrench
+              ? "Prend en charge JPG, PNG et WebP (Traitement 100% privé)"
+              : isGerman
               ? "Unterstützt JPG, PNG und WebP (100% private Verarbeitung)"
               : isSpanish
               ? "Admite JPG, PNG y WebP (Procesamiento 100% privado)"
@@ -143,7 +152,7 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-fk-lg border border-slate-200">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                {isGerman ? "Dateidetails" : isSpanish ? "Detalles del archivo" : "File Details"}
+                {isFrench ? "Détails du fichier" : isGerman ? "Dateidetails" : isSpanish ? "Detalles del archivo" : "File Details"}
               </span>
               <span className="text-sm font-semibold text-slate-800 block truncate">{file.name}</span>
               <span className="text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
@@ -151,18 +160,22 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
 
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                {isGerman ? "Erkannte Metadaten" : isSpanish ? "Metadatos detectados" : "Detected Metadata"}
+                {isFrench ? "Métadonnées détectées" : isGerman ? "Erkannte Metadaten" : isSpanish ? "Metadatos detectados" : "Detected Metadata"}
               </span>
               <div className="flex flex-wrap gap-2">
                 <span className={`px-2 py-0.5 text-xs font-bold rounded ${metadata?.hasGps ? "bg-amber-100 text-amber-800" : "bg-slate-200 text-slate-600"}`}>
-                  {isGerman
+                  {isFrench
+                    ? `Position GPS : ${metadata?.hasGps ? "Détectée (Risque)" : "Aucune"}`
+                    : isGerman
                     ? `GPS-Ort: ${metadata?.hasGps ? "Erkannt (Sicherheitsrisiko)" : "Bereinigt"}`
                     : isSpanish
                     ? `Ubicación GPS: ${metadata?.hasGps ? "Detectada" : "Limpia"}`
                     : `GPS Location: ${metadata?.hasGps ? "Detected (Vulnerable)" : "Clean"}`}
                 </span>
                 <span className={`px-2 py-0.5 text-xs font-bold rounded ${metadata?.hasExif ? "bg-amber-100 text-amber-800" : "bg-slate-200 text-slate-600"}`}>
-                  {isGerman
+                  {isFrench
+                    ? `Balises EXIF : ${metadata?.hasExif ? "Détectées" : "Aucune"}`
+                    : isGerman
                     ? `EXIF-Geräte-Tags: ${metadata?.hasExif ? "Erkannt" : "Keine"}`
                     : isSpanish
                     ? `Etiquetas EXIF: ${metadata?.hasExif ? "Detectadas" : "Ninguna"}`
@@ -170,7 +183,7 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
                 </span>
                 {metadata?.cameraMake && (
                   <span className="px-2 py-0.5 text-xs font-bold rounded bg-blue-100 text-blue-800">
-                    {isGerman ? "Kamera:" : isSpanish ? "Cámara:" : "Camera:"} {metadata.cameraMake}
+                    {isFrench ? "Appareil :" : isGerman ? "Kamera:" : isSpanish ? "Cámara:" : "Camera:"} {metadata.cameraMake}
                   </span>
                 )}
               </div>
@@ -185,21 +198,41 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
               className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-bold rounded-fk-lg shadow-fk-button transition-all text-base flex items-center justify-center gap-2"
             >
               {loading
-                ? (isGerman ? "Bild wird bereinigt..." : isSpanish ? "Limpiando imagen..." : "Sanitizing image...")
-                : (isGerman ? "Alle EXIF- und GPS-Metadaten entfernen" : isSpanish ? "Eliminar todos los metadatos EXIF y GPS" : "Strip All EXIF & GPS Metadata")}
+                ? (isFrench
+                    ? "Nettoyage de l'image en cours..."
+                    : isGerman
+                    ? "Bild wird bereinigt..."
+                    : isSpanish
+                    ? "Limpiando imagen..."
+                    : "Sanitizing image...")
+                : (isFrench
+                    ? "Supprimer toutes les métadonnées EXIF et GPS"
+                    : isGerman
+                    ? "Alle EXIF- und GPS-Metadaten entfernen"
+                    : isSpanish
+                    ? "Eliminar todos los metadatos EXIF y GPS"
+                    : "Strip All EXIF & GPS Metadata")}
             </button>
           ) : (
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-emerald-900 block">
-                  {isGerman
+                  {isFrench
+                    ? "✓ Photo nettoyée (Aucun tag GPS, appareil ou numéro de série)"
+                    : isGerman
                     ? "✓ Foto bereinigt (Keine GPS-, Geräte- oder Seriennummer-Tags)"
                     : isSpanish
                     ? "✓ Foto sanitizada (Sin GPS ni datos de cámara)"
                     : "✓ Photo Sanitized (Zero GPS, Device, or Serial Tags)"}
                 </span>
                 <span className="text-xs text-emerald-700">
-                  {isGerman ? `Bereit zum Download: clean_${file.name}` : isSpanish ? `Listo para descargar: clean_${file.name}` : `Ready to download: clean_${file.name}`}
+                  {isFrench
+                    ? `Prêt à télécharger : clean_${file.name}`
+                    : isGerman
+                    ? `Bereit zum Download: clean_${file.name}`
+                    : isSpanish
+                    ? `Listo para descargar: clean_${file.name}`
+                    : `Ready to download: clean_${file.name}`}
                 </span>
               </div>
               <a
@@ -207,7 +240,7 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
                 download={`clean_${file.name}`}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isGerman ? "Bereinigtes Foto herunterladen" : isSpanish ? "Descargar foto limpia" : "Download Clean Photo"}
+                {isFrench ? "Télécharger la photo nettoyée" : isGerman ? "Bereinigtes Foto herunterladen" : isSpanish ? "Descargar foto limpia" : "Download Clean Photo"}
               </a>
             </div>
           )}
