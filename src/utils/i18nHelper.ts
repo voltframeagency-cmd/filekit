@@ -47,7 +47,7 @@ export const VERB_DICTIONARY: Record<SupportedLocale, VerbDictionaryEntry> = {
     convert: "Converteren", compress: "Comprimeren", merge: "Samenvoegen", split: "Splitsen", rotate: "Draaien", crop: "Bijsnijden", resize: "Formaat wijzigen", extract: "Uittrekken", to: "naar", from: "van", onlineFree: "Gratis Online", privacyNotice: "100% privé verwerking direct in de browser zonder uploads."
   },
   ca: {
-    convert: "Convertir", compress: "Comprimir", merge: "Fusionar", split: "Dividir", rotate: "Girar", crop: "Retallar", resize: "Redimensionar", extract: "Extreure", to: "a", from: "de", onlineFree: "Online Gratuït", privacyNotice: "Processament 100% privat al navegador sense pujar fitxers."
+    convert: "Convertir", compress: "Comprimir", merge: "Unir", split: "Dividir", rotate: "Girar", crop: "Retallar", resize: "Redimensionar", extract: "Extreure", to: "a", from: "de", onlineFree: "Online Gratuït", privacyNotice: "Processament 100% privat al navegador sense pujar fitxers."
   },
   sv: {
     convert: "Konvertera", compress: "Komprimera", merge: "Slå samman", split: "Dela upp", rotate: "Rotera", crop: "Beskär", resize: "Ändra storlek", extract: "Extrahera", to: "till", from: "från", onlineFree: "Gratis Online", privacyNotice: "100% privat bearbetning i webbläsaren utan uppladdning."
