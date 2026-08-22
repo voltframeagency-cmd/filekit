@@ -407,6 +407,8 @@ export default function DesktopMegaMenu({
       if (isSpanish) return "EDICIÓN Y ORGANIZACIÓN DE PÁGINAS";
       if (isFrench) return "ÉDITION ET ORGANISATION DE PAGES";
       if (isGerman) return "SEITENBEARBEITUNG & ORGANISATION";
+      if (isPortuguese) return "EDIÇÃO E ORGANIZAÇÃO DE PÁGINAS";
+      if (isItalian) return "MODIFICA E ORGANIZZAZIONE PAGINE";
     }
     if (label === "COMPRESS & CONVERT" || label === "PDF Conversions") {
       if (isSwedish) return "KOMPRIMERA & KONVERTERA";
@@ -419,6 +421,8 @@ export default function DesktopMegaMenu({
       if (isSpanish) return "COMPRIMIR Y CONVERTIR";
       if (isFrench) return "COMPRESSER ET CONVERTIR";
       if (isGerman) return "KOMPRIMIEREN & KONVERTIEREN";
+      if (isPortuguese) return "COMPRIMIR E CONVERTER";
+      if (isItalian) return "COMPRIMI E CONVERTI";
     }
     if (label === "Popular target sizes") {
       if (isSwedish) return "Populära målstorlekar";
@@ -427,6 +431,8 @@ export default function DesktopMegaMenu({
       if (isSpanish) return "Tamaños populares";
       if (isFrench) return "Tailles cibles populaires";
       if (isGerman) return "Beliebte Zielgrößen";
+      if (isPortuguese) return "Tamanhos populares";
+      if (isItalian) return "Dimensioni popolari";
     }
     return label;
   };
@@ -459,6 +465,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Belirli bir boyuta sıkıştır";
       if (isFrench) return "Compresser à une taille spécifique";
       if (isGerman) return "Auf bestimmte Größe komprimieren";
+      if (isPortuguese) return "Comprimir para tamanho específico";
+      if (isItalian) return "Comprimi a dimensione specifica";
     }
 
     if (label.includes(" to ")) {
@@ -476,6 +484,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Sayfaları Döndür";
       if (isGerman) return "Seiten drehen";
       if (isFrench) return "Faire pivoter les pages";
+      if (isPortuguese) return "Rodar páginas";
+      if (isItalian) return "Ruota pagine";
     }
     if (label === "Extract Pages" || label === "Extract PDF Pages") {
       if (isSwedish) return "Extrahera sidor";
@@ -484,6 +494,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Sayfaları Ayıkla";
       if (isGerman) return "Seiten extrahieren";
       if (isFrench) return "Extraire des pages";
+      if (isPortuguese) return "Extrair páginas";
+      if (isItalian) return "Estrai pagine";
     }
     if (label === "Extract Images" || label === "Extract Images from PDF") {
       if (isSwedish) return "Extrahera bilder";
@@ -492,6 +504,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Görselleri Ayıkla";
       if (isGerman) return "Bilder extrahieren";
       if (isFrench) return "Extraire des images";
+      if (isPortuguese) return "Extrair imagens";
+      if (isItalian) return "Estrai immagini";
     }
     if (label === "Add Watermark" || label === "Watermark PDF") {
       if (isSwedish) return "Lägg till vattenstämpel";
@@ -500,6 +514,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Filigran Ekle";
       if (isGerman) return "Wasserzeichen hinzufügen";
       if (isFrench) return "Ajouter un filigrane";
+      if (isPortuguese) return "Adicionar marca de água";
+      if (isItalian) return "Aggiungi filigrana";
     }
     if (label === "PDF to Image" || label === "PDF in Image") {
       if (isSwedish) return "PDF till bild";
@@ -508,6 +524,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "PDF'ten Görsele";
       if (isGerman) return "PDF in Bild";
       if (isFrench) return "PDF en image";
+      if (isPortuguese) return "PDF para imagem";
+      if (isItalian) return "PDF in immagine";
     }
     if (label === "Image to PDF" || label === "Image in PDF") {
       if (isSwedish) return "Bild till PDF";
@@ -516,6 +534,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Görselden PDF'e";
       if (isGerman) return "Bild in PDF";
       if (isFrench) return "Image en PDF";
+      if (isPortuguese) return "Imagem para PDF";
+      if (isItalian) return "Immagine in PDF";
     }
     if (label === "PDF to Text") {
       if (isSwedish) return "PDF till text";
@@ -524,6 +544,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "PDF'ten Metne";
       if (isGerman) return "PDF in Text";
       if (isFrench) return "PDF en texte";
+      if (isPortuguese) return "PDF para texto";
+      if (isItalian) return "PDF in testo";
     }
     if (label === "PDF Compressor") {
       if (isSwedish) return "PDF-komprimerare";
@@ -532,6 +554,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "PDF Sıkıştırıcı";
       if (isFrench) return "Compresseur PDF";
       if (isGerman) return "PDF-Komprimierer";
+      if (isPortuguese) return "Compressor de PDF";
+      if (isItalian) return "Compressore PDF";
     }
     if (label === "Image Compressor") {
       if (isSwedish) return "Bildkomprimerare";
@@ -540,6 +564,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Görsel Sıkıştırıcı";
       if (isFrench) return "Compresseur d'image";
       if (isGerman) return "Bild-Komprimierer";
+      if (isPortuguese) return "Compressor de imagens";
+      if (isItalian) return "Compressore immagini";
     }
     if (label === "Image Converter") {
       if (isSwedish) return "Bildkonverterare";
@@ -548,6 +574,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Görsel Dönüştürücü";
       if (isFrench) return "Convertisseur d'image";
       if (isGerman) return "Bild-Konverter";
+      if (isPortuguese) return "Conversor de imagens";
+      if (isItalian) return "Convertitore immagini";
     }
     if (label === "Merge PDF Files" || label === "Merge PDF") {
       if (isSwedish) return "Slå samman PDF-filer";
@@ -556,6 +584,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "PDF Dosyalarını Birleştir";
       if (isFrench) return "Fusionner des PDF";
       if (isGerman) return "PDF-Dateien zusammenfügen";
+      if (isPortuguese) return "Juntar ficheiros PDF";
+      if (isItalian) return "Unisci file PDF";
     }
     if (label === "Split PDF Document" || label === "Split PDF") {
       if (isSwedish) return "Dela upp PDF-dokument";
@@ -564,6 +594,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "PDF Belgesini Böl";
       if (isFrench) return "Diviser document PDF";
       if (isGerman) return "PDF-Dokument trennen";
+      if (isPortuguese) return "Dividir documento PDF";
+      if (isItalian) return "Dividi documento PDF";
     }
     if (label === "Reorder Pages") {
       if (isSwedish) return "Ändra ordning på sidor";
@@ -572,6 +604,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Sayfaları Yeniden Sırala";
       if (isGerman) return "Seiten neu anordnen";
       if (isFrench) return "Réorganiser les pages";
+      if (isPortuguese) return "Reordenar páginas";
+      if (isItalian) return "Riordina pagine";
     }
     if (label === "Reverse PDF") {
       if (isSwedish) return "Vänd PDF-ordning";
@@ -580,6 +614,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "PDF'i Tersine Çevir";
       if (isGerman) return "PDF umkehren";
       if (isFrench) return "Inverser le PDF";
+      if (isPortuguese) return "Inverter PDF";
+      if (isItalian) return "Inverti PDF";
     }
     if (label === "Add Blank Page") {
       if (isSwedish) return "Lägg till tom sida";
@@ -588,6 +624,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Boş Sayfa Ekle";
       if (isGerman) return "Leere Seite hinzufügen";
       if (isFrench) return "Ajouter une page blanche";
+      if (isPortuguese) return "Adicionar página em branco";
+      if (isItalian) return "Aggiungi pagina vuota";
     }
     if (label === "Duplicate Pages") {
       if (isSwedish) return "Duplicera sidor";
@@ -596,6 +634,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Sayfaları Çoğalt";
       if (isGerman) return "Seiten duplizieren";
       if (isFrench) return "Dupliquer les pages";
+      if (isPortuguese) return "Duplicar páginas";
+      if (isItalian) return "Duplica pagine";
     }
     if (label === "Delete Pages") {
       if (isSwedish) return "Ta bort sidor";
@@ -604,6 +644,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "Sayfaları Sil";
       if (isGerman) return "Seiten löschen";
       if (isFrench) return "Supprimer des pages";
+      if (isPortuguese) return "Eliminar páginas";
+      if (isItalian) return "Elimina pagine";
     }
     if (label === "Flatten PDF") {
       if (isSwedish) return "Platta till PDF";
@@ -612,6 +654,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "PDF'i Düzleştir";
       if (isGerman) return "PDF glätten";
       if (isFrench) return "Aplatir le PDF";
+      if (isPortuguese) return "Aplanar PDF";
+      if (isItalian) return "Appiattisci PDF";
     }
 
     // Localize common action prefixes
@@ -623,6 +667,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return `${item} Sıkıştır`;
       if (isFrench) return `Compresser ${item}`;
       if (isGerman) return `${item} komprimieren`;
+      if (isPortuguese) return `Comprimir ${item}`;
+      if (isItalian) return `Comprimi ${item}`;
     }
     if (label.startsWith("Convert ")) {
       const item = label.replace("Convert ", "");
@@ -632,6 +678,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return `${item} Dönüştür`;
       if (isFrench) return `Convertir ${item}`;
       if (isGerman) return `${item} konvertieren`;
+      if (isPortuguese) return `Converter ${item}`;
+      if (isItalian) return `Converti ${item}`;
     }
     if (label.startsWith("Extract ")) {
       const item = label.replace("Extract ", "");
@@ -641,6 +689,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return `${item} Ayıkla`;
       if (isFrench) return `Extraire ${item}`;
       if (isGerman) return `${item} extrahieren`;
+      if (isPortuguese) return `Extrair ${item}`;
+      if (isItalian) return `Estrai ${item}`;
     }
     if (label.startsWith("Rotate ")) {
       const item = label.replace("Rotate ", "");
@@ -650,6 +700,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return `${item} Döndür`;
       if (isFrench) return `Faire pivoter ${item}`;
       if (isGerman) return `${item} drehen`;
+      if (isPortuguese) return `Rodar ${item}`;
+      if (isItalian) return `Ruota ${item}`;
     }
     if (label.startsWith("Trim ")) {
       const item = label.replace("Trim ", "");
@@ -659,6 +711,8 @@ export default function DesktopMegaMenu({
       if (isTurkish) return `${item} Kırp`;
       if (isFrench) return `Couper ${item}`;
       if (isGerman) return `${item} schneiden`;
+      if (isPortuguese) return `Cortar ${item}`;
+      if (isItalian) return `Taglia ${item}`;
     }
     if (label === "Grayscale Image") {
       if (isSwedish) return "Gör bilden gråskalig";
@@ -883,10 +937,10 @@ export default function DesktopMegaMenu({
                       </div>
                       <span className="text-[12px] text-slate-500 font-normal mt-1 leading-snug">
                         {group.title === "IMAGE"
-                          ? (activeLocale === "sv" ? "Optimera JPG, PNG och WebP lokalt" : activeLocale === "ar" ? "تحسين ملفات JPG وPNG وWebP محلياً" : activeLocale === "tr" ? "JPG, PNG ve WebP'leri yerel olarak optimize edin" : activeLocale === "es" || activeLocale === "es-419" ? "Optimiza imágenes JPG, PNG y WebP en tu dispositivo" : activeLocale === "de" ? "JPG, PNG und WebP lokal optimieren" : activeLocale === "fr" ? "Optimisez JPG, PNG et WebP localement" : "Optimize JPEGs, PNGs, and WebPs locally")
+                          ? (activeLocale === "sv" ? "Optimera JPG, PNG och WebP lokalt" : activeLocale === "ar" ? "تحسين ملفات JPG وPNG وWebP محلياً" : activeLocale === "tr" ? "JPG, PNG ve WebP'leri yerel olarak optimize edin" : activeLocale === "es" || activeLocale === "es-419" ? "Optimiza imágenes JPG, PNG y WebP en tu dispositivo" : activeLocale === "de" ? "JPG, PNG und WebP lokal optimieren" : activeLocale === "fr" ? "Optimisez JPG, PNG et WebP localement" : (activeLocale === "pt" || activeLocale === "pt-BR") ? "Otimize imagens JPG, PNG e WebP no seu dispositivo" : "Optimize JPEGs, PNGs, and WebPs locally")
                           : (group.primaryLink?.href === "/merge-pdf")
-                          ? (activeLocale === "sv" ? "Kombinera PDF-filer i webbläsaren" : activeLocale === "ar" ? "دمج ملفات PDF في المتصفح" : activeLocale === "tr" ? "PDF dosyalarını tarayıcıda birleştirin" : activeLocale === "es" || activeLocale === "es-419" ? "Combina múltiples archivos PDF en tu navegador" : activeLocale === "de" ? "Mehrere PDF-Dateien im Browser verbinden" : activeLocale === "fr" ? "Combinez plusieurs fichiers PDF dans le navigateur" : "Combine multiple PDF files in browser")
-                          : (activeLocale === "sv" ? "Minska PDF under 2 MB i webbläsaren" : activeLocale === "ar" ? "تقليص ملفات PDF لأقل من 2 ميغابايت" : activeLocale === "tr" ? "PDF'leri 2 MB altına küçültün" : activeLocale === "es" || activeLocale === "es-419" ? "Reduce el tamaño de PDFs a menos de 2 MB" : activeLocale === "de" ? "PDFs unter 2 MB im Browser verkleinern" : activeLocale === "fr" ? "Réduisez les PDF à moins de 2 Mo dans le navigateur" : "Shrink PDFs below 2 MB in browser")}
+                          ? (activeLocale === "sv" ? "Kombinera PDF-filer i webbläsaren" : activeLocale === "ar" ? "دمج ملفات PDF في المتصفح" : activeLocale === "tr" ? "PDF dosyalarını tarayıcıda birleştirin" : activeLocale === "es" || activeLocale === "es-419" ? "Combina múltiples archivos PDF en tu navegador" : activeLocale === "de" ? "Mehrere PDF-Dateien im Browser verbinden" : activeLocale === "fr" ? "Combinez plusieurs fichiers PDF dans le navigateur" : (activeLocale === "pt" || activeLocale === "pt-BR") ? "Combine múltiplos ficheiros PDF no navegador" : "Combine multiple PDF files in browser")
+                          : (activeLocale === "sv" ? "Minska PDF under 2 MB i webbläsaren" : activeLocale === "ar" ? "تقليص ملفات PDF لأقل من 2 ميغابايت" : activeLocale === "tr" ? "PDF'leri 2 MB altına küçültün" : activeLocale === "es" || activeLocale === "es-419" ? "Reduce el tamaño de PDFs a menos de 2 MB" : activeLocale === "de" ? "PDFs unter 2 MB im Browser verkleinern" : activeLocale === "fr" ? "Réduisez les PDF à moins de 2 Mo dans le navigateur" : (activeLocale === "pt" || activeLocale === "pt-BR") ? "Reduza PDFs para menos de 2 MB no navegador" : "Shrink PDFs below 2 MB in browser")}
                       </span>
                     </Link>
                   );
