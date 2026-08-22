@@ -1073,6 +1073,18 @@ export default function DesktopMegaMenu({
           if (target === "Text") target = "Texte";
           if (target === "Picture") target = "Image";
         }
+        if (isPortuguese) {
+          if (source === "Image") source = "Imagem";
+          if (target === "Image") target = "imagem";
+          if (target === "Text") target = "texto";
+          if (target === "Picture") target = "imagem";
+        }
+        if (isItalian) {
+          if (source === "Image") source = "Immagine";
+          if (target === "Image") target = "immagine";
+          if (target === "Text") target = "testo";
+          if (target === "Picture") target = "immagine";
+        }
 
         return `${source} ${toPrep} ${target}`;
       }

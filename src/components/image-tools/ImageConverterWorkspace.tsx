@@ -23,6 +23,7 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
   const isGerman = language === "de";
   const isFrench = language === "fr";
   const isPortuguese = language === "pt" || language === "pt-BR";
+  const isItalian = language === "it";
 
   // Target format state
   const [targetFormat, setTargetFormat] = useState<SupportedImageFormat>(
@@ -326,7 +327,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                   onClick={handleResetWorkspace}
                   className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-3 py-1.5 border border-fk-border rounded-fk-md bg-white hover:bg-fk-surface-muted transition-colors shrink-0"
                 >
-                  {isPortuguese
+                  {isItalian
+                    ? "Scegli un'altra"
+                    : isPortuguese
                     ? "Escolher outra"
                     : isFrench
                     ? "Choisir une autre"
@@ -344,7 +347,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-blue-50 border-blue-200 text-blue-800 w-fit animate-pulse">
                     <span>⚡</span>
                     <span>
-                      {isPortuguese
+                      {isItalian
+                        ? "Conversione dell'immagine in corso..."
+                        : isPortuguese
                         ? "A converter imagem..."
                         : isFrench
                         ? "Conversion de l'image en cours..."
@@ -363,7 +368,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                   >
                     <span>✓</span>
                     <span>
-                      {isPortuguese
+                      {isItalian
+                        ? "Immagine convertita con successo"
+                        : isPortuguese
                         ? "Imagem convertida com sucesso"
                         : isFrench
                         ? "Image convertie avec succès"
@@ -379,7 +386,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                 {/* Transparency Warning Notice */}
                 {!isProcessing && isTransparentToJpg && (
                   <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 text-[12px] rounded-fk-md font-medium">
-                    {isPortuguese
+                    {isItalian
+                      ? "⚠️ Il formato JPEG non supporta la trasparenza. Le aree trasparenti useranno il colore di sfondo selezionato."
+                      : isPortuguese
                       ? "⚠️ O formato JPEG não suporta transparência. As áreas transparentes usarão a cor de fundo selecionada."
                       : isFrench
                       ? "⚠️ Le format JPEG ne gère pas la transparence. Les zones transparentes utiliseront la couleur d'arrière-plan choisie."
@@ -424,7 +433,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                     <span>📐 {result.outputWidth} × {result.outputHeight} px</span>
                     <span>
                       {result.isLarger
-                        ? isPortuguese
+                        ? isItalian
+                          ? `📈 Il file è più grande del ${result.sizeChangePercentage}%`
+                          : isPortuguese
                           ? `📈 O ficheiro é ${result.sizeChangePercentage}% maior`
                           : isFrench
                           ? `📈 Le fichier est ${result.sizeChangePercentage}% plus lourd`
@@ -433,6 +444,8 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                           : isSpanish
                           ? `📈 Archivo es ${result.sizeChangePercentage}% mayor`
                           : `📈 Output is ${result.sizeChangePercentage}% larger`
+                        : isItalian
+                        ? `📉 Il file è più piccolo del ${result.sizeChangePercentage}%`
                         : isPortuguese
                         ? `📉 O ficheiro é ${result.sizeChangePercentage}% menor`
                         : isFrench
@@ -453,7 +466,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                       disabled={isProcessing}
                       className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
                     >
-                      {isPortuguese
+                      {isItalian
+                        ? "Scarica immagine convertita"
+                        : isPortuguese
                         ? "Descarregar imagem convertida"
                         : isFrench
                         ? "Télécharger l'image convertie"
@@ -469,7 +484,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                       onClick={handleAdjustSettings}
                       className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
                     >
-                      {isPortuguese
+                      {isItalian
+                        ? "Modifica impostazioni"
+                        : isPortuguese
                         ? "Ajustar opções"
                         : isFrench
                         ? "Modifier les paramètres"
@@ -491,7 +508,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               <h2 className="text-[16px] font-black text-fk-text flex items-center gap-2 border-b border-fk-border pb-3">
                 <span>⚙️</span>
                 <span>
-                  {isPortuguese
+                  {isItalian
+                    ? "Opzioni di conversione"
+                    : isPortuguese
                     ? "Opções de conversão"
                     : isFrench
                     ? "Paramètres de conversion"
@@ -499,7 +518,7 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                     ? "Konvertierungsoptionen"
                     : isSpanish
                     ? "Opciones de conversión"
-                    : "Conversion Settings"}
+                    : "Conversion Options"}
                 </span>
               </h2>
 

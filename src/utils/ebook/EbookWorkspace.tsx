@@ -17,6 +17,7 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
   const isGerman = language === "de";
   const isFrench = language === "fr";
   const isPortuguese = language === "pt" || language === "pt-BR";
+  const isItalian = language === "it";
 
   const [file, setFile] = useState<File | null>(null);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -68,7 +69,9 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
     } catch (err) {
       console.error(err);
       setError(
-        isPortuguese
+        isItalian
+          ? "Impossibile convertire l'eBook in PDF. Assicurati che il file non sia protetto da DRM."
+          : isPortuguese
           ? "Falha ao converter o eBook em PDF. Certifique-se de que o ficheiro não tem proteção DRM."
           : isFrench
           ? "Échec de la conversion de l'eBook en PDF. Veuillez vérifier que le fichier est sans DRM."
@@ -118,7 +121,9 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            {isPortuguese
+            {isItalian
+              ? `Seleziona file eBook (${getAcceptExtensions().toUpperCase()})`
+              : isPortuguese
               ? `Selecionar ficheiro de eBook (${getAcceptExtensions().toUpperCase()})`
               : isFrench
               ? `Sélectionner un fichier eBook (${getAcceptExtensions().toUpperCase()})`
@@ -129,7 +134,9 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
               : `Select eBook File (${getAcceptExtensions().toUpperCase()})`}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            {isPortuguese
+            {isItalian
+              ? "Nessun caricamento su server · Conversione privata al 100% nel browser"
+              : isPortuguese
               ? "Sem envios para servidores · Conversão 100% privada no navegador"
               : isFrench
               ? "Aucun transfert vers un serveur · Conversion 100% privée dans le navigateur"
@@ -155,7 +162,7 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+              {isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
             </button>
           </div>
 
@@ -163,7 +170,9 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
             <div className="p-6 bg-slate-50 rounded-fk-lg border border-slate-200 text-center flex flex-col items-center justify-center gap-3">
               <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
               <span className="text-sm font-bold text-slate-700">
-                {isPortuguese
+                {isItalian
+                  ? "Rendering delle pagine dell'eBook in PDF..."
+                  : isPortuguese
                   ? "A converter páginas do eBook em PDF..."
                   : isFrench
                   ? "Conversion des pages de l'eBook en PDF..."
@@ -180,7 +189,9 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-amber-900 block">
-                  {isPortuguese
+                  {isItalian
+                    ? `✓ Convertito: ${outputFileName}`
+                    : isPortuguese
                     ? `✓ Convertido: ${outputFileName}`
                     : isFrench
                     ? `✓ Converti : ${outputFileName}`
@@ -191,7 +202,9 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
                     : `✓ Converted: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-amber-700">
-                  {isPortuguese
+                  {isItalian
+                    ? `Dimensione: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · Documento PDF`
+                    : isPortuguese
                     ? `Tamanho: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · Documento PDF`
                     : isFrench
                     ? `Taille : ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} Mo · Document PDF`
@@ -207,7 +220,7 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isPortuguese ? "Descarregar PDF" : isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
+                {isItalian ? "Scarica PDF" : isPortuguese ? "Descarregar PDF" : isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
               </a>
             </div>
           )}

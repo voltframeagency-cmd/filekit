@@ -17,6 +17,7 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
   const isGerman = language === "de";
   const isFrench = language === "fr";
   const isPortuguese = language === "pt" || language === "pt-BR";
+  const isItalian = language === "it";
 
   const [file, setFile] = useState<File | null>(null);
   const [fontMeta, setFontMeta] = useState<FontMetadata | null>(null);
@@ -27,7 +28,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
   const [error, setError] = useState<string | null>(null);
 
   const [previewText, setPreviewText] = useState<string>(
-    isPortuguese
+    isItalian
+      ? "Ma la volpe col suo balzo ha raggiunto il quieto fido 1234567890"
+      : isPortuguese
       ? "A rápida raposa castanha salta sobre o cão preguiçoso 1234567890"
       : isFrench
       ? "Portez ce vieux whisky au juge blond qui fume 1234567890"
@@ -79,7 +82,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
     } catch (err) {
       console.error(err);
       setError(
-        isPortuguese
+        isItalian
+          ? "Impossibile convertire il font. Assicurati che sia un file TTF, OTF o WOFF valido."
+          : isPortuguese
           ? "Falha ao converter a fonte. Certifique-se de que é um ficheiro TTF, OTF ou WOFF válido."
           : isFrench
           ? "Échec de la conversion de la police. Veuillez vérifier qu'il s'agit d'un fichier TTF, OTF ou WOFF valide."
@@ -129,7 +134,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            {isPortuguese
+            {isItalian
+              ? "Seleziona file di font (TTF, OTF, WOFF)"
+              : isPortuguese
               ? "Selecionar ficheiro de fonte (TTF, OTF, WOFF)"
               : isFrench
               ? "Sélectionner un fichier de police (TTF, OTF, WOFF)"
@@ -140,7 +147,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
               : "Select Font File (TTF, OTF, WOFF)"}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            {isPortuguese
+            {isItalian
+              ? "Ottimizzato per il Web (0% di archiviazione sui server)"
+              : isPortuguese
               ? "Otimizado para a Web (0% de armazenamento no servidor)"
               : isFrench
               ? "Optimisé pour le Web (0% de stockage sur serveur)"
@@ -158,7 +167,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
             <div>
               <span className="text-sm font-bold text-slate-800 block truncate">{file.name}</span>
               <span className="text-xs text-slate-500">
-                {isPortuguese
+                {isItalian
+                  ? `Formato: ${fontMeta?.format.toUpperCase()} · Tabelle: ${fontMeta?.numTables} · Dimensione: ${(file.size / 1024).toFixed(1)} KB`
+                  : isPortuguese
                   ? `Formato: ${fontMeta?.format.toUpperCase()} · Tabelas: ${fontMeta?.numTables} · Tamanho: ${(file.size / 1024).toFixed(1)} KB`
                   : isFrench
                   ? `Format : ${fontMeta?.format.toUpperCase()} · Tables : ${fontMeta?.numTables} · Taille : ${(file.size / 1024).toFixed(1)} Ko`
@@ -177,7 +188,7 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isPortuguese ? "Alterar fonte" : isFrench ? "Changer de police" : isGerman ? "Schriftart ändern" : isSpanish ? "Cambiar fuente" : "Change Font"}
+              {isItalian ? "Cambia font" : isPortuguese ? "Alterar fonte" : isFrench ? "Changer de police" : isGerman ? "Schriftart ändern" : isSpanish ? "Cambiar fuente" : "Change Font"}
             </button>
           </div>
 
@@ -185,11 +196,11 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                {isPortuguese ? "Pré-visualização da fonte" : isFrench ? "Aperçu de la police" : isGerman ? "Interaktive Vorschau" : isSpanish ? "Vista previa interactiva" : "Live Font Preview"}
+                {isItalian ? "Anteprima del font" : isPortuguese ? "Pré-visualização da fonte" : isFrench ? "Aperçu de la police" : isGerman ? "Interaktive Vorschau" : isSpanish ? "Vista previa interactiva" : "Live Font Preview"}
               </label>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-400">
-                  {isPortuguese ? "Tamanho:" : isFrench ? "Taille :" : isGerman ? "Größe:" : isSpanish ? "Tamaño:" : "Size:"} {fontSize}px
+                  {isItalian ? "Dimensione:" : isPortuguese ? "Tamanho:" : isFrench ? "Taille :" : isGerman ? "Größe:" : isSpanish ? "Tamaño:" : "Size:"} {fontSize}px
                 </span>
                 <input
                   type="range"
@@ -216,7 +227,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
             <div className="p-4 bg-purple-50 border border-purple-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-purple-900 block">
-                  {isPortuguese
+                  {isItalian
+                    ? `✓ Font convertito: ${outputFileName}`
+                    : isPortuguese
                     ? `✓ Fonte convertida: ${outputFileName}`
                     : isFrench
                     ? `✓ Police convertie : ${outputFileName}`
@@ -227,7 +240,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
                     : `✓ Font Converted: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-purple-700">
-                  {isPortuguese
+                  {isItalian
+                    ? `Dimensione: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% Nel browser`
+                    : isPortuguese
                     ? `Tamanho: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% No navegador`
                     : isFrench
                     ? `Taille : ${((outputBlob?.size || 0) / 1024).toFixed(1)} Ko · 100% Dans le navigateur`
@@ -243,7 +258,7 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isPortuguese ? "Descarregar fonte" : isFrench ? "Télécharger la police" : isGerman ? "Schriftart herunterladen" : isSpanish ? "Descargar fuente" : "Download Font"}
+                {isItalian ? "Scarica font" : isPortuguese ? "Descarregar fonte" : isFrench ? "Télécharger la police" : isGerman ? "Schriftart herunterladen" : isSpanish ? "Descargar fuente" : "Download Font"}
               </a>
             </div>
           )}

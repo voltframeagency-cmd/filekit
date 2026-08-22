@@ -34,6 +34,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
   const isGerman = language === "de";
   const isFrench = language === "fr";
   const isPortuguese = language === "pt" || language === "pt-BR";
+  const isItalian = language === "it";
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceDataUrl, setSourceDataUrl] = useState<string | null>(null);
@@ -88,12 +89,12 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
     const isIco = file.type === "image/x-icon" || file.name.toLowerCase().endsWith(".ico");
 
     if ((mode === "svg-to-png" || mode === "svg-to-jpg") && !isSvg) {
-      setErrorMessage(isSpanish ? "Por favor selecciona un archivo vectorial SVG válido." : "Please select a valid SVG vector file.");
+      setErrorMessage(isItalian ? "Seleziona un file vettoriale SVG valido." : isSpanish ? "Por favor selecciona un archivo vectorial SVG válido." : "Please select a valid SVG vector file.");
       return;
     }
 
     if (mode === "ico-to-png" && !isIco) {
-      setErrorMessage(isSpanish ? "Por favor selecciona un archivo de favicon ICO válido." : "Please select a valid ICO favicon file.");
+      setErrorMessage(isItalian ? "Seleziona un file favicon ICO valido." : isSpanish ? "Por favor selecciona un archivo de favicon ICO válido." : "Please select a valid ICO favicon file.");
       return;
     }
 
@@ -110,7 +111,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
         const buffer = await file.arrayBuffer();
         const icoRes = IcoDecoder.decode(buffer);
         if (!icoRes.isValid || icoRes.images.length === 0) {
-          throw new Error(isSpanish ? "No se encontraron iconos válidos dentro del archivo ICO." : "No valid image frames found in ICO file.");
+          throw new Error(isItalian ? "Nessuna icona valida trovata nel file ICO." : isSpanish ? "No se encontraron imágenes válidas dentro del archivo ICO." : "No valid image sub-frames found in ICO file.");
         }
         setIcoImages(icoRes.images);
         setSelectedIcoIndex(icoRes.images.length - 1);
@@ -120,22 +121,28 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
         setSourceDataUrl(URL.createObjectURL(blob));
         setSourceFile(file);
       } else {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.src = url;
-        await new Promise((res, rej) => {
-          img.onload = res;
-          img.onerror = () => rej(new Error(isSpanish ? "Error al cargar la imagen." : "Failed to load image."));
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
         });
-        setSourceDataUrl(url);
-        setSourceDims({ width: img.naturalWidth, height: img.naturalHeight });
-        setTargetWidth(img.naturalWidth);
-        setTargetHeight(img.naturalHeight);
-        setCropBox({ x: 0, y: 0, width: img.naturalWidth, height: img.naturalHeight });
+
+        const dims = await new Promise<{ width: number; height: number }>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+          img.src = dataUrl;
+        });
+
+        setSourceDataUrl(dataUrl);
+        setSourceDims(dims);
+        setTargetWidth(dims.width);
+        setTargetHeight(dims.height);
+        setCropBox({ x: 0, y: 0, width: dims.width, height: dims.height });
         setSourceFile(file);
       }
     } catch (err: any) {
-      setErrorMessage(err?.message || (isSpanish ? "Error al abrir el archivo de imagen." : "Failed to parse image file."));
+      setErrorMessage(err?.message || (isItalian ? "Impossibile leggere il file immagine." : isSpanish ? "Error al leer el archivo de imagen." : "Failed to parse image file."));
     }
   };
 
@@ -187,9 +194,10 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
     }
   };
 
-  // Main Transformation Execution
+  // Execution handler
   const handleExecuteTransform = async () => {
     if (!sourceFile) return;
+
     setIsProcessing(true);
     setErrorMessage(null);
 
@@ -211,7 +219,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           sourceFile.name
         );
 
-        const blob = new Blob([exportRes.outputBuffer], { type: exportFormat });
+        const blob = new Blob([exportRes.outputBuffer as unknown as BlobPart], { type: exportFormat });
         const downloadUrl = URL.createObjectURL(blob);
 
         setResult({
@@ -239,16 +247,18 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           fileName: `${baseName}-${selected.width}x${selected.height}.png`,
           mimeType: "image/png",
         });
-      } else if (mode === "rotate") {
+      } else if (mode === "rotate" || mode === "flip") {
         if (!sourceDataUrl) throw new Error("No source image available");
         const img = new Image();
         img.src = sourceDataUrl;
         await new Promise((res) => (img.onload = res));
 
-        const canvas = ImageTransformEngine.rotateCanvas(img, rotationAngle);
-        const isSwapped = rotationAngle === 90 || rotationAngle === 270;
-        const outW = isSwapped ? sourceDims.height : sourceDims.width;
-        const outH = isSwapped ? sourceDims.width : sourceDims.height;
+        let canvas: HTMLCanvasElement | OffscreenCanvas;
+        if (mode === "rotate") {
+          canvas = ImageTransformEngine.rotateCanvas(img, rotationAngle);
+        } else {
+          canvas = ImageTransformEngine.flipCanvas(img, flipDirection);
+        }
 
         const exportRes = await ImageExportEngine.exportCanvas(
           canvas,
@@ -256,39 +266,14 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           sourceFile.name
         );
 
-        const blob = new Blob([exportRes.outputBuffer], { type: exportFormat });
+        const blob = new Blob([exportRes.outputBuffer as unknown as BlobPart], { type: exportFormat });
         const downloadUrl = URL.createObjectURL(blob);
 
         setResult({
           downloadUrl,
           outputSizeBytes: exportRes.outputSizeBytes,
-          width: outW,
-          height: outH,
-          durationMs: exportRes.durationMs,
-          fileName: exportRes.fileName,
-          mimeType: exportFormat,
-        });
-      } else if (mode === "flip") {
-        if (!sourceDataUrl) throw new Error("No source image available");
-        const img = new Image();
-        img.src = sourceDataUrl;
-        await new Promise((res) => (img.onload = res));
-
-        const canvas = ImageTransformEngine.flipCanvas(img, flipDirection);
-        const exportRes = await ImageExportEngine.exportCanvas(
-          canvas,
-          { format: exportFormat, quality: exportQuality / 100 },
-          sourceFile.name
-        );
-
-        const blob = new Blob([exportRes.outputBuffer], { type: exportFormat });
-        const downloadUrl = URL.createObjectURL(blob);
-
-        setResult({
-          downloadUrl,
-          outputSizeBytes: exportRes.outputSizeBytes,
-          width: sourceDims.width,
-          height: sourceDims.height,
+          width: canvas.width,
+          height: canvas.height,
           durationMs: exportRes.durationMs,
           fileName: exportRes.fileName,
           mimeType: exportFormat,
@@ -426,7 +411,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
         });
       }
     } catch (err: any) {
-      setErrorMessage(err?.message || "An unexpected error occurred during image transformation.");
+      setErrorMessage(err?.message || (isItalian ? "Si è verificato un errore imprevisto durante la trasformazione dell'immagine." : "An unexpected error occurred during image transformation."));
     } finally {
       setIsProcessing(false);
     }
@@ -452,7 +437,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isPortuguese
+              {isItalian
+                ? `Seleziona ${mode.startsWith("svg") ? "file SVG" : mode === "ico-to-png" ? "icona ICO" : "immagine"}`
+                : isPortuguese
                 ? `Selecionar ${mode.startsWith("svg") ? "ficheiro SVG" : mode === "ico-to-png" ? "ícone ICO" : "imagem"}`
                 : isFrench
                 ? `Sélectionner ${mode.startsWith("svg") ? "un fichier SVG" : mode === "ico-to-png" ? "un favicon ICO" : "une image"}`
@@ -463,7 +450,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 : `Select ${mode.startsWith("svg") ? "SVG File" : mode === "ico-to-png" ? "ICO Favicon" : "Image"}`}
             </h2>
             <p className="text-sm text-slate-400">
-              {isPortuguese
+              {isItalian
+                ? "Elaborazione 100% privata nella memoria del tuo browser."
+                : isPortuguese
                 ? "Processamento 100% privado na memória do seu navegador."
                 : isFrench
                 ? "Traitement 100% privé dans la mémoire de votre navigateur."
@@ -487,7 +476,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
+            {isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
             <input
               type="file"
               accept={allowedExtensions.join(",")}
@@ -525,7 +514,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>
