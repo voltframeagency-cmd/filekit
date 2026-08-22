@@ -21,6 +21,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
   const isSpanish = language === "es" || language === "es-419";
   const isGerman = language === "de";
   const isFrench = language === "fr";
+  const isPortuguese = language === "pt" || language === "pt-BR";
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -46,7 +47,9 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
     setErrorMessage(null);
     setProgressPercent(10);
     setProgressStage(
-      isFrench
+      isPortuguese
+        ? "A ler ficheiro para a memória..."
+        : isFrench
         ? "Lecture du fichier en mémoire..."
         : isGerman
         ? "Datei wird in den Arbeitsspeicher geladen..."
@@ -69,7 +72,9 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
     } catch (err: any) {
       setErrorMessage(
         err?.message ||
-          (isFrench
+          (isPortuguese
+            ? "Falha ao reconhecer o texto no documento."
+            : isFrench
             ? "Échec de la reconnaissance de texte dans le document."
             : isGerman
             ? "Fehler bei der Texterkennung im Dokument."
@@ -125,7 +130,9 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isFrench
+              {isPortuguese
+                ? "Selecionar documento digitalizado ou imagem"
+                : isFrench
                 ? "Sélectionnez un document numérisé ou une image"
                 : isGerman
                 ? "Gescanntes Dokument oder Bild auswählen"
@@ -134,7 +141,9 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 : "Select Scanned Document or Image"}
             </h2>
             <p className="text-sm text-slate-400">
-              {isFrench
+              {isPortuguese
+                ? "OCR 100% privado no navegador. Os ficheiros nunca saem do seu dispositivo."
+                : isFrench
                 ? "OCR 100% privé dans le navigateur. Les fichiers ne quittent jamais votre appareil."
                 : isGerman
                 ? "100% private OCR im Browser. Dateien verlassen niemals Ihr Gerät."
@@ -144,7 +153,9 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isFrench
+            {isPortuguese
+              ? "Escolher PDF ou imagem"
+              : isFrench
               ? "Choisir un PDF ou une image"
               : isGerman
               ? "PDF oder Bild wählen"
@@ -184,7 +195,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>
@@ -220,13 +231,17 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 className="w-full bg-fk-primary hover:bg-fk-primary/90 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-fk-primary/25 disabled:opacity-50"
               >
                 {isProcessing
-                  ? isFrench
+                  ? isPortuguese
+                    ? "A realizar reconhecimento OCR..."
+                    : isFrench
                     ? "Reconnaissance OCR en cours..."
                     : isGerman
                     ? "OCR-Erkennung läuft..."
                     : isSpanish
                     ? "Realizando reconocimiento OCR..."
                     : "Performing OCR Recognition..."
+                  : isPortuguese
+                  ? "Reconhecer e extrair texto"
                   : isFrench
                   ? "Reconnaître et extraire le texte"
                   : isGerman
@@ -245,7 +260,9 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 <div className="flex items-center gap-2 text-xs text-slate-300">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span>
-                    {isFrench
+                    {isPortuguese
+                      ? `OCR concluído (${result.totalPages} página${result.totalPages !== 1 ? "s" : ""} em ${result.durationMs}ms)`
+                      : isFrench
                       ? `OCR terminé (${result.totalPages} page${result.totalPages !== 1 ? "s" : ""} en ${result.durationMs}ms)`
                       : isGerman
                       ? `OCR abgeschlossen (${result.totalPages} Seite${result.totalPages !== 1 ? "n" : ""} in ${result.durationMs}ms)`
@@ -261,13 +278,17 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                     className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg transition"
                   >
                     {copiedText
-                      ? isFrench
+                      ? isPortuguese
+                        ? "✓ Copiado!"
+                        : isFrench
                         ? "✓ Copié !"
                         : isGerman
                         ? "✓ Kopiert!"
                         : isSpanish
                         ? "✓ ¡Copiado!"
                         : "✓ Copied!"
+                      : isPortuguese
+                      ? "Copiar texto"
                       : isFrench
                       ? "Copier le texte"
                       : isGerman
@@ -281,7 +302,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                     onClick={handleDownloadTxt}
                     className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg transition"
                   >
-                    {isFrench ? "Télécharger .TXT" : isGerman ? ".TXT herunterladen" : isSpanish ? "Descargar .TXT" : "Download .TXT"}
+                    {isPortuguese ? "Descarregar .TXT" : isFrench ? "Télécharger .TXT" : isGerman ? ".TXT herunterladen" : isSpanish ? "Descargar .TXT" : "Download .TXT"}
                   </button>
                   {result.searchablePdfBuffer && (
                     <button
@@ -289,7 +310,9 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                       onClick={handleDownloadSearchablePdf}
                       className="text-xs bg-fk-primary hover:bg-fk-primary/90 text-white font-bold px-3 py-1.5 rounded-lg transition shadow-md"
                     >
-                      {isFrench
+                      {isPortuguese
+                        ? "Descarregar PDF pesquisável"
+                        : isFrench
                         ? "Télécharger le PDF indexable"
                         : isGerman
                         ? "Durchsuchbares PDF herunterladen"
@@ -304,7 +327,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
               {/* Extracted Text Preview Box */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  {isFrench ? "Texte extrait" : isGerman ? "Extrahierter Text" : isSpanish ? "Texto extraído" : "Extracted Text"}
+                  {isPortuguese ? "Texto extraído" : isFrench ? "Texte extrait" : isGerman ? "Extrahierter Text" : isSpanish ? "Texto extraído" : "Extracted Text"}
                 </label>
                 <textarea
                   readOnly

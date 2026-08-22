@@ -33,6 +33,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
   const isSpanish = language === "es" || language === "es-419";
   const isGerman = language === "de";
   const isFrench = language === "fr";
+  const isPortuguese = language === "pt" || language === "pt-BR";
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceDataUrl, setSourceDataUrl] = useState<string | null>(null);
@@ -451,7 +452,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isFrench
+              {isPortuguese
+                ? `Selecionar ${mode.startsWith("svg") ? "ficheiro SVG" : mode === "ico-to-png" ? "ícone ICO" : "imagem"}`
+                : isFrench
                 ? `Sélectionner ${mode.startsWith("svg") ? "un fichier SVG" : mode === "ico-to-png" ? "un favicon ICO" : "une image"}`
                 : isGerman
                 ? `Wählen Sie ${mode.startsWith("svg") ? "SVG-Datei" : mode === "ico-to-png" ? "ICO-Icon" : "Bilddatei"}`
@@ -460,7 +463,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 : `Select ${mode.startsWith("svg") ? "SVG File" : mode === "ico-to-png" ? "ICO Favicon" : "Image"}`}
             </h2>
             <p className="text-sm text-slate-400">
-              {isFrench
+              {isPortuguese
+                ? "Processamento 100% privado na memória do seu navegador."
+                : isFrench
                 ? "Traitement 100% privé dans la mémoire de votre navigateur."
                 : isGerman
                 ? "100% private Verarbeitung im Speicher Ihres Browsers."
@@ -482,7 +487,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
+            {isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
             <input
               type="file"
               accept={allowedExtensions.join(",")}
@@ -520,7 +525,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>

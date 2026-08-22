@@ -16,6 +16,7 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
   const isSpanish = language === "es" || language === "es-419";
   const isGerman = language === "de";
   const isFrench = language === "fr";
+  const isPortuguese = language === "pt" || language === "pt-BR";
 
   const [file, setFile] = useState<File | null>(null);
   const [inputText, setInputText] = useState<string>("");
@@ -63,7 +64,9 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
     } catch (err: any) {
       console.error(err);
       setError(
-        isFrench
+        isPortuguese
+          ? "Falha ao processar e converter o ficheiro de legendas."
+          : isFrench
           ? "Échec de l'analyse et de la conversion du fichier de sous-titres."
           : isGerman
           ? "Fehler beim Verarbeiten und Konvertieren der Untertiteldatei."
@@ -104,6 +107,8 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
             <span className="text-base font-bold text-slate-800">
               {file
                 ? file.name
+                : isPortuguese
+                ? `Selecionar ficheiro de legendas (${mode === "srt-to-vtt" ? ".SRT" : ".VTT"})`
                 : isFrench
                 ? `Sélectionner un fichier de sous-titres (${mode === "srt-to-vtt" ? ".SRT" : ".VTT"})`
                 : isGerman
@@ -113,7 +118,9 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
                 : `Select ${mode === "srt-to-vtt" ? ".SRT" : ".VTT"} subtitle file`}
             </span>
             <span className="text-xs text-slate-400">
-              {isFrench
+              {isPortuguese
+                ? "100% no navegador · Conversão privada e instantânea"
+                : isFrench
                 ? "100% dans le navigateur · Conversion privée et instantanée"
                 : isGerman
                 ? "100% Im Browser · Private & sofortige Konvertierung"
@@ -134,7 +141,9 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
           <div className="space-y-4 pt-4 border-t border-slate-100">
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-slate-700">
-                {isFrench
+                {isPortuguese
+                  ? "Pré-visualização da conversão:"
+                  : isFrench
                   ? "Aperçu de la conversion :"
                   : isGerman
                   ? "Vorschau der Konvertierung:"
@@ -148,7 +157,9 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-sm transition-all inline-flex items-center gap-2"
               >
                 <span>
-                  {isFrench
+                  {isPortuguese
+                    ? `Descarregar ${downloadName}`
+                    : isFrench
                     ? `Télécharger ${downloadName}`
                     : isGerman
                     ? `${downloadName} herunterladen`
