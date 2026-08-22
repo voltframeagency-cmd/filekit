@@ -18,7 +18,8 @@ export interface ImageConverterWorkspaceProps {
 
 export default function ImageConverterWorkspace({ routeConfig }: ImageConverterWorkspaceProps) {
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isSpanish = language === "es" || language === "es-419";
 
   // Target format state
   const [targetFormat, setTargetFormat] = useState<SupportedImageFormat>(
@@ -322,7 +323,7 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                   onClick={handleResetWorkspace}
                   className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-3 py-1.5 border border-fk-border rounded-fk-md bg-white hover:bg-fk-surface-muted transition-colors shrink-0"
                 >
-                  Choose Another
+                  {isSpanish ? "Elegir otra" : "Choose Another"}
                 </button>
               </div>
 
@@ -331,7 +332,7 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                 {isProcessing ? (
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-blue-50 border-blue-200 text-blue-800 w-fit animate-pulse">
                     <span>⚡</span>
-                    <span>Converting Image...</span>
+                    <span>{isSpanish ? "Convirtiendo imagen..." : "Converting Image..."}</span>
                   </div>
                 ) : result ? (
                   <div
@@ -340,14 +341,16 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                     className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-fk-success-bg border-[#BBF7D0] text-fk-success w-fit focus:outline-none"
                   >
                     <span>✓</span>
-                    <span>Image converted successfully</span>
+                    <span>{isSpanish ? "Imagen convertida exitosamente" : "Image converted successfully"}</span>
                   </div>
                 ) : null}
 
                 {/* Transparency Warning Notice */}
                 {!isProcessing && isTransparentToJpg && (
                   <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 text-[12px] rounded-fk-md font-medium">
-                    ⚠️ JPEG does not support transparency. Transparent areas will use the selected background color.
+                    {isSpanish
+                      ? "⚠️ JPEG no admite transparencia. Las áreas transparentes usarán el color de fondo seleccionado."
+                      : "⚠️ JPEG does not support transparency. Transparent areas will use the selected background color."}
                   </div>
                 )}
               </div>
@@ -384,8 +387,8 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                     <span>📐 {result.outputWidth} × {result.outputHeight} px</span>
                     <span>
                       {result.isLarger
-                        ? `📈 Output is ${result.sizeChangePercentage}% larger`
-                        : `📉 Output is ${result.sizeChangePercentage}% smaller`}
+                        ? (isSpanish ? `📈 Archivo es ${result.sizeChangePercentage}% mayor` : `📈 Output is ${result.sizeChangePercentage}% larger`)
+                        : (isSpanish ? `📉 Archivo es ${result.sizeChangePercentage}% menor` : `📉 Output is ${result.sizeChangePercentage}% smaller`)}
                     </span>
                   </div>
 
@@ -397,7 +400,7 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                       disabled={isProcessing}
                       className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
                     >
-                      Download Converted Image
+                      {isSpanish ? "Descargar imagen convertida" : "Download Converted Image"}
                     </button>
 
                     <button
@@ -405,7 +408,7 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                       onClick={handleAdjustSettings}
                       className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
                     >
-                      Adjust Settings
+                      {isSpanish ? "Ajustar opciones" : "Adjust Settings"}
                     </button>
                   </div>
                 </div>
@@ -418,13 +421,15 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
             <div className="bg-white border border-fk-border rounded-fk-xl p-6 shadow-sm flex flex-col gap-6">
               <h2 className="text-[16px] font-black text-fk-text flex items-center gap-2 border-b border-fk-border pb-3">
                 <span>⚙️</span>
-                <span>Conversion Settings</span>
+                <span>{isSpanish ? "Opciones de conversión" : "Conversion Settings"}</span>
               </h2>
 
               {/* GENERAL MODE FORMAT SELECTOR */}
               {routeConfig.mode === "GENERAL" && (
                 <div className="flex flex-col gap-2">
-                  <label className="text-[13px] font-bold text-fk-text">Target Format</label>
+                  <label className="text-[13px] font-bold text-fk-text">
+                    {isSpanish ? "Formato de destino" : "Target Format"}
+                  </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { mime: "image/jpeg", label: "JPG" },
@@ -451,7 +456,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               {/* FIXED PAIR DISPLAY */}
               {routeConfig.mode === "FIXED_PAIR" && (
                 <div className="flex items-center justify-between p-3 bg-fk-surface-muted border border-fk-border rounded-fk-md">
-                  <span className="text-[13px] font-bold text-fk-text">Output Format</span>
+                  <span className="text-[13px] font-bold text-fk-text">
+                    {isSpanish ? "Formato de salida" : "Output Format"}
+                  </span>
                   <span className="text-[13px] font-mono font-bold text-fk-primary bg-white px-3 py-1 border border-fk-border rounded-fk-sm">
                     {targetFormat.split("/")[1].toUpperCase()}
                   </span>
