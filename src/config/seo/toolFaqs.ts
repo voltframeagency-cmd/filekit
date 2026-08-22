@@ -80,15 +80,19 @@ export function detectToolFamily(slug: string): ToolFamilyKey {
 }
 
 export function getToolSeoContent(slug: string, toolTitle: string, locale: string = "en"): ToolSeoContent {
-  const loc = locale.toLowerCase();
   const family = detectToolFamily(slug);
 
-  const validLocale = (loc in CATEGORY_TRANSLATIONS.pdf ? loc : "en") as SupportedLocale;
+  // Exact matching preserving case for compound locales (e.g. pt-BR, zh-CN, zh-TW, es-419)
+  const validLocale = (locale in CATEGORY_TRANSLATIONS.pdf
+    ? locale
+    : locale.toLowerCase() in CATEGORY_TRANSLATIONS.pdf
+    ? locale.toLowerCase()
+    : "en") as SupportedLocale;
   const category = CATEGORY_TRANSLATIONS[family][validLocale] || CATEGORY_TRANSLATIONS[family]["en"];
-  const howToSteps = HOW_TO_STEPS[validLocale] || HOW_TO_STEPS["en"];
+  const howToSteps = HOW_TO_STEPS[validLocale] || HOW_TO_STEPS[locale as SupportedLocale] || HOW_TO_STEPS["en"];
   
   const famFaqs = FAMILY_FAQS[family] || FAMILY_FAQS.pdf;
-  const faqs = (famFaqs[validLocale] || famFaqs.en || []) as FaqItem[];
+  const faqs = (famFaqs[validLocale] || famFaqs[locale as SupportedLocale] || famFaqs.en || []) as FaqItem[];
   
   const entityDefinition = getEntityDefinition(family, toolTitle, validLocale);
 
