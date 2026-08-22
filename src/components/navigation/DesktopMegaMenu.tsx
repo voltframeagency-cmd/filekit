@@ -525,6 +525,30 @@ export default function DesktopMegaMenu({
       if (isGerman) return "PDF in Text";
       if (isFrench) return "PDF en texte";
     }
+    if (label === "PDF Compressor") {
+      if (isSwedish) return "PDF-komprimerare";
+      if (isArabic) return "ضاغط PDF";
+      if (isSpanish) return "Compresor de PDF";
+      if (isTurkish) return "PDF Sıkıştırıcı";
+      if (isFrench) return "Compresseur PDF";
+      if (isGerman) return "PDF-Komprimierer";
+    }
+    if (label === "Image Compressor") {
+      if (isSwedish) return "Bildkomprimerare";
+      if (isArabic) return "ضاغط الصور";
+      if (isSpanish) return "Compresor de imágenes";
+      if (isTurkish) return "Görsel Sıkıştırıcı";
+      if (isFrench) return "Compresseur d'image";
+      if (isGerman) return "Bild-Komprimierer";
+    }
+    if (label === "Image Converter") {
+      if (isSwedish) return "Bildkonverterare";
+      if (isArabic) return "محول الصور";
+      if (isSpanish) return "Convertidor de imágenes";
+      if (isTurkish) return "Görsel Dönüştürücü";
+      if (isFrench) return "Convertisseur d'image";
+      if (isGerman) return "Bild-Konverter";
+    }
     if (label === "Merge PDF Files" || label === "Merge PDF") {
       if (isSwedish) return "Slå samman PDF-filer";
       if (isArabic) return "دمج ملفات PDF";
@@ -859,10 +883,10 @@ export default function DesktopMegaMenu({
                       </div>
                       <span className="text-[12px] text-slate-500 font-normal mt-1 leading-snug">
                         {group.title === "IMAGE"
-                          ? (activeLocale === "sv" ? "Optimera JPG, PNG och WebP lokalt" : activeLocale === "ar" ? "تحسين ملفات JPG وPNG وWebP محلياً" : activeLocale === "tr" ? "JPG, PNG ve WebP'leri yerel olarak optimize edin" : activeLocale === "es" || activeLocale === "es-419" ? "Optimiza imágenes JPG, PNG y WebP en tu dispositivo" : activeLocale === "de" ? "JPG, PNG und WebP lokal optimieren" : "Optimize JPEGs, PNGs, and WebPs locally")
+                          ? (activeLocale === "sv" ? "Optimera JPG, PNG och WebP lokalt" : activeLocale === "ar" ? "تحسين ملفات JPG وPNG وWebP محلياً" : activeLocale === "tr" ? "JPG, PNG ve WebP'leri yerel olarak optimize edin" : activeLocale === "es" || activeLocale === "es-419" ? "Optimiza imágenes JPG, PNG y WebP en tu dispositivo" : activeLocale === "de" ? "JPG, PNG und WebP lokal optimieren" : activeLocale === "fr" ? "Optimisez JPG, PNG et WebP localement" : "Optimize JPEGs, PNGs, and WebPs locally")
                           : (group.primaryLink?.href === "/merge-pdf")
-                          ? (activeLocale === "sv" ? "Kombinera PDF-filer i webbläsaren" : activeLocale === "ar" ? "دمج ملفات PDF في المتصفح" : activeLocale === "tr" ? "PDF dosyalarını tarayıcıda birleştirin" : activeLocale === "es" || activeLocale === "es-419" ? "Combina múltiples archivos PDF en tu navegador" : activeLocale === "de" ? "Mehrere PDF-Dateien im Browser verbinden" : "Combine multiple PDF files in browser")
-                          : (activeLocale === "sv" ? "Minska PDF under 2 MB i webbläsaren" : activeLocale === "ar" ? "تقليص ملفات PDF لأقل من 2 ميغابايت" : activeLocale === "tr" ? "PDF'leri 2 MB altına küçültün" : activeLocale === "es" || activeLocale === "es-419" ? "Reduce el tamaño de PDFs a menos de 2 MB" : activeLocale === "de" ? "PDFs unter 2 MB im Browser verkleinern" : "Shrink PDFs below 2 MB in browser")}
+                          ? (activeLocale === "sv" ? "Kombinera PDF-filer i webbläsaren" : activeLocale === "ar" ? "دمج ملفات PDF في المتصفح" : activeLocale === "tr" ? "PDF dosyalarını tarayıcıda birleştirin" : activeLocale === "es" || activeLocale === "es-419" ? "Combina múltiples archivos PDF en tu navegador" : activeLocale === "de" ? "Mehrere PDF-Dateien im Browser verbinden" : activeLocale === "fr" ? "Combinez plusieurs fichiers PDF dans le navigateur" : "Combine multiple PDF files in browser")
+                          : (activeLocale === "sv" ? "Minska PDF under 2 MB i webbläsaren" : activeLocale === "ar" ? "تقليص ملفات PDF لأقل من 2 ميغابايت" : activeLocale === "tr" ? "PDF'leri 2 MB altına küçültün" : activeLocale === "es" || activeLocale === "es-419" ? "Reduce el tamaño de PDFs a menos de 2 MB" : activeLocale === "de" ? "PDFs unter 2 MB im Browser verkleinern" : activeLocale === "fr" ? "Réduisez les PDF à moins de 2 Mo dans le navigateur" : "Shrink PDFs below 2 MB in browser")}
                       </span>
                     </Link>
                   );

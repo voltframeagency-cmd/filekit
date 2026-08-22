@@ -20,7 +20,7 @@ export default function AppFooter() {
           </Link>
           <span className="text-blue-300/50">·</span>
           <Link href={`${basePrefix}/#pricing`} className="hover:text-white transition-colors duration-150">
-            Pricing
+            {t("nav.pricing") || "Pricing"}
           </Link>
           <span className="text-blue-300/50">·</span>
           <Link href={`${basePrefix}/#all-tools`} className="hover:text-white transition-colors duration-150">
