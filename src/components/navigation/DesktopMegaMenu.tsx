@@ -470,14 +470,8 @@ export default function DesktopMegaMenu({
       if (isGerman) return "Auf bestimmte Größe komprimieren";
       if (isPortuguese) return "Comprimir para tamanho específico";
       if (isItalian) return "Comprimi a dimensione specifica";
+      if (isDutch) return "Comprimeren naar specifieke grootte";
       if (isCatalan) return "Comprimir a una mida específica";
-    }
-
-    if (label.includes(" to ")) {
-      const [source, target] = label.split(" to ");
-      if (source && target) {
-        return `${source} ${toPrep} ${target}`;
-      }
     }
 
     // Exact Tool Names (Prioritized before generic prefix replacements)
@@ -697,6 +691,259 @@ export default function DesktopMegaMenu({
       if (isDutch) return "PDF afvlakken";
       if (isCatalan) return "Aplanar PDF";
     }
+    if (label === "Grayscale Image") {
+      if (isSwedish) return "Gör bilden gråskalig";
+      if (isGerman) return "Bild in Graustufen";
+      if (isFrench) return "Image en niveaux de gris";
+      if (isSpanish) return "Escala de grises";
+      if (isArabic) return "صورة بتدرج رمادي";
+      if (isPortuguese) return "Escala de cinzentos";
+      if (isItalian) return "Scala di grigi";
+      if (isDutch) return "Grijswaarden afbeelding";
+      if (isCatalan) return "Escala de grisos";
+    }
+    if (label === "Invert Image") {
+      if (isSwedish) return "Invertera bild";
+      if (isGerman) return "Bild invertieren";
+      if (isFrench) return "Inverser l'image";
+      if (isSpanish) return "Invertir imagen";
+      if (isArabic) return "عكس ألوان الصورة";
+      if (isPortuguese) return "Inverter imagem";
+      if (isItalian) return "Inverti immagine";
+      if (isDutch) return "Afbeelding omkeren";
+      if (isCatalan) return "Invertir imatge";
+    }
+    if (label === "Blur Image") {
+      if (isSwedish) return "Gör bilden oskarp";
+      if (isGerman) return "Bild weichzeichnen";
+      if (isFrench) return "Flouter l'image";
+      if (isSpanish) return "Desenfocar imagen";
+      if (isArabic) return "تعتيم الصورة";
+      if (isPortuguese) return "Desfocar imagem";
+      if (isItalian) return "Sfoca immagine";
+      if (isDutch) return "Afbeelding vervagen";
+      if (isCatalan) return "Desenfocar imatge";
+    }
+    if (label === "Crop Image") {
+      if (isSwedish) return "Beskär bild";
+      if (isGerman) return "Bild zuschneiden";
+      if (isFrench) return "Rogner l'image";
+      if (isSpanish) return "Recortar imagen";
+      if (isArabic) return "قص الصورة";
+      if (isPortuguese) return "Cortar imagem";
+      if (isItalian) return "Ritaglia immagine";
+      if (isDutch) return "Afbeelding bijsnijden";
+      if (isCatalan) return "Retallar imatge";
+    }
+    if (label === "Resize Image") {
+      if (isSwedish) return "Ändra bildstorlek";
+      if (isGerman) return "Bildgröße ändern";
+      if (isFrench) return "Redimensionner l'image";
+      if (isSpanish) return "Redimensionar imagen";
+      if (isArabic) return "تغيير حجم الصورة";
+      if (isPortuguese) return "Redimensionar imagem";
+      if (isItalian) return "Ridimensiona immagine";
+      if (isDutch) return "Afbeeldingsformaat wijzigen";
+      if (isCatalan) return "Redimensionar imatge";
+    }
+    if (label === "Rotate Image") {
+      if (isSwedish) return "Rotera bild";
+      if (isGerman) return "Bild drehen";
+      if (isFrench) return "Faire pivoter l'image";
+      if (isSpanish) return "Rotar imagen";
+      if (isArabic) return "تدوير الصورة";
+      if (isPortuguese) return "Rodar imagem";
+      if (isItalian) return "Ruota immagine";
+      if (isDutch) return "Afbeelding draaien";
+      if (isCatalan) return "Girar imatge";
+    }
+    if (label === "Flip Image") {
+      if (isSwedish) return "Vänd bild";
+      if (isGerman) return "Bild spiegeln";
+      if (isFrench) return "Retourner l'image";
+      if (isSpanish) return "Voltear imagen";
+      if (isArabic) return "قلب الصورة";
+      if (isPortuguese) return "Inverter imagem horizontal";
+      if (isItalian) return "Capovolgi immagine";
+      if (isDutch) return "Afbeelding spiegelen";
+      if (isCatalan) return "Voltejar imatge";
+    }
+    if (label === "Change Speed") {
+      if (isSwedish) return "Ändra hastighet";
+      if (isGerman) return "Geschwindigkeit ändern";
+      if (isFrench) return "Changer la vitesse";
+      if (isSpanish) return "Cambiar velocidad";
+      if (isArabic) return "تغيير السرعة";
+      if (isPortuguese) return "Alterar velocidade";
+      if (isItalian) return "Cambia velocità";
+      if (isDutch) return "Snelheid wijzigen";
+      if (isCatalan) return "Canviar velocitat";
+    }
+    if (label === "Video to GIF") {
+      if (isSwedish) return "Video till GIF";
+      if (isGerman) return "Video zu GIF";
+      if (isFrench) return "Vidéo en GIF";
+      if (isSpanish) return "Video a GIF";
+      if (isArabic) return "فيديو إلى GIF";
+      if (isPortuguese) return "Vídeo para GIF";
+      if (isItalian) return "Video in GIF";
+      if (isDutch) return "Video naar GIF";
+      if (isCatalan) return "Vídeo a GIF";
+    }
+    if (label === "Mute Video") {
+      if (isSwedish) return "Stäng av videoljud";
+      if (isGerman) return "Video stummschalten";
+      if (isFrench) return "Couper le son vidéo";
+      if (isSpanish) return "Silenciar video";
+      if (isArabic) return "كتم صوت الفيديو";
+      if (isPortuguese) return "Silenciar vídeo";
+      if (isItalian) return "Disattiva audio video";
+      if (isDutch) return "Video dempen";
+      if (isCatalan) return "Silenciar vídeo";
+    }
+    if (label === "Boost Volume") {
+      if (isSwedish) return "Höj volym";
+      if (isGerman) return "Lautstärke erhöhen";
+      if (isFrench) return "Augmenter le volume";
+      if (isSpanish) return "Aumentar volumen";
+      if (isArabic) return "تضخيم الصوت";
+      if (isPortuguese) return "Aumentar volume";
+      if (isItalian) return "Aumenta volume";
+      if (isDutch) return "Volume verhogen";
+      if (isCatalan) return "Augmentar volum";
+    }
+    if (label === "Create ZIP") {
+      if (isSwedish) return "Skapa ZIP";
+      if (isGerman) return "ZIP erstellen";
+      if (isFrench) return "Créer un ZIP";
+      if (isSpanish) return "Crear ZIP";
+      if (isArabic) return "إنشاء ZIP";
+      if (isPortuguese) return "Criar ZIP";
+      if (isItalian) return "Crea ZIP";
+      if (isDutch) return "ZIP maken";
+      if (isCatalan) return "Crear ZIP";
+    }
+    if (label === "Strip EXIF") {
+      if (isSwedish) return "Rensa EXIF-data";
+      if (isGerman) return "EXIF entfernen";
+      if (isFrench) return "Supprimer EXIF";
+      if (isSpanish) return "Eliminar EXIF";
+      if (isArabic) return "حذف بيانات EXIF";
+      if (isPortuguese) return "Remover EXIF";
+      if (isItalian) return "Rimuovi EXIF";
+      if (isDutch) return "EXIF verwijderen";
+      if (isCatalan) return "Eliminar EXIF";
+    }
+    if (label === "Convert Audio") {
+      if (isSwedish) return "Konvertera ljud";
+      if (isGerman) return "Audio konvertieren";
+      if (isFrench) return "Convertir audio";
+      if (isSpanish) return "Convertir audio";
+      if (isArabic) return "تحويل الصوت";
+      if (isPortuguese) return "Converter áudio";
+      if (isItalian) return "Converti audio";
+      if (isDutch) return "Audio converteren";
+      if (isCatalan) return "Convertir àudio";
+    }
+    if (label === "Compress Audio") {
+      if (isSwedish) return "Komprimera ljud";
+      if (isGerman) return "Audio komprimieren";
+      if (isFrench) return "Compresser audio";
+      if (isSpanish) return "Comprimir audio";
+      if (isArabic) return "ضغط الصوت";
+      if (isPortuguese) return "Comprimir áudio";
+      if (isItalian) return "Comprimi audio";
+      if (isDutch) return "Audio comprimeren";
+      if (isCatalan) return "Comprimir àudio";
+    }
+    if (label === "Trim Audio") {
+      if (isSwedish) return "Klipp ljud";
+      if (isGerman) return "Audio schneiden";
+      if (isFrench) return "Couper audio";
+      if (isSpanish) return "Recortar audio";
+      if (isArabic) return "قص الصوت";
+      if (isPortuguese) return "Cortar áudio";
+      if (isItalian) return "Taglia audio";
+      if (isDutch) return "Audio bijsnijden";
+      if (isCatalan) return "Retallar àudio";
+    }
+    if (label === "Merge Audio") {
+      if (isSwedish) return "Slå samman ljud";
+      if (isGerman) return "Audio zusammenfügen";
+      if (isFrench) return "Fusionner audio";
+      if (isSpanish) return "Unir audio";
+      if (isArabic) return "دمج الصوت";
+      if (isPortuguese) return "Juntar áudio";
+      if (isItalian) return "Unisci audio";
+      if (isDutch) return "Audio samenvoegen";
+      if (isCatalan) return "Unir àudio";
+    }
+    if (label === "Convert Video") {
+      if (isSwedish) return "Konvertera video";
+      if (isGerman) return "Video konvertieren";
+      if (isFrench) return "Convertir vidéo";
+      if (isSpanish) return "Convertir video";
+      if (isArabic) return "تحويل الفيديو";
+      if (isPortuguese) return "Converter vídeo";
+      if (isItalian) return "Converti video";
+      if (isDutch) return "Video converteren";
+      if (isCatalan) return "Convertir vídeo";
+    }
+    if (label === "Compress Video") {
+      if (isSwedish) return "Komprimera video";
+      if (isGerman) return "Video komprimieren";
+      if (isFrench) return "Compresser vidéo";
+      if (isSpanish) return "Comprimir video";
+      if (isArabic) return "ضغط الفيديو";
+      if (isPortuguese) return "Comprimir vídeo";
+      if (isItalian) return "Comprimi video";
+      if (isDutch) return "Video comprimeren";
+      if (isCatalan) return "Comprimir vídeo";
+    }
+    if (label === "Trim Video") {
+      if (isSwedish) return "Klipp video";
+      if (isGerman) return "Video schneiden";
+      if (isFrench) return "Couper vidéo";
+      if (isSpanish) return "Recortar video";
+      if (isArabic) return "قص الفيديو";
+      if (isPortuguese) return "Cortar vídeo";
+      if (isItalian) return "Taglia video";
+      if (isDutch) return "Video bijsnijden";
+      if (isCatalan) return "Retallar vídeo";
+    }
+    if (label === "Rotate Video") {
+      if (isSwedish) return "Rotera video";
+      if (isGerman) return "Video drehen";
+      if (isFrench) return "Faire pivoter la vidéo";
+      if (isSpanish) return "Rotar video";
+      if (isArabic) return "تدوير الفيديو";
+      if (isPortuguese) return "Rodar vídeo";
+      if (isItalian) return "Ruota video";
+      if (isDutch) return "Video draaien";
+      if (isCatalan) return "Girar vídeo";
+    }
+    if (label === "Extract ZIP") {
+      if (isSwedish) return "Packa upp ZIP";
+      if (isGerman) return "ZIP entpacken";
+      if (isFrench) return "Extraire ZIP";
+      if (isSpanish) return "Extraer ZIP";
+      if (isArabic) return "استخراج ZIP";
+      if (isPortuguese) return "Extrair ZIP";
+      if (isItalian) return "Estrai ZIP";
+      if (isDutch) return "ZIP uitpakken";
+      if (isCatalan) return "Extreure ZIP";
+    }
+    if (label === "Extract RAR") {
+      if (isSwedish) return "Packa upp RAR";
+      if (isGerman) return "RAR entpacken";
+      if (isFrench) return "Extraire RAR";
+      if (isSpanish) return "Extraer RAR";
+      if (isArabic) return "استخراج RAR";
+      if (isPortuguese) return "Extrair RAR";
+      if (isItalian) return "Estrai RAR";
+      if (isDutch) return "RAR uitpakken";
+      if (isCatalan) return "Extreure RAR";
+    }
 
     // Localize common action prefixes
     if (label.startsWith("Compress ")) {
@@ -764,96 +1011,23 @@ export default function DesktopMegaMenu({
       if (isDutch) return `${item} bijsnijden`;
       if (isCatalan) return `Retallar ${item}`;
     }
-    if (label === "Grayscale Image") {
-      if (isSwedish) return "Gör bilden gråskalig";
-      if (isGerman) return "Bild in Graustufen";
-      if (isFrench) return "Image en niveaux de gris";
-      if (isSpanish) return "Imagen en escala de grises";
-      if (isArabic) return "صورة بتدرج رمادي";
-    }
-    if (label === "Invert Image") {
-      if (isSwedish) return "Invertera bild";
-      if (isGerman) return "Bild invertieren";
-      if (isFrench) return "Inverser l'image";
-      if (isSpanish) return "Invertir imagen";
-      if (isArabic) return "عكس ألوان الصورة";
-    }
-    if (label === "Blur Image") {
-      if (isSwedish) return "Gör bilden oskarp";
-      if (isGerman) return "Bild weichzeichnen";
-      if (isFrench) return "Flouter l'image";
-      if (isSpanish) return "Desenfocar imagen";
-      if (isArabic) return "تعتيم الصورة";
-    }
-    if (label === "Crop Image") {
-      if (isSwedish) return "Beskär bild";
-      if (isGerman) return "Bild zuschneiden";
-      if (isFrench) return "Rogner l'image";
-      if (isSpanish) return "Recortar imagen";
-      if (isArabic) return "قص الصورة";
-    }
-    if (label === "Resize Image") {
-      if (isSwedish) return "Ändra bildstorlek";
-      if (isGerman) return "Bildgröße ändern";
-      if (isFrench) return "Redimensionner l'image";
-      if (isSpanish) return "Redimensionar imagen";
-      if (isArabic) return "تغيير حجم الصورة";
-    }
-    if (label === "Rotate Image") {
-      if (isSwedish) return "Rotera bild";
-      if (isGerman) return "Bild drehen";
-      if (isFrench) return "Faire pivoter l'image";
-      if (isSpanish) return "Rotar imagen";
-      if (isArabic) return "تدوير الصورة";
-    }
-    if (label === "Flip Image") {
-      if (isSwedish) return "Vänd bild";
-      if (isGerman) return "Bild spiegeln";
-      if (isFrench) return "Retourner l'image";
-      if (isSpanish) return "Voltear imagen";
-      if (isArabic) return "قلب الصورة";
-    }
-    if (label === "Change Speed") {
-      if (isSwedish) return "Ändra hastighet";
-      if (isGerman) return "Geschwindigkeit ändern";
-      if (isFrench) return "Changer la vitesse";
-      if (isSpanish) return "Cambiar velocidad";
-      if (isArabic) return "تغيير السرعة";
-    }
-    if (label === "Video to GIF") {
-      if (isSwedish) return "Video till GIF";
-      if (isGerman) return "Video zu GIF";
-      if (isFrench) return "Vidéo en GIF";
-      if (isSpanish) return "Video a GIF";
-      if (isArabic) return "فيديو إلى GIF";
-    }
-    if (label === "Mute Video") {
-      if (isSwedish) return "Stäng av videoljud";
-      if (isGerman) return "Video stummschalten";
-      if (isFrench) return "Couper le son vidéo";
-      if (isSpanish) return "Silenciar video";
-      if (isArabic) return "كتم صوت الفيديو";
-    }
-    if (label === "Boost Volume") {
-      if (isSwedish) return "Höj volym";
-      if (isGerman) return "Lautstärke erhöhen";
-      if (isFrench) return "Augmenter le volume";
-      if (isSpanish) return "Aumentar volumen";
-      if (isArabic) return "تضخيم الصوت";
-    }
-    if (label === "Create ZIP") {
-      if (isSwedish) return "Skapa ZIP";
-      if (isGerman) return "ZIP erstellen";
-      if (isFrench) return "Créer un ZIP";
-      if (isSpanish) return "Crear ZIP";
-      if (isArabic) return "إنشاء ZIP";
-    }
-    if (label === "Strip EXIF") {
-      if (isSwedish) return "Rensa EXIF-data";
-      if (isGerman) return "EXIF entfernen";
-      if (isFrench) return "Supprimer EXIF";
-      if (isSpanish) return "Eliminar EXIF";
-      if (isArabic) return "حذف بيانات EXIF";
+
+    // Generic Pair Conversions (e.g. "PNG to JPG", "JPG to PDF", "AVI to MP4", "DWG to PDF")
+    if (label.includes(" to ")) {
+      const [rawSource, rawTarget] = label.split(" to ");
+      if (rawSource && rawTarget) {
+        let source = rawSource.trim();
+        let target = rawTarget.trim();
+
+        if (isSpanish) {
+          if (source === "Image") source = "Imagen";
+          if (target === "Image") target = "imagen";
+          if (target === "Text") target = "texto";
+          if (target === "Picture") target = "imagen";
+        }
+
+        return `${source} ${toPrep} ${target}`;
+      }
     }
 
     return label;
