@@ -2,14 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import { EbookEngine } from "./EbookEngine";
+import { useLanguage } from "@/components/layout/LanguageContext";
 
 interface EbookWorkspaceProps {
   mode: "epub-to-pdf" | "pdf-to-epub" | "mobi-to-pdf" | "azw3-to-pdf";
   title?: string;
   description?: string;
+  embedded?: boolean;
 }
 
-export function EbookWorkspace({ mode, title, description }: EbookWorkspaceProps) {
+export function EbookWorkspace({ mode, title, description, embedded = true }: EbookWorkspaceProps) {
+  const { language } = useLanguage();
+  const isSpanish = language === "es" || language === "es-419";
+
   const [file, setFile] = useState<File | null>(null);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
   const [outputUrl, setOutputUrl] = useState<string | null>(null);
@@ -64,7 +69,11 @@ export function EbookWorkspace({ mode, title, description }: EbookWorkspaceProps
       setOutputFileName(selectedFile.name.replace(/\.[^/.]+$/, "") + `.${outExt}`);
     } catch (err) {
       console.error(err);
-      setError("Failed to convert e-book. Please ensure the file is not DRM-locked.");
+      setError(
+        isSpanish
+          ? "Error al convertir el libro electrónico. Asegúrate de que el archivo no tenga protección DRM."
+          : "Failed to convert e-book. Please ensure the file is not DRM-locked."
+      );
     } finally {
       setLoading(false);
     }
@@ -85,14 +94,16 @@ export function EbookWorkspace({ mode, title, description }: EbookWorkspaceProps
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white rounded-fk-xl shadow-fk-card border border-slate-100">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          {title || "E-Book Converter"}
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">
-          {description || "100% In-Browser · Formatted for Kindle, Kobo, and Print"}
-        </p>
-      </div>
+      {!embedded && (
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            {title || "E-Book Converter"}
+          </h2>
+          <p className="text-slate-500 text-sm mt-1">
+            {description || "100% In-Browser · Formatted for Kindle, Kobo, and Print"}
+          </p>
+        </div>
+      )}
 
       {!file ? (
         <div
@@ -116,10 +127,14 @@ export function EbookWorkspace({ mode, title, description }: EbookWorkspaceProps
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            Select E-Book File ({getAcceptExtensions()})
+            {isSpanish
+              ? `Selecciona libro electrónico (${getAcceptExtensions()})`
+              : `Select E-Book File (${getAcceptExtensions()})`}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            Zero server uploads · Private in-browser conversion
+            {isSpanish
+              ? "Sin subidas a servidores · Conversión privada en el navegador"
+              : "Zero server uploads · Private in-browser conversion"}
           </span>
         </div>
       ) : (
@@ -137,7 +152,7 @@ export function EbookWorkspace({ mode, title, description }: EbookWorkspaceProps
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              Change File
+              {isSpanish ? "Cambiar archivo" : "Change File"}
             </button>
           </div>
 
@@ -150,18 +165,20 @@ export function EbookWorkspace({ mode, title, description }: EbookWorkspaceProps
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-amber-900 block">
-                  ✓ Conversion Complete: {outputFileName}
+                  {isSpanish ? `✓ Convertido exitosamente: ${outputFileName}` : `✓ Converted Successfully: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-amber-700">
-                  Ready to download · {((outputBlob?.size || 0) / 1024).toFixed(1)} KB
+                  {isSpanish
+                    ? `Tamaño: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% En el navegador`
+                    : `Size: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% In-Browser`}
                 </span>
               </div>
               <a
                 href={outputUrl}
                 download={outputFileName}
-                className="w-full sm:w-auto px-6 py-2.5 bg-amber-700 hover:bg-amber-800 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
+                className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                Download E-Book
+                {isSpanish ? "Descargar archivo" : "Download File"}
               </a>
             </div>
           ) : null}

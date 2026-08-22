@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import ProcessingModeBadge from "@/components/common/ProcessingModeBadge";
+import { useLanguage } from "@/components/layout/LanguageContext";
 import {
   AspectRatioPreset,
   CropCoordinates,
@@ -28,6 +29,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
   toolSlug,
   allowedExtensions,
 }) => {
+  const { language } = useLanguage();
+  const isSpanish = language === "es" || language === "es-419";
+
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceDataUrl, setSourceDataUrl] = useState<string | null>(null);
   const [svgText, setSvgText] = useState<string | null>(null);
@@ -81,12 +85,12 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
     const isIco = file.type === "image/x-icon" || file.name.toLowerCase().endsWith(".ico");
 
     if ((mode === "svg-to-png" || mode === "svg-to-jpg") && !isSvg) {
-      setErrorMessage("Please select a valid SVG vector file.");
+      setErrorMessage(isSpanish ? "Por favor selecciona un archivo vectorial SVG válido." : "Please select a valid SVG vector file.");
       return;
     }
 
     if (mode === "ico-to-png" && !isIco) {
-      setErrorMessage("Please select a valid ICO favicon file.");
+      setErrorMessage(isSpanish ? "Por favor selecciona un archivo de favicon ICO válido." : "Please select a valid ICO favicon file.");
       return;
     }
 
@@ -98,39 +102,48 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
         setSourceDims({ width: dims.width, height: dims.height });
         setTargetWidth(dims.width * scaleMultiplier);
         setTargetHeight(dims.height * scaleMultiplier);
-        setSourceDataUrl(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(text)}`);
+        setSourceFile(file);
       } else if (isIco) {
         const buffer = await file.arrayBuffer();
         const icoRes = IcoDecoder.decode(buffer);
         if (!icoRes.isValid || icoRes.images.length === 0) {
-          throw new Error(icoRes.error || "Failed to decode ICO favicon.");
+          throw new Error(isSpanish ? "No se encontraron iconos válidos dentro del archivo ICO." : "No valid image frames found in ICO file.");
         }
         setIcoImages(icoRes.images);
-        setSelectedIcoIndex(icoRes.images.length - 1); // Select highest res by default
+        setSelectedIcoIndex(icoRes.images.length - 1);
         const best = icoRes.images[icoRes.images.length - 1];
         setSourceDims({ width: best.width, height: best.height });
         const blob = new Blob([best.pngBuffer as unknown as BlobPart], { type: "image/png" });
         setSourceDataUrl(URL.createObjectURL(blob));
+        setSourceFile(file);
       } else {
         const url = URL.createObjectURL(file);
         const img = new Image();
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error("Failed to decode image"));
-          img.src = url;
+        img.src = url;
+        await new Promise((res, rej) => {
+          img.onload = res;
+          img.onerror = () => rej(new Error(isSpanish ? "Error al cargar la imagen." : "Failed to load image."));
         });
-
+        setSourceDataUrl(url);
         setSourceDims({ width: img.naturalWidth, height: img.naturalHeight });
         setTargetWidth(img.naturalWidth);
         setTargetHeight(img.naturalHeight);
-        setCropBox(ImageTransformEngine.calculateInitialCrop(img.naturalWidth, img.naturalHeight, aspectPreset));
-        setSourceDataUrl(url);
+        setCropBox({ x: 0, y: 0, width: img.naturalWidth, height: img.naturalHeight });
+        setSourceFile(file);
       }
-
-      setSourceFile(file);
     } catch (err: any) {
-      setErrorMessage(err?.message || "Failed to load image file.");
+      setErrorMessage(err?.message || (isSpanish ? "Error al abrir el archivo de imagen." : "Failed to parse image file."));
     }
+  };
+
+  const handleDownload = () => {
+    if (!result) return;
+    const a = document.createElement("a");
+    a.href = result.downloadUrl;
+    a.download = result.fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   // Aspect ratio change for Crop
@@ -416,16 +429,6 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
     }
   };
 
-  const handleDownload = () => {
-    if (!result) return;
-    const a = document.createElement("a");
-    a.href = result.downloadUrl;
-    a.download = result.fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col gap-6">
       {/* Upload Zone */}
@@ -445,9 +448,15 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
               : "🖼️"}
           </div>
           <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-bold text-white">Select {mode.startsWith("svg") ? "SVG File" : mode === "ico-to-png" ? "ICO Favicon" : "Image"}</h2>
+            <h2 className="text-lg font-bold text-white">
+              {isSpanish
+                ? `Selecciona ${mode.startsWith("svg") ? "archivo SVG" : mode === "ico-to-png" ? "icono ICO" : "imagen"}`
+                : `Select ${mode.startsWith("svg") ? "SVG File" : mode === "ico-to-png" ? "ICO Favicon" : "Image"}`}
+            </h2>
             <p className="text-sm text-slate-400">
-              {mode === "svg-to-png"
+              {isSpanish
+                ? "Procesamiento 100% privado en la memoria de tu navegador."
+                : mode === "svg-to-png"
                 ? "Convert scalable vector SVG graphics into crisp PNG raster images."
                 : mode === "svg-to-jpg"
                 ? "Convert scalable vector SVG graphics into universal JPG photos."
@@ -463,7 +472,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            Choose File
+            {isSpanish ? "Elegir archivo" : "Choose File"}
             <input
               type="file"
               accept={allowedExtensions.join(",")}
@@ -501,7 +510,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                Change File
+                {isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>

@@ -2,14 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import { SubtitleEngine } from "./SubtitleEngine";
+import { useLanguage } from "@/components/layout/LanguageContext";
 
 interface SubtitleWorkspaceProps {
   mode: "srt-to-vtt" | "vtt-to-srt";
   title: string;
   subtitle: string;
+  embedded?: boolean;
 }
 
-export default function SubtitleWorkspace({ mode, title, subtitle }: SubtitleWorkspaceProps) {
+export default function SubtitleWorkspace({ mode, title, subtitle, embedded = true }: SubtitleWorkspaceProps) {
+  const { language } = useLanguage();
+  const isSpanish = language === "es" || language === "es-419";
+
   const [file, setFile] = useState<File | null>(null);
   const [inputText, setInputText] = useState<string>("");
   const [outputText, setOutputText] = useState<string>("");
@@ -55,7 +60,7 @@ export default function SubtitleWorkspace({ mode, title, subtitle }: SubtitleWor
       setDownloadUrl(url);
     } catch (err: any) {
       console.error(err);
-      setError("Failed to parse and convert subtitle file.");
+      setError(isSpanish ? "Error al procesar y convertir el archivo de subtítulos." : "Failed to parse and convert subtitle file.");
     } finally {
       setLoading(false);
     }
@@ -63,10 +68,12 @@ export default function SubtitleWorkspace({ mode, title, subtitle }: SubtitleWor
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-extrabold text-fk-text">{title}</h1>
-        <p className="text-sm text-fk-text-muted">{subtitle}</p>
-      </div>
+      {!embedded && (
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-extrabold text-fk-text">{title}</h2>
+          <p className="text-sm text-fk-text-muted">{subtitle}</p>
+        </div>
+      )}
 
       <div className="bg-white border border-fk-border rounded-fk-xl shadow-sm p-6 space-y-6">
         <div className="border-2 border-dashed border-fk-border hover:border-blue-500 rounded-xl p-8 text-center transition-all bg-slate-50/50">
@@ -85,10 +92,14 @@ export default function SubtitleWorkspace({ mode, title, subtitle }: SubtitleWor
               📄
             </div>
             <span className="text-base font-bold text-slate-800">
-              {file ? file.name : `Select ${mode === "srt-to-vtt" ? ".SRT" : ".VTT"} subtitle file`}
+              {file
+                ? file.name
+                : isSpanish
+                ? `Selecciona archivo de subtítulos ${mode === "srt-to-vtt" ? ".SRT" : ".VTT"}`
+                : `Select ${mode === "srt-to-vtt" ? ".SRT" : ".VTT"} subtitle file`}
             </span>
             <span className="text-xs text-slate-400">
-              100% In-Browser · Private & Instant Conversion
+              {isSpanish ? "100% En el navegador · Conversión instantánea y privada" : "100% In-Browser · Private & Instant Conversion"}
             </span>
           </label>
         </div>
@@ -102,13 +113,15 @@ export default function SubtitleWorkspace({ mode, title, subtitle }: SubtitleWor
         {outputText && downloadUrl && (
           <div className="space-y-4 pt-4 border-t border-slate-100">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-slate-700">Conversion Preview:</span>
+              <span className="text-sm font-bold text-slate-700">
+                {isSpanish ? "Vista previa de la conversión:" : "Conversion Preview:"}
+              </span>
               <a
                 href={downloadUrl}
                 download={downloadName}
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-sm transition-all inline-flex items-center gap-2"
               >
-                <span>Download {downloadName}</span>
+                <span>{isSpanish ? `Descargar ${downloadName}` : `Download ${downloadName}`}</span>
                 <span className="text-xs">↓</span>
               </a>
             </div>

@@ -2,14 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { ArchiveEngine, ArchiveEntry } from "./ArchiveEngine";
+import { useLanguage } from "@/components/layout/LanguageContext";
 
 interface ArchiveWorkspaceProps {
   mode: "extract" | "create" | "tar-to-zip" | "rar-to-zip" | "extract-rar" | "7z-to-zip";
   title?: string;
   description?: string;
+  embedded?: boolean;
 }
 
-export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceProps) {
+export function ArchiveWorkspace({ mode, title, description, embedded = true }: ArchiveWorkspaceProps) {
+  const { language } = useLanguage();
+  const isSpanish = language === "es" || language === "es-419";
   const [files, setFiles] = useState<File[]>([]);
   const [extractedEntries, setExtractedEntries] = useState<ArchiveEntry[]>([]);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -39,13 +43,13 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
         const buf = new Uint8Array(await selectedFiles[0].arrayBuffer());
         const entries = mode === "extract-rar" ? ArchiveEngine.extractRar(buf) : ArchiveEngine.extractZip(buf);
         if (entries.length === 0) {
-          setError("No uncompressed files found in archive or archive is empty.");
+          setError(isSpanish ? "No se encontraron archivos en el archivo o está vacío." : "No uncompressed files found in archive or archive is empty.");
         } else {
           setExtractedEntries(entries);
         }
       } catch (err) {
         console.error(err);
-        setError("Failed to read archive file.");
+        setError(isSpanish ? "Error al leer el archivo." : "Failed to read archive file.");
       } finally {
         setLoading(false);
       }
@@ -69,7 +73,7 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
         setOutputFileName(selectedFiles[0].name.replace(/\.(tar|tar\.gz|tgz|rar|7z)$/i, "") + ".zip");
       } catch (err) {
         console.error(err);
-        setError("Failed to convert archive to ZIP.");
+        setError(isSpanish ? "Error al convertir a ZIP." : "Failed to convert archive to ZIP.");
       } finally {
         setLoading(false);
       }
@@ -98,7 +102,7 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
       setOutputFileName(outName);
     } catch (err) {
       console.error(err);
-      setError("Failed to create ZIP archive.");
+      setError(isSpanish ? "Error al crear archivo ZIP." : "Failed to create ZIP archive.");
     } finally {
       setLoading(false);
     }
@@ -118,14 +122,16 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white rounded-fk-xl shadow-fk-card border border-slate-100">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          {title || (mode === "extract" ? "Extract ZIP Online" : mode === "create" ? "Create ZIP Archive" : "Convert TAR to ZIP")}
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">
-          {description || "100% In-Browser · Fast, Private & Zero Server Uploads"}
-        </p>
-      </div>
+      {!embedded && (
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            {title || (mode === "extract" ? "Extract ZIP Online" : mode === "create" ? "Create ZIP Archive" : "Convert TAR to ZIP")}
+          </h2>
+          <p className="text-slate-500 text-sm mt-1">
+            {description || "100% In-Browser · Fast, Private & Zero Server Uploads"}
+          </p>
+        </div>
+      )}
 
       {files.length === 0 ? (
         <div
@@ -150,10 +156,14 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            {mode === "create" ? "Drop files to zip together" : "Select archive file to extract"}
+            {mode === "create" 
+              ? (isSpanish ? "Suelta archivos para comprimirlos en ZIP" : "Drop files to zip together") 
+              : (isSpanish ? "Selecciona el archivo para extraer o convertir" : "Select archive file to extract")}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            {mode === "create" ? "Supports all file formats (Multi-file enabled)" : "Processed locally inside your browser"}
+            {mode === "create" 
+              ? (isSpanish ? "Admite todos los formatos de archivo (Selección múltiple)" : "Supports all file formats (Multi-file enabled)") 
+              : (isSpanish ? "Procesamiento 100% privado en tu navegador" : "Processed locally inside your browser")}
           </span>
         </div>
       ) : (
@@ -162,7 +172,7 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
           <div className="flex items-center justify-between bg-slate-50 p-4 rounded-fk-lg border border-slate-200">
             <div>
               <span className="text-sm font-bold text-slate-800">
-                {files.length} file{files.length > 1 ? "s" : ""} selected
+                {isSpanish ? `${files.length} archivo${files.length > 1 ? "s" : ""} seleccionado${files.length > 1 ? "s" : ""}` : `${files.length} file${files.length > 1 ? "s" : ""} selected`}
               </span>
               <span className="text-xs text-slate-500 block">
                 Total: {((files.reduce((acc, f) => acc + f.size, 0)) / 1024 / 1024).toFixed(2)} MB
@@ -177,7 +187,7 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              Reset
+              {isSpanish ? "Reiniciar" : "Reset"}
             </button>
           </div>
 
@@ -185,7 +195,7 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
           {mode === "create" && (
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3">
-                <label className="text-sm font-semibold text-slate-700">Archive Name:</label>
+                <label className="text-sm font-semibold text-slate-700">{isSpanish ? "Nombre del archivo:" : "Archive Name:"}</label>
                 <input
                   type="text"
                   value={customZipName}
@@ -199,7 +209,7 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
                 disabled={loading}
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold rounded-fk-lg shadow-fk-button transition-all text-base flex items-center justify-center gap-2"
               >
-                {loading ? "Compressing files into ZIP..." : "Create ZIP Archive"}
+                {loading ? (isSpanish ? "Comprimiendo archivos en ZIP..." : "Compressing files into ZIP...") : (isSpanish ? "Crear archivo ZIP" : "Create ZIP Archive")}
               </button>
             </div>
           )}
@@ -208,7 +218,7 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
           {mode === "extract" && extractedEntries.length > 0 && (
             <div className="flex flex-col gap-3">
               <span className="text-sm font-bold text-slate-800">
-                Files inside archive ({extractedEntries.length}):
+                {isSpanish ? `Archivos dentro del paquete (${extractedEntries.length}):` : `Files inside archive (${extractedEntries.length}):`}
               </span>
               <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-fk-lg bg-slate-50">
                 {extractedEntries.map((entry, idx) => (
@@ -224,7 +234,7 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
                       onClick={() => downloadEntry(entry)}
                       className="px-3 py-1 bg-white hover:bg-blue-50 text-blue-600 border border-slate-200 hover:border-blue-300 text-xs font-semibold rounded shadow-sm shrink-0"
                     >
-                      Save
+                      {isSpanish ? "Guardar" : "Save"}
                     </button>
                   </div>
                 ))}
@@ -237,10 +247,10 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-emerald-900 block">
-                  ✓ Ready for Download: {outputFileName}
+                  {isSpanish ? `✓ Listo para descargar: ${outputFileName}` : `✓ Ready for Download: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-emerald-700">
-                  Size: {((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% In-Browser
+                  {isSpanish ? `Tamaño: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% En el navegador` : `Size: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% In-Browser`}
                 </span>
               </div>
               <a
@@ -248,7 +258,7 @@ export function ArchiveWorkspace({ mode, title, description }: ArchiveWorkspaceP
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                Download ZIP
+                {isSpanish ? "Descargar ZIP" : "Download ZIP"}
               </a>
             </div>
           )}

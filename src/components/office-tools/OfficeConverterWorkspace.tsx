@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import ProcessingModeBadge from "@/components/common/ProcessingModeBadge";
+import { useLanguage } from "@/components/layout/LanguageContext";
 
 export interface OfficeConverterWorkspaceProps {
   toolTitle: string;
@@ -18,6 +19,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
   acceptedExtensions,
   documentTypeLabel,
 }) => {
+  const { language } = useLanguage();
+  const isSpanish = language === "es" || language === "es-419";
+
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [showConsentModal, setShowConsentModal] = useState<boolean>(false);
@@ -55,13 +59,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
     setShowConsentModal(false);
     setIsProcessing(true);
     setErrorMessage(null);
-    setProgressStage("Connecting to isolated microVM...");
+    setProgressStage(isSpanish ? "Conectando a microVM aislada..." : "Connecting to isolated microVM...");
 
     try {
       const formData = new FormData();
       formData.append("file", sourceFile);
 
-      setProgressStage("Rendering Office document pages...");
+      setProgressStage(isSpanish ? "Renderizando páginas del documento..." : "Rendering Office document pages...");
 
       const response = await fetch(apiEndpoint, {
         method: "POST",
@@ -70,14 +74,14 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
 
       if (!response.ok) {
         const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.error || `Server conversion failed (${response.status})`);
+        throw new Error(errJson.error || (isSpanish ? `Error en la conversión del servidor (${response.status})` : `Server conversion failed (${response.status})`));
       }
 
-      setProgressStage("Verifying PDF output stream...");
+      setProgressStage(isSpanish ? "Verificando archivo PDF resultante..." : "Verifying PDF output stream...");
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || "Failed to convert document.");
+        throw new Error(data.error || (isSpanish ? "Error al convertir el documento." : "Failed to convert document."));
       }
 
       setResult({
@@ -87,7 +91,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
         fileName: sourceFile.name.replace(/\.[^/.]+$/, ".pdf"),
       });
     } catch (err: any) {
-      setErrorMessage(err?.message || "An unexpected error occurred during conversion.");
+      setErrorMessage(err?.message || (isSpanish ? "Ocurrió un error inesperado durante la conversión." : "An unexpected error occurred during conversion."));
     } finally {
       setIsProcessing(false);
       setProgressStage("Ready");
@@ -114,11 +118,17 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
             📊
           </div>
           <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-bold text-white">Select {documentTypeLabel}</h2>
-            <p className="text-sm text-slate-400">High-fidelity LibreOffice microVM conversion with 0% data retention.</p>
+            <h2 className="text-lg font-bold text-white">
+              {isSpanish ? "Selecciona el documento para convertir" : `Select ${documentTypeLabel}`}
+            </h2>
+            <p className="text-sm text-slate-400">
+              {isSpanish
+                ? "Conversión segura de alta fidelidad con microVM aislada y 0% de retención de datos."
+                : "High-fidelity LibreOffice microVM conversion with 0% data retention."}
+            </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            Choose {documentTypeLabel} File
+            {isSpanish ? "Elegir archivo" : `Choose ${documentTypeLabel} File`}
             <input type="file" accept={acceptedExtensions} className="hidden" onChange={handleFileChange} />
           </label>
         </div>
@@ -147,7 +157,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                Change File
+                {isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>
@@ -156,9 +166,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
           <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-4 flex items-start gap-3">
             <span className="text-blue-400 text-lg">🛡️</span>
             <div className="text-xs text-slate-300 flex flex-col gap-1 leading-relaxed">
-              <span className="font-bold text-white">Ephemeral MicroVM Sandbox</span>
+              <span className="font-bold text-white">
+                {isSpanish ? "Entorno aislado en microVM efímera" : "Ephemeral MicroVM Sandbox"}
+              </span>
               <span>
-                Office document rendering runs in an isolated container microVM. Files are encrypted in transit and purged automatically from cloud memory immediately after conversion.
+                {isSpanish
+                  ? "El renderizado del documento se ejecuta en un contenedor aislado. Los archivos están cifrados en tránsito y se eliminan automáticamente de la memoria inmediatamente tras la conversión."
+                  : "Office document rendering runs in an isolated container microVM. Files are encrypted in transit and purged automatically from cloud memory immediately after conversion."}
               </span>
             </div>
           </div>
@@ -183,7 +197,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                   <span>{progressStage}</span>
                 </>
               ) : (
-                `Convert to PDF`
+                isSpanish ? "Convertir a PDF" : "Convert to PDF"
               )}
             </button>
           )}
@@ -196,9 +210,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                   ✓
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-sm">Converted to PDF Successfully</h4>
+                  <h4 className="font-bold text-white text-sm">
+                    {isSpanish ? "Convertido a PDF exitosamente" : "Converted to PDF Successfully"}
+                  </h4>
                   <p className="text-xs text-slate-400">
-                    Rendered in {result.durationMs}ms • {(result.outputSizeBytes / 1024).toFixed(1)} KB • Ephemeral container purged
+                    {isSpanish
+                      ? `Procesado en ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Contenedor purgado`
+                      : `Rendered in ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Ephemeral container purged`}
                   </p>
                 </div>
               </div>
@@ -207,7 +225,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 onClick={handleDownload}
                 className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition shadow-lg"
               >
-                Download PDF
+                {isSpanish ? "Descargar PDF" : "Download PDF"}
               </button>
             </div>
           )}
@@ -218,33 +236,24 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
       {showConsentModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 flex flex-col gap-5 shadow-2xl animate-in fade-in zoom-in-95">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xl">
-                🔒
-              </div>
-              <h3 className="font-bold text-white text-base">Secure Cloud Processing Consent</h3>
+            <div className="flex items-center gap-3 text-blue-400">
+              <span className="text-2xl">🔒</span>
+              <h3 className="font-bold text-white text-lg">
+                {isSpanish ? "Aviso de conversión segura en servidor" : "Secure Server Conversion Notice"}
+              </h3>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Converting complex Office formats (<code>{sourceFile?.name.split(".").pop()?.toUpperCase()}</code>) requires isolated cloud rendering.
+              {isSpanish
+                ? "Este documento requiere conversión en una microVM aislada para garantizar la máxima fidelidad tipográfica y de diseño. Tu archivo se procesa en memoria y se elimina automáticamente inmediatamente después."
+                : "This document conversion requires an isolated cloud microVM to ensure complete typography and layout fidelity. Your file will be processed in memory and purged immediately."}
             </p>
-            <ul className="text-xs text-slate-400 flex flex-col gap-2">
-              <li className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span> 256-bit TLS encrypted transmission
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span> Isolated ephemeral container microVM
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span> 0 retained objects (immediate R2 purge)
-              </li>
-            </ul>
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setShowConsentModal(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white border border-slate-700 hover:bg-slate-800 transition"
+                className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition"
               >
-                Cancel
+                {isSpanish ? "Cancelar" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -252,9 +261,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                   setHasConsented(true);
                   executeServerConversion();
                 }}
-                className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-fk-primary hover:bg-fk-primary/90 transition shadow-lg shadow-fk-primary/20"
+                className="px-5 py-2 text-xs font-bold bg-fk-primary hover:bg-fk-primary/90 text-white rounded-lg shadow-lg transition"
               >
-                Proceed with Conversion
+                {isSpanish ? "Autorizar y convertir" : "Authorize & Convert"}
               </button>
             </div>
           </div>

@@ -2,14 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import { FontEngine, FontMetadata } from "./FontEngine";
+import { useLanguage } from "@/components/layout/LanguageContext";
 
 interface FontWorkspaceProps {
   mode: "ttf-to-woff2" | "woff2-to-ttf";
   title?: string;
   description?: string;
+  embedded?: boolean;
 }
 
-export function FontWorkspace({ mode, title, description }: FontWorkspaceProps) {
+export function FontWorkspace({ mode, title, description, embedded = true }: FontWorkspaceProps) {
+  const { language } = useLanguage();
+  const isSpanish = language === "es" || language === "es-419";
+
   const [file, setFile] = useState<File | null>(null);
   const [fontMeta, setFontMeta] = useState<FontMetadata | null>(null);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -18,7 +23,11 @@ export function FontWorkspace({ mode, title, description }: FontWorkspaceProps) 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [previewText, setPreviewText] = useState<string>("The quick brown fox jumps over the lazy dog 1234567890");
+  const [previewText, setPreviewText] = useState<string>(
+    isSpanish
+      ? "El veloz murciélago hindú comía feliz cardillo y kiwi 1234567890"
+      : "The quick brown fox jumps over the lazy dog 1234567890"
+  );
   const [fontSize, setFontSize] = useState<number>(28);
 
   useEffect(() => {
@@ -60,7 +69,11 @@ export function FontWorkspace({ mode, title, description }: FontWorkspaceProps) 
       setOutputFileName(selectedFile.name.replace(/\.[^/.]+$/, "") + `.${outExt}`);
     } catch (err) {
       console.error(err);
-      setError("Failed to convert font. Please ensure it is a valid TTF, OTF, or WOFF file.");
+      setError(
+        isSpanish
+          ? "Error al convertir la fuente. Asegúrate de que sea un archivo TTF, OTF o WOFF válido."
+          : "Failed to convert font. Please ensure it is a valid TTF, OTF, or WOFF file."
+      );
     } finally {
       setLoading(false);
     }
@@ -68,14 +81,16 @@ export function FontWorkspace({ mode, title, description }: FontWorkspaceProps) 
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white rounded-fk-xl shadow-fk-card border border-slate-100">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          {title || (mode === "ttf-to-woff2" ? "Convert TTF to WOFF2 / WOFF" : "Convert WOFF2 to TTF")}
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">
-          {description || "High-Performance Web Font Compressor · 100% In-Browser"}
-        </p>
-      </div>
+      {!embedded && (
+        <div className="text-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            {title || (mode === "ttf-to-woff2" ? "Convert TTF to WOFF2 / WOFF" : "Convert WOFF2 to TTF")}
+          </h2>
+          <p className="text-slate-500 text-sm mt-1">
+            {description || "High-Performance Web Font Compressor · 100% In-Browser"}
+          </p>
+        </div>
+      )}
 
       {!file ? (
         <div
@@ -99,10 +114,10 @@ export function FontWorkspace({ mode, title, description }: FontWorkspaceProps) 
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            Select Font File (TTF, OTF, WOFF)
+            {isSpanish ? "Selecciona archivo de fuente (TTF, OTF, WOFF)" : "Select Font File (TTF, OTF, WOFF)"}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            Optimized for fast web delivery (Zero server tracking)
+            {isSpanish ? "Optimizado para la web (0% almacenamiento en servidor)" : "Optimized for fast web delivery (Zero server tracking)"}
           </span>
         </div>
       ) : (
@@ -112,7 +127,9 @@ export function FontWorkspace({ mode, title, description }: FontWorkspaceProps) 
             <div>
               <span className="text-sm font-bold text-slate-800 block truncate">{file.name}</span>
               <span className="text-xs text-slate-500">
-                Format: {fontMeta?.format.toUpperCase()} · Tables: {fontMeta?.numTables} · Size: {(file.size / 1024).toFixed(1)} KB
+                {isSpanish
+                  ? `Formato: ${fontMeta?.format.toUpperCase()} · Tablas: ${fontMeta?.numTables} · Tamaño: ${(file.size / 1024).toFixed(1)} KB`
+                  : `Format: ${fontMeta?.format.toUpperCase()} · Tables: ${fontMeta?.numTables} · Size: ${(file.size / 1024).toFixed(1)} KB`}
               </span>
             </div>
             <button
@@ -123,7 +140,7 @@ export function FontWorkspace({ mode, title, description }: FontWorkspaceProps) 
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              Change Font
+              {isSpanish ? "Cambiar fuente" : "Change Font"}
             </button>
           </div>
 
@@ -131,10 +148,10 @@ export function FontWorkspace({ mode, title, description }: FontWorkspaceProps) 
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Live Font Preview
+                {isSpanish ? "Vista previa interactiva" : "Live Font Preview"}
               </label>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400">Size: {fontSize}px</span>
+                <span className="text-xs text-slate-400">{isSpanish ? "Tamaño:" : "Size:"} {fontSize}px</span>
                 <input
                   type="range"
                   min="16"
@@ -160,10 +177,12 @@ export function FontWorkspace({ mode, title, description }: FontWorkspaceProps) 
             <div className="p-4 bg-purple-50 border border-purple-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-purple-900 block">
-                  ✓ Font Converted: {outputFileName}
+                  {isSpanish ? `✓ Fuente convertida: ${outputFileName}` : `✓ Font Converted: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-purple-700">
-                  Size: {((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% In-Browser
+                  {isSpanish
+                    ? `Tamaño: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% En el navegador`
+                    : `Size: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% In-Browser`}
                 </span>
               </div>
               <a
@@ -171,7 +190,7 @@ export function FontWorkspace({ mode, title, description }: FontWorkspaceProps) 
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                Download Font
+                {isSpanish ? "Descargar fuente" : "Download Font"}
               </a>
             </div>
           )}
