@@ -383,6 +383,11 @@ export function getLocalizedToolMeta(
 
     if (locale === "zh-CN" || locale === "zh-TW" || locale === "ja" || locale === "ko") {
       localizedTitle = `${noun} ${localizedAction} (${dict.onlineFree}) | FileKit`;
+    } else if (locale === "de") {
+      const verb = localizedAction.charAt(0).toLowerCase() + localizedAction.slice(1);
+      localizedTitle = `${noun} ${verb} ${dict.onlineFree} | FileKit`;
+    } else if (locale === "nl" || locale === "tr") {
+      localizedTitle = `${noun} ${localizedAction} ${dict.onlineFree} | FileKit`;
     } else {
       localizedTitle = `${localizedAction} ${noun} ${dict.onlineFree} | FileKit`;
     }

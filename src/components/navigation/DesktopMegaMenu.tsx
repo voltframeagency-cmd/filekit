@@ -468,84 +468,62 @@ export default function DesktopMegaMenu({
       }
     }
 
-    // Localize common action prefixes
-    if (label.startsWith("Compress ")) {
-      const item = label.replace("Compress ", "");
-      if (isSwedish) return `Komprimera ${item}`;
-      if (isArabic) return `ضغط ${item}`;
-      if (isSpanish) return `Comprimir ${item}`;
-      if (isTurkish) return `${item} Sıkıştır`;
-      if (isFrench) return `Compresser ${item}`;
-      if (isGerman) return `${item} komprimieren`;
+    // Exact Tool Names (Prioritized before generic prefix replacements)
+    if (label === "Rotate Pages" || label === "Rotate PDF Pages") {
+      if (isSwedish) return "Rotera sidor";
+      if (isArabic) return "تدوير الصفحات";
+      if (isSpanish) return "Rotar páginas";
+      if (isTurkish) return "Sayfaları Döndür";
+      if (isGerman) return "Seiten drehen";
+      if (isFrench) return "Faire pivoter les pages";
     }
-    if (label.startsWith("Convert ")) {
-      const item = label.replace("Convert ", "");
-      if (isSwedish) return `Konvertera ${item}`;
-      if (isArabic) return `تحويل ${item}`;
-      if (isSpanish) return `Convertir ${item}`;
-      if (isTurkish) return `${item} Dönüştür`;
-      if (isFrench) return `Convertir ${item}`;
-      if (isGerman) return `${item} konvertieren`;
+    if (label === "Extract Pages" || label === "Extract PDF Pages") {
+      if (isSwedish) return "Extrahera sidor";
+      if (isArabic) return "استخراج الصفحات";
+      if (isSpanish) return "Extraer páginas";
+      if (isTurkish) return "Sayfaları Ayıkla";
+      if (isGerman) return "Seiten extrahieren";
+      if (isFrench) return "Extraire des pages";
     }
-    if (label.startsWith("Extract ")) {
-      const item = label.replace("Extract ", "");
-      if (isSwedish) return `Extrahera ${item}`;
-      if (isArabic) return `استخراج ${item}`;
-      if (isSpanish) return `Extraer ${item}`;
-      if (isTurkish) return `${item} Ayıkla`;
-      if (isFrench) return `Extraire ${item}`;
-      if (isGerman) return `${item} extrahieren`;
+    if (label === "Extract Images" || label === "Extract Images from PDF") {
+      if (isSwedish) return "Extrahera bilder";
+      if (isArabic) return "استخراج الصور";
+      if (isSpanish) return "Extraer imágenes";
+      if (isTurkish) return "Görselleri Ayıkla";
+      if (isGerman) return "Bilder extrahieren";
+      if (isFrench) return "Extraire des images";
     }
-    if (label.startsWith("Rotate ")) {
-      const item = label.replace("Rotate ", "");
-      if (isSwedish) return `Rotera ${item}`;
-      if (isArabic) return `تدوير ${item}`;
-      if (isSpanish) return `Rotar ${item}`;
-      if (isTurkish) return `${item} Döndür`;
-      if (isFrench) return `Faire pivoter ${item}`;
-      if (isGerman) return `${item} drehen`;
+    if (label === "Add Watermark" || label === "Watermark PDF") {
+      if (isSwedish) return "Lägg till vattenstämpel";
+      if (isArabic) return "إضافة علامة مائية";
+      if (isSpanish) return "Añadir marca de agua";
+      if (isTurkish) return "Filigran Ekle";
+      if (isGerman) return "Wasserzeichen hinzufügen";
+      if (isFrench) return "Ajouter un filigrane";
     }
-    if (label.startsWith("Trim ")) {
-      const item = label.replace("Trim ", "");
-      if (isSwedish) return `Klipp ${item}`;
-      if (isArabic) return `قص ${item}`;
-      if (isSpanish) return `Recortar ${item}`;
-      if (isTurkish) return `${item} Kırp`;
-      if (isFrench) return `Couper ${item}`;
-      if (isGerman) return `${item} schneiden`;
+    if (label === "PDF to Image" || label === "PDF in Image") {
+      if (isSwedish) return "PDF till bild";
+      if (isArabic) return "PDF إلى صورة";
+      if (isSpanish) return "PDF a imagen";
+      if (isTurkish) return "PDF'ten Görsele";
+      if (isGerman) return "PDF in Bild";
+      if (isFrench) return "PDF en image";
     }
-
-    if (label === "Image Compressor") {
-      if (isSwedish) return "Bildkomprimerare";
-      if (isArabic) return "ضاغط الصور";
-      if (isSpanish) return "Compresor de imágenes";
-      if (isTurkish) return "Görsel Sıkıştırıcı";
-      if (isFrench) return "Compresseur d'image";
-      if (isGerman) return "Bild-Komprimierer";
+    if (label === "Image to PDF" || label === "Image in PDF") {
+      if (isSwedish) return "Bild till PDF";
+      if (isArabic) return "صورة إلى PDF";
+      if (isSpanish) return "Imagen a PDF";
+      if (isTurkish) return "Görselden PDF'e";
+      if (isGerman) return "Bild in PDF";
+      if (isFrench) return "Image en PDF";
     }
-    if (label === "Compress to a Specific Size" || label === "Compress to Specific Size") {
-      if (isSwedish) return "Komprimera till specifik storlek";
-      if (isArabic) return "الضغط إلى حجم محدد";
-      if (isSpanish) return "Comprimir a un tamaño específico";
-      if (isTurkish) return "Belirli bir boyuta sıkıştır";
-      if (isFrench) return "Compresser à une taille spécifique";
-      if (isGerman) return "Auf bestimmte Größe komprimieren";
-    }
-    if (label === "Image Converter") {
-      if (isSwedish) return "Bildkonverterare";
-      if (isArabic) return "محول الصور";
-      if (isSpanish) return "Convertidor de imágenes";
-      if (isTurkish) return "Görsel Dönüştürücü";
-      if (isFrench) return "Convertisseur d'image";
-      if (isGerman) return "Bild-Konverter";
-    }
-    if (label === "PDF Compressor") {
-      if (isSwedish) return "PDF-komprimerare";
-      if (isArabic) return "ضاغط PDF";
-      if (isSpanish) return "Compresor de PDF";
-      if (isTurkish) return "PDF Sıkıştırıcı";
-      if (isFrench) return "Compresseur PDF";
-      if (isGerman) return "PDF-Komprimierer";
+    if (label === "PDF to Text") {
+      if (isSwedish) return "PDF till text";
+      if (isArabic) return "PDF إلى نص";
+      if (isSpanish) return "PDF a texto";
+      if (isTurkish) return "PDF'ten Metne";
+      if (isGerman) return "PDF in Text";
+      if (isFrench) return "PDF en texte";
     }
     if (label === "Merge PDF Files" || label === "Merge PDF") {
       if (isSwedish) return "Slå samman PDF-filer";
@@ -603,30 +581,6 @@ export default function DesktopMegaMenu({
       if (isGerman) return "Seiten löschen";
       if (isFrench) return "Supprimer des pages";
     }
-    if (label === "Extract Pages") {
-      if (isSwedish) return "Extrahera sidor";
-      if (isArabic) return "استخراج الصفحات";
-      if (isSpanish) return "Extraer páginas";
-      if (isTurkish) return "Sayfaları Ayıkla";
-      if (isGerman) return "Seiten extrahieren";
-      if (isFrench) return "Extraire des pages";
-    }
-    if (label === "PDF to Text") {
-      if (isSwedish) return "PDF till text";
-      if (isArabic) return "PDF إلى نص";
-      if (isSpanish) return "PDF a texto";
-      if (isTurkish) return "PDF'ten Metne";
-      if (isGerman) return "PDF in Text";
-      if (isFrench) return "PDF en texte";
-    }
-    if (label === "Extract Images") {
-      if (isSwedish) return "Extrahera bilder";
-      if (isArabic) return "استخراج الصور";
-      if (isSpanish) return "Extraer imágenes";
-      if (isTurkish) return "Görselleri Ayıkla";
-      if (isGerman) return "Bilder extrahieren";
-      if (isFrench) return "Extraire des images";
-    }
     if (label === "Flatten PDF") {
       if (isSwedish) return "Platta till PDF";
       if (isArabic) return "تسطيح PDF";
@@ -634,6 +588,53 @@ export default function DesktopMegaMenu({
       if (isTurkish) return "PDF'i Düzleştir";
       if (isGerman) return "PDF glätten";
       if (isFrench) return "Aplatir le PDF";
+    }
+
+    // Localize common action prefixes
+    if (label.startsWith("Compress ")) {
+      const item = label.replace("Compress ", "");
+      if (isSwedish) return `Komprimera ${item}`;
+      if (isArabic) return `ضغط ${item}`;
+      if (isSpanish) return `Comprimir ${item}`;
+      if (isTurkish) return `${item} Sıkıştır`;
+      if (isFrench) return `Compresser ${item}`;
+      if (isGerman) return `${item} komprimieren`;
+    }
+    if (label.startsWith("Convert ")) {
+      const item = label.replace("Convert ", "");
+      if (isSwedish) return `Konvertera ${item}`;
+      if (isArabic) return `تحويل ${item}`;
+      if (isSpanish) return `Convertir ${item}`;
+      if (isTurkish) return `${item} Dönüştür`;
+      if (isFrench) return `Convertir ${item}`;
+      if (isGerman) return `${item} konvertieren`;
+    }
+    if (label.startsWith("Extract ")) {
+      const item = label.replace("Extract ", "");
+      if (isSwedish) return `Extrahera ${item}`;
+      if (isArabic) return `استخراج ${item}`;
+      if (isSpanish) return `Extraer ${item}`;
+      if (isTurkish) return `${item} Ayıkla`;
+      if (isFrench) return `Extraire ${item}`;
+      if (isGerman) return `${item} extrahieren`;
+    }
+    if (label.startsWith("Rotate ")) {
+      const item = label.replace("Rotate ", "");
+      if (isSwedish) return `Rotera ${item}`;
+      if (isArabic) return `تدوير ${item}`;
+      if (isSpanish) return `Rotar ${item}`;
+      if (isTurkish) return `${item} Döndür`;
+      if (isFrench) return `Faire pivoter ${item}`;
+      if (isGerman) return `${item} drehen`;
+    }
+    if (label.startsWith("Trim ")) {
+      const item = label.replace("Trim ", "");
+      if (isSwedish) return `Klipp ${item}`;
+      if (isArabic) return `قص ${item}`;
+      if (isSpanish) return `Recortar ${item}`;
+      if (isTurkish) return `${item} Kırp`;
+      if (isFrench) return `Couper ${item}`;
+      if (isGerman) return `${item} schneiden`;
     }
     if (label === "Grayscale Image") {
       if (isSwedish) return "Gör bilden gråskalig";
@@ -858,8 +859,10 @@ export default function DesktopMegaMenu({
                       </div>
                       <span className="text-[12px] text-slate-500 font-normal mt-1 leading-snug">
                         {group.title === "IMAGE"
-                          ? (activeLocale === "sv" ? "Optimera JPG, PNG och WebP lokalt" : activeLocale === "ar" ? "تحسين ملفات JPG وPNG وWebP محلياً" : activeLocale === "tr" ? "JPG, PNG ve WebP'leri yerel olarak optimize edin" : activeLocale === "es" || activeLocale === "es-419" ? "Optimiza imágenes JPG, PNG y WebP en tu dispositivo" : "Optimize JPEGs, PNGs, and WebPs locally")
-                          : (activeLocale === "sv" ? "Minska PDF under 2 MB i webbläsaren" : activeLocale === "ar" ? "تقليص ملفات PDF لأقل من 2 ميغابايت" : activeLocale === "tr" ? "PDF'leri 2 MB altına küçültün" : activeLocale === "es" || activeLocale === "es-419" ? "Reduce el tamaño de PDFs a menos de 2 MB" : "Shrink PDFs below 2 MB in browser")}
+                          ? (activeLocale === "sv" ? "Optimera JPG, PNG och WebP lokalt" : activeLocale === "ar" ? "تحسين ملفات JPG وPNG وWebP محلياً" : activeLocale === "tr" ? "JPG, PNG ve WebP'leri yerel olarak optimize edin" : activeLocale === "es" || activeLocale === "es-419" ? "Optimiza imágenes JPG, PNG y WebP en tu dispositivo" : activeLocale === "de" ? "JPG, PNG und WebP lokal optimieren" : "Optimize JPEGs, PNGs, and WebPs locally")
+                          : (group.primaryLink?.href === "/merge-pdf")
+                          ? (activeLocale === "sv" ? "Kombinera PDF-filer i webbläsaren" : activeLocale === "ar" ? "دمج ملفات PDF في المتصفح" : activeLocale === "tr" ? "PDF dosyalarını tarayıcıda birleştirin" : activeLocale === "es" || activeLocale === "es-419" ? "Combina múltiples archivos PDF en tu navegador" : activeLocale === "de" ? "Mehrere PDF-Dateien im Browser verbinden" : "Combine multiple PDF files in browser")
+                          : (activeLocale === "sv" ? "Minska PDF under 2 MB i webbläsaren" : activeLocale === "ar" ? "تقليص ملفات PDF لأقل من 2 ميغابايت" : activeLocale === "tr" ? "PDF'leri 2 MB altına küçültün" : activeLocale === "es" || activeLocale === "es-419" ? "Reduce el tamaño de PDFs a menos de 2 MB" : activeLocale === "de" ? "PDFs unter 2 MB im Browser verkleinern" : "Shrink PDFs below 2 MB in browser")}
                       </span>
                     </Link>
                   );
