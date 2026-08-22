@@ -29,6 +29,7 @@ import { executePdfPageEditor } from "@/utils/pdf-editor/PdfPageEditorEngine";
 import { PdfSelectionToolbar } from "./PdfSelectionToolbar";
 import { PdfPageThumbnailGrid } from "./PdfPageThumbnailGrid";
 import { PdfEditorResultCard } from "./PdfEditorResultCard";
+import { useLanguage } from "@/components/layout/LanguageContext";
 
 // Configure pdfjs-dist worker location
 if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
@@ -48,6 +49,7 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
   subtitle,
   actionButtonText,
 }) => {
+  const { t } = useLanguage();
   const [inputDocs, setInputDocs] = useState<InputPdfDoc[]>([]);
   const [pageItems, setPageItems] = useState<PageOperationItem[]>([]);
   const [progress, setProgress] = useState<PdfEditorProgress | null>(null);
@@ -277,7 +279,7 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
           <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
-          100% In-Browser & Zero File Uploads
+          {t("trust.badge1") || "100% In-Browser & Zero File Uploads"}
         </div>
       </div>
 
@@ -314,14 +316,14 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
           </div>
 
           <h3 className="text-lg font-bold text-slate-200 mb-1">
-            Drop PDF document{targetRoute === "/merge-pdf" ? "s" : ""} here
+            {t("workspace.dropHere") || (targetRoute === "/merge-pdf" ? "Drop PDF documents here" : "Drop PDF document here")}
           </h3>
           <p className="text-xs text-slate-400 mb-6">
-            Supports local PDF document manipulation up to 100 MB
+            {t("workspace.pdfOnly") || "Supports local PDF document manipulation up to 100 MB"}
           </p>
 
           <label className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-500/20 transition">
-            Select PDF File{targetRoute === "/merge-pdf" ? "s" : ""}
+            {t("workspace.selectFile") || (targetRoute === "/merge-pdf" ? "Select PDF Files" : "Select PDF File")}
             <input
               type="file"
               multiple={targetRoute === "/merge-pdf"}

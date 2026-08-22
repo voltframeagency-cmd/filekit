@@ -185,9 +185,57 @@ export function getLocalizedToolMeta(
     };
   }
 
-  const englishTitle = tool.inputFormat && tool.outputFormat
-    ? `Convert ${tool.inputFormat} to ${tool.outputFormat} Online Free`
-    : normSlug.replace(/^\//, "").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  let englishTitle = "";
+  if (tool.inputFormat && tool.outputFormat && tool.inputFormat !== tool.outputFormat) {
+    englishTitle = `Convert ${tool.inputFormat} to ${tool.outputFormat} Online Free`;
+  } else {
+    // Single operation or same-format transformation
+    let action = "Convert";
+    let noun = tool.inputFormat || "PDF";
+    if (normSlug.startsWith("/compress-")) action = "Compress";
+    else if (normSlug.startsWith("/merge-")) action = "Merge";
+    else if (normSlug.startsWith("/split-")) action = "Split";
+    else if (normSlug.startsWith("/rotate-")) action = "Rotate";
+    else if (normSlug.startsWith("/watermark-")) action = "Watermark";
+    else if (normSlug.startsWith("/crop-")) action = "Crop";
+    else if (normSlug.startsWith("/resize-")) action = "Resize";
+    else if (normSlug.startsWith("/extract-")) action = "Extract";
+    else if (normSlug.startsWith("/delete-")) action = "Delete";
+    else if (normSlug.startsWith("/reorder-")) action = "Reorder";
+    else if (normSlug.startsWith("/flatten-")) action = "Flatten";
+    else if (normSlug.startsWith("/ocr-")) action = "OCR";
+    else if (normSlug.startsWith("/sign-")) action = "Sign";
+
+    if (normSlug === "/rotate-pdf-pages") englishTitle = "Rotate PDF Pages Online Free";
+    else if (normSlug === "/delete-pdf-pages") englishTitle = "Delete PDF Pages Online Free";
+    else if (normSlug === "/extract-pdf-pages") englishTitle = "Extract PDF Pages Online Free";
+    else if (normSlug === "/reorder-pdf-pages") englishTitle = "Reorder PDF Pages Online Free";
+    else if (normSlug === "/add-blank-page-to-pdf") englishTitle = "Add Blank Page to PDF Online Free";
+    else if (normSlug === "/duplicate-pdf-pages") englishTitle = "Duplicate PDF Pages Online Free";
+    else if (normSlug === "/make-pdf-searchable") englishTitle = "Make PDF Searchable Online Free";
+    else if (normSlug === "/reverse-pdf") englishTitle = "Reverse PDF Online Free";
+    else if (normSlug === "/boost-audio-volume") englishTitle = "Boost Audio Volume Online Free";
+    else if (normSlug === "/change-video-speed") englishTitle = "Change Video Speed Online Free";
+    else if (normSlug === "/mute-video") englishTitle = "Mute Video Online Free";
+    else if (normSlug === "/trim-video") englishTitle = "Trim Video Online Free";
+    else if (normSlug === "/trim-audio") englishTitle = "Trim Audio Online Free";
+    else if (normSlug === "/merge-audio") englishTitle = "Merge Audio Online Free";
+    else if (normSlug === "/compress-video") englishTitle = "Compress Video Online Free";
+    else if (normSlug === "/compress-audio") englishTitle = "Compress Audio Online Free";
+    else if (normSlug === "/compress-image") englishTitle = "Compress Image Online Free";
+    else if (normSlug === "/blur-image") englishTitle = "Blur Image Online Free";
+    else if (normSlug === "/grayscale-image") englishTitle = "Grayscale Image Online Free";
+    else if (normSlug === "/invert-image") englishTitle = "Invert Image Online Free";
+    else if (normSlug === "/flip-image") englishTitle = "Flip Image Online Free";
+    else if (normSlug === "/create-zip") englishTitle = "Create ZIP Archive Online Free";
+    else if (normSlug === "/extract-zip") englishTitle = "Extract ZIP Archive Online Free";
+    else if (normSlug === "/extract-rar") englishTitle = "Extract RAR Archive Online Free";
+    else if (normSlug === "/strip-exif") englishTitle = "Strip Image EXIF Metadata Online Free";
+    else {
+      englishTitle = `${action} ${noun} Online Free`;
+    }
+  }
+
   const englishDesc = tool.uniqueOutcomeDefinition || `${englishTitle}. ${dict.privacyNotice}`;
 
   if (locale === "en") {
@@ -308,7 +356,7 @@ export function getLocalizedToolMeta(
   }
 
   // Pair extraction fallback (e.g. /dwg-to-pdf, /jpg-to-png)
-  if (!localizedSource && normSlug.includes("-to-")) {
+  if (normSlug.includes("-to-")) {
     const parts = normSlug.replace(/^\//, "").split("-to-");
     if (parts.length === 2) {
       localizedSource = parts[0].toUpperCase();
@@ -316,14 +364,27 @@ export function getLocalizedToolMeta(
     }
   }
 
-  let localizedTitle = `${localizedAction} ${localizedSource || "File"} ${dict.to} ${localizedTarget || "PDF"} ${dict.onlineFree} | FileKit`;
-  if (localizedSource && localizedTarget) {
+  let localizedTitle = "";
+  if (localizedSource && localizedTarget && localizedSource !== localizedTarget) {
     if (locale === "zh-CN" || locale === "zh-TW") {
       localizedTitle = `${localizedSource} ${dict.to} ${localizedTarget} ${localizedAction} (${dict.onlineFree}) | FileKit`;
     } else if (locale === "ja" || locale === "ko") {
       localizedTitle = `${localizedSource} ${localizedTarget} ${localizedAction} (${dict.onlineFree}) | FileKit`;
     } else {
       localizedTitle = `${localizedAction} ${localizedSource} ${dict.to} ${localizedTarget} ${dict.onlineFree} | FileKit`;
+    }
+  } else {
+    // Single format operation (e.g. /merge-pdf, /compress-pdf, /split-pdf, /rotate-pdf-pages)
+    let noun = "PDF";
+    if (normSlug.includes("image")) noun = "Image";
+    else if (normSlug.includes("video")) noun = "Video";
+    else if (normSlug.includes("audio")) noun = "Audio";
+    else if (normSlug.includes("zip") || normSlug.includes("rar") || normSlug.includes("7z") || normSlug.includes("tar")) noun = "Archive";
+
+    if (locale === "zh-CN" || locale === "zh-TW" || locale === "ja" || locale === "ko") {
+      localizedTitle = `${noun} ${localizedAction} (${dict.onlineFree}) | FileKit`;
+    } else {
+      localizedTitle = `${localizedAction} ${noun} ${dict.onlineFree} | FileKit`;
     }
   }
 

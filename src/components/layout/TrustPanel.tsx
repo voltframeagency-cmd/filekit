@@ -17,10 +17,10 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.badge4")}
+              {t("trust.privateTitle") || t("trust.badge4")}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("trust.badge1")}
+              {t("trust.privateDesc1") ? `${t("trust.privateDesc1")} ${t("trust.privateDesc2")}` : t("trust.badge1")}
             </span>
           </div>
         </div>
@@ -44,10 +44,10 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.badge1")}
+              {t("trust.localTitle") || t("trust.badge1")}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("workspace.processing")}
+              {t("trust.localDesc1") ? `${t("trust.localDesc1")} ${t("trust.localDesc2")}` : t("trust.badge1")}
             </span>
           </div>
         </div>
@@ -71,25 +71,25 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.badge2")}
+              {t("trust.tempTitle") || t("trust.badge2")}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("homepage.popularTools")}
+              {t("trust.tempDesc1") ? `${t("trust.tempDesc1")} ${t("trust.tempDesc2")}` : t("trust.badge2")}
             </span>
           </div>
         </div>
 
-        {/* Column 4: Verified Output */}
+        {/* Column 4: No Hidden Trials */}
         <div className="flex items-start gap-4 px-2 md:pl-6 rtl:md:pr-6 rtl:md:pl-2">
           <div className="shrink-0 mt-1">
             <FileKitAsset name="verified-output" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.badge3")}
+              {t("trust.trialTitle") || t("trust.badge3")}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("workspace.freeNotice")}
+              {t("trust.trialDesc1") ? `${t("trust.trialDesc1")} ${t("trust.trialDesc2")}` : t("trust.badge3")}
             </span>
           </div>
         </div>

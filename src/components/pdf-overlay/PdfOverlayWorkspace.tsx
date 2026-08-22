@@ -12,8 +12,10 @@ import { isWinAnsiSupported, detectImageMimeType } from "@/utils/pdf-overlay/wat
 import { PdfWatermarkControls } from "./PdfWatermarkControls";
 import { PdfPagePreview } from "./PdfPagePreview";
 import { PdfOverlayResultCard } from "./PdfOverlayResultCard";
+import { useLanguage } from "@/components/layout/LanguageContext";
 
 export const PdfOverlayWorkspace: React.FC = () => {
+  const { t } = useLanguage();
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceBuffer, setSourceBuffer] = useState<Uint8Array | null>(null);
   const [progress, setProgress] = useState<PdfOverlayProgress | null>(null);
@@ -264,7 +266,7 @@ export const PdfOverlayWorkspace: React.FC = () => {
           <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
-          100% In-Browser & Zero File Uploads
+          {t("trust.badge1") || "100% In-Browser & Zero File Uploads"}
         </div>
       </div>
 
@@ -303,17 +305,17 @@ export const PdfOverlayWorkspace: React.FC = () => {
           />
           <div className="w-16 h-16 rounded-2xl bg-blue-950/80 text-blue-400 flex items-center justify-center mx-auto mb-4 border border-blue-800/60 group-hover:scale-110 transition">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 0115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
           </div>
           <h3 className="text-lg font-bold text-slate-100 mb-1">
-            Drop your PDF here
+            {t("workspace.dropHere") || "Drop your PDF here"}
           </h3>
           <p className="text-xs text-slate-400 mb-4">
-            or click to browse from your computer (Up to 100 MB)
+            {t("workspace.pdfOnly") || "or click to browse from your computer (Up to 100 MB)"}
           </p>
           <span className="inline-block px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-500/25 transition">
-            Select PDF File
+            {t("workspace.selectFile") || "Select PDF File"}
           </span>
         </div>
       ) : (
