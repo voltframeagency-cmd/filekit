@@ -25,6 +25,7 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
   const isPortuguese = language === "pt" || language === "pt-BR";
   const isItalian = language === "it";
   const isDutch = language === "nl";
+  const isCatalan = language === "ca";
 
   // Target format state
   const [targetFormat, setTargetFormat] = useState<SupportedImageFormat>(
@@ -328,7 +329,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                   onClick={handleResetWorkspace}
                   className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-3 py-1.5 border border-fk-border rounded-fk-md bg-white hover:bg-fk-surface-muted transition-colors shrink-0"
                 >
-                  {isDutch
+                  {isCatalan
+                    ? "Tria'n un altre"
+                    : isDutch
                     ? "Kies een andere"
                     : isItalian
                     ? "Scegli un'altra"
@@ -350,7 +353,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-blue-50 border-blue-200 text-blue-800 w-fit animate-pulse">
                     <span>⚡</span>
                     <span>
-                      {isDutch
+                      {isCatalan
+                        ? "Convertint imatge..."
+                        : isDutch
                         ? "Afbeelding converteren..."
                         : isItalian
                         ? "Conversione dell'immagine in corso..."
@@ -373,7 +378,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                   >
                     <span>✓</span>
                     <span>
-                      {isDutch
+                      {isCatalan
+                        ? "Imatge convertida amb èxit"
+                        : isDutch
                         ? "Afbeelding succesvol geconverteerd"
                         : isItalian
                         ? "Immagine convertita con successo"
@@ -393,7 +400,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                 {/* Transparency Warning Notice */}
                 {!isProcessing && isTransparentToJpg && (
                   <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 text-[12px] rounded-fk-md font-medium">
-                    {isDutch
+                    {isCatalan
+                      ? "⚠️ JPEG no admet transparència. Les àrees transparents utilitzaran el color de fons seleccionat."
+                      : isDutch
                       ? "⚠️ JPEG ondersteunt geen transparantie. Transparante delen krijgen de geselecteerde achtergrondkleur."
                       : isItalian
                       ? "⚠️ Il formato JPEG non supporta la trasparenza. Le aree trasparenti useranno il colore di sfondo selezionato."
@@ -442,7 +451,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                     <span>📐 {result.outputWidth} × {result.outputHeight} px</span>
                     <span>
                       {result.isLarger
-                        ? isDutch
+                        ? isCatalan
+                          ? `📈 El fitxer és un ${result.sizeChangePercentage}% més gran`
+                          : isDutch
                           ? `📈 Het bestand is ${result.sizeChangePercentage}% groter`
                           : isItalian
                           ? `📈 Il file è più grande del ${result.sizeChangePercentage}%`
@@ -455,6 +466,8 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                           : isSpanish
                           ? `📈 Archivo es ${result.sizeChangePercentage}% mayor`
                           : `📈 Output is ${result.sizeChangePercentage}% larger`
+                        : isCatalan
+                        ? `📉 El fitxer és un ${result.sizeChangePercentage}% més petit`
                         : isDutch
                         ? `📉 Het bestand is ${result.sizeChangePercentage}% kleiner`
                         : isItalian
@@ -479,7 +492,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                       disabled={isProcessing}
                       className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
                     >
-                      {isDutch
+                      {isCatalan
+                        ? "Descarregar imatge convertida"
+                        : isDutch
                         ? "Geconverteerde afbeelding downloaden"
                         : isItalian
                         ? "Scarica immagine convertita"
@@ -499,7 +514,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                       onClick={handleAdjustSettings}
                       className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
                     >
-                      {isDutch
+                      {isCatalan
+                        ? "Ajustar paràmetres"
+                        : isDutch
                         ? "Instellingen aanpassen"
                         : isItalian
                         ? "Modifica impostazioni"
@@ -525,7 +542,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               <h2 className="text-[16px] font-black text-fk-text flex items-center gap-2 border-b border-fk-border pb-3">
                 <span>⚙️</span>
                 <span>
-                  {isDutch
+                  {isCatalan
+                    ? "Opcions de conversió"
+                    : isDutch
                     ? "Conversie-opties"
                     : isItalian
                     ? "Opzioni di conversione"
@@ -545,7 +564,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               {routeConfig.mode === "GENERAL" && (
                 <div className="flex flex-col gap-2">
                   <label className="text-[13px] font-bold text-fk-text">
-                    {isDutch
+                    {isCatalan
+                      ? "Format de destinació"
+                      : isDutch
                       ? "Doelformaat"
                       : isPortuguese
                       ? "Formato de destino"
@@ -584,7 +605,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               {routeConfig.mode === "FIXED_PAIR" && (
                 <div className="flex items-center justify-between p-3 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <span className="text-[13px] font-bold text-fk-text">
-                    {isDutch
+                    {isCatalan
+                      ? "Format de sortida"
+                      : isDutch
                       ? "Uitvoerformaat"
                       : isPortuguese
                       ? "Formato de saída"
@@ -605,12 +628,12 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               {/* TRANSPARENCY BACKGROUND CONTROL (PNG/WebP -> JPG) */}
               {isTransparentToJpg && (
                 <div className="flex flex-col gap-3 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
-                  <label className="text-[13px] font-bold text-fk-text">{isDutch ? "Achtergrondkleur (voor alpha)" : "Background Color (for alpha)"}</label>
+                  <label className="text-[13px] font-bold text-fk-text">{isCatalan ? "Color de fons (per a alfa)" : isDutch ? "Achtergrondkleur (voor alpha)" : "Background Color (for alpha)"}</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { key: "WHITE", label: isDutch ? "Wit" : "White", hex: "#FFFFFF" },
-                      { key: "BLACK", label: isDutch ? "Zwart" : "Black", hex: "#000000" },
-                      { key: "CUSTOM", label: isDutch ? "Aangepast" : "Custom", hex: customHex }
+                      { key: "WHITE", label: isCatalan ? "Blanc" : isDutch ? "Wit" : "White", hex: "#FFFFFF" },
+                      { key: "BLACK", label: isCatalan ? "Negre" : isDutch ? "Zwart" : "Black", hex: "#000000" },
+                      { key: "CUSTOM", label: isCatalan ? "Personalitzat" : isDutch ? "Aangepast" : "Custom", hex: customHex }
                     ].map((item) => (
                       <button
                         key={item.key}
@@ -650,7 +673,7 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               {showQualityControl && (
                 <div className="flex flex-col gap-2 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <div className="flex items-center justify-between">
-                    <label className="text-[13px] font-bold text-fk-text">{isDutch ? "Kwaliteit" : "Quality"}</label>
+                    <label className="text-[13px] font-bold text-fk-text">{isCatalan ? "Qualitat" : isDutch ? "Kwaliteit" : "Quality"}</label>
                     <span className="text-[13px] font-mono font-bold text-fk-primary">{qualitySlider}%</span>
                   </div>
                   <input
@@ -663,9 +686,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                     className="w-full h-2 bg-fk-border rounded-lg appearance-none cursor-pointer accent-fk-primary"
                   />
                   <div className="flex items-center justify-between text-[11px] font-medium text-fk-text-subtle">
-                    <span>{isDutch ? "Laag" : "Low"}</span>
-                    <span>{isDutch ? "Gebalanceerd" : "Balanced"}</span>
-                    <span>{isDutch ? "Hoog" : "High"}</span>
+                    <span>{isCatalan ? "Baixa" : isDutch ? "Laag" : "Low"}</span>
+                    <span>{isCatalan ? "Equilibrada" : isDutch ? "Gebalanceerd" : "Balanced"}</span>
+                    <span>{isCatalan ? "Alta" : isDutch ? "Hoog" : "High"}</span>
                   </div>
                 </div>
               )}
@@ -678,13 +701,19 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                 className="w-full h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
               >
                 {isProcessing
-                  ? isDutch
+                  ? isCatalan
+                    ? "Convertint imatge..."
+                    : isDutch
                     ? "Afbeelding converteren..."
                     : "Converting..."
                   : result
-                  ? isDutch
+                  ? isCatalan
+                    ? "Tornar a convertir la imatge"
+                    : isDutch
                     ? "Afbeelding opnieuw converteren"
                     : "Reconvert Image"
+                  : isCatalan
+                  ? "Convertir imatge"
                   : isDutch
                   ? "Afbeelding converteren"
                   : "Convert Image"}

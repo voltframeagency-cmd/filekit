@@ -267,6 +267,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "BILD KONVERTIEREN";
       if (isPortuguese) return "CONVERTER IMAGEM";
       if (isItalian) return "CONVERTI IMMAGINE";
+      if (isCatalan) return "CONVERTIR IMATGE";
     }
     if (label === "IMAGE") {
       if (navItem.id === "compress") {
@@ -292,6 +293,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "BILD KONVERTIEREN";
       if (isPortuguese) return "CONVERTER IMAGEM";
       if (isItalian) return "CONVERTI IMMAGINE";
+      if (isCatalan) return "CONVERTIR IMATGE";
     }
     if (label === "MORE FORMATS") {
       if (isSwedish) return "FLER FORMAT";
@@ -306,6 +308,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "WEITERE FORMATE";
       if (isPortuguese) return "MAIS FORMATOS";
       if (isItalian) return "ALTRI FORMATI";
+      if (isCatalan) return "MÉS FORMATS";
     }
     if (label === "IMAGE EDITORS") {
       if (isSwedish) return "BILDREDIGERING";
@@ -320,6 +323,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "BILDEDITOREN";
       if (isPortuguese) return "EDITORES DE IMAGEM";
       if (isItalian) return "EDITOR DI IMMAGINI";
+      if (isCatalan) return "EDITORS D'IMATGES";
     }
     if (label === "VIDEO TOOLS" || label === "VIDEO") {
       if (isSwedish) return "VIDEOVERKTYG";
@@ -334,6 +338,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "VIDEO-WERKZEUGE";
       if (isPortuguese) return "FERRAMENTAS DE VÍDEO";
       if (isItalian) return "STRUMENTI VIDEO";
+      if (isCatalan) return "EINES DE VÍDEO";
     }
     if (label === "SUBTITLE TOOLS" || label === "SUBTITLES") {
       if (isSwedish) return "UNDERTEXTERVERKTYG";
@@ -348,6 +353,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "UNTERTITEL-WERKZEUGE";
       if (isPortuguese) return "FERRAMENTAS DE LEGENDAS";
       if (isItalian) return "STRUMENTI SOTTOTITOLI";
+      if (isCatalan) return "EINES DE SUBTÍTOLS";
     }
     if (label === "CONVERT FROM PDF") {
       if (isSwedish) return "KONVERTERA FRÅN PDF";
@@ -362,6 +368,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "VON PDF KONVERTIEREN";
       if (isPortuguese) return "CONVERTER DE PDF";
       if (isItalian) return "CONVERTI DA PDF";
+      if (isCatalan) return "CONVERTIR DES DE PDF";
     }
     if (label === "CONVERT TO PDF") {
       if (isSwedish) return "KONVERTERA TILL PDF";
@@ -376,6 +383,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "IN PDF KONVERTIEREN";
       if (isPortuguese) return "CONVERTER PARA PDF";
       if (isItalian) return "CONVERTI IN PDF";
+      if (isCatalan) return "CONVERTIR A PDF";
     }
     if (label === "DOCUMENTS & EBOOKS" || label === "DOCUMENTS & E-BOOKS" || label === "DOCUMENTS") {
       if (isSwedish) return "DOKUMENT & E-BÖCKER";
@@ -390,6 +398,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "DOKUMENTE & E-BOOKS";
       if (isPortuguese) return "DOCUMENTOS E E-BOOKS";
       if (isItalian) return "DOCUMENTI ED EBOOK";
+      if (isCatalan) return "DOCUMENTS I EBOOKS";
     }
     if (label === "CAD & VECTOR TOOLS" || label === "CAD") {
       if (isSwedish) return "CAD- & VEKTORVERKTYG";
@@ -404,6 +413,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "CAD- & VEKTOR-WERKZEUGE";
       if (isPortuguese) return "FERRAMENTAS CAD E VECTOR";
       if (isItalian) return "STRUMENTI CAD E VETTORIALI";
+      if (isCatalan) return "EINES CAD I VECTORIALS";
     }
     if (label === "AUDIO TOOLS" || label === "AUDIO") {
       if (isSwedish) return "LJUDVERKTYG";
@@ -433,6 +443,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "ARCHIV & HILFSPROGRAMME";
       if (isPortuguese) return "ARQUIVOS E UTILITÁRIOS";
       if (isItalian) return "ARCHIVI E UTILITÀ";
+      if (isCatalan) return "ARXIUS I UTILITATS";
     }
     if (label === "PAGE EDITING & ORGANIZATION" || label === "Page Manipulation") {
       if (isSwedish) return "SIDREDIGERING & ORGANISATION";
@@ -447,6 +458,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "SEITENBEARBEITUNG & ORGANISATION";
       if (isPortuguese) return "EDIÇÃO E ORGANIZAÇÃO DE PÁGINAS";
       if (isItalian) return "MODIFICA E ORGANIZZAZIONE PAGINE";
+      if (isCatalan) return "EDICIÓ I ORGANITZACIÓ DE PÀGINES";
     }
     if (label === "COMPRESS & CONVERT" || label === "PDF Conversions") {
       if (isSwedish) return "KOMPRIMERA & KONVERTERA";
@@ -461,6 +473,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "KOMPRIMIEREN & KONVERTIEREN";
       if (isPortuguese) return "COMPRIMIR E CONVERTER";
       if (isItalian) return "COMPRIMI E CONVERTI";
+      if (isCatalan) return "COMPRIMIR I CONVERTIR";
     }
     if (label === "Popular target sizes") {
       if (isSwedish) return "Populära målstorlekar";
@@ -472,6 +485,7 @@ export default function DesktopMegaMenu({
       if (isPortuguese) return "Tamanhos populares";
       if (isItalian) return "Dimensioni popolari";
       if (isDutch) return "Populaire doelgroottes";
+      if (isCatalan) return "Mides de destinació populars";
     }
     return label;
   };
@@ -1091,6 +1105,12 @@ export default function DesktopMegaMenu({
           if (target === "Image") target = "afbeelding";
           if (target === "Text") target = "tekst";
           if (target === "Picture") target = "afbeelding";
+        }
+        if (isCatalan) {
+          if (source === "Image") source = "Imatge";
+          if (target === "Image") target = "imatge";
+          if (target === "Text") target = "text";
+          if (target === "Picture") target = "imatge";
         }
 
         return `${source} ${toPrep} ${target}`;

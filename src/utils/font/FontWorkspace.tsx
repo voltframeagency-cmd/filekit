@@ -19,6 +19,7 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
   const isPortuguese = language === "pt" || language === "pt-BR";
   const isItalian = language === "it";
   const isDutch = language === "nl";
+  const isCatalan = language === "ca";
 
   const [file, setFile] = useState<File | null>(null);
   const [fontMeta, setFontMeta] = useState<FontMetadata | null>(null);
@@ -29,7 +30,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
   const [error, setError] = useState<string | null>(null);
 
   const [previewText, setPreviewText] = useState<string>(
-    isDutch
+    isCatalan
+      ? "Jove xef, porti whisky amb quinze carquinyolis 1234567890"
+      : isDutch
       ? "Pa's wijze lynx bezag vroom het foeragerende wild 1234567890"
       : isItalian
       ? "Ma la volpe col suo balzo ha raggiunto il quieto fido 1234567890"
@@ -85,7 +88,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
     } catch (err) {
       console.error(err);
       setError(
-        isDutch
+        isCatalan
+          ? "Error en convertir el tipus de lletra. Assegura't que sigui un fitxer TTF, OTF o WOFF vàlid."
+          : isDutch
           ? "Kan lettertype niet converteren. Zorg ervoor dat het een geldig TTF-, OTF- of WOFF-bestand is."
           : isItalian
           ? "Impossibile convertire il font. Assicurati che sia un file TTF, OTF o WOFF valido."
@@ -139,7 +144,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            {isDutch
+            {isCatalan
+              ? "Selecciona el fitxer de tipus de lletra (TTF, OTF, WOFF)"
+              : isDutch
               ? "Selecteer lettertypebestand (TTF, OTF, WOFF)"
               : isItalian
               ? "Seleziona file di font (TTF, OTF, WOFF)"
@@ -154,7 +161,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
               : "Select Font File (TTF, OTF, WOFF)"}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            {isDutch
+            {isCatalan
+              ? "Optimitzat per a la web (0% d'emmagatzematge al servidor)"
+              : isDutch
               ? "Geoptimaliseerd voor het web (100% lokaal in de browser)"
               : isItalian
               ? "Ottimizzato per il Web (0% di archiviazione sui server)"
@@ -176,7 +185,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
             <div>
               <span className="text-sm font-bold text-slate-800 block truncate">{file.name}</span>
               <span className="text-xs text-slate-500">
-                {isDutch
+                {isCatalan
+                  ? `Format: ${fontMeta?.format.toUpperCase()} · Taules: ${fontMeta?.numTables} · Mida: ${(file.size / 1024).toFixed(1)} KB`
+                  : isDutch
                   ? `Formaat: ${fontMeta?.format.toUpperCase()} · Tabellen: ${fontMeta?.numTables} · Grootte: ${(file.size / 1024).toFixed(1)} KB`
                   : isItalian
                   ? `Formato: ${fontMeta?.format.toUpperCase()} · Tabelle: ${fontMeta?.numTables} · Dimensione: ${(file.size / 1024).toFixed(1)} KB`
@@ -199,7 +210,7 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isDutch ? "Lettertype wijzigen" : isItalian ? "Cambia font" : isPortuguese ? "Alterar fonte" : isFrench ? "Changer de police" : isGerman ? "Schriftart ändern" : isSpanish ? "Cambiar fuente" : "Change Font"}
+              {isCatalan ? "Canviar tipus de lletra" : isDutch ? "Lettertype wijzigen" : isItalian ? "Cambia font" : isPortuguese ? "Alterar fonte" : isFrench ? "Changer de police" : isGerman ? "Schriftart ändern" : isSpanish ? "Cambiar fuente" : "Change Font"}
             </button>
           </div>
 
@@ -207,11 +218,11 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                {isDutch ? "Live lettertypevoorbeeld" : isItalian ? "Anteprima del font" : isPortuguese ? "Pré-visualização da fonte" : isFrench ? "Aperçu de la police" : isGerman ? "Interaktive Vorschau" : isSpanish ? "Vista previa interactiva" : "Live Font Preview"}
+                {isCatalan ? "Vista prèvia interactiva" : isDutch ? "Live lettertypevoorbeeld" : isItalian ? "Anteprima del font" : isPortuguese ? "Pré-visualização da fonte" : isFrench ? "Aperçu de la police" : isGerman ? "Interaktive Vorschau" : isSpanish ? "Vista previa interactiva" : "Live Font Preview"}
               </label>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-400">
-                  {isDutch ? "Grootte:" : isItalian ? "Dimensione:" : isPortuguese ? "Tamanho:" : isFrench ? "Taille :" : isGerman ? "Größe:" : isSpanish ? "Tamaño:" : "Size:"} {fontSize}px
+                  {isCatalan ? "Mida:" : isDutch ? "Grootte:" : isItalian ? "Dimensione:" : isPortuguese ? "Tamanho:" : isFrench ? "Taille :" : isGerman ? "Größe:" : isSpanish ? "Tamaño:" : "Size:"} {fontSize}px
                 </span>
                 <input
                   type="range"
@@ -238,7 +249,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
             <div className="p-4 bg-purple-50 border border-purple-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-purple-900 block">
-                  {isDutch
+                  {isCatalan
+                    ? `✓ Tipus de lletra convertit: ${outputFileName}`
+                    : isDutch
                     ? `✓ Lettertype geconverteerd: ${outputFileName}`
                     : isItalian
                     ? `✓ Font convertito: ${outputFileName}`
@@ -253,7 +266,9 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
                     : `✓ Font Converted: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-purple-700">
-                  {isDutch
+                  {isCatalan
+                    ? `Mida: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% Al navegador`
+                    : isDutch
                     ? `Grootte: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% In browser`
                     : isItalian
                     ? `Dimensione: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% Nel browser`
@@ -273,7 +288,7 @@ export function FontWorkspace({ mode, title, description, embedded = true }: Fon
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isDutch ? "Lettertype downloaden" : isItalian ? "Scarica font" : isPortuguese ? "Descarregar fonte" : isFrench ? "Télécharger la police" : isGerman ? "Schriftart herunterladen" : isSpanish ? "Descargar fuente" : "Download Font"}
+                {isCatalan ? "Descarregar tipus de lletra" : isDutch ? "Lettertype downloaden" : isItalian ? "Scarica font" : isPortuguese ? "Descarregar fonte" : isFrench ? "Télécharger la police" : isGerman ? "Schriftart herunterladen" : isSpanish ? "Descargar fuente" : "Download Font"}
               </a>
             </div>
           )}

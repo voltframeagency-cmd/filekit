@@ -19,6 +19,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
   const isPortuguese = language === "pt" || language === "pt-BR";
   const isItalian = language === "it";
   const isDutch = language === "nl";
+  const isCatalan = language === "ca";
   const [files, setFiles] = useState<File[]>([]);
   const [extractedEntries, setExtractedEntries] = useState<ArchiveEntry[]>([]);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -49,7 +50,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
         const entries = mode === "extract-rar" ? ArchiveEngine.extractRar(buf) : ArchiveEngine.extractZip(buf);
         if (entries.length === 0) {
           setError(
-            isDutch
+            isCatalan
+              ? "No s'han trobat fitxers descomprimibles a l'arxiu o l'arxiu és buit."
+              : isDutch
               ? "Geen uitgepakte bestanden gevonden in het archief of het archief is leeg."
               : isItalian
               ? "Nessun file decomprimibile trovato nell'archivio o l'archivio è vuoto."
@@ -69,7 +72,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
       } catch (err) {
         console.error(err);
         setError(
-          isDutch
+          isCatalan
+            ? "Error en llegir el fitxer d'arxiu."
+            : isDutch
             ? "Kan archiefbestand niet lezen."
             : isItalian
             ? "Impossibile leggere il file di archivio."
@@ -107,7 +112,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
       } catch (err) {
         console.error(err);
         setError(
-          isDutch
+          isCatalan
+            ? "Error en convertir l'arxiu a ZIP."
+            : isDutch
             ? "Kan archief niet naar ZIP converteren."
             : isItalian
             ? "Impossibile convertire in ZIP."
@@ -150,7 +157,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
     } catch (err) {
       console.error(err);
       setError(
-        isDutch
+        isCatalan
+          ? "Error en crear el fitxer ZIP."
+          : isDutch
           ? "Kan ZIP-archief niet maken."
           : isItalian
           ? "Impossibile creare l'archivio ZIP."
@@ -174,7 +183,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = entry.name;
+    a.download = entry.name.split("/").pop() || entry.name;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -182,7 +191,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white rounded-fk-xl shadow-fk-card border border-slate-100">
+    <div className={`w-full max-w-4xl mx-auto ${embedded ? "" : "p-6"}`}>
       {!embedded && (
         <div className="text-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -196,7 +205,15 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
 
       {files.length === 0 ? (
         <div
-          className="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-fk-xl p-8 sm:p-12 text-center bg-slate-50 hover:bg-blue-50/40 transition-colors cursor-pointer"
+          className="border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50/50 hover:bg-blue-50/20 rounded-fk-2xl p-10 text-center cursor-pointer transition-all duration-200"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const droppedFiles = Array.from(e.dataTransfer.files);
+            if (droppedFiles.length > 0) {
+              handleFilesSelected(droppedFiles);
+            }
+          }}
           onClick={() => {
             const input = document.createElement("input");
             input.type = "file";
@@ -218,7 +235,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           </div>
           <span className="font-bold text-slate-800 text-base block">
             {mode === "create" 
-              ? (isDutch
+              ? (isCatalan
+                  ? "Arrossega fitxers per empaquetar-los en un ZIP"
+                  : isDutch
                   ? "Sleep bestanden om ze samen te voegen in een ZIP"
                   : isItalian
                   ? "Trascina i file per comprimerli in ZIP"
@@ -231,7 +250,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   : isSpanish
                   ? "Suelta archivos para comprimirlos en ZIP"
                   : "Drop files to zip together") 
-              : (isDutch
+              : (isCatalan
+                  ? "Selecciona l'arxiu per extreure o convertir"
+                  : isDutch
                   ? "Selecteer het archief om uit te pakken of te converteren"
                   : isItalian
                   ? "Seleziona l'archivio da estrarre o convertire"
@@ -247,7 +268,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
             {mode === "create" 
-              ? (isDutch
+              ? (isCatalan
+                  ? "Admet tots els formats de fitxer (selecció múltiple)"
+                  : isDutch
                   ? "Ondersteunt alle bestandsformaten (meervoudige selectie)"
                   : isItalian
                   ? "Supporta tutti i formati di file (selezione multipla)"
@@ -260,7 +283,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   : isSpanish
                   ? "Admite todos los formatos de archivo (Selección múltiple)"
                   : "Supports all file formats (Multi-file enabled)") 
-              : (isDutch
+              : (isCatalan
+                  ? "Processament 100% local i privat al navegador"
+                  : isDutch
                   ? "100% lokale verwerking in uw browser"
                   : isItalian
                   ? "Elaborazione 100% privata e locale nel browser"
@@ -280,7 +305,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           <div className="flex items-center justify-between bg-slate-50 p-4 rounded-fk-lg border border-slate-200">
             <div>
               <span className="text-sm font-bold text-slate-800">
-                {isDutch
+                {isCatalan
+                  ? `${files.length} fitxer${files.length > 1 ? "s" : ""} seleccionat${files.length > 1 ? "s" : ""}`
+                  : isDutch
                   ? `${files.length} bestand${files.length > 1 ? "en" : ""} geselecteerd`
                   : isItalian
                   ? `${files.length} file selezionat${files.length > 1 ? "i" : "o"}`
@@ -307,7 +334,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isDutch ? "Opnieuw instellen" : isItalian ? "Reimposta" : isPortuguese ? "Repor" : isFrench ? "Réinitialiser" : isGerman ? "Zurücksetzen" : isSpanish ? "Reiniciar" : "Reset"}
+              {isCatalan ? "Reiniciar" : isDutch ? "Opnieuw instellen" : isItalian ? "Reimposta" : isPortuguese ? "Repor" : isFrench ? "Réinitialiser" : isGerman ? "Zurücksetzen" : isSpanish ? "Reiniciar" : "Reset"}
             </button>
           </div>
 
@@ -315,7 +342,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <label className="text-sm font-semibold text-slate-700">
-                  {isDutch ? "Archiefnaam:" : isItalian ? "Nome archivio:" : isPortuguese ? "Nome do arquivo:" : isFrench ? "Nom de l'archive :" : isGerman ? "Archivname:" : isSpanish ? "Nombre del archivo:" : "Archive Name:"}
+                  {isCatalan ? "Nom de l'arxiu:" : isDutch ? "Archiefnaam:" : isItalian ? "Nome archivio:" : isPortuguese ? "Nome do arquivo:" : isFrench ? "Nom de l'archive :" : isGerman ? "Archivname:" : isSpanish ? "Nombre del archivo:" : "Archive Name:"}
                 </label>
                 <input
                   type="text"
@@ -331,7 +358,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold rounded-fk-lg shadow-fk-button transition-all text-base flex items-center justify-center gap-2"
               >
                 {loading
-                  ? (isDutch
+                  ? (isCatalan
+                      ? "Comprimint fitxers en un ZIP..."
+                      : isDutch
                       ? "Bestanden worden ingepakt in ZIP..."
                       : isItalian
                       ? "Compressione dei file in ZIP in corso..."
@@ -344,7 +373,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                       : isSpanish
                       ? "Comprimiendo archivos en ZIP..."
                       : "Compressing files into ZIP...")
-                  : (isDutch
+                  : (isCatalan
+                      ? "Crear arxiu ZIP"
+                      : isDutch
                       ? "ZIP-archief maken"
                       : isItalian
                       ? "Crea archivio ZIP"
@@ -364,7 +395,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           {mode === "extract" && extractedEntries.length > 0 && (
             <div className="flex flex-col gap-3">
               <span className="text-sm font-bold text-slate-800">
-                {isDutch
+                {isCatalan
+                  ? `Fitxers extrets (${extractedEntries.length}):`
+                  : isDutch
                   ? `Uitgepakte bestanden (${extractedEntries.length}):`
                   : isItalian
                   ? `File estratti (${extractedEntries.length}):`
@@ -386,7 +419,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                       onClick={() => downloadEntry(entry)}
                       className="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold rounded"
                     >
-                      {isDutch ? "Downloaden" : isItalian ? "Scarica" : isPortuguese ? "Descarregar" : isFrench ? "Télécharger" : isGerman ? "Herunterladen" : isSpanish ? "Descargar" : "Download"}
+                      {isCatalan ? "Descarregar" : isDutch ? "Downloaden" : isItalian ? "Scarica" : isPortuguese ? "Descarregar" : isFrench ? "Télécharger" : isGerman ? "Herunterladen" : isSpanish ? "Descargar" : "Download"}
                     </button>
                   </div>
                 ))}
@@ -398,7 +431,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-emerald-900 block truncate">
-                  {isDutch
+                  {isCatalan
+                    ? `✓ ZIP a punt: ${outputFileName}`
+                    : isDutch
                     ? `✓ ZIP gereed: ${outputFileName}`
                     : isItalian
                     ? `✓ ZIP pronto: ${outputFileName}`
@@ -413,7 +448,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                     : `✓ Ready ZIP: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-emerald-700">
-                  {isDutch
+                  {isCatalan
+                    ? `Mida: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% Al navegador`
+                    : isDutch
                     ? `Grootte: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% In browser`
                     : isItalian
                     ? `Dimensione: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% Nel browser`
@@ -433,7 +470,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isDutch ? "ZIP downloaden" : isItalian ? "Scarica ZIP" : isPortuguese ? "Descarregar ZIP" : isFrench ? "Télécharger le ZIP" : isGerman ? "ZIP herunterladen" : isSpanish ? "Descargar ZIP" : "Download ZIP"}
+                {isCatalan ? "Descarregar ZIP" : isDutch ? "ZIP downloaden" : isItalian ? "Scarica ZIP" : isPortuguese ? "Descarregar ZIP" : isFrench ? "Télécharger le ZIP" : isGerman ? "ZIP herunterladen" : isSpanish ? "Descargar ZIP" : "Download ZIP"}
               </a>
             </div>
           )}

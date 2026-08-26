@@ -19,6 +19,7 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
   const isPortuguese = language === "pt" || language === "pt-BR";
   const isItalian = language === "it";
   const isDutch = language === "nl";
+  const isCatalan = language === "ca";
 
   const [file, setFile] = useState<File | null>(null);
   const [inputText, setInputText] = useState<string>("");
@@ -66,7 +67,9 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
     } catch (err: any) {
       console.error(err);
       setError(
-        isDutch
+        isCatalan
+          ? "Error en analitzar i convertir el fitxer de subtítols."
+          : isDutch
           ? "Kan het ondertitelbestand niet verwerken en converteren."
           : isItalian
           ? "Impossibile analizzare e convertire il file dei sottotitoli."
@@ -113,6 +116,8 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
             <span className="text-base font-bold text-slate-800">
               {file
                 ? file.name
+                : isCatalan
+                ? `Selecciona el fitxer de subtítols (${mode === "srt-to-vtt" ? ".SRT" : ".VTT"})`
                 : isDutch
                 ? `Selecteer ondertitelbestand (${mode === "srt-to-vtt" ? ".SRT" : ".VTT"})`
                 : isItalian
@@ -128,7 +133,9 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
                 : `Select ${mode === "srt-to-vtt" ? ".SRT" : ".VTT"} subtitle file`}
             </span>
             <span className="text-xs text-slate-400">
-              {isDutch
+              {isCatalan
+                ? "100% al navegador · Conversió instantània i privada"
+                : isDutch
                 ? "100% in browser · Snelle & privé conversie"
                 : isItalian
                 ? "100% nel browser · Conversione privata e istantanea"
@@ -155,7 +162,9 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
           <div className="space-y-4 pt-4 border-t border-slate-100">
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-slate-700">
-                {isDutch
+                {isCatalan
+                  ? "Vista prèvia de la conversió:"
+                  : isDutch
                   ? "Conversievoorbeeld:"
                   : isItalian
                   ? "Anteprima della conversione:"
@@ -175,7 +184,9 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-sm transition-all inline-flex items-center gap-2"
               >
                 <span>
-                  {isDutch
+                  {isCatalan
+                    ? `Descarregar ${downloadName}`
+                    : isDutch
                     ? `${downloadName} downloaden`
                     : isItalian
                     ? `Scarica ${downloadName}`
