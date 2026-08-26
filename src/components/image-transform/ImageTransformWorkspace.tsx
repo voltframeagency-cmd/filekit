@@ -35,6 +35,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
   const isFrench = language === "fr";
   const isPortuguese = language === "pt" || language === "pt-BR";
   const isItalian = language === "it";
+  const isDutch = language === "nl";
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceDataUrl, setSourceDataUrl] = useState<string | null>(null);
@@ -89,12 +90,12 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
     const isIco = file.type === "image/x-icon" || file.name.toLowerCase().endsWith(".ico");
 
     if ((mode === "svg-to-png" || mode === "svg-to-jpg") && !isSvg) {
-      setErrorMessage(isItalian ? "Seleziona un file vettoriale SVG valido." : isSpanish ? "Por favor selecciona un archivo vectorial SVG válido." : "Please select a valid SVG vector file.");
+      setErrorMessage(isDutch ? "Selecteer een geldig SVG-vectorbestand." : isItalian ? "Seleziona un file vettoriale SVG valido." : isSpanish ? "Por favor selecciona un archivo vectorial SVG válido." : "Please select a valid SVG vector file.");
       return;
     }
 
     if (mode === "ico-to-png" && !isIco) {
-      setErrorMessage(isItalian ? "Seleziona un file favicon ICO valido." : isSpanish ? "Por favor selecciona un archivo de favicon ICO válido." : "Please select a valid ICO favicon file.");
+      setErrorMessage(isDutch ? "Selecteer een geldig ICO-faviconbestand." : isItalian ? "Seleziona un file favicon ICO valido." : isSpanish ? "Por favor selecciona un archivo de favicon ICO válido." : "Please select a valid ICO favicon file.");
       return;
     }
 
@@ -437,7 +438,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isItalian
+              {isDutch
+                ? `Selecteer ${mode.startsWith("svg") ? "SVG-bestand" : mode === "ico-to-png" ? "ICO-icoon" : "afbeelding"}`
+                : isItalian
                 ? `Seleziona ${mode.startsWith("svg") ? "file SVG" : mode === "ico-to-png" ? "icona ICO" : "immagine"}`
                 : isPortuguese
                 ? `Selecionar ${mode.startsWith("svg") ? "ficheiro SVG" : mode === "ico-to-png" ? "ícone ICO" : "imagem"}`
@@ -450,7 +453,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 : `Select ${mode.startsWith("svg") ? "SVG File" : mode === "ico-to-png" ? "ICO Favicon" : "Image"}`}
             </h2>
             <p className="text-sm text-slate-400">
-              {isItalian
+              {isDutch
+                ? "100% privéverwerking in het geheugen van uw browser."
+                : isItalian
                 ? "Elaborazione 100% privata nella memoria del tuo browser."
                 : isPortuguese
                 ? "Processamento 100% privado na memória do seu navegador."
@@ -476,7 +481,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
+            {isDutch ? "Kies bestand" : isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
             <input
               type="file"
               accept={allowedExtensions.join(",")}
@@ -514,7 +519,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>
@@ -786,22 +791,22 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
               {isProcessing ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Processing on this device...</span>
+                  <span>{isDutch ? "Bezig met verwerken op dit apparaat..." : "Processing on this device..."}</span>
                 </>
               ) : mode === "svg-to-png" ? (
-                "Export as PNG"
+                isDutch ? "Exporteren als PNG" : "Export as PNG"
               ) : mode === "svg-to-jpg" ? (
-                "Export as JPG"
+                isDutch ? "Exporteren als JPG" : "Export as JPG"
               ) : mode === "crop" ? (
-                "Crop Image"
+                isDutch ? "Afbeelding bijsnijden" : "Crop Image"
               ) : mode === "rotate" ? (
-                `Rotate Image (${rotationAngle}°)`
+                isDutch ? `Afbeelding draaien (${rotationAngle}°)` : `Rotate Image (${rotationAngle}°)`
               ) : mode === "flip" ? (
-                `Flip Image (${flipDirection === "horizontal" ? "Horizontal" : "Vertical"})`
+                isDutch ? `Afbeelding spiegelen (${flipDirection === "horizontal" ? "Horizontaal" : "Verticaal"})` : `Flip Image (${flipDirection === "horizontal" ? "Horizontal" : "Vertical"})`
               ) : mode === "ico-to-png" ? (
-                "Extract PNG Icon"
+                isDutch ? "PNG-icoon extraheren" : "Extract PNG Icon"
               ) : (
-                "Resize Image"
+                isDutch ? "Formaat van afbeelding wijzigen" : "Resize Image"
               )}
             </button>
           )}
@@ -814,9 +819,11 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                   ✓
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-sm">Image Export Ready</h4>
+                  <h4 className="font-bold text-white text-sm">
+                    {isDutch ? "Afbeelding gereed voor downloaden" : "Image Export Ready"}
+                  </h4>
                   <p className="text-xs text-slate-400">
-                    {result.width} × {result.height} px • {(result.outputSizeBytes / 1024).toFixed(1)} KB • Processed in {result.durationMs}ms locally
+                    {result.width} × {result.height} px • {(result.outputSizeBytes / 1024).toFixed(1)} KB • {isDutch ? `Lokaal verwerkt in ${result.durationMs}ms` : `Processed in ${result.durationMs}ms locally`}
                   </p>
                 </div>
               </div>
@@ -825,7 +832,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 onClick={handleDownload}
                 className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition shadow-lg"
               >
-                Download Image
+                {isDutch ? "Afbeelding downloaden" : "Download Image"}
               </button>
             </div>
           )}

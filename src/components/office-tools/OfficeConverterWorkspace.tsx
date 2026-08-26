@@ -25,6 +25,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
   const isFrench = language === "fr";
   const isPortuguese = language === "pt" || language === "pt-BR";
   const isItalian = language === "it";
+  const isDutch = language === "nl";
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -64,7 +65,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
     setIsProcessing(true);
     setErrorMessage(null);
     setProgressStage(
-      isItalian
+      isDutch
+        ? "Verbinding maken met geïsoleerde microVM..."
+        : isItalian
         ? "Connessione alla microVM isolata in corso..."
         : isPortuguese
         ? "A ligar à microVM isolada..."
@@ -82,7 +85,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
       formData.append("file", sourceFile);
 
       setProgressStage(
-        isItalian
+        isDutch
+          ? "Documentpagina's renderen..."
+          : isItalian
           ? "Rendering delle pagine del documento..."
           : isPortuguese
           ? "A renderizar páginas do documento..."
@@ -104,7 +109,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
         const errJson = await response.json().catch(() => ({}));
         throw new Error(
           errJson.error ||
-            (isItalian
+            (isDutch
+              ? `Server-conversiefout (${response.status})`
+              : isItalian
               ? `Errore nella conversione del server (${response.status})`
               : isPortuguese
               ? `Erro na conversão do servidor (${response.status})`
@@ -119,7 +126,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
       }
 
       setProgressStage(
-        isItalian
+        isDutch
+          ? "Resulterende PDF controleren..."
+          : isItalian
           ? "Verifica del file PDF risultante..."
           : isPortuguese
           ? "A verificar ficheiro PDF resultante..."
@@ -136,7 +145,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
       if (!data.success) {
         throw new Error(
           data.error ||
-            (isItalian
+            (isDutch
+              ? "Kan document niet converteren."
+              : isItalian
               ? "Impossibile convertire il documento."
               : isPortuguese
               ? "Falha ao converter o documento."
@@ -159,7 +170,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
     } catch (err: any) {
       setErrorMessage(
         err?.message ||
-          (isItalian
+          (isDutch
+            ? "Er is een onverwachte fout opgetreden tijdens de conversie."
+            : isItalian
             ? "Si è verificato un errore imprevisto durante la conversione."
             : isPortuguese
             ? "Ocorreu um erro inesperado durante a conversão."
@@ -197,7 +210,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isItalian
+              {isDutch
+                ? "Selecteer het document om te converteren"
+                : isItalian
                 ? "Seleziona il documento da convertire"
                 : isPortuguese
                 ? "Selecionar o documento para converter"
@@ -210,7 +225,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 : `Select ${documentTypeLabel}`}
             </h2>
             <p className="text-sm text-slate-400">
-              {isItalian
+              {isDutch
+                ? "Zeer nauwkeurige conversie met geïsoleerde microVM en 0% gegevensretentie."
+                : isItalian
                 ? "Conversione ad alta fedeltà con microVM isolata e 0% di conservazione dei dati."
                 : isPortuguese
                 ? "Conversão de alta fidelidade com microVM isolada e 0% de retenção de dados."
@@ -224,7 +241,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : `Choose ${documentTypeLabel} File`}
+            {isDutch ? "Kies bestand" : isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : `Choose ${documentTypeLabel} File`}
             <input type="file" accept={acceptedExtensions} className="hidden" onChange={handleFileChange} />
           </label>
         </div>
@@ -253,7 +270,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>
@@ -263,7 +280,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
             <span className="text-blue-400 text-lg">🛡️</span>
             <div className="text-xs text-slate-300 flex flex-col gap-1 leading-relaxed">
               <span className="font-bold text-white">
-                {isItalian
+                {isDutch
+                  ? "Geïsoleerde microVM-sandbox"
+                  : isItalian
                   ? "Ambiente isolato in microVM effimera"
                   : isPortuguese
                   ? "Ambiente isolado em microVM efémera"
@@ -276,7 +295,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                   : "Ephemeral MicroVM Sandbox"}
               </span>
               <span>
-                {isItalian
+                {isDutch
+                  ? "Documentverwerking wordt uitgevoerd in een geïsoleerde microVM-container. Bestanden worden versleuteld verzonden en direct na de conversie automatisch uit het geheugen verwijderd."
+                  : isItalian
                   ? "L'elaborazione del documento viene eseguita in un container microVM isolato. I file sono crittografati in transito ed eliminati automaticamente dalla memoria subito dopo la conversione."
                   : isPortuguese
                   ? "O processamento do documento é executado num contentor microVM isolado. Os ficheiros são encriptados em trânsito e eliminados automaticamente da memória imediatamente após a conversão."
@@ -310,6 +331,8 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>{progressStage}</span>
                 </>
+              ) : isDutch ? (
+                "Converteren naar PDF"
               ) : isItalian ? (
                 "Converti in PDF"
               ) : isPortuguese ? (
@@ -335,7 +358,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">
-                    {isItalian
+                    {isDutch
+                      ? "Succesvol geconverteerd naar PDF"
+                      : isItalian
                       ? "Convertito in PDF con successo"
                       : isPortuguese
                       ? "Convertido para PDF com sucesso"
@@ -348,7 +373,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                       : "Converted to PDF Successfully"}
                   </h4>
                   <p className="text-xs text-slate-400">
-                    {isItalian
+                    {isDutch
+                      ? `Gerenderd in ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Container gewist`
+                      : isItalian
                       ? `Elaborato in ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Container eliminato`
                       : isPortuguese
                       ? `Processado em ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Contentor eliminado`
@@ -367,7 +394,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 onClick={handleDownload}
                 className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition shadow-lg"
               >
-                {isItalian ? "Scarica PDF" : isPortuguese ? "Descarregar PDF" : isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
+                {isDutch ? "PDF downloaden" : isItalian ? "Scarica PDF" : isPortuguese ? "Descarregar PDF" : isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
               </button>
             </div>
           )}
@@ -381,7 +408,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
             <div className="flex items-center gap-3 text-blue-400">
               <span className="text-2xl">🔒</span>
               <h3 className="font-bold text-white text-lg">
-                {isItalian
+                {isDutch
+                  ? "Kennisgeving over veilige serverconversie"
+                  : isItalian
                   ? "Avviso di conversione sicura su server"
                   : isPortuguese
                   ? "Aviso de conversão segura no servidor"
@@ -395,7 +424,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
               </h3>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              {isItalian
+              {isDutch
+                ? "Voor deze documentconversie is een geïsoleerde cloud-microVM vereist om volledige typografie- en lay-outnauwkeurigheid te garanderen. Uw bestand wordt in het geheugen verwerkt en direct daarna gewist."
+                : isItalian
                 ? "Questa conversione di documenti richiede una microVM isolata nel cloud per garantire la massima fedeltà tipografica e di layout. Il file viene elaborato in memoria ed eliminato immediatamente dopo."
                 : isPortuguese
                 ? "Esta conversão de documento requer uma microVM isolada na nuvem para garantir a máxima fidelidade tipográfica e de layout. O seu ficheiro é processado na memória e eliminado imediatamente a seguir."
@@ -413,7 +444,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 onClick={() => setShowConsentModal(false)}
                 className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition"
               >
-                {isItalian ? "Annulla" : isPortuguese ? "Cancelar" : isFrench ? "Annuler" : isGerman ? "Abbrechen" : isSpanish ? "Cancelar" : "Cancel"}
+                {isDutch ? "Annuleren" : isItalian ? "Annulla" : isPortuguese ? "Cancelar" : isFrench ? "Annuler" : isGerman ? "Abbrechen" : isSpanish ? "Cancelar" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -423,7 +454,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 }}
                 className="px-5 py-2 text-xs font-bold bg-fk-primary hover:bg-fk-primary/90 text-white rounded-lg shadow-lg transition"
               >
-                {isItalian ? "Autorizza e converti" : isPortuguese ? "Autorizar e converter" : isFrench ? "Autoriser et convertir" : isGerman ? "Autorisieren & Konvertieren" : isSpanish ? "Autorizar y convertir" : "Authorize & Convert"}
+                {isDutch ? "Autoriseren en converteren" : isItalian ? "Autorizza e converti" : isPortuguese ? "Autorizar e converter" : isFrench ? "Autoriser et convertir" : isGerman ? "Autorisieren & Konvertieren" : isSpanish ? "Autorizar y convertir" : "Authorize & Convert"}
               </button>
             </div>
           </div>

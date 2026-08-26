@@ -18,6 +18,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
   const isFrench = language === "fr";
   const isPortuguese = language === "pt" || language === "pt-BR";
   const isItalian = language === "it";
+  const isDutch = language === "nl";
   const [files, setFiles] = useState<File[]>([]);
   const [extractedEntries, setExtractedEntries] = useState<ArchiveEntry[]>([]);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -48,7 +49,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
         const entries = mode === "extract-rar" ? ArchiveEngine.extractRar(buf) : ArchiveEngine.extractZip(buf);
         if (entries.length === 0) {
           setError(
-            isItalian
+            isDutch
+              ? "Geen uitgepakte bestanden gevonden in het archief of het archief is leeg."
+              : isItalian
               ? "Nessun file decomprimibile trovato nell'archivio o l'archivio è vuoto."
               : isPortuguese
               ? "Nenhum ficheiro descompactável encontrado no arquivo ou o arquivo está vazio."
@@ -66,7 +69,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
       } catch (err) {
         console.error(err);
         setError(
-          isItalian
+          isDutch
+            ? "Kan archiefbestand niet lezen."
+            : isItalian
             ? "Impossibile leggere il file di archivio."
             : isPortuguese
             ? "Falha ao ler o ficheiro de arquivo."
@@ -102,7 +107,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
       } catch (err) {
         console.error(err);
         setError(
-          isItalian
+          isDutch
+            ? "Kan archief niet naar ZIP converteren."
+            : isItalian
             ? "Impossibile convertire in ZIP."
             : isPortuguese
             ? "Falha ao converter para ZIP."
@@ -143,7 +150,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
     } catch (err) {
       console.error(err);
       setError(
-        isItalian
+        isDutch
+          ? "Kan ZIP-archief niet maken."
+          : isItalian
           ? "Impossibile creare l'archivio ZIP."
           : isPortuguese
           ? "Falha ao criar o arquivo ZIP."
@@ -209,7 +218,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           </div>
           <span className="font-bold text-slate-800 text-base block">
             {mode === "create" 
-              ? (isItalian
+              ? (isDutch
+                  ? "Sleep bestanden om ze samen te voegen in een ZIP"
+                  : isItalian
                   ? "Trascina i file per comprimerli in ZIP"
                   : isPortuguese
                   ? "Arrastar ficheiros para comprimir em ZIP"
@@ -220,7 +231,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   : isSpanish
                   ? "Suelta archivos para comprimirlos en ZIP"
                   : "Drop files to zip together") 
-              : (isItalian
+              : (isDutch
+                  ? "Selecteer het archief om uit te pakken of te converteren"
+                  : isItalian
                   ? "Seleziona l'archivio da estrarre o convertire"
                   : isPortuguese
                   ? "Selecionar o arquivo para extrair ou converter"
@@ -234,7 +247,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
             {mode === "create" 
-              ? (isItalian
+              ? (isDutch
+                  ? "Ondersteunt alle bestandsformaten (meervoudige selectie)"
+                  : isItalian
                   ? "Supporta tutti i formati di file (selezione multipla)"
                   : isPortuguese
                   ? "Suporta todos os formatos de ficheiro (seleção múltipla)"
@@ -245,7 +260,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   : isSpanish
                   ? "Admite todos los formatos de archivo (Selección múltiple)"
                   : "Supports all file formats (Multi-file enabled)") 
-              : (isItalian
+              : (isDutch
+                  ? "100% lokale verwerking in uw browser"
+                  : isItalian
                   ? "Elaborazione 100% privata e locale nel browser"
                   : isPortuguese
                   ? "Processamento 100% privado e local no seu navegador"
@@ -263,7 +280,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           <div className="flex items-center justify-between bg-slate-50 p-4 rounded-fk-lg border border-slate-200">
             <div>
               <span className="text-sm font-bold text-slate-800">
-                {isItalian
+                {isDutch
+                  ? `${files.length} bestand${files.length > 1 ? "en" : ""} geselecteerd`
+                  : isItalian
                   ? `${files.length} file selezionat${files.length > 1 ? "i" : "o"}`
                   : isPortuguese
                   ? `${files.length} ficheiro${files.length > 1 ? "s" : ""} selecionado${files.length > 1 ? "s" : ""}`
@@ -288,7 +307,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isItalian ? "Reimposta" : isPortuguese ? "Repor" : isFrench ? "Réinitialiser" : isGerman ? "Zurücksetzen" : isSpanish ? "Reiniciar" : "Reset"}
+              {isDutch ? "Opnieuw instellen" : isItalian ? "Reimposta" : isPortuguese ? "Repor" : isFrench ? "Réinitialiser" : isGerman ? "Zurücksetzen" : isSpanish ? "Reiniciar" : "Reset"}
             </button>
           </div>
 
@@ -296,7 +315,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <label className="text-sm font-semibold text-slate-700">
-                  {isItalian ? "Nome archivio:" : isPortuguese ? "Nome do arquivo:" : isFrench ? "Nom de l'archive :" : isGerman ? "Archivname:" : isSpanish ? "Nombre del archivo:" : "Archive Name:"}
+                  {isDutch ? "Archiefnaam:" : isItalian ? "Nome archivio:" : isPortuguese ? "Nome do arquivo:" : isFrench ? "Nom de l'archive :" : isGerman ? "Archivname:" : isSpanish ? "Nombre del archivo:" : "Archive Name:"}
                 </label>
                 <input
                   type="text"
@@ -312,7 +331,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold rounded-fk-lg shadow-fk-button transition-all text-base flex items-center justify-center gap-2"
               >
                 {loading
-                  ? (isItalian
+                  ? (isDutch
+                      ? "Bestanden worden ingepakt in ZIP..."
+                      : isItalian
                       ? "Compressione dei file in ZIP in corso..."
                       : isPortuguese
                       ? "A comprimir ficheiros em ZIP..."
@@ -323,7 +344,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                       : isSpanish
                       ? "Comprimiendo archivos en ZIP..."
                       : "Compressing files into ZIP...")
-                  : (isItalian
+                  : (isDutch
+                      ? "ZIP-archief maken"
+                      : isItalian
                       ? "Crea archivio ZIP"
                       : isPortuguese
                       ? "Criar arquivo ZIP"
@@ -341,7 +364,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           {mode === "extract" && extractedEntries.length > 0 && (
             <div className="flex flex-col gap-3">
               <span className="text-sm font-bold text-slate-800">
-                {isItalian
+                {isDutch
+                  ? `Uitgepakte bestanden (${extractedEntries.length}):`
+                  : isItalian
                   ? `File estratti (${extractedEntries.length}):`
                   : isPortuguese
                   ? `Ficheiros extraídos (${extractedEntries.length}):`
@@ -361,7 +386,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                       onClick={() => downloadEntry(entry)}
                       className="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold rounded"
                     >
-                      {isItalian ? "Scarica" : isPortuguese ? "Descarregar" : isFrench ? "Télécharger" : isGerman ? "Herunterladen" : isSpanish ? "Descargar" : "Download"}
+                      {isDutch ? "Downloaden" : isItalian ? "Scarica" : isPortuguese ? "Descarregar" : isFrench ? "Télécharger" : isGerman ? "Herunterladen" : isSpanish ? "Descargar" : "Download"}
                     </button>
                   </div>
                 ))}
@@ -373,7 +398,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-emerald-900 block truncate">
-                  {isItalian
+                  {isDutch
+                    ? `✓ ZIP gereed: ${outputFileName}`
+                    : isItalian
                     ? `✓ ZIP pronto: ${outputFileName}`
                     : isPortuguese
                     ? `✓ ZIP pronto: ${outputFileName}`
@@ -386,7 +413,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                     : `✓ Ready ZIP: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-emerald-700">
-                  {isItalian
+                  {isDutch
+                    ? `Grootte: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% In browser`
+                    : isItalian
                     ? `Dimensione: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% Nel browser`
                     : isPortuguese
                     ? `Tamanho: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% No navegador`
@@ -404,7 +433,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isItalian ? "Scarica ZIP" : isPortuguese ? "Descarregar ZIP" : isFrench ? "Télécharger le ZIP" : isGerman ? "ZIP herunterladen" : isSpanish ? "Descargar ZIP" : "Download ZIP"}
+                {isDutch ? "ZIP downloaden" : isItalian ? "Scarica ZIP" : isPortuguese ? "Descarregar ZIP" : isFrench ? "Télécharger le ZIP" : isGerman ? "ZIP herunterladen" : isSpanish ? "Descargar ZIP" : "Download ZIP"}
               </a>
             </div>
           )}

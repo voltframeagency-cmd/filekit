@@ -324,7 +324,7 @@ export default function DesktopMegaMenu({
     if (label === "VIDEO TOOLS" || label === "VIDEO") {
       if (isSwedish) return "VIDEOVERKTYG";
       if (isDanish) return "VIDEOVÆRKTØJER";
-      if (isDutch) return "VIDEO TOOLS";
+      if (isDutch) return "VIDEOTOOLS";
       if (isRussian) return "ВИДЕО ИНСТРУМЕНТЫ";
       if (isPolish) return "NARZĘDZIA WIDEO";
       if (isArabic) return "أدوات الفيديو";
@@ -394,7 +394,7 @@ export default function DesktopMegaMenu({
     if (label === "CAD & VECTOR TOOLS" || label === "CAD") {
       if (isSwedish) return "CAD- & VEKTORVERKTYG";
       if (isDanish) return "CAD- OG VEKTORVÆRKTØJER";
-      if (isDutch) return "CAD & VECTOR TOOLS";
+      if (isDutch) return "CAD- & VECTORTOOLS";
       if (isRussian) return "CAD И ВЕКТОРЫ";
       if (isPolish) return "NARZĘDZIA CAD I WEKTOROWE";
       if (isArabic) return "أدوات CAD والمتجهات";
@@ -408,7 +408,7 @@ export default function DesktopMegaMenu({
     if (label === "AUDIO TOOLS" || label === "AUDIO") {
       if (isSwedish) return "LJUDVERKTYG";
       if (isDanish) return "LYDVÆRKTØJER";
-      if (isDutch) return "AUDIO TOOLS";
+      if (isDutch) return "AUDIOTOOLS";
       if (isRussian) return "АУДИО ИНСТРУМЕНТЫ";
       if (isPolish) return "NARZĘDZIA AUDIO";
       if (isArabic) return "أدوات الصوت";
@@ -423,7 +423,7 @@ export default function DesktopMegaMenu({
     if (label === "ARCHIVE & UTILITIES" || label === "ARCHIVE") {
       if (isSwedish) return "ARKIV & VERKTYG";
       if (isDanish) return "ARKIVER & VÆRKTØJER";
-      if (isDutch) return "ARCHIEF & UTILITIES";
+      if (isDutch) return "ARCHIEF & HULPPROGRAMMA'S";
       if (isRussian) return "АРХИВЫ И УТИЛИТЫ";
       if (isPolish) return "ARCHIWA I NARZĘDZIA";
       if (isArabic) return "الأرشيف والأدوات المساعدة";
@@ -471,6 +471,7 @@ export default function DesktopMegaMenu({
       if (isGerman) return "Beliebte Zielgrößen";
       if (isPortuguese) return "Tamanhos populares";
       if (isItalian) return "Dimensioni popolari";
+      if (isDutch) return "Populaire doelgroottes";
     }
     return label;
   };
@@ -1084,6 +1085,12 @@ export default function DesktopMegaMenu({
           if (target === "Image") target = "immagine";
           if (target === "Text") target = "testo";
           if (target === "Picture") target = "immagine";
+        }
+        if (isDutch) {
+          if (source === "Image") source = "Afbeelding";
+          if (target === "Image") target = "afbeelding";
+          if (target === "Text") target = "tekst";
+          if (target === "Picture") target = "afbeelding";
         }
 
         return `${source} ${toPrep} ${target}`;

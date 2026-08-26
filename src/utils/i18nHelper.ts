@@ -376,6 +376,8 @@ export function getLocalizedToolMeta(
       titleText = "Rimuovere metadati EXIF dalle immagini Online Gratis";
     } else if (locale === "pt" || locale === "pt-BR") {
       titleText = "Remover metadados EXIF de imagens Grátis Online";
+    } else if (locale === "nl") {
+      titleText = "EXIF- en GPS-metadata uit afbeeldingen verwijderen Gratis online";
     } else if (locale === "ca") {
       titleText = "Eliminar metadades EXIF d'imatges Gratis en Línia";
     } else {

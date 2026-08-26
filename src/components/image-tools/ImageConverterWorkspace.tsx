@@ -24,6 +24,7 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
   const isFrench = language === "fr";
   const isPortuguese = language === "pt" || language === "pt-BR";
   const isItalian = language === "it";
+  const isDutch = language === "nl";
 
   // Target format state
   const [targetFormat, setTargetFormat] = useState<SupportedImageFormat>(
@@ -327,7 +328,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                   onClick={handleResetWorkspace}
                   className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-3 py-1.5 border border-fk-border rounded-fk-md bg-white hover:bg-fk-surface-muted transition-colors shrink-0"
                 >
-                  {isItalian
+                  {isDutch
+                    ? "Kies een andere"
+                    : isItalian
                     ? "Scegli un'altra"
                     : isPortuguese
                     ? "Escolher outra"
@@ -347,7 +350,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-blue-50 border-blue-200 text-blue-800 w-fit animate-pulse">
                     <span>⚡</span>
                     <span>
-                      {isItalian
+                      {isDutch
+                        ? "Afbeelding converteren..."
+                        : isItalian
                         ? "Conversione dell'immagine in corso..."
                         : isPortuguese
                         ? "A converter imagem..."
@@ -368,7 +373,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                   >
                     <span>✓</span>
                     <span>
-                      {isItalian
+                      {isDutch
+                        ? "Afbeelding succesvol geconverteerd"
+                        : isItalian
                         ? "Immagine convertita con successo"
                         : isPortuguese
                         ? "Imagem convertida com sucesso"
@@ -386,7 +393,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                 {/* Transparency Warning Notice */}
                 {!isProcessing && isTransparentToJpg && (
                   <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 text-[12px] rounded-fk-md font-medium">
-                    {isItalian
+                    {isDutch
+                      ? "⚠️ JPEG ondersteunt geen transparantie. Transparante delen krijgen de geselecteerde achtergrondkleur."
+                      : isItalian
                       ? "⚠️ Il formato JPEG non supporta la trasparenza. Le aree trasparenti useranno il colore di sfondo selezionato."
                       : isPortuguese
                       ? "⚠️ O formato JPEG não suporta transparência. As áreas transparentes usarão a cor de fundo selecionada."
@@ -433,7 +442,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                     <span>📐 {result.outputWidth} × {result.outputHeight} px</span>
                     <span>
                       {result.isLarger
-                        ? isItalian
+                        ? isDutch
+                          ? `📈 Het bestand is ${result.sizeChangePercentage}% groter`
+                          : isItalian
                           ? `📈 Il file è più grande del ${result.sizeChangePercentage}%`
                           : isPortuguese
                           ? `📈 O ficheiro é ${result.sizeChangePercentage}% maior`
@@ -444,6 +455,8 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                           : isSpanish
                           ? `📈 Archivo es ${result.sizeChangePercentage}% mayor`
                           : `📈 Output is ${result.sizeChangePercentage}% larger`
+                        : isDutch
+                        ? `📉 Het bestand is ${result.sizeChangePercentage}% kleiner`
                         : isItalian
                         ? `📉 Il file è più piccolo del ${result.sizeChangePercentage}%`
                         : isPortuguese
@@ -466,7 +479,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                       disabled={isProcessing}
                       className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
                     >
-                      {isItalian
+                      {isDutch
+                        ? "Geconverteerde afbeelding downloaden"
+                        : isItalian
                         ? "Scarica immagine convertita"
                         : isPortuguese
                         ? "Descarregar imagem convertida"
@@ -484,7 +499,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                       onClick={handleAdjustSettings}
                       className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
                     >
-                      {isItalian
+                      {isDutch
+                        ? "Instellingen aanpassen"
+                        : isItalian
                         ? "Modifica impostazioni"
                         : isPortuguese
                         ? "Ajustar opções"
@@ -508,7 +525,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               <h2 className="text-[16px] font-black text-fk-text flex items-center gap-2 border-b border-fk-border pb-3">
                 <span>⚙️</span>
                 <span>
-                  {isItalian
+                  {isDutch
+                    ? "Conversie-opties"
+                    : isItalian
                     ? "Opzioni di conversione"
                     : isPortuguese
                     ? "Opções de conversão"
@@ -526,7 +545,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               {routeConfig.mode === "GENERAL" && (
                 <div className="flex flex-col gap-2">
                   <label className="text-[13px] font-bold text-fk-text">
-                    {isPortuguese
+                    {isDutch
+                      ? "Doelformaat"
+                      : isPortuguese
                       ? "Formato de destino"
                       : isFrench
                       ? "Format de destination"
@@ -563,7 +584,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               {routeConfig.mode === "FIXED_PAIR" && (
                 <div className="flex items-center justify-between p-3 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <span className="text-[13px] font-bold text-fk-text">
-                    {isPortuguese
+                    {isDutch
+                      ? "Uitvoerformaat"
+                      : isPortuguese
                       ? "Formato de saída"
                       : isFrench
                       ? "Format de sortie"
@@ -582,12 +605,12 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               {/* TRANSPARENCY BACKGROUND CONTROL (PNG/WebP -> JPG) */}
               {isTransparentToJpg && (
                 <div className="flex flex-col gap-3 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
-                  <label className="text-[13px] font-bold text-fk-text">Background Color (for alpha)</label>
+                  <label className="text-[13px] font-bold text-fk-text">{isDutch ? "Achtergrondkleur (voor alpha)" : "Background Color (for alpha)"}</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { key: "WHITE", label: "White", hex: "#FFFFFF" },
-                      { key: "BLACK", label: "Black", hex: "#000000" },
-                      { key: "CUSTOM", label: "Custom", hex: customHex }
+                      { key: "WHITE", label: isDutch ? "Wit" : "White", hex: "#FFFFFF" },
+                      { key: "BLACK", label: isDutch ? "Zwart" : "Black", hex: "#000000" },
+                      { key: "CUSTOM", label: isDutch ? "Aangepast" : "Custom", hex: customHex }
                     ].map((item) => (
                       <button
                         key={item.key}
@@ -627,7 +650,7 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
               {showQualityControl && (
                 <div className="flex flex-col gap-2 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <div className="flex items-center justify-between">
-                    <label className="text-[13px] font-bold text-fk-text">Quality</label>
+                    <label className="text-[13px] font-bold text-fk-text">{isDutch ? "Kwaliteit" : "Quality"}</label>
                     <span className="text-[13px] font-mono font-bold text-fk-primary">{qualitySlider}%</span>
                   </div>
                   <input
@@ -640,9 +663,9 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                     className="w-full h-2 bg-fk-border rounded-lg appearance-none cursor-pointer accent-fk-primary"
                   />
                   <div className="flex items-center justify-between text-[11px] font-medium text-fk-text-subtle">
-                    <span>Low</span>
-                    <span>Balanced</span>
-                    <span>High</span>
+                    <span>{isDutch ? "Laag" : "Low"}</span>
+                    <span>{isDutch ? "Gebalanceerd" : "Balanced"}</span>
+                    <span>{isDutch ? "Hoog" : "High"}</span>
                   </div>
                 </div>
               )}
@@ -654,7 +677,17 @@ export default function ImageConverterWorkspace({ routeConfig }: ImageConverterW
                 disabled={isProcessing}
                 className="w-full h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
               >
-                {isProcessing ? "Converting..." : result ? "Reconvert Image" : "Convert Image"}
+                {isProcessing
+                  ? isDutch
+                    ? "Afbeelding converteren..."
+                    : "Converting..."
+                  : result
+                  ? isDutch
+                    ? "Afbeelding opnieuw converteren"
+                    : "Reconvert Image"
+                  : isDutch
+                  ? "Afbeelding converteren"
+                  : "Convert Image"}
               </button>
 
               {error && (
