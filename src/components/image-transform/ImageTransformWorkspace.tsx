@@ -37,6 +37,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
   const isItalian = language === "it";
   const isDutch = language === "nl";
   const isCatalan = language === "ca";
+  const isSwedish = language === "sv";
+  const isDanish = language === "da";
+  const isFinnish = language === "fi";
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceDataUrl, setSourceDataUrl] = useState<string | null>(null);
@@ -91,12 +94,12 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
     const isIco = file.type === "image/x-icon" || file.name.toLowerCase().endsWith(".ico");
 
     if ((mode === "svg-to-png" || mode === "svg-to-jpg") && !isSvg) {
-      setErrorMessage(isCatalan ? "Selecciona un fitxer vectorial SVG vàlid." : isDutch ? "Selecteer een geldig SVG-vectorbestand." : isItalian ? "Seleziona un file vettoriale SVG valido." : isSpanish ? "Por favor selecciona un archivo vectorial SVG válido." : "Please select a valid SVG vector file.");
+      setErrorMessage(isSwedish ? "Välj en giltig SVG-vektorfil." : isDanish ? "Vælg en gyldig SVG-vektorfil." : isFinnish ? "Valitse kelvollinen SVG-vektoritiedosto." : isCatalan ? "Selecciona un fitxer vectorial SVG vàlid." : isDutch ? "Selecteer een geldig SVG-vectorbestand." : isItalian ? "Seleziona un file vettoriale SVG valido." : isSpanish ? "Por favor selecciona un archivo vectorial SVG válido." : "Please select a valid SVG vector file.");
       return;
     }
 
     if (mode === "ico-to-png" && !isIco) {
-      setErrorMessage(isCatalan ? "Selecciona un fitxer d'icona ICO vàlid." : isDutch ? "Selecteer een geldig ICO-faviconbestand." : isItalian ? "Seleziona un file favicon ICO valido." : isSpanish ? "Por favor selecciona un archivo de favicon ICO válido." : "Please select a valid ICO favicon file.");
+      setErrorMessage(isSwedish ? "Välj en giltig ICO-ikonfil." : isDanish ? "Vælg en gyldig ICO-ikonfil." : isFinnish ? "Valitse kelvollinen ICO-kuvaketiedosto." : isCatalan ? "Selecciona un fitxer d'icona ICO vàlid." : isDutch ? "Selecteer een geldig ICO-faviconbestand." : isItalian ? "Seleziona un file favicon ICO valido." : isSpanish ? "Por favor selecciona un archivo de favicon ICO válido." : "Please select a valid ICO favicon file.");
       return;
     }
 
@@ -439,7 +442,13 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isCatalan
+              {isSwedish
+                ? `Välj ${mode.startsWith("svg") ? "SVG-fil" : mode === "ico-to-png" ? "ICO-ikon" : "bild"}`
+                : isDanish
+                ? `Vælg ${mode.startsWith("svg") ? "SVG-fil" : mode === "ico-to-png" ? "ICO-ikon" : "billede"}`
+                : isFinnish
+                ? `Valitse ${mode.startsWith("svg") ? "SVG-tiedosto" : mode === "ico-to-png" ? "ICO-kuvake" : "kuva"}`
+                : isCatalan
                 ? `Selecciona ${mode.startsWith("svg") ? "fitxer SVG" : mode === "ico-to-png" ? "icona ICO" : "imatge"}`
                 : isDutch
                 ? `Selecteer ${mode.startsWith("svg") ? "SVG-bestand" : mode === "ico-to-png" ? "ICO-icoon" : "afbeelding"}`
@@ -456,7 +465,13 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 : `Select ${mode.startsWith("svg") ? "SVG File" : mode === "ico-to-png" ? "ICO Favicon" : "Image"}`}
             </h2>
             <p className="text-sm text-slate-400">
-              {isCatalan
+              {isSwedish
+                ? "100% privat bearbetning i din webbläsares minne."
+                : isDanish
+                ? "100% privat behandling i din browsers hukommelse."
+                : isFinnish
+                ? "100% yksityinen käsittely selaimesi muistissa."
+                : isCatalan
                 ? "Processament 100% privat a la memòria del teu navegador."
                 : isDutch
                 ? "100% privéverwerking in het geheugen van uw browser."
@@ -486,7 +501,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isCatalan ? "Triar fitxer" : isDutch ? "Kies bestand" : isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
+            {isSwedish ? "Välj fil" : isDanish ? "Vælg fil" : isFinnish ? "Valitse tiedosto" : isCatalan ? "Triar fitxer" : isDutch ? "Kies bestand" : isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
             <input
               type="file"
               accept={allowedExtensions.join(",")}
@@ -524,7 +539,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {isSwedish ? "Byt fil" : isDanish ? "Skift fil" : isFinnish ? "Vaihda tiedosto" : isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>
@@ -796,22 +811,22 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
               {isProcessing ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>{isCatalan ? "Processant en aquest dispositiu..." : isDutch ? "Bezig met verwerken op dit apparaat..." : "Processing on this device..."}</span>
+                  <span>{isSwedish ? "Bearbetar på denna enhet..." : isDanish ? "Behandler på denne enhed..." : isFinnish ? "Käsitellään tällä laitteella..." : isCatalan ? "Processant en aquest dispositiu..." : isDutch ? "Bezig met verwerken op dit apparaat..." : "Processing on this device..."}</span>
                 </>
               ) : mode === "svg-to-png" ? (
-                isCatalan ? "Exportar com a PNG" : isDutch ? "Exporteren als PNG" : "Export as PNG"
+                isSwedish ? "Exportera som PNG" : isDanish ? "Eksporter som PNG" : isFinnish ? "Vie PNG-muodossa" : isCatalan ? "Exportar com a PNG" : isDutch ? "Exporteren als PNG" : "Export as PNG"
               ) : mode === "svg-to-jpg" ? (
-                isCatalan ? "Exportar com a JPG" : isDutch ? "Exporteren als JPG" : "Export as JPG"
+                isSwedish ? "Exportera som JPG" : isDanish ? "Eksporter som JPG" : isFinnish ? "Vie JPG-muodossa" : isCatalan ? "Exportar com a JPG" : isDutch ? "Exporteren als JPG" : "Export as JPG"
               ) : mode === "crop" ? (
-                isCatalan ? "Retallar imatge" : isDutch ? "Afbeelding bijsnijden" : "Crop Image"
+                isSwedish ? "Beskär bild" : isDanish ? "Beskær billede" : isFinnish ? "Rajaa kuva" : isCatalan ? "Retallar imatge" : isDutch ? "Afbeelding bijsnijden" : "Crop Image"
               ) : mode === "rotate" ? (
-                isCatalan ? `Girar imatge (${rotationAngle}°)` : isDutch ? `Afbeelding draaien (${rotationAngle}°)` : `Rotate Image (${rotationAngle}°)`
+                isSwedish ? `Rotera bild (${rotationAngle}°)` : isDanish ? `Roter billede (${rotationAngle}°)` : isFinnish ? `Kierrä kuvaa (${rotationAngle}°)` : isCatalan ? `Girar imatge (${rotationAngle}°)` : isDutch ? `Afbeelding draaien (${rotationAngle}°)` : `Rotate Image (${rotationAngle}°)`
               ) : mode === "flip" ? (
-                isCatalan ? `Girar imatge (${flipDirection === "horizontal" ? "Horitzontal" : "Vertical"})` : isDutch ? `Afbeelding spiegelen (${flipDirection === "horizontal" ? "Horizontaal" : "Verticaal"})` : `Flip Image (${flipDirection === "horizontal" ? "Horizontal" : "Vertical"})`
+                isSwedish ? `Spegla bild (${flipDirection === "horizontal" ? "Horisontellt" : "Vertikalt"})` : isDanish ? `Spejl billede (${flipDirection === "horizontal" ? "Horisontalt" : "Vertikalt"})` : isFinnish ? `Käännä kuva (${flipDirection === "horizontal" ? "Vaakasuunnassa" : "Pystysuunnassa"})` : isCatalan ? `Girar imatge (${flipDirection === "horizontal" ? "Horitzontal" : "Vertical"})` : isDutch ? `Afbeelding spiegelen (${flipDirection === "horizontal" ? "Horizontaal" : "Verticaal"})` : `Flip Image (${flipDirection === "horizontal" ? "Horizontal" : "Vertical"})`
               ) : mode === "ico-to-png" ? (
-                isCatalan ? "Extreure icona PNG" : isDutch ? "PNG-icoon extraheren" : "Extract PNG Icon"
+                isSwedish ? "Extrahera PNG-ikon" : isDanish ? "Udtræk PNG-ikon" : isFinnish ? "Pura PNG-kuvake" : isCatalan ? "Extreure icona PNG" : isDutch ? "PNG-icoon extraheren" : "Extract PNG Icon"
               ) : (
-                isCatalan ? "Redimensionar imatge" : isDutch ? "Formaat van afbeelding wijzigen" : "Resize Image"
+                isSwedish ? "Ändra storlek på bild" : isDanish ? "Tilpas billedstørrelse" : isFinnish ? "Muuta kuvan kokoa" : isCatalan ? "Redimensionar imatge" : isDutch ? "Formaat van afbeelding wijzigen" : "Resize Image"
               )}
             </button>
           )}
@@ -825,10 +840,10 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">
-                    {isCatalan ? "Imatge a punt per descarregar" : isDutch ? "Afbeelding gereed voor downloaden" : "Image Export Ready"}
+                    {isSwedish ? "Bilden är klar för nedladdning" : isDanish ? "Billede klar til download" : isFinnish ? "Kuva valmis ladattavaksi" : isCatalan ? "Imatge a punt per descarregar" : isDutch ? "Afbeelding gereed voor downloaden" : "Image Export Ready"}
                   </h4>
                   <p className="text-xs text-slate-400">
-                    {result.width} × {result.height} px • {(result.outputSizeBytes / 1024).toFixed(1)} KB • {isCatalan ? `Processat localment en ${result.durationMs}ms` : isDutch ? `Lokaal verwerkt in ${result.durationMs}ms` : `Processed in ${result.durationMs}ms locally`}
+                    {result.width} × {result.height} px • {(result.outputSizeBytes / 1024).toFixed(1)} KB • {isSwedish ? `Bearbetad lokalt på ${result.durationMs}ms` : isDanish ? `Behandlet lokalt på ${result.durationMs}ms` : isFinnish ? `Käsitelty paikallisesti ajassa ${result.durationMs}ms` : isCatalan ? `Processat localment en ${result.durationMs}ms` : isDutch ? `Lokaal verwerkt in ${result.durationMs}ms` : `Processed in ${result.durationMs}ms locally`}
                   </p>
                 </div>
               </div>
@@ -837,7 +852,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 onClick={handleDownload}
                 className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition shadow-lg"
               >
-                {isCatalan ? "Descarregar imatge" : isDutch ? "Afbeelding downloaden" : "Download Image"}
+                {isSwedish ? "Ladda ner bild" : isDanish ? "Download billede" : isFinnish ? "Lataa kuva" : isCatalan ? "Descarregar imatge" : isDutch ? "Afbeelding downloaden" : "Download Image"}
               </button>
             </div>
           )}

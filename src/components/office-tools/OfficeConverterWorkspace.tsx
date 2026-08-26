@@ -27,6 +27,9 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
   const isItalian = language === "it";
   const isDutch = language === "nl";
   const isCatalan = language === "ca";
+  const isSwedish = language === "sv";
+  const isDanish = language === "da";
+  const isFinnish = language === "fi";
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -66,7 +69,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
     setIsProcessing(true);
     setErrorMessage(null);
     setProgressStage(
-      isCatalan
+      isSwedish
+        ? "Ansluter till isolerad microVM..."
+        : isDanish
+        ? "Forbinder til isoleret microVM..."
+        : isFinnish
+        ? "Yhdistetään eristettyyn microVM:ään..."
+        : isCatalan
         ? "Connectant a la microVM aïllada..."
         : isDutch
         ? "Verbinding maken met geïsoleerde microVM..."
@@ -88,7 +97,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
       formData.append("file", sourceFile);
 
       setProgressStage(
-        isCatalan
+        isSwedish
+          ? "Renderar dokumentets sidor..."
+          : isDanish
+          ? "Gengiver dokumentets sider..."
+          : isFinnish
+          ? "Renderoidaan asiakirjan sivuja..."
+          : isCatalan
           ? "Renderitzant pàgines del document..."
           : isDutch
           ? "Documentpagina's renderen..."
@@ -114,7 +129,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
         const errJson = await response.json().catch(() => ({}));
         throw new Error(
           errJson.error ||
-            (isCatalan
+            (isSwedish
+              ? `Serverkonvertering misslyckades (${response.status})`
+              : isDanish
+              ? `Serverkonvertering mislykkedes (${response.status})`
+              : isFinnish
+              ? `Palvelinmuunnos epäonnistui (${response.status})`
+              : isCatalan
               ? `Error en la conversió del servidor (${response.status})`
               : isDutch
               ? `Server-conversiefout (${response.status})`
@@ -133,7 +154,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
       }
 
       setProgressStage(
-        isCatalan
+        isSwedish
+          ? "Verifierar resulterande PDF-fil..."
+          : isDanish
+          ? "Verificerer resulterende PDF-fil..."
+          : isFinnish
+          ? "Tarkistetaan tuloksena olevaa PDF-tiedostoa..."
+          : isCatalan
           ? "Verificant fitxer PDF resultant..."
           : isDutch
           ? "Resulterende PDF controleren..."
@@ -154,7 +181,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
       if (!data.success) {
         throw new Error(
           data.error ||
-            (isCatalan
+            (isSwedish
+              ? "Kunde inte konvertera dokumentet."
+              : isDanish
+              ? "Kunne ikke konvertere dokumentet."
+              : isFinnish
+              ? "Asiakirjan muuntaminen epäonnistui."
+              : isCatalan
               ? "Error en convertir el document."
               : isDutch
               ? "Kan document niet converteren."
@@ -181,7 +214,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
     } catch (err: any) {
       setErrorMessage(
         err?.message ||
-          (isCatalan
+          (isSwedish
+            ? "Ett oväntat fel uppstod vid konverteringen."
+            : isDanish
+            ? "Der opstod en uventet fejl under konverteringen."
+            : isFinnish
+            ? "Muunnoksen aikana tapahtui odottamaton virhe."
+            : isCatalan
             ? "S'ha produït un error inesperat durant la conversió."
             : isDutch
             ? "Er is een onverwachte fout opgetreden tijdens de conversie."
@@ -223,7 +262,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isCatalan
+              {isSwedish
+                ? "Välj dokument att konvertera"
+                : isDanish
+                ? "Vælg dokument til konvertering"
+                : isFinnish
+                ? "Valitse muunnettava asiakirja"
+                : isCatalan
                 ? "Selecciona el document a convertir"
                 : isDutch
                 ? "Selecteer het document om te converteren"
@@ -240,7 +285,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 : `Select ${documentTypeLabel}`}
             </h2>
             <p className="text-sm text-slate-400">
-              {isCatalan
+              {isSwedish
+                ? "Högprecisionskonvertering i isolerad microVM med 0% datalagring."
+                : isDanish
+                ? "Højpræcisionskonvertering i isoleret microVM med 0% datalagring."
+                : isFinnish
+                ? "Huipputarkka muunnos eristetyssä microVM:ssä 0% tiedon säilytyksellä."
+                : isCatalan
                 ? "Conversió d'alta fidelitat amb microVM aïllada i 0% de retenció de dades."
                 : isDutch
                 ? "Zeer nauwkeurige conversie met geïsoleerde microVM en 0% gegevensretentie."
@@ -258,7 +309,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isCatalan ? "Triar fitxer" : isDutch ? "Kies bestand" : isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : `Choose ${documentTypeLabel} File`}
+            {isSwedish ? "Välj fil" : isDanish ? "Vælg fil" : isFinnish ? "Valitse tiedosto" : isCatalan ? "Triar fitxer" : isDutch ? "Kies bestand" : isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : `Choose ${documentTypeLabel} File`}
             <input type="file" accept={acceptedExtensions} className="hidden" onChange={handleFileChange} />
           </label>
         </div>
@@ -287,7 +338,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {isSwedish ? "Byt fil" : isDanish ? "Skift fil" : isFinnish ? "Vaihda tiedosto" : isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>
@@ -297,7 +348,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
             <span className="text-blue-400 text-lg">🛡️</span>
             <div className="text-xs text-slate-300 flex flex-col gap-1 leading-relaxed">
               <span className="font-bold text-white">
-                {isCatalan
+                {isSwedish
+                  ? "Isolerad mikrovirtuell maskin-sandbox"
+                  : isDanish
+                  ? "Isoleret mikrovirtuel maskine-sandbox"
+                  : isFinnish
+                  ? "Eristetty microVM-hiekkalaatikko"
+                  : isCatalan
                   ? "Entorn aïllat en microVM efímera"
                   : isDutch
                   ? "Geïsoleerde microVM-sandbox"
@@ -314,7 +371,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                   : "Ephemeral MicroVM Sandbox"}
               </span>
               <span>
-                {isCatalan
+                {isSwedish
+                  ? "Dokumentbehandlingen körs i en isolerad microVM-container. Filer krypteras under överföring och raderas automatiskt ur minnet direkt efter konverteringen."
+                  : isDanish
+                  ? "Dokumentbehandlingen kører i en isoleret microVM-container. Filer krypteres under overførsel og slettes automatisk fra hukommelsen umiddelbart efter konvertering."
+                  : isFinnish
+                  ? "Asiakirjan käsittely suoritetaan eristetyssä microVM-kontissa. Tiedostot salataan siirron aikana ja poistetaan automaattisesti muistista välittömästi muunnoksen jälkeen."
+                  : isCatalan
                   ? "El processament del document s'executa en un contenidor microVM aïllat. Els fitxers s'encripten en trànsit i s'eliminen automàticament de la memòria immediatament després de la conversió."
                   : isDutch
                   ? "Documentverwerking wordt uitgevoerd in een geïsoleerde microVM-container. Bestanden worden versleuteld verzonden en direct na de conversie automatisch uit het geheugen verwijderd."
@@ -352,6 +415,12 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>{progressStage}</span>
                 </>
+              ) : isSwedish ? (
+                "Konvertera till PDF"
+              ) : isDanish ? (
+                "Konverter til PDF"
+              ) : isFinnish ? (
+                "Muunna PDF-muotoon"
               ) : isCatalan ? (
                 "Convertir a PDF"
               ) : isDutch ? (
@@ -381,7 +450,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">
-                    {isCatalan
+                    {isSwedish
+                      ? "Konverterad till PDF"
+                      : isDanish
+                      ? "Konverteret til PDF med succes"
+                      : isFinnish
+                      ? "Muunnettu PDF-muotoon onnistuneesti"
+                      : isCatalan
                       ? "Convertit a PDF amb èxit"
                       : isDutch
                       ? "Succesvol geconverteerd naar PDF"
@@ -398,7 +473,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                       : "Converted to PDF Successfully"}
                   </h4>
                   <p className="text-xs text-slate-400">
-                    {isCatalan
+                    {isSwedish
+                      ? `Bearbetad på ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Tillfällig container rensad`
+                      : isDanish
+                      ? `Behandlet på ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Midlertidig container ryddet`
+                      : isFinnish
+                      ? `Käsitelty ajassa ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Väliaikainen kontti tyhjennetty`
+                      : isCatalan
                       ? `Processat en ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Contenidor esborrat`
                       : isDutch
                       ? `Gerenderd in ${result.durationMs}ms • ${(result.outputSizeBytes / 1024).toFixed(1)} KB • Container gewist`
@@ -421,7 +502,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 onClick={handleDownload}
                 className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition shadow-lg"
               >
-                {isCatalan ? "Descarregar PDF" : isDutch ? "PDF downloaden" : isItalian ? "Scarica PDF" : isPortuguese ? "Descarregar PDF" : isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
+                {isSwedish ? "Ladda ner PDF" : isDanish ? "Download PDF" : isFinnish ? "Lataa PDF" : isCatalan ? "Descarregar PDF" : isDutch ? "PDF downloaden" : isItalian ? "Scarica PDF" : isPortuguese ? "Descarregar PDF" : isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
               </button>
             </div>
           )}
@@ -435,7 +516,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
             <div className="flex items-center gap-3 text-blue-400">
               <span className="text-2xl">🔒</span>
               <h3 className="font-bold text-white text-lg">
-                {isCatalan
+                {isSwedish
+                  ? "Meddelande om säker serverkonvertering"
+                  : isDanish
+                  ? "Meddelelse om sikker serverkonvertering"
+                  : isFinnish
+                  ? "Ilmoitus suojatusta palvelinmuunnoksesta"
+                  : isCatalan
                   ? "Avís de conversió segura al servidor"
                   : isDutch
                   ? "Kennisgeving over veilige serverconversie"
@@ -453,7 +540,13 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
               </h3>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              {isCatalan
+              {isSwedish
+                ? "Denna dokumentkonvertering kräver en isolerad moln-microVM för att säkerställa fullständig typografi- och layouttrohet. Din fil bearbetas i minnet och raderas omedelbart efteråt."
+                : isDanish
+                ? "Denne dokumentkonvertering kræver en isoleret cloud-microVM for at sikre fuldstændig typografi- og layoutnøjagtighed. Din fil behandles i hukommelsen og slettes umiddelbart bagefter."
+                : isFinnish
+                ? "Tämä asiakirjamuunnos vaatii eristetyn pilvi-microVM:n täydellisen typografia- ja asettelutarkkuuden varmistamiseksi. Tiedostosi käsitellään muistissa ja poistetaan välittömästi sen jälkeen."
+                : isCatalan
                 ? "Aquesta conversió de document requereix una microVM aïllada al núvol per garantir la màxima fidelitat tipogràfica i de disseny. El teu fitxer es processarà a la memòria i s'eliminarà immediatament."
                 : isDutch
                 ? "Voor deze documentconversie is een geïsoleerde cloud-microVM vereist om volledige typografie- en lay-outnauwkeurigheid te garanderen. Uw bestand wordt in het geheugen verwerkt en direct daarna gewist."
@@ -475,7 +568,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 onClick={() => setShowConsentModal(false)}
                 className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-lg transition"
               >
-                {isCatalan ? "Cancel·lar" : isDutch ? "Annuleren" : isItalian ? "Annulla" : isPortuguese ? "Cancelar" : isFrench ? "Annuler" : isGerman ? "Abbrechen" : isSpanish ? "Cancelar" : "Cancel"}
+                {isSwedish ? "Avbryt" : isDanish ? "Annuller" : isFinnish ? "Peruuta" : isCatalan ? "Cancel·lar" : isDutch ? "Annuleren" : isItalian ? "Annulla" : isPortuguese ? "Cancelar" : isFrench ? "Annuler" : isGerman ? "Abbrechen" : isSpanish ? "Cancelar" : "Cancel"}
               </button>
               <button
                 type="button"
@@ -485,7 +578,7 @@ export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> =
                 }}
                 className="px-5 py-2 text-xs font-bold bg-fk-primary hover:bg-fk-primary/90 text-white rounded-lg shadow-lg transition"
               >
-                {isCatalan ? "Autoritzar i convertir" : isDutch ? "Autoriseren en converteren" : isItalian ? "Autorizza e converti" : isPortuguese ? "Autorizar e converter" : isFrench ? "Autoriser et convertir" : isGerman ? "Autorisieren & Konvertieren" : isSpanish ? "Autorizar y convertir" : "Authorize & Convert"}
+                {isSwedish ? "Auktorisera och konvertera" : isDanish ? "Godkend og konverter" : isFinnish ? "Valtuuta ja muunna" : isCatalan ? "Autoritzar i convertir" : isDutch ? "Autoriseren en converteren" : isItalian ? "Autorizza e converti" : isPortuguese ? "Autorizar e converter" : isFrench ? "Autoriser et convertir" : isGerman ? "Autorisieren & Konvertieren" : isSpanish ? "Autorizar y convertir" : "Authorize & Convert"}
               </button>
             </div>
           </div>

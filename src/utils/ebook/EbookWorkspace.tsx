@@ -20,6 +20,9 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
   const isItalian = language === "it";
   const isDutch = language === "nl";
   const isCatalan = language === "ca";
+  const isSwedish = language === "sv";
+  const isDanish = language === "da";
+  const isFinnish = language === "fi";
 
   const [file, setFile] = useState<File | null>(null);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -71,7 +74,13 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
     } catch (err) {
       console.error(err);
       setError(
-        isCatalan
+        isSwedish
+          ? "Kunde inte konvertera e-boken till PDF. Kontrollera att filen inte har DRM-skydd."
+          : isDanish
+          ? "Kunne ikke konvertere e-bogen til PDF. Sørg for, at filen er DRM-fri."
+          : isFinnish
+          ? "E-kirjan muuntaminen PDF-muotoon epäonnistui. Varmista, että tiedosto on DRM-vapaa."
+          : isCatalan
           ? "Error en convertir l'eBook a PDF. Assegura't que el fitxer no tingui protecció DRM."
           : isDutch
           ? "Kan eBook niet naar PDF converteren. Zorg ervoor dat het bestand DRM-vrij is."
@@ -127,7 +136,13 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            {isCatalan
+            {isSwedish
+              ? `Välj e-boksfil (${getAcceptExtensions().toUpperCase()})`
+              : isDanish
+              ? `Vælg e-bogsfil (${getAcceptExtensions().toUpperCase()})`
+              : isFinnish
+              ? `Valitse e-kirjatiedosto (${getAcceptExtensions().toUpperCase()})`
+              : isCatalan
               ? `Selecciona el fitxer d'eBook (${getAcceptExtensions().toUpperCase()})`
               : isDutch
               ? `Selecteer e-bookbestand (${getAcceptExtensions().toUpperCase()})`
@@ -144,7 +159,13 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
               : `Select eBook File (${getAcceptExtensions().toUpperCase()})`}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            {isCatalan
+            {isSwedish
+              ? "Inga serveruppladdningar · 100% privat konvertering i webbläsaren"
+              : isDanish
+              ? "Ingen serveruploads · 100% privat konvertering i browseren"
+              : isFinnish
+              ? "Ei palvelinlatauksia · 100% yksityinen muunnos selaimessa"
+              : isCatalan
               ? "Sense càrregues a servidors · Conversió privada al 100% al navegador"
               : isDutch
               ? "Geen uploads naar servers · 100% privé conversie in browser"
@@ -176,7 +197,7 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+              {isSwedish ? "Byt fil" : isDanish ? "Skift fil" : isFinnish ? "Vaihda tiedosto" : isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
             </button>
           </div>
 
@@ -184,7 +205,13 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
             <div className="p-6 bg-slate-50 rounded-fk-lg border border-slate-200 text-center flex flex-col items-center justify-center gap-3">
               <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
               <span className="text-sm font-bold text-slate-700">
-                {isCatalan
+                {isSwedish
+                  ? "Renderar e-bokssidor till PDF..."
+                  : isDanish
+                  ? "Gengiver e-bogssider til PDF..."
+                  : isFinnish
+                  ? "Renderoidaan e-kirjan sivuja PDF-muotoon..."
+                  : isCatalan
                   ? "Renderitzant pàgines d'eBook a PDF..."
                   : isDutch
                   ? "E-bookpagina's renderen naar PDF..."
@@ -207,7 +234,13 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-amber-900 block">
-                  {isCatalan
+                  {isSwedish
+                    ? `✓ Konverterad: ${outputFileName}`
+                    : isDanish
+                    ? `✓ Konverteret: ${outputFileName}`
+                    : isFinnish
+                    ? `✓ Muunnettu: ${outputFileName}`
+                    : isCatalan
                     ? `✓ Convertit: ${outputFileName}`
                     : isDutch
                     ? `✓ Geconverteerd: ${outputFileName}`
@@ -224,7 +257,13 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
                     : `✓ Converted: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-amber-700">
-                  {isCatalan
+                  {isSwedish
+                    ? `Storlek: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · PDF-dokument`
+                    : isDanish
+                    ? `Størrelse: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · PDF-dokument`
+                    : isFinnish
+                    ? `Koko: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · PDF-asiakirja`
+                    : isCatalan
                     ? `Mida: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · Document PDF`
                     : isDutch
                     ? `Grootte: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · PDF-document`
@@ -246,7 +285,7 @@ export function EbookWorkspace({ mode, title, description, embedded = true }: Eb
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isCatalan ? "Descarregar PDF" : isDutch ? "PDF downloaden" : isItalian ? "Scarica PDF" : isPortuguese ? "Descarregar PDF" : isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
+                {isSwedish ? "Ladda ner PDF" : isDanish ? "Download PDF" : isFinnish ? "Lataa PDF" : isCatalan ? "Descarregar PDF" : isDutch ? "PDF downloaden" : isItalian ? "Scarica PDF" : isPortuguese ? "Descarregar PDF" : isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : "Download PDF"}
               </a>
             </div>
           )}

@@ -20,6 +20,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
   const isItalian = language === "it";
   const isDutch = language === "nl";
   const isCatalan = language === "ca";
+  const isSwedish = language === "sv";
+  const isDanish = language === "da";
+  const isFinnish = language === "fi";
   const [files, setFiles] = useState<File[]>([]);
   const [extractedEntries, setExtractedEntries] = useState<ArchiveEntry[]>([]);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -50,7 +53,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
         const entries = mode === "extract-rar" ? ArchiveEngine.extractRar(buf) : ArchiveEngine.extractZip(buf);
         if (entries.length === 0) {
           setError(
-            isCatalan
+            isSwedish
+              ? "Inga filer hittades i arkivet eller så är arkivet tomt."
+              : isDanish
+              ? "Ingen filer fundet i arkivet eller arkivet er tomt."
+              : isFinnish
+              ? "Arkistosta ei löytynyt purettavia tiedostoja tai arkisto on tyhjä."
+              : isCatalan
               ? "No s'han trobat fitxers descomprimibles a l'arxiu o l'arxiu és buit."
               : isDutch
               ? "Geen uitgepakte bestanden gevonden in het archief of het archief is leeg."
@@ -72,7 +81,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
       } catch (err) {
         console.error(err);
         setError(
-          isCatalan
+          isSwedish
+            ? "Kunde inte läsa arkivfilen."
+            : isDanish
+            ? "Kunne ikke læse arkivfilen."
+            : isFinnish
+            ? "Arkistotiedoston lukeminen epäonnistui."
+            : isCatalan
             ? "Error en llegir el fitxer d'arxiu."
             : isDutch
             ? "Kan archiefbestand niet lezen."
@@ -112,7 +127,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
       } catch (err) {
         console.error(err);
         setError(
-          isCatalan
+          isSwedish
+            ? "Kunde inte konvertera arkivet till ZIP."
+            : isDanish
+            ? "Kunne ikke konvertere arkivet til ZIP."
+            : isFinnish
+            ? "Arkiston muuntaminen ZIP-muotoon epäonnistui."
+            : isCatalan
             ? "Error en convertir l'arxiu a ZIP."
             : isDutch
             ? "Kan archief niet naar ZIP converteren."
@@ -157,7 +178,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
     } catch (err) {
       console.error(err);
       setError(
-        isCatalan
+        isSwedish
+          ? "Kunde inte skapa ZIP-arkivet."
+          : isDanish
+          ? "Kunne ikke oprette ZIP-arkivet."
+          : isFinnish
+          ? "ZIP-arkiston luominen epäonnistui."
+          : isCatalan
           ? "Error en crear el fitxer ZIP."
           : isDutch
           ? "Kan ZIP-archief niet maken."
@@ -235,7 +262,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           </div>
           <span className="font-bold text-slate-800 text-base block">
             {mode === "create" 
-              ? (isCatalan
+              ? (isSwedish
+                  ? "Släpp filer för att packa dem i ett ZIP-arkiv"
+                  : isDanish
+                  ? "Slip filer for at pakke dem i et ZIP-arkiv"
+                  : isFinnish
+                  ? "Pudota tiedostot pakataksesi ne ZIP-arkistoon"
+                  : isCatalan
                   ? "Arrossega fitxers per empaquetar-los en un ZIP"
                   : isDutch
                   ? "Sleep bestanden om ze samen te voegen in een ZIP"
@@ -250,7 +283,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   : isSpanish
                   ? "Suelta archivos para comprimirlos en ZIP"
                   : "Drop files to zip together") 
-              : (isCatalan
+              : (isSwedish
+                  ? "Välj arkivfil att extrahera eller konvertera"
+                  : isDanish
+                  ? "Vælg arkivfil til udpakning eller konvertering"
+                  : isFinnish
+                  ? "Valitse purettava tai muunnettava arkisto"
+                  : isCatalan
                   ? "Selecciona l'arxiu per extreure o convertir"
                   : isDutch
                   ? "Selecteer het archief om uit te pakken of te converteren"
@@ -268,7 +307,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
             {mode === "create" 
-              ? (isCatalan
+              ? (isSwedish
+                  ? "Stöder alla filformat (flerfilsval)"
+                  : isDanish
+                  ? "Understøtter alle filformater (flere filer tilladt)"
+                  : isFinnish
+                  ? "Tukee kaikkia tiedostomuotoja (monivalinta sallittu)"
+                  : isCatalan
                   ? "Admet tots els formats de fitxer (selecció múltiple)"
                   : isDutch
                   ? "Ondersteunt alle bestandsformaten (meervoudige selectie)"
@@ -283,7 +328,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   : isSpanish
                   ? "Admite todos los formatos de archivo (Selección múltiple)"
                   : "Supports all file formats (Multi-file enabled)") 
-              : (isCatalan
+              : (isSwedish
+                  ? "100% lokal behandling i webbläsaren"
+                  : isDanish
+                  ? "100% lokal behandling i din browser"
+                  : isFinnish
+                  ? "100% paikallinen käsittely selaimessasi"
+                  : isCatalan
                   ? "Processament 100% local i privat al navegador"
                   : isDutch
                   ? "100% lokale verwerking in uw browser"
@@ -305,7 +356,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           <div className="flex items-center justify-between bg-slate-50 p-4 rounded-fk-lg border border-slate-200">
             <div>
               <span className="text-sm font-bold text-slate-800">
-                {isCatalan
+                {isSwedish
+                  ? `${files.length} fil${files.length > 1 ? "er" : ""} vald${files.length > 1 ? "a" : ""}`
+                  : isDanish
+                  ? `${files.length} fil${files.length > 1 ? "er" : ""} valgt`
+                  : isFinnish
+                  ? `${files.length} tiedosto${files.length > 1 ? "a" : ""} valittu`
+                  : isCatalan
                   ? `${files.length} fitxer${files.length > 1 ? "s" : ""} seleccionat${files.length > 1 ? "s" : ""}`
                   : isDutch
                   ? `${files.length} bestand${files.length > 1 ? "en" : ""} geselecteerd`
@@ -334,7 +391,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isCatalan ? "Reiniciar" : isDutch ? "Opnieuw instellen" : isItalian ? "Reimposta" : isPortuguese ? "Repor" : isFrench ? "Réinitialiser" : isGerman ? "Zurücksetzen" : isSpanish ? "Reiniciar" : "Reset"}
+              {isSwedish ? "Återställ" : isDanish ? "Nulstil" : isFinnish ? "Nollaa" : isCatalan ? "Reiniciar" : isDutch ? "Opnieuw instellen" : isItalian ? "Reimposta" : isPortuguese ? "Repor" : isFrench ? "Réinitialiser" : isGerman ? "Zurücksetzen" : isSpanish ? "Reiniciar" : "Reset"}
             </button>
           </div>
 
@@ -342,7 +399,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <label className="text-sm font-semibold text-slate-700">
-                  {isCatalan ? "Nom de l'arxiu:" : isDutch ? "Archiefnaam:" : isItalian ? "Nome archivio:" : isPortuguese ? "Nome do arquivo:" : isFrench ? "Nom de l'archive :" : isGerman ? "Archivname:" : isSpanish ? "Nombre del archivo:" : "Archive Name:"}
+                  {isSwedish ? "Arkivnamn:" : isDanish ? "Arkivnavn:" : isFinnish ? "Arkiston nimi:" : isCatalan ? "Nom de l'arxiu:" : isDutch ? "Archiefnaam:" : isItalian ? "Nome archivio:" : isPortuguese ? "Nome do arquivo:" : isFrench ? "Nom de l'archive :" : isGerman ? "Archivname:" : isSpanish ? "Nombre del archivo:" : "Archive Name:"}
                 </label>
                 <input
                   type="text"
@@ -358,7 +415,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold rounded-fk-lg shadow-fk-button transition-all text-base flex items-center justify-center gap-2"
               >
                 {loading
-                  ? (isCatalan
+                  ? (isSwedish
+                      ? "Komprimerar filer till ZIP..."
+                      : isDanish
+                      ? "Komprimerer filer til ZIP..."
+                      : isFinnish
+                      ? "Pakataan tiedostoja ZIP-muotoon..."
+                      : isCatalan
                       ? "Comprimint fitxers en un ZIP..."
                       : isDutch
                       ? "Bestanden worden ingepakt in ZIP..."
@@ -373,7 +436,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                       : isSpanish
                       ? "Comprimiendo archivos en ZIP..."
                       : "Compressing files into ZIP...")
-                  : (isCatalan
+                  : (isSwedish
+                      ? "Skapa ZIP-arkiv"
+                      : isDanish
+                      ? "Opret ZIP-arkiv"
+                      : isFinnish
+                      ? "Luo ZIP-arkisto"
+                      : isCatalan
                       ? "Crear arxiu ZIP"
                       : isDutch
                       ? "ZIP-archief maken"
@@ -395,7 +464,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
           {mode === "extract" && extractedEntries.length > 0 && (
             <div className="flex flex-col gap-3">
               <span className="text-sm font-bold text-slate-800">
-                {isCatalan
+                {isSwedish
+                  ? `Extraherade filer (${extractedEntries.length}):`
+                  : isDanish
+                  ? `Udtrukne filer (${extractedEntries.length}):`
+                  : isFinnish
+                  ? `Puretut tiedostot (${extractedEntries.length}):`
+                  : isCatalan
                   ? `Fitxers extrets (${extractedEntries.length}):`
                   : isDutch
                   ? `Uitgepakte bestanden (${extractedEntries.length}):`
@@ -419,7 +494,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                       onClick={() => downloadEntry(entry)}
                       className="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold rounded"
                     >
-                      {isCatalan ? "Descarregar" : isDutch ? "Downloaden" : isItalian ? "Scarica" : isPortuguese ? "Descarregar" : isFrench ? "Télécharger" : isGerman ? "Herunterladen" : isSpanish ? "Descargar" : "Download"}
+                      {isSwedish ? "Ladda ner" : isDanish ? "Download" : isFinnish ? "Lataa" : isCatalan ? "Descarregar" : isDutch ? "Downloaden" : isItalian ? "Scarica" : isPortuguese ? "Descarregar" : isFrench ? "Télécharger" : isGerman ? "Herunterladen" : isSpanish ? "Descargar" : "Download"}
                     </button>
                   </div>
                 ))}
@@ -431,7 +506,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-emerald-900 block truncate">
-                  {isCatalan
+                  {isSwedish
+                    ? `✓ ZIP klar: ${outputFileName}`
+                    : isDanish
+                    ? `✓ ZIP klar: ${outputFileName}`
+                    : isFinnish
+                    ? `✓ ZIP valmis: ${outputFileName}`
+                    : isCatalan
                     ? `✓ ZIP a punt: ${outputFileName}`
                     : isDutch
                     ? `✓ ZIP gereed: ${outputFileName}`
@@ -448,7 +529,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                     : `✓ Ready ZIP: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-emerald-700">
-                  {isCatalan
+                  {isSwedish
+                    ? `Storlek: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% I webbläsaren`
+                    : isDanish
+                    ? `Størrelse: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% I browseren`
+                    : isFinnish
+                    ? `Koko: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% Selaimessa`
+                    : isCatalan
                     ? `Mida: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% Al navegador`
                     : isDutch
                     ? `Grootte: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% In browser`
@@ -470,7 +557,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isCatalan ? "Descarregar ZIP" : isDutch ? "ZIP downloaden" : isItalian ? "Scarica ZIP" : isPortuguese ? "Descarregar ZIP" : isFrench ? "Télécharger le ZIP" : isGerman ? "ZIP herunterladen" : isSpanish ? "Descargar ZIP" : "Download ZIP"}
+                {isSwedish ? "Ladda ner ZIP" : isDanish ? "Download ZIP" : isFinnish ? "Lataa ZIP" : isCatalan ? "Descarregar ZIP" : isDutch ? "ZIP downloaden" : isItalian ? "Scarica ZIP" : isPortuguese ? "Descarregar ZIP" : isFrench ? "Télécharger le ZIP" : isGerman ? "ZIP herunterladen" : isSpanish ? "Descargar ZIP" : "Download ZIP"}
               </a>
             </div>
           )}

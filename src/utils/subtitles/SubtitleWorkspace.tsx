@@ -20,6 +20,9 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
   const isItalian = language === "it";
   const isDutch = language === "nl";
   const isCatalan = language === "ca";
+  const isSwedish = language === "sv";
+  const isDanish = language === "da";
+  const isFinnish = language === "fi";
 
   const [file, setFile] = useState<File | null>(null);
   const [inputText, setInputText] = useState<string>("");
@@ -67,7 +70,13 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
     } catch (err: any) {
       console.error(err);
       setError(
-        isCatalan
+        isSwedish
+          ? "Kunde inte analysera och konvertera undertextfilen."
+          : isDanish
+          ? "Kunne ikke analysere og konvertere undertekstfilen."
+          : isFinnish
+          ? "Tekstitystiedoston jäsentäminen ja muuntaminen epäonnistui."
+          : isCatalan
           ? "Error en analitzar i convertir el fitxer de subtítols."
           : isDutch
           ? "Kan het ondertitelbestand niet verwerken en converteren."
@@ -116,6 +125,12 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
             <span className="text-base font-bold text-slate-800">
               {file
                 ? file.name
+                : isSwedish
+                ? `Välj undertextfil (${mode === "srt-to-vtt" ? ".SRT" : ".VTT"})`
+                : isDanish
+                ? `Vælg undertekstfil (${mode === "srt-to-vtt" ? ".SRT" : ".VTT"})`
+                : isFinnish
+                ? `Valitse tekstitystiedosto (${mode === "srt-to-vtt" ? ".SRT" : ".VTT"})`
                 : isCatalan
                 ? `Selecciona el fitxer de subtítols (${mode === "srt-to-vtt" ? ".SRT" : ".VTT"})`
                 : isDutch
@@ -133,7 +148,13 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
                 : `Select ${mode === "srt-to-vtt" ? ".SRT" : ".VTT"} subtitle file`}
             </span>
             <span className="text-xs text-slate-400">
-              {isCatalan
+              {isSwedish
+                ? "100% i webbläsaren · Snabb och privat konvertering"
+                : isDanish
+                ? "100% i browseren · Privat og øjeblikkelig konvertering"
+                : isFinnish
+                ? "100% selaimessa · Yksityinen ja välitön muunnos"
+                : isCatalan
                 ? "100% al navegador · Conversió instantània i privada"
                 : isDutch
                 ? "100% in browser · Snelle & privé conversie"
@@ -162,7 +183,13 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
           <div className="space-y-4 pt-4 border-t border-slate-100">
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-slate-700">
-                {isCatalan
+                {isSwedish
+                  ? "Förhandsgranskning av konvertering:"
+                  : isDanish
+                  ? "Forhåndsvisning af konvertering:"
+                  : isFinnish
+                  ? "Muunnoksen esikatselu:"
+                  : isCatalan
                   ? "Vista prèvia de la conversió:"
                   : isDutch
                   ? "Conversievoorbeeld:"
@@ -184,7 +211,13 @@ export default function SubtitleWorkspace({ mode, title, subtitle, embedded = tr
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-sm transition-all inline-flex items-center gap-2"
               >
                 <span>
-                  {isCatalan
+                  {isSwedish
+                    ? `Ladda ner ${downloadName}`
+                    : isDanish
+                    ? `Download ${downloadName}`
+                    : isFinnish
+                    ? `Lataa ${downloadName}`
+                    : isCatalan
                     ? `Descarregar ${downloadName}`
                     : isDutch
                     ? `${downloadName} downloaden`

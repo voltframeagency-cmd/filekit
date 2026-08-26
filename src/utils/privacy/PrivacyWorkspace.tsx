@@ -19,6 +19,9 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
   const isItalian = language === "it";
   const isDutch = language === "nl";
   const isCatalan = language === "ca";
+  const isSwedish = language === "sv";
+  const isDanish = language === "da";
+  const isFinnish = language === "fi";
 
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -55,7 +58,13 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
     } catch (err) {
       console.error(err);
       setError(
-        isCatalan
+        isSwedish
+          ? "Kunde inte granska filens metadata."
+          : isDanish
+          ? "Kunne ikke inspicere filens metadata."
+          : isFinnish
+          ? "Tiedoston metatietojen tarkistaminen epäonnistui."
+          : isCatalan
           ? "Error en analitzar les metadades del fitxer."
           : isDutch
           ? "Kan bestandsmetagegevens niet inspecteren."
@@ -92,7 +101,13 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
     } catch (err) {
       console.error(err);
       setError(
-        isCatalan
+        isSwedish
+          ? "Kunde inte ta bort metadata från filen."
+          : isDanish
+          ? "Kunne ikke fjerne metadata fra filen."
+          : isFinnish
+          ? "Metatietojen poistaminen tiedostosta epäonnistui."
+          : isCatalan
           ? "Error en eliminar les metadades del fitxer."
           : isDutch
           ? "Kan metagegevens niet van het bestand verwijderen."
@@ -148,7 +163,13 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            {isCatalan
+            {isSwedish
+              ? "Välj foton för att ta bort metadata"
+              : isDanish
+              ? "Vælg fotos for at fjerne metadata"
+              : isFinnish
+              ? "Valitse kuvat metatietojen poistamiseksi"
+              : isCatalan
               ? "Selecciona fotos per eliminar les metadades"
               : isDutch
               ? "Selecteer foto om metagegevens te verwijderen"
@@ -165,7 +186,13 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
               : "Select Photo to Strip Metadata"}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            {isCatalan
+            {isSwedish
+              ? "Stöder JPG, PNG och WebP (100% privat bearbetning)"
+              : isDanish
+              ? "Understøtter JPG, PNG og WebP (100% privat behandling)"
+              : isFinnish
+              ? "Tukee JPG, PNG ja WebP (100% yksityinen käsittely)"
+              : isCatalan
               ? "Admet JPG, PNG i WebP (Processament 100% privat)"
               : isDutch
               ? "Ondersteunt JPG, PNG en WebP (100% privéverwerking)"
@@ -188,7 +215,7 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-fk-lg border border-slate-200">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                {isCatalan ? "Detalls del fitxer" : isDutch ? "Bestandsdetails" : isItalian ? "Dettagli del file" : isPortuguese ? "Detalhes do ficheiro" : isFrench ? "Détails du fichier" : isGerman ? "Dateidetails" : isSpanish ? "Detalles del archivo" : "File Details"}
+                {isSwedish ? "Fildetaljer" : isDanish ? "Fildetaljer" : isFinnish ? "Tiedoston tiedot" : isCatalan ? "Detalls del fitxer" : isDutch ? "Bestandsdetails" : isItalian ? "Dettagli del file" : isPortuguese ? "Detalhes do ficheiro" : isFrench ? "Détails du fichier" : isGerman ? "Dateidetails" : isSpanish ? "Detalles del archivo" : "File Details"}
               </span>
               <span className="text-sm font-semibold text-slate-800 block truncate">{file.name}</span>
               <span className="text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
@@ -196,11 +223,17 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
 
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                {isCatalan ? "Metadades detectades" : isDutch ? "Gedetecteerde metagegevens" : isItalian ? "Metadati rilevati" : isPortuguese ? "Metadados detetados" : isFrench ? "Métadonnées détectées" : isGerman ? "Erkannte Metadaten" : isSpanish ? "Metadatos detectados" : "Detected Metadata"}
+                {isSwedish ? "Upptäckta metadata" : isDanish ? "Registrerede metadata" : isFinnish ? "Havaitut metatiedot" : isCatalan ? "Metadades detectades" : isDutch ? "Gedetecteerde metagegevens" : isItalian ? "Metadati rilevati" : isPortuguese ? "Metadados detetados" : isFrench ? "Métadonnées détectées" : isGerman ? "Erkannte Metadaten" : isSpanish ? "Metadatos detectados" : "Detected Metadata"}
               </span>
               <div className="flex flex-wrap gap-2">
                 <span className={`px-2 py-0.5 text-xs font-bold rounded ${metadata?.hasGps ? "bg-amber-100 text-amber-800" : "bg-slate-200 text-slate-600"}`}>
-                  {isCatalan
+                  {isSwedish
+                    ? `GPS-position: ${metadata?.hasGps ? "Upptäckt (Risk)" : "Ren"}`
+                    : isDanish
+                    ? `GPS-placering: ${metadata?.hasGps ? "Registreret (Risiko)" : "Ren"}`
+                    : isFinnish
+                    ? `GPS-sijainti: ${metadata?.hasGps ? "Havaittu (Riski)" : "Puhdas"}`
+                    : isCatalan
                     ? `Ubicació GPS: ${metadata?.hasGps ? "Detectada (Risc)" : "Neta"}`
                     : isDutch
                     ? `GPS-locatie: ${metadata?.hasGps ? "Gedetecteerd (Risico)" : "Schoon"}`
@@ -217,7 +250,13 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
                     : `GPS Location: ${metadata?.hasGps ? "Detected (Vulnerable)" : "Clean"}`}
                 </span>
                 <span className={`px-2 py-0.5 text-xs font-bold rounded ${metadata?.hasExif ? "bg-amber-100 text-amber-800" : "bg-slate-200 text-slate-600"}`}>
-                  {isCatalan
+                  {isSwedish
+                    ? `EXIF-taggar: ${metadata?.hasExif ? "Upptäckta" : "Inga"}`
+                    : isDanish
+                    ? `EXIF-tags: ${metadata?.hasExif ? "Registreret" : "Ingen"}`
+                    : isFinnish
+                    ? `EXIF-tunnisteet: ${metadata?.hasExif ? "Havaittu" : "Ei mitään"}`
+                    : isCatalan
                     ? `Etiquetes EXIF: ${metadata?.hasExif ? "Detectades" : "Cap"}`
                     : isDutch
                     ? `EXIF-tags: ${metadata?.hasExif ? "Gedetecteerd" : "Geen"}`
@@ -235,7 +274,7 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
                 </span>
                 {metadata?.cameraMake && (
                   <span className="px-2 py-0.5 text-xs font-bold rounded bg-blue-100 text-blue-800">
-                    {isCatalan ? "Càmera:" : isDutch ? "Camera:" : isItalian ? "Fotocamera:" : isPortuguese ? "Câmara:" : isFrench ? "Appareil :" : isGerman ? "Kamera:" : isSpanish ? "Cámara:" : "Camera:"} {metadata.cameraMake}
+                    {isSwedish ? "Kamera:" : isDanish ? "Kamera:" : isFinnish ? "Kamera:" : isCatalan ? "Càmera:" : isDutch ? "Camera:" : isItalian ? "Fotocamera:" : isPortuguese ? "Câmara:" : isFrench ? "Appareil :" : isGerman ? "Kamera:" : isSpanish ? "Cámara:" : "Camera:"} {metadata.cameraMake}
                   </span>
                 )}
               </div>
@@ -250,7 +289,13 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
               className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-bold rounded-fk-lg shadow-fk-button transition-all text-base flex items-center justify-center gap-2"
             >
               {loading
-                ? (isCatalan
+                ? (isSwedish
+                    ? "Rensar bild..."
+                    : isDanish
+                    ? "Renser billede..."
+                    : isFinnish
+                    ? "Puhdistetaan kuvaa..."
+                    : isCatalan
                     ? "Netejant imatge..."
                     : isDutch
                     ? "Afbeelding wordt opgeschoond..."
@@ -265,7 +310,13 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
                     : isSpanish
                     ? "Limpiando imagen..."
                     : "Sanitizing image...")
-                : (isCatalan
+                : (isSwedish
+                    ? "Ta bort alla EXIF- och GPS-metadata"
+                    : isDanish
+                    ? "Fjern alle EXIF- og GPS-metadata"
+                    : isFinnish
+                    ? "Poista kaikki EXIF- ja GPS-metatiedot"
+                    : isCatalan
                     ? "Eliminar totes les metadades EXIF i GPS"
                     : isDutch
                     ? "Alle EXIF- en GPS-metagegevens verwijderen"
@@ -285,7 +336,13 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-emerald-900 block">
-                  {isCatalan
+                  {isSwedish
+                    ? "✓ Foto rensat (Inga GPS- eller kameradata)"
+                    : isDanish
+                    ? "✓ Foto renset (Ingen GPS- eller kameradata)"
+                    : isFinnish
+                    ? "✓ Kuva puhdistettu (Ei GPS- tai kameratietoja)"
+                    : isCatalan
                     ? "✓ Foto netejada (Sense dades de GPS o càmera)"
                     : isDutch
                     ? "✓ Foto opgeschoond (Geen GPS- of cameragegevens)"
@@ -302,7 +359,13 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
                     : "✓ Photo Sanitized (Zero GPS, Device, or Serial Tags)"}
                 </span>
                 <span className="text-xs text-emerald-700">
-                  {isCatalan
+                  {isSwedish
+                    ? `Klar att ladda ner: clean_${file.name}`
+                    : isDanish
+                    ? `Klar til download: clean_${file.name}`
+                    : isFinnish
+                    ? `Valmis ladattavaksi: clean_${file.name}`
+                    : isCatalan
                     ? `A punt per descarregar: clean_${file.name}`
                     : isDutch
                     ? `Gereed om te downloaden: clean_${file.name}`
@@ -324,7 +387,7 @@ export function PrivacyWorkspace({ title, description, embedded = true }: Privac
                 download={`clean_${file.name}`}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isCatalan ? "Descarregar foto neta" : isDutch ? "Opgeschoonde foto downloaden" : isItalian ? "Scarica foto pulita" : isPortuguese ? "Descarregar foto limpa" : isFrench ? "Télécharger la photo nettoyée" : isGerman ? "Bereinigtes Foto herunterladen" : isSpanish ? "Descargar foto limpia" : "Download Clean Photo"}
+                {isSwedish ? "Ladda ner rensat foto" : isDanish ? "Download renset foto" : isFinnish ? "Lataa puhdistettu kuva" : isCatalan ? "Descarregar foto neta" : isDutch ? "Opgeschoonde foto downloaden" : isItalian ? "Scarica foto pulita" : isPortuguese ? "Descarregar foto limpa" : isFrench ? "Télécharger la photo nettoyée" : isGerman ? "Bereinigtes Foto herunterladen" : isSpanish ? "Descargar foto limpia" : "Download Clean Photo"}
               </a>
             </div>
           )}

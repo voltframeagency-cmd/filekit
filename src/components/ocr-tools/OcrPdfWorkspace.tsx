@@ -25,6 +25,9 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
   const isItalian = language === "it";
   const isDutch = language === "nl";
   const isCatalan = language === "ca";
+  const isSwedish = language === "sv";
+  const isDanish = language === "da";
+  const isFinnish = language === "fi";
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -50,7 +53,13 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
     setErrorMessage(null);
     setProgressPercent(10);
     setProgressStage(
-      isCatalan
+      isSwedish
+        ? "Läser in fildata till minnet..."
+        : isDanish
+        ? "Indlæser fildata i hukommelsen..."
+        : isFinnish
+        ? "Ladataan tiedoston tietoja muistiin..."
+        : isCatalan
         ? "Llegint dades del fitxer a la memòria..."
         : isDutch
         ? "Bestandsgegevens laden in geheugen..."
@@ -81,7 +90,13 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
     } catch (err: any) {
       setErrorMessage(
         err?.message ||
-          (isCatalan
+          (isSwedish
+            ? "Kunde inte känna igen text i dokumentet."
+            : isDanish
+            ? "Kunne ikke genkende tekst i dokumentet."
+            : isFinnish
+            ? "Tekstin tunnistaminen asiakirjasta epäonnistui."
+            : isCatalan
             ? "Error en reconèixer el text del document."
             : isDutch
             ? "Kan tekst in document niet herkennen."
@@ -145,7 +160,13 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isCatalan
+              {isSwedish
+                ? "Välj skannat dokument eller bild"
+                : isDanish
+                ? "Vælg scannet dokument eller billede"
+                : isFinnish
+                ? "Valitse skannattu asiakirja tai kuva"
+                : isCatalan
                 ? "Selecciona document escanejat o imatge"
                 : isDutch
                 ? "Selecteer gescand document of afbeelding"
@@ -162,7 +183,13 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 : "Select Scanned Document or Image"}
             </h2>
             <p className="text-sm text-slate-400">
-              {isCatalan
+              {isSwedish
+                ? "100% privat OCR i webbläsaren. Filer lämnar aldrig din enhet."
+                : isDanish
+                ? "100% privat OCR i browseren. Filer forlader aldrig din enhed."
+                : isFinnish
+                ? "100% yksityinen OCR selaimessa. Tiedostot eivät koskaan poistu laitteeltasi."
+                : isCatalan
                 ? "OCR 100% privat al navegador. Els fitxers mai no surten del teu dispositiu."
                 : isDutch
                 ? "100% privé in-browser OCR. Bestanden verlaten nooit uw browser."
@@ -180,7 +207,13 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isCatalan
+            {isSwedish
+              ? "Välj PDF eller bild"
+              : isDanish
+              ? "Vælg PDF eller billede"
+              : isFinnish
+              ? "Valitse PDF tai kuva"
+              : isCatalan
               ? "Tria PDF o imatge"
               : isDutch
               ? "Kies PDF of afbeelding"
@@ -228,7 +261,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {isSwedish ? "Byt fil" : isDanish ? "Skift fil" : isFinnish ? "Vaihda tiedosto" : isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>
@@ -264,7 +297,13 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 className="w-full bg-fk-primary hover:bg-fk-primary/90 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-fk-primary/25 disabled:opacity-50"
               >
                 {isProcessing
-                  ? isCatalan
+                  ? isSwedish
+                    ? "Utför OCR-igenkänning..."
+                    : isDanish
+                    ? "Udfører OCR-genkendelse..."
+                    : isFinnish
+                    ? "Suoritetaan OCR-tunnistusta..."
+                    : isCatalan
                     ? "Reconeixent text OCR..."
                     : isDutch
                     ? "OCR-tekstherkenning wordt uitgevoerd..."
@@ -279,6 +318,12 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                     : isSpanish
                     ? "Realizando reconocimiento OCR..."
                     : "Performing OCR Recognition..."
+                  : isSwedish
+                  ? "Känn igen & extrahera text"
+                  : isDanish
+                  ? "Genkend og udtræk tekst"
+                  : isFinnish
+                  ? "Tunnista ja pura teksti"
                   : isCatalan
                   ? "Reconèixer i extreure text"
                   : isDutch
@@ -305,7 +350,13 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 <div className="flex items-center gap-2 text-xs text-slate-300">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span>
-                    {isCatalan
+                    {isSwedish
+                      ? `OCR slutförd (${result.totalPages} sid${result.totalPages !== 1 ? "or" : "a"} på ${result.durationMs}ms)`
+                      : isDanish
+                      ? `OCR fuldført (${result.totalPages} side${result.totalPages !== 1 ? "r" : ""} på ${result.durationMs}ms)`
+                      : isFinnish
+                      ? `OCR valmis (${result.totalPages} sivu${result.totalPages !== 1 ? "a" : ""} ajassa ${result.durationMs}ms)`
+                      : isCatalan
                       ? `OCR completat (${result.totalPages} pàgin${result.totalPages !== 1 ? "es" : "a"} en ${result.durationMs}ms)`
                       : isDutch
                       ? `OCR voltooid (${result.totalPages} pagina${result.totalPages !== 1 ? "'s" : ""} in ${result.durationMs}ms)`
@@ -329,7 +380,13 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                     className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg transition"
                   >
                     {copiedText
-                      ? isCatalan
+                      ? isSwedish
+                        ? "✓ Kopierad!"
+                        : isDanish
+                        ? "✓ Kopieret!"
+                        : isFinnish
+                        ? "✓ Kopioitu!"
+                        : isCatalan
                         ? "✓ Copiat!"
                         : isDutch
                         ? "✓ Gekopieerd!"
@@ -344,6 +401,12 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                         : isSpanish
                         ? "✓ ¡Copiado!"
                         : "✓ Copied!"
+                      : isSwedish
+                      ? "Kopiera text"
+                      : isDanish
+                      ? "Kopier tekst"
+                      : isFinnish
+                      ? "Kopioi teksti"
                       : isCatalan
                       ? "Copiar text"
                       : isDutch
@@ -365,7 +428,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                     onClick={handleDownloadTxt}
                     className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg transition"
                   >
-                    {isCatalan ? "Descarregar .TXT" : isDutch ? ".TXT downloaden" : isItalian ? "Scarica .TXT" : isPortuguese ? "Descarregar .TXT" : isFrench ? "Télécharger .TXT" : isGerman ? ".TXT herunterladen" : isSpanish ? "Descargar .TXT" : "Download .TXT"}
+                    {isSwedish ? "Ladda ner .TXT" : isDanish ? "Download .TXT" : isFinnish ? "Lataa .TXT" : isCatalan ? "Descarregar .TXT" : isDutch ? ".TXT downloaden" : isItalian ? "Scarica .TXT" : isPortuguese ? "Descarregar .TXT" : isFrench ? "Télécharger .TXT" : isGerman ? ".TXT herunterladen" : isSpanish ? "Descargar .TXT" : "Download .TXT"}
                   </button>
                   {result.searchablePdfBuffer && (
                     <button
@@ -373,7 +436,13 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                       onClick={handleDownloadSearchablePdf}
                       className="text-xs bg-fk-primary hover:bg-fk-primary/90 text-white font-bold px-3 py-1.5 rounded-lg transition shadow-md"
                     >
-                      {isCatalan
+                      {isSwedish
+                        ? "Ladda ner sökbar PDF"
+                        : isDanish
+                        ? "Download søgbar PDF"
+                        : isFinnish
+                        ? "Lataa haettava PDF"
+                        : isCatalan
                         ? "Descarregar PDF cercable"
                         : isDutch
                         ? "Doorzoekbare PDF downloaden"
@@ -396,7 +465,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
               {/* Extracted Text Preview Box */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  {isCatalan ? "Text extret" : isDutch ? "Geëxtraheerde tekst" : isItalian ? "Testo estratto" : isPortuguese ? "Texto extraído" : isFrench ? "Texte extrait" : isGerman ? "Extrahierter Text" : isSpanish ? "Texto extraído" : "Extracted Text"}
+                  {isSwedish ? "Extraherad text" : isDanish ? "Udtrukket tekst" : isFinnish ? "Puraistut tekstit" : isCatalan ? "Text extret" : isDutch ? "Geëxtraheerde tekst" : isItalian ? "Testo estratto" : isPortuguese ? "Texto extraído" : isFrench ? "Texte extrait" : isGerman ? "Extrahierter Text" : isSpanish ? "Texto extraído" : "Extracted Text"}
                 </label>
                 <textarea
                   readOnly
