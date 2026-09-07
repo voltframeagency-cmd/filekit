@@ -9,11 +9,14 @@ import { PageSelectionParser } from "@/utils/pdf-to-image/pageSelection";
 import { getDeviceBudget, formatBytes } from "@/utils/pdf-to-image/limits";
 import { FileKitAsset } from "../visuals/FileKitAsset";
 
+import { useLanguage } from "../layout/LanguageContext";
+
 export interface PdfToImageWorkspaceProps {
   config: PdfToImageRouteConfig;
 }
 
 export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps) {
+  const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
   const [preflightInfo, setPreflightInfo] = useState<PdfPreflightInfo | null>(null);
   const [isPreflighting, setIsPreflighting] = useState<boolean>(false);
@@ -209,29 +212,31 @@ export default function PdfToImageWorkspace({ config }: PdfToImageWorkspaceProps
               <FileKitAsset
                 name={(config.slug.replace(/^\//, '') as any) || "pdf-to-jpg"}
                 className="w-28 h-28 sm:w-36 sm:h-36 max-w-[180px] max-h-[120px] object-contain filter drop-shadow-md hover:scale-105 transition-transform duration-300"
-                alt="Tool operation illustration"
+                decorative={true}
               />
             </div>
             
-            <p className="text-lg font-extrabold text-slate-900 mb-4 z-20 relative pointer-events-none">Drop a PDF here</p>
+            <p className="text-lg font-extrabold text-slate-900 mb-4 z-20 relative pointer-events-none">
+              {t("workspace.dropHere") || "Drop your PDF here"}
+            </p>
             
             <div className="flex items-center justify-center gap-4 w-full max-w-[200px] mx-auto mb-5 z-20 relative pointer-events-none">
               <div className="h-px bg-blue-200 flex-1"></div>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">OR</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t("common.or") || "OR"}</span>
               <div className="h-px bg-blue-200 flex-1"></div>
             </div>
 
             <div className="flex flex-col items-center gap-2.5 z-20 relative pointer-events-none">
               <div className="bg-blue-600 text-white font-extrabold py-3.5 px-8 rounded-xl shadow-md flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
-                Choose PDF
+                {t("workspace.selectFile") || "Choose PDF"}
               </div>
-              <p className="text-[13px] font-semibold text-slate-500">PDF up to {formattedMaxSize}</p>
+              <p className="text-[13px] font-semibold text-slate-500">{t("workspace.supportsPdf") || `PDF up to ${formattedMaxSize}`}</p>
             </div>
 
             <div className="mt-6 flex justify-center z-20 relative pointer-events-none">
               <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-blue-700 border border-blue-200 shadow-sm">
-                🔒 Processed locally in your browser. Your file is never uploaded.
+                {t("workspace.stayOnDevice") || "🔒 Processed locally in your browser. Your file is never uploaded."}
               </span>
             </div>
           </div>

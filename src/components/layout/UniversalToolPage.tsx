@@ -4,9 +4,10 @@ import React from "react";
 import AppHeader from "@/components/layout/AppHeader";
 import AppFooter from "@/components/layout/AppFooter";
 import TrustPanel from "@/components/layout/TrustPanel";
-import { SupportedLocale, NON_DEFAULT_LOCALES, getLocaleDirection } from "@/config/i18n/locales";
+import { SupportedLocale, NON_DEFAULT_LOCALES, getLocaleDirection, normalizeLocale } from "@/config/i18n/locales";
 import { getLocalizedToolMeta, getHreflangLinks } from "@/utils/i18nHelper";
 import { PdfEditorRouteTarget } from "@/utils/pdf-editor/types";
+import dynamic from "next/dynamic";
 import { ImageTransformMode } from "@/utils/image-transform/types";
 
 // Workspaces
@@ -24,16 +25,21 @@ import VideoWorkspace from "@/utils/video/VideoWorkspace";
 import SubtitleWorkspace from "@/utils/subtitles/SubtitleWorkspace";
 import CadWorkspace from "@/utils/cad/CadWorkspace";
 import PdfCompressionWorkspace from "@/components/pdf-tools/PdfCompressionWorkspace";
+import PdfToImageWorkspace from "@/components/pdf-tools/PdfToImageWorkspace";
 import ImageCompressionWorkspace from "@/components/image-tools/ImageCompressionWorkspace";
 import ImageConverterWorkspace from "@/components/image-tools/ImageConverterWorkspace";
-import { PDF_COMPRESSION_ROUTES } from "@/config/pdfCompressionRoutes";
-import { IMAGE_CONVERSION_ROUTES } from "@/config/imageConversionRoutes";
-import { SchemaGenerator } from "@/utils/seo/SchemaGenerator";
+import ToolGrid from "@/components/layout/ToolGrid";
 import { HowToStepSection } from "@/components/seo/HowToStepSection";
 import { AeoFaqSection } from "@/components/seo/AeoFaqSection";
+import { SchemaGenerator } from "@/utils/seo/SchemaGenerator";
+import { buildCanonicalUrl } from "@/utils/siteUrl";
+
+// Routes & Config
+import { PDF_COMPRESSION_ROUTES } from "@/config/pdfCompressionRoutes";
+import { PDF_TO_IMAGE_ROUTES } from "@/config/pdfToImageRoutes";
+import { IMAGE_CONVERSION_ROUTES } from "@/config/imageConversionRoutes";
 import { getToolSeoContent } from "@/config/seo/toolFaqs";
 import { useLanguage } from "@/components/layout/LanguageContext";
-import { buildCanonicalUrl } from "@/utils/siteUrl";
 import * as PDFLib from "pdf-lib";
 
 export interface UniversalToolPageProps {
@@ -43,14 +49,14 @@ export interface UniversalToolPageProps {
 
 export default function UniversalToolPage({ slug, locale: inputLocale }: UniversalToolPageProps) {
   const normSlug = slug.startsWith("/") ? slug : `/${slug}`;
-  const rawLang = inputLocale || "en";
-  const locale = (NON_DEFAULT_LOCALES.includes(rawLang as SupportedLocale) ? rawLang : "en") as SupportedLocale;
+  const { language, setLanguage } = useLanguage();
+  const rawLangInput = inputLocale || language || "en";
+  const normalized = normalizeLocale(rawLangInput);
+  const locale = (NON_DEFAULT_LOCALES.includes(normalized) ? normalized : "en") as SupportedLocale;
 
   const meta = getLocalizedToolMeta(normSlug, locale);
   const hreflangs = getHreflangLinks(normSlug);
   const seoContent = getToolSeoContent(normSlug, meta.title, locale);
-
-  const { language, setLanguage } = useLanguage();
 
   React.useEffect(() => {
     if (locale && language !== locale) {
@@ -73,18 +79,37 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
 
   // Render workspace based on slug
   const renderWorkspace = () => {
+    // -1. All Tools Directory
+    if (normSlug === "/all-tools") {
+      return (
+        <div className="w-full max-w-5xl mx-auto">
+          <ToolGrid />
+        </div>
+      );
+    }
+
     // 0. PDF & Image Compression Tools
     if (PDF_COMPRESSION_ROUTES[normSlug]) {
       return (
         <PdfCompressionWorkspace
           routeConfig={PDF_COMPRESSION_ROUTES[normSlug]}
+          language={locale}
+        />
+      );
+    }
+
+    // 0.02 PDF to Image Suite (pdf-to-jpg, pdf-to-png, pdf-to-image)
+    if (PDF_TO_IMAGE_ROUTES[normSlug]) {
+      return (
+        <PdfToImageWorkspace
+          config={PDF_TO_IMAGE_ROUTES[normSlug]}
         />
       );
     }
 
     if (normSlug.startsWith("/compress-image")) {
       return (
-        <ImageCompressionWorkspace initialMode="BALANCED" />
+        <ImageCompressionWorkspace initialMode="BALANCED" language={locale} />
       );
     }
 
@@ -93,6 +118,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
       return (
         <ImageConverterWorkspace
           routeConfig={IMAGE_CONVERSION_ROUTES[normSlug]}
+          language={locale}
         />
       );
     }
@@ -123,6 +149,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
           title={meta.title}
           description={meta.description}
           embedded={true}
+          language={locale}
         />
       );
     }
@@ -149,13 +176,14 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
           title={meta.title}
           subtitle={meta.description}
           actionButtonText="Process PDF"
+          language={locale}
         />
       );
     }
 
     // 2. PDF Watermark & Overlay
     if (normSlug === "/watermark-pdf") {
-      return <PdfOverlayWorkspace />;
+      return <PdfOverlayWorkspace language={locale} />;
     }
 
     // 3. OCR Tools
@@ -174,6 +202,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
           toolTitle={meta.title}
           toolSlug={normSlug}
           defaultMode={defaultMode}
+          language={locale}
         />
       );
     }
@@ -199,6 +228,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
           mode={mode}
           title={meta.title}
           description={meta.description}
+          language={locale}
         />
       );
     }
@@ -209,6 +239,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
         <PrivacyWorkspace
           title={meta.title}
           description={meta.description}
+          language={locale}
         />
       );
     }
@@ -221,6 +252,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
           mode={fontMode}
           title={meta.title}
           description={meta.description}
+          language={locale}
         />
       );
     }
@@ -238,6 +270,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
           mode={ebookMode}
           title={meta.title}
           description={meta.description}
+          language={locale}
         />
       );
     }
@@ -266,6 +299,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
           mode={audioMode}
           title={meta.title}
           subtitle={meta.description}
+          language={locale}
         />
       );
     }
@@ -299,6 +333,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
           mode={videoMode}
           title={meta.title}
           subtitle={meta.description}
+          language={locale}
         />
       );
     }
@@ -311,6 +346,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
           mode={subMode}
           title={meta.title}
           subtitle={meta.description}
+          language={locale}
         />
       );
     }
@@ -346,6 +382,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
           toolTitle={meta.title}
           toolSlug={normSlug}
           allowedExtensions={[".jpg", ".jpeg", ".png", ".webp", ".avif", ".heic", ".bmp", ".ico", ".svg"]}
+          language={locale}
         />
       );
     }
@@ -368,13 +405,55 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
       : isCad
       ? ".dwg,.dxf,.eps,.psd,.ai"
       : ".pptx,.ppt";
-    const label = isWord
-      ? "Word Document"
-      : isExcel
-      ? "Excel Spreadsheet"
-      : isCad
-      ? "CAD / Vector Document"
-      : "PowerPoint Presentation";
+    const getDocTypeLabel = () => {
+      const l = (locale || "en").toLowerCase();
+      const prefix = l.split("-")[0];
+      const map: Record<string, { word: string; excel: string; cad: string; ppt: string }> = {
+        en: { word: "Word Document", excel: "Excel Spreadsheet", cad: "CAD / Vector Document", ppt: "PowerPoint Presentation" },
+        ru: { word: "Документ Word", excel: "Таблицу Excel", cad: "CAD / Векторный документ", ppt: "Презентацию PowerPoint" },
+        uk: { word: "Документ Word", excel: "Таблицю Excel", cad: "CAD / Векторний документ", ppt: "Презентацію PowerPoint" },
+        "zh-tw": { word: "Word 文件", excel: "Excel 試算表", cad: "CAD / 向量圖檔", ppt: "PowerPoint 簡報" },
+        zh: { word: "Word 文档", excel: "Excel 工作表", cad: "CAD / 矢量文档", ppt: "PowerPoint 演示文稿" },
+        es: { word: "Documento Word", excel: "Hoja de cálculo Excel", cad: "Documento CAD / Vectorial", ppt: "Presentación PowerPoint" },
+        de: { word: "Word-Dokument", excel: "Excel-Tabelle", cad: "CAD- / Vektordokument", ppt: "PowerPoint-Präsentation" },
+        fr: { word: "Document Word", excel: "Feuille de calcul Excel", cad: "Document CAO / Vectoriel", ppt: "Présentation PowerPoint" },
+        pt: { word: "Documento Word", excel: "Folha de cálculo Excel", cad: "Documento CAD / Vetorial", ppt: "Apresentação PowerPoint" },
+        it: { word: "Documento Word", excel: "Foglio di calcolo Excel", cad: "Documento CAD / Vettoriale", ppt: "Presentazione PowerPoint" },
+        nl: { word: "Word-document", excel: "Excel-spreadsheet", cad: "CAD- / Vectorbestand", ppt: "PowerPoint-presentatie" },
+        ca: { word: "Document Word", excel: "Full de càlcul Excel", cad: "Document CAD / Vectorial", ppt: "Presentació PowerPoint" },
+        sv: { word: "Word-dokument", excel: "Excel-kalkylblad", cad: "CAD- / Vektordokument", ppt: "PowerPoint-presentation" },
+        da: { word: "Word-dokument", excel: "Excel-regneark", cad: "CAD- / Vektordokument", ppt: "PowerPoint-præsentation" },
+        fi: { word: "Word-asiakirja", excel: "Excel-laskentataulukko", cad: "CAD- / Vektori-asiakirja", ppt: "PowerPoint-esitys" },
+        no: { word: "Word-dokument", excel: "Excel-regneark", cad: "CAD- / Vektordokument", ppt: "PowerPoint-presentasjon" },
+        pl: { word: "Dokument Word", excel: "Arkusz kalkulacyjny Excel", cad: "Dokument CAD / Wektorowy", ppt: "Prezentację PowerPoint" },
+        cs: { word: "Dokument Word", excel: "Tabulku Excel", cad: "CAD / Vektorový dokument", ppt: "Prezentaci PowerPoint" },
+        hu: { word: "Word dokumentum", excel: "Excel táblázat", cad: "CAD / Vektorgrafikus dokumentum", ppt: "PowerPoint bemutató" },
+        ro: { word: "Document Word", excel: "Foaie de calcul Excel", cad: "Document CAD / Vectorial", ppt: "Prezentare PowerPoint" },
+        bg: { word: "Word документ", excel: "Excel електронна таблица", cad: "CAD / Векторен документ", ppt: "PowerPoint презентация" },
+        el: { word: "Έγγραφο Word", excel: "Υπολογιστικό φύλλο Excel", cad: "Έγγραφο CAD / Διανυσματικό", ppt: "Παρουσίαση PowerPoint" },
+        sk: { word: "Dokument Word", excel: "Tabuľku Excel", cad: "CAD / Vektorový dokument", ppt: "Prezentáciu PowerPoint" },
+        sl: { word: "Dokument Word", excel: "Preglednico Excel", cad: "Dokument CAD / Vektorski", ppt: "Predstavitev PowerPoint" },
+        tr: { word: "Word Belgesi", excel: "Excel E-Tablosu", cad: "CAD / Vektör Belgesi", ppt: "PowerPoint Sunumu" },
+        ar: { word: "مستند Word", excel: "جدول بيانات Excel", cad: "مستند CAD / متجهي", ppt: "عرض تقديمي PowerPoint" },
+        he: { word: "מסמך Word", excel: "גיליון אלקטרוני של Excel", cad: "מסמך CAD / וקטורי", ppt: "מצגת PowerPoint" },
+        hi: { word: "Word दस्तावेज़", excel: "Excel स्प्रेडशीट", cad: "CAD / वेक्टर दस्तावेज़", ppt: "PowerPoint प्रस्तुति" },
+        id: { word: "Dokumen Word", excel: "Spreadsheet Excel", cad: "Dokumen CAD / Vektor", ppt: "Presentasi PowerPoint" },
+        ms: { word: "Dokumen Word", excel: "Hamparan Excel", cad: "Dokumen CAD / Vektor", ppt: "Persembahan PowerPoint" },
+        th: { word: "เอกสาร Word", excel: "สเปรดชีต Excel", cad: "เอกสาร CAD / เวกเตอร์", ppt: "งานนำเสนอ PowerPoint" },
+        vi: { word: "Tài liệu Word", excel: "Bảng tính Excel", cad: "Tài liệu CAD / Vector", ppt: "Bản trình bày PowerPoint" },
+        fil: { word: "Word Dokumento", excel: "Excel Spreadsheet", cad: "CAD / Vector Dokumento", ppt: "PowerPoint Presentasyon" },
+        ja: { word: "Word 文書", excel: "Excel スプレッドシート", cad: "CAD / ベクター文書", ppt: "PowerPoint プレゼンテーション" },
+        ko: { word: "Word 문서", excel: "Excel 스프레드시트", cad: "CAD / 벡터 문서", ppt: "PowerPoint 프레젠테이션" },
+        lv: { word: "Word dokuments", excel: "Excel izklājlapa", cad: "CAD / Vektoru dokuments", ppt: "PowerPoint prezentācija" },
+        lt: { word: "„Word“ dokumentas", excel: "„Excel“ skaičiuoklė", cad: "CAD / Vektorinis dokumentas", ppt: "„PowerPoint“ pateiktis" }
+      };
+      const entry = map[l] || map[prefix] || map.en;
+      if (isWord) return entry.word;
+      if (isExcel) return entry.excel;
+      if (isCad) return entry.cad;
+      return entry.ppt;
+    };
+    const label = getDocTypeLabel();
 
     return (
       <OfficeConverterWorkspace
@@ -383,6 +462,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
         apiEndpoint={endpoint}
         acceptedExtensions={extensions}
         documentTypeLabel={label}
+        language={locale}
       />
     );
   };
@@ -412,7 +492,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
         <section className="flex flex-col gap-1.5 max-w-[840px] mx-auto w-full text-left ltr:text-left rtl:text-right px-2">
           <span className="text-[12px] font-bold uppercase tracking-wider text-blue-200">{seoContent.category}</span>
           <h1 className="text-[clamp(1.75rem,7vw,2.25rem)] font-black text-white leading-[1.1] drop-shadow-sm tracking-tight">
-            {meta.title}
+            {meta.h1}
           </h1>
           <p className="text-[13px] md:text-[15px] font-medium text-blue-100 leading-relaxed">
             {meta.description}
@@ -423,7 +503,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
         <HowToStepSection toolTitle={meta.title} steps={seoContent.howToSteps} />
         <AeoFaqSection toolTitle={meta.title} faqs={seoContent.faqs} />
         <div className="mt-8">
-          <TrustPanel />
+          <TrustPanel language={locale} />
         </div>
       </main>
       <AppFooter />

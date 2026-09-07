@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { TopNavItem, CONVERTER_NAVIGATION_GROUPS } from "@/config/navigation";
 import { useLanguage } from "@/components/layout/LanguageContext";
 import { getLocalizedHref, VERB_DICTIONARY } from "@/utils/i18nHelper";
-import { SupportedLocale } from "@/config/i18n/locales";
+import { SupportedLocale, isValidLocale, normalizeLocale } from "@/config/i18n/locales";
+import { MEGA_MENU_CATEGORIES, EXACT_TOOL_LABELS, PRIMARY_DESCRIPTIONS } from "./megaMenuTranslations";
 
 export interface DesktopMegaMenuProps {
   navItem: TopNavItem;
@@ -58,34 +59,34 @@ const NavItemIcon: React.FC<{ href: string; className?: string }> = ({ href, cla
       </svg>
     );
   }
-  // 6. Archive & Utilities (ZIP, RAR, 7Z, TAR, EXIF, Font)
-  if (href.includes("zip") || href.includes("rar") || href.includes("7z") || href.includes("tar") || href.includes("exif") || href.includes("woff") || href.includes("ttf")) {
+  // 6. Font Tools (TTF, WOFF2)
+  if (href.includes("font") || href.includes("ttf") || href.includes("woff2")) {
+    return (
+      <svg className={`${className} text-indigo-600 shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+      </svg>
+    );
+  }
+  // 7. E-Book Tools (EPUB, MOBI, AZW3)
+  if (href.includes("epub") || href.includes("mobi") || href.includes("azw3")) {
     return (
       <svg className={`${className} text-amber-700 shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+    );
+  }
+  // 8. Archive Tools (ZIP, TAR, RAR, 7Z)
+  if (href.includes("zip") || href.includes("rar") || href.includes("tar") || href.includes("7z")) {
+    return (
+      <svg className={`${className} text-emerald-700 shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
       </svg>
     );
   }
-  // 7. Subtitle Tools
-  if (href.includes("srt") || href.includes("vtt") || href.includes("subtitle")) {
-    return (
-      <svg className={`${className} text-teal-600 shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-      </svg>
-    );
-  }
-  // 8. Documents & E-books (Word, Excel, PowerPoint, Pages, Keynote, EPUB)
-  if (href.includes("word") || href.includes("excel") || href.includes("powerpoint") || href.includes("pages") || href.includes("numbers") || href.includes("keynote") || href.includes("epub") || href.includes("mobi")) {
-    return (
-      <svg className={`${className} text-sky-600 shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    );
-  }
-  // 9. Compress tools
+  // 9. Compress Action
   if (href.includes("compress")) {
     return (
-      <svg className={`${className} text-blue-600 shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+      <svg className={`${className} text-sky-600 shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
       </svg>
     );
@@ -147,8 +148,8 @@ export default function DesktopMegaMenu({
 }: DesktopMegaMenuProps) {
   const pathname = usePathname();
   const { language } = useLanguage();
-  const pathLocaleMatch = pathname.match(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/);
-  const activeLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
+  const segments = pathname ? pathname.split("/").filter(Boolean) : [];
+  const activeLocale = segments.length > 0 ? normalizeLocale(segments[0]) : language || "en";
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const megaMenu = navItem.megaMenu;
@@ -228,889 +229,179 @@ export default function DesktopMegaMenu({
 
   // Localized category header labels
   const getCategoryHeader = (label: string): string => {
-    const isArabic = activeLocale === "ar";
-    const isTurkish = activeLocale === "tr";
-    const isSpanish = activeLocale === "es" || activeLocale === "es-419";
-    const isFrench = activeLocale === "fr";
-    const isGerman = activeLocale === "de";
-    const isPortuguese = activeLocale === "pt" || activeLocale === "pt-BR";
-    const isItalian = activeLocale === "it";
-    const isCatalan = activeLocale === "ca";
+    const cleanKey = label.trim().toUpperCase();
+    const shortLocale = activeLocale.split("-")[0];
 
-    const isSwedish = activeLocale === "sv";
-    const isDanish = activeLocale === "da";
-    const isDutch = activeLocale === "nl";
-    const isRussian = activeLocale === "ru";
-    const isPolish = activeLocale === "pl";
+    if (MEGA_MENU_CATEGORIES[cleanKey]) {
+      const match = MEGA_MENU_CATEGORIES[cleanKey][activeLocale] || MEGA_MENU_CATEGORIES[cleanKey][shortLocale];
+      if (match) return match;
+    }
 
-    if (label === "IMAGE COMPRESSION") {
-      if (isGerman) return "BILD KOMPRIMIEREN";
-      if (isSpanish) return "COMPRIMIR IMAGEN";
-      if (isFrench) return "COMPRESSER L'IMAGE";
-      if (isItalian) return "COMPRIMI IMMAGINE";
-      if (isPortuguese) return "COMPRIMIR IMAGEM";
-      if (isDutch) return "AFBEELDING COMPRIMEREN";
-      if (isCatalan) return "COMPRIMIR IMATGE";
-      if (isTurkish) return "GÖRSEL SIKIŞTIRMA";
-      if (isArabic) return "ضغط الصور";
-    }
-    if (label === "IMAGE CONVERT" || label === "IMAGE CONVERSION") {
-      if (isSwedish) return "BILD KONVERTERING";
-      if (isDanish) return "BILLEDKONVERTERING";
-      if (isDutch) return "BEELD CONVERTEREN";
-      if (isRussian) return "КОНВЕРТАЦИЯ ИЗОБРАЖЕНИЙ";
-      if (isPolish) return "KONWERSJA OBRAZÓW";
-      if (isArabic) return "تحويل الصور";
-      if (isTurkish) return "GÖRSEL DÖNÜŞTÜRME";
-      if (isSpanish) return "CONVERTIR IMAGEN";
-      if (isFrench) return "CONVERSION D'IMAGE";
-      if (isGerman) return "BILD KONVERTIEREN";
-      if (isPortuguese) return "CONVERTER IMAGEM";
-      if (isItalian) return "CONVERTI IMMAGINE";
-      if (isCatalan) return "CONVERTIR IMATGE";
-    }
-    if (label === "IMAGE") {
+    if (cleanKey === "IMAGE") {
       if (navItem.id === "compress") {
-        if (isGerman) return "BILD KOMPRIMIEREN";
-        if (isSpanish) return "COMPRIMIR IMAGEN";
-        if (isFrench) return "COMPRESSER L'IMAGE";
-        if (isItalian) return "COMPRIMI IMMAGINE";
-        if (isPortuguese) return "COMPRIMIR IMAGEM";
-        if (isDutch) return "AFBEELDING COMPRIMEREN";
-        if (isCatalan) return "COMPRIMIR IMATGE";
-        if (isTurkish) return "GÖRSEL SIKIŞTIRMA";
-        if (isArabic) return "ضغط الصور";
+        return MEGA_MENU_CATEGORIES["IMAGE COMPRESSION"]?.[activeLocale] || MEGA_MENU_CATEGORIES["IMAGE COMPRESSION"]?.[shortLocale] || "IMAGE COMPRESSION";
       }
-      if (isSwedish) return "BILD KONVERTERING";
-      if (isDanish) return "BILLEDKONVERTERING";
-      if (isDutch) return "BEELD CONVERTEREN";
-      if (isRussian) return "КОНВЕРТАЦИЯ ИЗОБРАЖЕНИЙ";
-      if (isPolish) return "KONWERSJA OBRAZÓW";
-      if (isArabic) return "تحويل الصور";
-      if (isTurkish) return "GÖRSEL DÖNÜŞTÜRME";
-      if (isSpanish) return "CONVERTIR IMAGEN";
-      if (isFrench) return "CONVERSION D'IMAGE";
-      if (isGerman) return "BILD KONVERTIEREN";
-      if (isPortuguese) return "CONVERTER IMAGEM";
-      if (isItalian) return "CONVERTI IMMAGINE";
-      if (isCatalan) return "CONVERTIR IMATGE";
+      return MEGA_MENU_CATEGORIES["IMAGE CONVERT"]?.[activeLocale] || MEGA_MENU_CATEGORIES["IMAGE CONVERT"]?.[shortLocale] || "IMAGE CONVERSION";
     }
-    if (label === "MORE FORMATS") {
-      if (isSwedish) return "FLER FORMAT";
-      if (isDanish) return "FLERE FORMATER";
-      if (isDutch) return "MEER FORMATEN";
-      if (isRussian) return "ДРУГИЕ ФОРМАТЫ";
-      if (isPolish) return "WIĘCEJ FORMATÓW";
-      if (isArabic) return "صيغ إضافية";
-      if (isTurkish) return "DİĞER FORMATLAR";
-      if (isSpanish) return "MÁS FORMATOS";
-      if (isFrench) return "AUTRES FORMATS";
-      if (isGerman) return "WEITERE FORMATE";
-      if (isPortuguese) return "MAIS FORMATOS";
-      if (isItalian) return "ALTRI FORMATI";
-      if (isCatalan) return "MÉS FORMATS";
+    if (cleanKey === "PDF-TYÖKALUT" || cleanKey === "PDF-VERKTØY" || cleanKey === "PDF TOOLS" || cleanKey === "PDF") {
+      return MEGA_MENU_CATEGORIES["PDF"]?.[activeLocale] || MEGA_MENU_CATEGORIES["PDF"]?.[shortLocale] || "PDF TOOLS";
     }
-    if (label === "IMAGE EDITORS") {
-      if (isSwedish) return "BILDREDIGERING";
-      if (isDanish) return "BILLEDBEHANDLING";
-      if (isDutch) return "BEELDBEWERKING";
-      if (isRussian) return "РЕДАКТОРЫ ИЗОБРАЖЕНИЙ";
-      if (isPolish) return "EDYTORY OBRAZÓW";
-      if (isArabic) return "محررات الصور";
-      if (isTurkish) return "GÖRSEL DÜZENLEYİCİLER";
-      if (isSpanish) return "EDITORES DE IMAGEN";
-      if (isFrench) return "ÉDITEURS D'IMAGES";
-      if (isGerman) return "BILDEDITOREN";
-      if (isPortuguese) return "EDITORES DE IMAGEM";
-      if (isItalian) return "EDITOR DI IMMAGINI";
-      if (isCatalan) return "EDITORS D'IMATGES";
+    if (cleanKey === "PAGE MANIPULATION" || cleanKey === "PAGE EDITING & ORGANIZATION") {
+      return MEGA_MENU_CATEGORIES["PAGE EDITING & ORGANIZATION"]?.[activeLocale] || MEGA_MENU_CATEGORIES["PAGE EDITING & ORGANIZATION"]?.[shortLocale] || "PAGE EDITING & ORGANIZATION";
     }
-    if (label === "VIDEO TOOLS" || label === "VIDEO") {
-      if (isSwedish) return "VIDEOVERKTYG";
-      if (isDanish) return "VIDEOVÆRKTØJER";
-      if (isDutch) return "VIDEOTOOLS";
-      if (isRussian) return "ВИДЕО ИНСТРУМЕНТЫ";
-      if (isPolish) return "NARZĘDZIA WIDEO";
-      if (isArabic) return "أدوات الفيديو";
-      if (isTurkish) return "VİDEO ARAÇLARI";
-      if (isSpanish) return "HERRAMIENTAS DE VIDEO";
-      if (isFrench) return "OUTILS VIDÉO";
-      if (isGerman) return "VIDEO-WERKZEUGE";
-      if (isPortuguese) return "FERRAMENTAS DE VÍDEO";
-      if (isItalian) return "STRUMENTI VIDEO";
-      if (isCatalan) return "EINES DE VÍDEO";
+    if (cleanKey === "PDF CONVERSIONS" || cleanKey === "COMPRESS & CONVERT") {
+      return MEGA_MENU_CATEGORIES["COMPRESS & CONVERT"]?.[activeLocale] || MEGA_MENU_CATEGORIES["COMPRESS & CONVERT"]?.[shortLocale] || "COMPRESS & CONVERT";
     }
-    if (label === "SUBTITLE TOOLS" || label === "SUBTITLES") {
-      if (isSwedish) return "UNDERTEXTERVERKTYG";
-      if (isDanish) return "UNDERTEKSTVÆRKTØJER";
-      if (isDutch) return "ONDERTITELING";
-      if (isRussian) return "СУБТИТРЫ";
-      if (isPolish) return "NARZĘDZIA NAPISÓW";
-      if (isArabic) return "أدوات الترجمة";
-      if (isTurkish) return "ALTYAZI ARAÇLARI";
-      if (isSpanish) return "HERRAMIENTAS DE SUBTÍTULOS";
-      if (isFrench) return "OUTILS DE SOUS-TITRES";
-      if (isGerman) return "UNTERTITEL-WERKZEUGE";
-      if (isPortuguese) return "FERRAMENTAS DE LEGENDAS";
-      if (isItalian) return "STRUMENTI SOTTOTITOLI";
-      if (isCatalan) return "EINES DE SUBTÍTOLS";
+    if (cleanKey === "POPULAR TARGET SIZES") {
+      return MEGA_MENU_CATEGORIES["POPULAR TARGET SIZES"]?.[activeLocale] || MEGA_MENU_CATEGORIES["POPULAR TARGET SIZES"]?.[shortLocale] || "POPULAR TARGET SIZES";
     }
-    if (label === "CONVERT FROM PDF") {
-      if (isSwedish) return "KONVERTERA FRÅN PDF";
-      if (isDanish) return "KONVERTER FRA PDF";
-      if (isDutch) return "CONVERTEREN VAN PDF";
-      if (isRussian) return "ИЗ PDF";
-      if (isPolish) return "KONWERTUJ Z PDF";
-      if (isArabic) return "التحويل من PDF";
-      if (isTurkish) return "PDF'TEN DÖNÜŞTÜR";
-      if (isSpanish) return "CONVERTIR DESDE PDF";
-      if (isFrench) return "CONVERTIR DEPUIS PDF";
-      if (isGerman) return "VON PDF KONVERTIEREN";
-      if (isPortuguese) return "CONVERTER DE PDF";
-      if (isItalian) return "CONVERTI DA PDF";
-      if (isCatalan) return "CONVERTIR DES DE PDF";
+    if (cleanKey === "IMAGE CONVERSION" || cleanKey === "IMAGE CONVERT") {
+      return MEGA_MENU_CATEGORIES["IMAGE CONVERT"]?.[activeLocale] || MEGA_MENU_CATEGORIES["IMAGE CONVERT"]?.[shortLocale] || "IMAGE CONVERSION";
     }
-    if (label === "CONVERT TO PDF") {
-      if (isSwedish) return "KONVERTERA TILL PDF";
-      if (isDanish) return "KONVERTER TIL PDF";
-      if (isDutch) return "CONVERTEREN NAAR PDF";
-      if (isRussian) return "В PDF";
-      if (isPolish) return "KONWERTUJ DO PDF";
-      if (isArabic) return "التحويل إلى PDF";
-      if (isTurkish) return "PDF'E DÖNÜŞTÜR";
-      if (isSpanish) return "CONVERTIR A PDF";
-      if (isFrench) return "CONVERTIR EN PDF";
-      if (isGerman) return "IN PDF KONVERTIEREN";
-      if (isPortuguese) return "CONVERTER PARA PDF";
-      if (isItalian) return "CONVERTI IN PDF";
-      if (isCatalan) return "CONVERTIR A PDF";
+    if (cleanKey === "FORMAT PAIRS") {
+      return MEGA_MENU_CATEGORIES["FORMAT PAIRS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["FORMAT PAIRS"]?.[shortLocale] || "FORMAT PAIRS";
     }
-    if (label === "DOCUMENTS & EBOOKS" || label === "DOCUMENTS & E-BOOKS" || label === "DOCUMENTS") {
-      if (isSwedish) return "DOKUMENT & E-BÖCKER";
-      if (isDanish) return "DOKUMENTER & E-BØGER";
-      if (isDutch) return "DOCUMENTEN & E-BOOKS";
-      if (isRussian) return "ДОКУМЕНТЫ И КНИГИ";
-      if (isPolish) return "DOKUMENTY I E-BOOKI";
-      if (isArabic) return "المستندات والكتب الإلكترونية";
-      if (isTurkish) return "BELGELER VE E-KİTAPLAR";
-      if (isSpanish) return "DOCUMENTOS Y EBOOKS";
-      if (isFrench) return "DOCUMENTS & EBOOKS";
-      if (isGerman) return "DOKUMENTE & E-BOOKS";
-      if (isPortuguese) return "DOCUMENTOS E E-BOOKS";
-      if (isItalian) return "DOCUMENTI ED EBOOK";
-      if (isCatalan) return "DOCUMENTS I EBOOKS";
+    if (cleanKey === "FORMATS") {
+      return MEGA_MENU_CATEGORIES["FORMATS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["FORMATS"]?.[shortLocale] || "FORMATS";
     }
-    if (label === "CAD & VECTOR TOOLS" || label === "CAD") {
-      if (isSwedish) return "CAD- & VEKTORVERKTYG";
-      if (isDanish) return "CAD- OG VEKTORVÆRKTØJER";
-      if (isDutch) return "CAD- & VECTORTOOLS";
-      if (isRussian) return "CAD И ВЕКТОРЫ";
-      if (isPolish) return "NARZĘDZIA CAD I WEKTOROWE";
-      if (isArabic) return "أدوات CAD والمتجهات";
-      if (isTurkish) return "CAD VE VEKTÖR ARAÇLARI";
-      if (isSpanish) return "HERRAMIENTAS CAD Y VECTOR";
-      if (isFrench) return "OUTILS CAD & VECTORIELS";
-      if (isGerman) return "CAD- & VEKTOR-WERKZEUGE";
-      if (isPortuguese) return "FERRAMENTAS CAD E VECTOR";
-      if (isItalian) return "STRUMENTI CAD E VETTORIALI";
-      if (isCatalan) return "EINES CAD I VECTORIALS";
+    if (cleanKey === "MORE FORMATS") {
+      return MEGA_MENU_CATEGORIES["MORE FORMATS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["MORE FORMATS"]?.[shortLocale] || "MORE FORMATS";
     }
-    if (label === "AUDIO TOOLS" || label === "AUDIO") {
-      if (isSwedish) return "LJUDVERKTYG";
-      if (isDanish) return "LYDVÆRKTØJER";
-      if (isDutch) return "AUDIOTOOLS";
-      if (isRussian) return "АУДИО ИНСТРУМЕНТЫ";
-      if (isPolish) return "NARZĘDZIA AUDIO";
-      if (isArabic) return "أدوات الصوت";
-      if (isTurkish) return "SES ARAÇLARI";
-      if (isSpanish) return "HERRAMIENTAS DE AUDIO";
-      if (isFrench) return "OUTILS AUDIO";
-      if (isGerman) return "AUDIO-WERKZEUGE";
-      if (isPortuguese) return "FERRAMENTAS DE ÁUDIO";
-      if (isItalian) return "STRUMENTI AUDIO";
-      if (isCatalan) return "EINES D'ÀUDIO";
+    if (cleanKey === "IMAGE EDITORS") {
+      return MEGA_MENU_CATEGORIES["IMAGE EDITORS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["IMAGE EDITORS"]?.[shortLocale] || "IMAGE EDITORS";
     }
-    if (label === "ARCHIVE & UTILITIES" || label === "ARCHIVE") {
-      if (isSwedish) return "ARKIV & VERKTYG";
-      if (isDanish) return "ARKIVER & VÆRKTØJER";
-      if (isDutch) return "ARCHIEF & HULPPROGRAMMA'S";
-      if (isRussian) return "АРХИВЫ И УТИЛИТЫ";
-      if (isPolish) return "ARCHIWA I NARZĘDZIA";
-      if (isArabic) return "الأرشيف والأدوات المساعدة";
-      if (isTurkish) return "ARŞİV VE YARDIMCI PROGRAMLAR";
-      if (isSpanish) return "ARCHIVOS Y UTILIDADES";
-      if (isFrench) return "ARCHIVES ET UTILITAIRES";
-      if (isGerman) return "ARCHIV & HILFSPROGRAMME";
-      if (isPortuguese) return "ARQUIVOS E UTILITÁRIOS";
-      if (isItalian) return "ARCHIVI E UTILITÀ";
-      if (isCatalan) return "ARXIUS I UTILITATS";
+    if (cleanKey === "VIDEO TOOLS" || cleanKey === "VIDEO") {
+      return MEGA_MENU_CATEGORIES["VIDEO TOOLS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["VIDEO TOOLS"]?.[shortLocale] || "VIDEO TOOLS";
     }
-    if (label === "PAGE EDITING & ORGANIZATION" || label === "Page Manipulation") {
-      if (isSwedish) return "SIDREDIGERING & ORGANISATION";
-      if (isDanish) return "SIDEORGANISERING";
-      if (isDutch) return "PAGINA BEWERKEN & ORGANISEREN";
-      if (isRussian) return "РЕДАКТИРОВАНИЕ СТРАНИЦ";
-      if (isPolish) return "EDYCJA STRON I ORGANIZACJA";
-      if (isArabic) return "تحرير وتنظيم الصفحات";
-      if (isTurkish) return "SAYFA DÜZENLEME VE ORGANİZASYON";
-      if (isSpanish) return "EDICIÓN Y ORGANIZACIÓN DE PÁGINAS";
-      if (isFrench) return "ÉDITION ET ORGANISATION DE PAGES";
-      if (isGerman) return "SEITENBEARBEITUNG & ORGANISATION";
-      if (isPortuguese) return "EDIÇÃO E ORGANIZAÇÃO DE PÁGINAS";
-      if (isItalian) return "MODIFICA E ORGANIZZAZIONE PAGINE";
-      if (isCatalan) return "EDICIÓ I ORGANITZACIÓ DE PÀGINES";
+    if (cleanKey === "SUBTITLE TOOLS" || cleanKey === "SUBTITLES") {
+      return MEGA_MENU_CATEGORIES["SUBTITLE TOOLS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["SUBTITLE TOOLS"]?.[shortLocale] || "SUBTITLE TOOLS";
     }
-    if (label === "COMPRESS & CONVERT" || label === "PDF Conversions") {
-      if (isSwedish) return "KOMPRIMERA & KONVERTERA";
-      if (isDanish) return "KOMPRIMER & KONVERTER";
-      if (isDutch) return "COMPRIMEREN & CONVERTEREN";
-      if (isRussian) return "СЖАТИЕ И КОНВЕРТАЦИЯ";
-      if (isPolish) return "KOMPRESJA I KONWERSJA";
-      if (isArabic) return "الضغط والتحويل";
-      if (isTurkish) return "SIKIŞTIR VE DÖNÜŞTÜR";
-      if (isSpanish) return "COMPRIMIR Y CONVERTIR";
-      if (isFrench) return "COMPRESSER ET CONVERTIR";
-      if (isGerman) return "KOMPRIMIEREN & KONVERTIEREN";
-      if (isPortuguese) return "COMPRIMIR E CONVERTER";
-      if (isItalian) return "COMPRIMI E CONVERTI";
-      if (isCatalan) return "COMPRIMIR I CONVERTIR";
+    if (cleanKey === "CONVERT FROM PDF" || cleanKey === "FROM PDF") {
+      return MEGA_MENU_CATEGORIES["CONVERT FROM PDF"]?.[activeLocale] || MEGA_MENU_CATEGORIES["CONVERT FROM PDF"]?.[shortLocale] || "CONVERT FROM PDF";
     }
-    if (label === "Popular target sizes") {
-      if (isSwedish) return "Populära målstorlekar";
-      if (isArabic) return "أحجام شائعة";
-      if (isTurkish) return "Popüler hedef boyutlar";
-      if (isSpanish) return "Tamaños populares";
-      if (isFrench) return "Tailles cibles populaires";
-      if (isGerman) return "Beliebte Zielgrößen";
-      if (isPortuguese) return "Tamanhos populares";
-      if (isItalian) return "Dimensioni popolari";
-      if (isDutch) return "Populaire doelgroottes";
-      if (isCatalan) return "Mides de destinació populars";
+    if (cleanKey === "CONVERT TO PDF" || cleanKey === "TO PDF") {
+      return MEGA_MENU_CATEGORIES["CONVERT TO PDF"]?.[activeLocale] || MEGA_MENU_CATEGORIES["CONVERT TO PDF"]?.[shortLocale] || "CONVERT TO PDF";
     }
+    if (cleanKey === "DOCUMENTS & EBOOKS" || cleanKey === "DOCUMENTS & E-BOOKS" || cleanKey === "DOCUMENTS") {
+      return MEGA_MENU_CATEGORIES["DOCUMENTS & EBOOKS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["DOCUMENTS & EBOOKS"]?.[shortLocale] || "DOCUMENTS & EBOOKS";
+    }
+    if (cleanKey === "CAD & VECTOR TOOLS" || cleanKey === "CAD") {
+      return MEGA_MENU_CATEGORIES["CAD & VECTOR TOOLS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["CAD & VECTOR TOOLS"]?.[shortLocale] || "CAD & VECTOR TOOLS";
+    }
+    if (cleanKey === "AUDIO TOOLS" || cleanKey === "AUDIO") {
+      return MEGA_MENU_CATEGORIES["AUDIO TOOLS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["AUDIO TOOLS"]?.[shortLocale] || "AUDIO TOOLS";
+    }
+    if (cleanKey === "ARCHIVE & UTILITIES" || cleanKey === "ARCHIVE") {
+      return MEGA_MENU_CATEGORIES["ARCHIVE & UTILITIES"]?.[activeLocale] || MEGA_MENU_CATEGORIES["ARCHIVE & UTILITIES"]?.[shortLocale] || "ARCHIVE & UTILITIES";
+    }
+
     return label;
   };
 
-  // Localize individual link labels (e.g., "PNG to JPG", "JPG to PDF", "Trim Audio", "Compress Video")
+  // Localize individual link labels
   const getLocalizedLinkLabel = (label: string, href?: string): string => {
-    if (activeLocale === "en") return label;
+    const shortLocale = activeLocale.split("-")[0];
 
-    // Handle pair conversions (e.g. "PNG to JPG" -> "PNG إلى JPG" in Arabic, "PNG a JPG" in Spanish, etc.)
-    const isArabic = activeLocale === "ar";
-    const isTurkish = activeLocale === "tr";
-    const isSpanish = activeLocale === "es" || activeLocale === "es-419";
-    const isPortuguese = activeLocale === "pt" || activeLocale === "pt-BR";
-    const isGerman = activeLocale === "de";
-    const isFrench = activeLocale === "fr";
-    const isItalian = activeLocale === "it";
-    const isCatalan = activeLocale === "ca";
-    const isSwedish = activeLocale === "sv";
-    const isDanish = activeLocale === "da";
-    const isDutch = activeLocale === "nl";
-    const isRussian = activeLocale === "ru";
-    const isPolish = activeLocale === "pl";
-
-    const dict = VERB_DICTIONARY[activeLocale as SupportedLocale];
-    const toPrep = dict?.to || (isArabic ? "إلى" : isSpanish || isCatalan ? "a" : isPortuguese ? "para" : isGerman ? "in" : isFrench ? "en" : isItalian ? "in" : isTurkish ? "→" : "to");
-
-    if (label === "Compress to a Specific Size" || label === "Compress to Specific Size") {
-      if (isSwedish) return "Komprimera till specifik storlek";
-      if (isArabic) return "الضغط إلى حجم محدد";
-      if (isSpanish) return "Comprimir a un tamaño específico";
-      if (isTurkish) return "Belirli bir boyuta sıkıştır";
-      if (isFrench) return "Compresser à une taille spécifique";
-      if (isGerman) return "Auf bestimmte Größe komprimieren";
-      if (isPortuguese) return "Comprimir para tamanho específico";
-      if (isItalian) return "Comprimi a dimensione specifica";
-      if (isDutch) return "Comprimeren naar specifieke grootte";
-      if (isCatalan) return "Comprimir a una mida específica";
+    // 1. Direct dictionary exact match
+    if (EXACT_TOOL_LABELS[label]) {
+      const exactMatch = EXACT_TOOL_LABELS[label][activeLocale] || EXACT_TOOL_LABELS[label][shortLocale];
+      if (exactMatch) return exactMatch;
     }
 
-    // Exact Tool Names (Prioritized before generic prefix replacements)
-    if (label === "Rotate Pages" || label === "Rotate PDF Pages") {
-      if (isSwedish) return "Rotera sidor";
-      if (isArabic) return "تدوير الصفحات";
-      if (isSpanish) return "Rotar páginas";
-      if (isTurkish) return "Sayfaları Döndür";
-      if (isGerman) return "Seiten drehen";
-      if (isFrench) return "Faire pivoter les pages";
-      if (isPortuguese) return "Rodar páginas";
-      if (isItalian) return "Ruota pagine";
-      if (isDutch) return "Pagina's draaien";
-      if (isCatalan) return "Girar pàgines";
-    }
-    if (label === "Extract Pages" || label === "Extract PDF Pages") {
-      if (isSwedish) return "Extrahera sidor";
-      if (isArabic) return "استخراج الصفحات";
-      if (isSpanish) return "Extraer páginas";
-      if (isTurkish) return "Sayfaları Ayıkla";
-      if (isGerman) return "Seiten extrahieren";
-      if (isFrench) return "Extraire des pages";
-      if (isPortuguese) return "Extrair páginas";
-      if (isItalian) return "Estrai pagine";
-      if (isDutch) return "Pagina's extraheren";
-      if (isCatalan) return "Extreure pàgines";
-    }
-    if (label === "Extract Images" || label === "Extract Images from PDF") {
-      if (isSwedish) return "Extrahera bilder";
-      if (isArabic) return "استخراج الصور";
-      if (isSpanish) return "Extraer imágenes";
-      if (isTurkish) return "Görselleri Ayıkla";
-      if (isGerman) return "Bilder extrahieren";
-      if (isFrench) return "Extraire des images";
-      if (isPortuguese) return "Extrair imagens";
-      if (isItalian) return "Estrai immagini";
-      if (isDutch) return "Afbeeldingen extraheren";
-      if (isCatalan) return "Extreure imatges";
-    }
-    if (label === "Add Watermark" || label === "Watermark PDF") {
-      if (isSwedish) return "Lägg till vattenstämpel";
-      if (isArabic) return "إضافة علامة مائية";
-      if (isSpanish) return "Añadir marca de agua";
-      if (isTurkish) return "Filigran Ekle";
-      if (isGerman) return "Wasserzeichen hinzufügen";
-      if (isFrench) return "Ajouter un filigrane";
-      if (isPortuguese) return "Adicionar marca de água";
-      if (isItalian) return "Aggiungi filigrana";
-      if (isDutch) return "Watermerk toevoegen";
-      if (isCatalan) return "Afegir marca d'aigua";
-    }
-    if (label === "PDF to Image" || label === "PDF in Image") {
-      if (isSwedish) return "PDF till bild";
-      if (isArabic) return "PDF إلى صورة";
-      if (isSpanish) return "PDF a imagen";
-      if (isTurkish) return "PDF'ten Görsele";
-      if (isGerman) return "PDF in Bild";
-      if (isFrench) return "PDF en image";
-      if (isPortuguese) return "PDF para imagem";
-      if (isItalian) return "PDF in immagine";
-      if (isDutch) return "PDF naar afbeelding";
-      if (isCatalan) return "PDF a imatge";
-    }
-    if (label === "Image to PDF" || label === "Image in PDF") {
-      if (isSwedish) return "Bild till PDF";
-      if (isArabic) return "صورة إلى PDF";
-      if (isSpanish) return "Imagen a PDF";
-      if (isTurkish) return "Görselden PDF'e";
-      if (isGerman) return "Bild in PDF";
-      if (isFrench) return "Image en PDF";
-      if (isPortuguese) return "Imagem para PDF";
-      if (isItalian) return "Immagine in PDF";
-      if (isDutch) return "Afbeelding naar PDF";
-      if (isCatalan) return "Imatge a PDF";
-    }
-    if (label === "PDF to Text") {
-      if (isSwedish) return "PDF till text";
-      if (isArabic) return "PDF إلى نص";
-      if (isSpanish) return "PDF a texto";
-      if (isTurkish) return "PDF'ten Metne";
-      if (isGerman) return "PDF in Text";
-      if (isFrench) return "PDF en texte";
-      if (isPortuguese) return "PDF para texto";
-      if (isItalian) return "PDF in testo";
-      if (isDutch) return "PDF naar tekst";
-      if (isCatalan) return "PDF a text";
-    }
-    if (label === "PDF Compressor") {
-      if (isSwedish) return "PDF-komprimerare";
-      if (isArabic) return "ضاغط PDF";
-      if (isSpanish) return "Compresor de PDF";
-      if (isTurkish) return "PDF Sıkıştırıcı";
-      if (isFrench) return "Compresseur PDF";
-      if (isGerman) return "PDF-Komprimierer";
-      if (isPortuguese) return "Compressor de PDF";
-      if (isItalian) return "Compressore PDF";
-      if (isDutch) return "PDF-compressor";
-      if (isCatalan) return "Compressor de PDF";
-    }
-    if (label === "Image Compressor") {
-      if (isSwedish) return "Bildkomprimerare";
-      if (isArabic) return "ضاغط الصور";
-      if (isSpanish) return "Compresor de imágenes";
-      if (isTurkish) return "Görsel Sıkıştırıcı";
-      if (isFrench) return "Compresseur d'image";
-      if (isGerman) return "Bild-Komprimierer";
-      if (isPortuguese) return "Compressor de imagens";
-      if (isItalian) return "Compressore immagini";
-      if (isDutch) return "Afbeeldingscompressor";
-      if (isCatalan) return "Compressor d'imatges";
-    }
-    if (label === "Image Converter") {
-      if (isSwedish) return "Bildkonverterare";
-      if (isArabic) return "محول الصور";
-      if (isSpanish) return "Convertidor de imágenes";
-      if (isTurkish) return "Görsel Dönüştürücü";
-      if (isFrench) return "Convertisseur d'image";
-      if (isGerman) return "Bild-Konverter";
-      if (isPortuguese) return "Conversor de imagens";
-      if (isItalian) return "Convertitore immagini";
-      if (isDutch) return "Afbeeldingsconverter";
-      if (isCatalan) return "Convertidor d'imatges";
-    }
-    if (label === "Merge PDF Files" || label === "Merge PDF") {
-      if (isSwedish) return "Slå samman PDF-filer";
-      if (isArabic) return "دمج ملفات PDF";
-      if (isSpanish) return "Unir archivos PDF";
-      if (isTurkish) return "PDF Dosyalarını Birleştir";
-      if (isFrench) return "Fusionner des PDF";
-      if (isGerman) return "PDF-Dateien zusammenfügen";
-      if (isPortuguese) return "Juntar ficheiros PDF";
-      if (isItalian) return "Unisci file PDF";
-      if (isDutch) return "PDF-bestanden samenvoegen";
-      if (isCatalan) return "Unir fitxers PDF";
-    }
-    if (label === "Split PDF Document" || label === "Split PDF") {
-      if (isSwedish) return "Dela upp PDF-dokument";
-      if (isArabic) return "تقسيم مستند PDF";
-      if (isSpanish) return "Dividir documento PDF";
-      if (isTurkish) return "PDF Belgesini Böl";
-      if (isFrench) return "Diviser document PDF";
-      if (isGerman) return "PDF-Dokument trennen";
-      if (isPortuguese) return "Dividir documento PDF";
-      if (isItalian) return "Dividi documento PDF";
-      if (isDutch) return "PDF-document splitsen";
-      if (isCatalan) return "Dividir document PDF";
-    }
-    if (label === "Reorder Pages") {
-      if (isSwedish) return "Ändra ordning på sidor";
-      if (isArabic) return "إعادة ترتيب الصفحات";
-      if (isSpanish) return "Reordenar páginas";
-      if (isTurkish) return "Sayfaları Yeniden Sırala";
-      if (isGerman) return "Seiten neu anordnen";
-      if (isFrench) return "Réorganiser les pages";
-      if (isPortuguese) return "Reordenar páginas";
-      if (isItalian) return "Riordina pagine";
-      if (isDutch) return "Pagina's herschikken";
-      if (isCatalan) return "Reordenar pàgines";
-    }
-    if (label === "Reverse PDF") {
-      if (isSwedish) return "Vänd PDF-ordning";
-      if (isArabic) return "عكس ترتيب PDF";
-      if (isSpanish) return "Invertir PDF";
-      if (isTurkish) return "PDF'i Tersine Çevir";
-      if (isGerman) return "PDF umkehren";
-      if (isFrench) return "Inverser le PDF";
-      if (isPortuguese) return "Inverter PDF";
-      if (isItalian) return "Inverti PDF";
-      if (isDutch) return "PDF omkeren";
-      if (isCatalan) return "Invertir PDF";
-    }
-    if (label === "Add Blank Page") {
-      if (isSwedish) return "Lägg till tom sida";
-      if (isArabic) return "إضافة صفحة فارغة";
-      if (isSpanish) return "Añadir página en blanco";
-      if (isTurkish) return "Boş Sayfa Ekle";
-      if (isGerman) return "Leere Seite hinzufügen";
-      if (isFrench) return "Ajouter une page blanche";
-      if (isPortuguese) return "Adicionar página em branco";
-      if (isItalian) return "Aggiungi pagina vuota";
-      if (isDutch) return "Leere pagina toevoegen";
-      if (isCatalan) return "Afegir pàgina en blanc";
-    }
-    if (label === "Duplicate Pages") {
-      if (isSwedish) return "Duplicera sidor";
-      if (isArabic) return "تكرار الصفحات";
-      if (isSpanish) return "Duplicar páginas";
-      if (isTurkish) return "Sayfaları Çoğalt";
-      if (isGerman) return "Seiten duplizieren";
-      if (isFrench) return "Dupliquer les pages";
-      if (isPortuguese) return "Duplicar páginas";
-      if (isItalian) return "Duplica pagine";
-      if (isDutch) return "Pagina's dupliceren";
-      if (isCatalan) return "Duplicar pàgines";
-    }
-    if (label === "Delete Pages") {
-      if (isSwedish) return "Ta bort sidor";
-      if (isArabic) return "حذف الصفحات";
-      if (isSpanish) return "Eliminar páginas";
-      if (isTurkish) return "Sayfaları Sil";
-      if (isGerman) return "Seiten löschen";
-      if (isFrench) return "Supprimer des pages";
-      if (isPortuguese) return "Eliminar páginas";
-      if (isItalian) return "Elimina pagine";
-      if (isDutch) return "Pagina's verwijderen";
-      if (isCatalan) return "Eliminar pàgines";
-    }
-    if (label === "Flatten PDF") {
-      if (isSwedish) return "Platta till PDF";
-      if (isArabic) return "تسطيح PDF";
-      if (isSpanish) return "Aplanar PDF";
-      if (isTurkish) return "PDF'i Düzleştir";
-      if (isGerman) return "PDF glätten";
-      if (isFrench) return "Aplatir le PDF";
-      if (isPortuguese) return "Aplanar PDF";
-      if (isItalian) return "Appiattisci PDF";
-      if (isDutch) return "PDF afvlakken";
-      if (isCatalan) return "Aplanar PDF";
-    }
-    if (label === "Grayscale Image") {
-      if (isSwedish) return "Gör bilden gråskalig";
-      if (isGerman) return "Bild in Graustufen";
-      if (isFrench) return "Image en niveaux de gris";
-      if (isSpanish) return "Escala de grises";
-      if (isArabic) return "صورة بتدرج رمادي";
-      if (isPortuguese) return "Escala de cinzentos";
-      if (isItalian) return "Scala di grigi";
-      if (isDutch) return "Grijswaarden afbeelding";
-      if (isCatalan) return "Escala de grisos";
-    }
-    if (label === "Invert Image") {
-      if (isSwedish) return "Invertera bild";
-      if (isGerman) return "Bild invertieren";
-      if (isFrench) return "Inverser l'image";
-      if (isSpanish) return "Invertir imagen";
-      if (isArabic) return "عكس ألوان الصورة";
-      if (isPortuguese) return "Inverter imagem";
-      if (isItalian) return "Inverti immagine";
-      if (isDutch) return "Afbeelding omkeren";
-      if (isCatalan) return "Invertir imatge";
-    }
-    if (label === "Blur Image") {
-      if (isSwedish) return "Gör bilden oskarp";
-      if (isGerman) return "Bild weichzeichnen";
-      if (isFrench) return "Flouter l'image";
-      if (isSpanish) return "Desenfocar imagen";
-      if (isArabic) return "تعتيم الصورة";
-      if (isPortuguese) return "Desfocar imagem";
-      if (isItalian) return "Sfoca immagine";
-      if (isDutch) return "Afbeelding vervagen";
-      if (isCatalan) return "Desenfocar imatge";
-    }
-    if (label === "Crop Image") {
-      if (isSwedish) return "Beskär bild";
-      if (isGerman) return "Bild zuschneiden";
-      if (isFrench) return "Rogner l'image";
-      if (isSpanish) return "Recortar imagen";
-      if (isArabic) return "قص الصورة";
-      if (isPortuguese) return "Cortar imagem";
-      if (isItalian) return "Ritaglia immagine";
-      if (isDutch) return "Afbeelding bijsnijden";
-      if (isCatalan) return "Retallar imatge";
-    }
-    if (label === "Resize Image") {
-      if (isSwedish) return "Ändra bildstorlek";
-      if (isGerman) return "Bildgröße ändern";
-      if (isFrench) return "Redimensionner l'image";
-      if (isSpanish) return "Redimensionar imagen";
-      if (isArabic) return "تغيير حجم الصورة";
-      if (isPortuguese) return "Redimensionar imagem";
-      if (isItalian) return "Ridimensiona immagine";
-      if (isDutch) return "Afbeeldingsformaat wijzigen";
-      if (isCatalan) return "Redimensionar imatge";
-    }
-    if (label === "Rotate Image") {
-      if (isSwedish) return "Rotera bild";
-      if (isGerman) return "Bild drehen";
-      if (isFrench) return "Faire pivoter l'image";
-      if (isSpanish) return "Rotar imagen";
-      if (isArabic) return "تدوير الصورة";
-      if (isPortuguese) return "Rodar imagem";
-      if (isItalian) return "Ruota immagine";
-      if (isDutch) return "Afbeelding draaien";
-      if (isCatalan) return "Girar imatge";
-    }
-    if (label === "Flip Image") {
-      if (isSwedish) return "Vänd bild";
-      if (isGerman) return "Bild spiegeln";
-      if (isFrench) return "Retourner l'image";
-      if (isSpanish) return "Voltear imagen";
-      if (isArabic) return "قلب الصورة";
-      if (isPortuguese) return "Inverter imagem horizontal";
-      if (isItalian) return "Capovolgi immagine";
-      if (isDutch) return "Afbeelding spiegelen";
-      if (isCatalan) return "Voltejar imatge";
-    }
-    if (label === "Change Speed") {
-      if (isSwedish) return "Ändra hastighet";
-      if (isGerman) return "Geschwindigkeit ändern";
-      if (isFrench) return "Changer la vitesse";
-      if (isSpanish) return "Cambiar velocidad";
-      if (isArabic) return "تغيير السرعة";
-      if (isPortuguese) return "Alterar velocidade";
-      if (isItalian) return "Cambia velocità";
-      if (isDutch) return "Snelheid wijzigen";
-      if (isCatalan) return "Canviar velocitat";
-    }
-    if (label === "Video to GIF") {
-      if (isSwedish) return "Video till GIF";
-      if (isGerman) return "Video zu GIF";
-      if (isFrench) return "Vidéo en GIF";
-      if (isSpanish) return "Video a GIF";
-      if (isArabic) return "فيديو إلى GIF";
-      if (isPortuguese) return "Vídeo para GIF";
-      if (isItalian) return "Video in GIF";
-      if (isDutch) return "Video naar GIF";
-      if (isCatalan) return "Vídeo a GIF";
-    }
-    if (label === "Mute Video") {
-      if (isSwedish) return "Stäng av videoljud";
-      if (isGerman) return "Video stummschalten";
-      if (isFrench) return "Couper le son vidéo";
-      if (isSpanish) return "Silenciar video";
-      if (isArabic) return "كتم صوت الفيديو";
-      if (isPortuguese) return "Silenciar vídeo";
-      if (isItalian) return "Disattiva audio video";
-      if (isDutch) return "Video dempen";
-      if (isCatalan) return "Silenciar vídeo";
-    }
-    if (label === "Boost Volume") {
-      if (isSwedish) return "Höj volym";
-      if (isGerman) return "Lautstärke erhöhen";
-      if (isFrench) return "Augmenter le volume";
-      if (isSpanish) return "Aumentar volumen";
-      if (isArabic) return "تضخيم الصوت";
-      if (isPortuguese) return "Aumentar volume";
-      if (isItalian) return "Aumenta volume";
-      if (isDutch) return "Volume verhogen";
-      if (isCatalan) return "Augmentar volum";
-    }
-    if (label === "Create ZIP") {
-      if (isSwedish) return "Skapa ZIP";
-      if (isGerman) return "ZIP erstellen";
-      if (isFrench) return "Créer un ZIP";
-      if (isSpanish) return "Crear ZIP";
-      if (isArabic) return "إنشاء ZIP";
-      if (isPortuguese) return "Criar ZIP";
-      if (isItalian) return "Crea ZIP";
-      if (isDutch) return "ZIP maken";
-      if (isCatalan) return "Crear ZIP";
-    }
-    if (label === "Strip EXIF") {
-      if (isSwedish) return "Rensa EXIF-data";
-      if (isGerman) return "EXIF entfernen";
-      if (isFrench) return "Supprimer EXIF";
-      if (isSpanish) return "Eliminar EXIF";
-      if (isArabic) return "حذف بيانات EXIF";
-      if (isPortuguese) return "Remover EXIF";
-      if (isItalian) return "Rimuovi EXIF";
-      if (isDutch) return "EXIF verwijderen";
-      if (isCatalan) return "Eliminar EXIF";
-    }
-    if (label === "Convert Audio") {
-      if (isSwedish) return "Konvertera ljud";
-      if (isGerman) return "Audio konvertieren";
-      if (isFrench) return "Convertir audio";
-      if (isSpanish) return "Convertir audio";
-      if (isArabic) return "تحويل الصوت";
-      if (isPortuguese) return "Converter áudio";
-      if (isItalian) return "Converti audio";
-      if (isDutch) return "Audio converteren";
-      if (isCatalan) return "Convertir àudio";
-    }
-    if (label === "Compress Audio") {
-      if (isSwedish) return "Komprimera ljud";
-      if (isGerman) return "Audio komprimieren";
-      if (isFrench) return "Compresser audio";
-      if (isSpanish) return "Comprimir audio";
-      if (isArabic) return "ضغط الصوت";
-      if (isPortuguese) return "Comprimir áudio";
-      if (isItalian) return "Comprimi audio";
-      if (isDutch) return "Audio comprimeren";
-      if (isCatalan) return "Comprimir àudio";
-    }
-    if (label === "Trim Audio") {
-      if (isSwedish) return "Klipp ljud";
-      if (isGerman) return "Audio schneiden";
-      if (isFrench) return "Couper audio";
-      if (isSpanish) return "Recortar audio";
-      if (isArabic) return "قص الصوت";
-      if (isPortuguese) return "Cortar áudio";
-      if (isItalian) return "Taglia audio";
-      if (isDutch) return "Audio bijsnijden";
-      if (isCatalan) return "Retallar àudio";
-    }
-    if (label === "Merge Audio") {
-      if (isSwedish) return "Slå samman ljud";
-      if (isGerman) return "Audio zusammenfügen";
-      if (isFrench) return "Fusionner audio";
-      if (isSpanish) return "Unir audio";
-      if (isArabic) return "دمج الصوت";
-      if (isPortuguese) return "Juntar áudio";
-      if (isItalian) return "Unisci audio";
-      if (isDutch) return "Audio samenvoegen";
-      if (isCatalan) return "Unir àudio";
-    }
-    if (label === "Convert Video") {
-      if (isSwedish) return "Konvertera video";
-      if (isGerman) return "Video konvertieren";
-      if (isFrench) return "Convertir vidéo";
-      if (isSpanish) return "Convertir video";
-      if (isArabic) return "تحويل الفيديو";
-      if (isPortuguese) return "Converter vídeo";
-      if (isItalian) return "Converti video";
-      if (isDutch) return "Video converteren";
-      if (isCatalan) return "Convertir vídeo";
-    }
-    if (label === "Compress Video") {
-      if (isSwedish) return "Komprimera video";
-      if (isGerman) return "Video komprimieren";
-      if (isFrench) return "Compresser vidéo";
-      if (isSpanish) return "Comprimir video";
-      if (isArabic) return "ضغط الفيديو";
-      if (isPortuguese) return "Comprimir vídeo";
-      if (isItalian) return "Comprimi video";
-      if (isDutch) return "Video comprimeren";
-      if (isCatalan) return "Comprimir vídeo";
-    }
-    if (label === "Trim Video") {
-      if (isSwedish) return "Klipp video";
-      if (isGerman) return "Video schneiden";
-      if (isFrench) return "Couper vidéo";
-      if (isSpanish) return "Recortar video";
-      if (isArabic) return "قص الفيديو";
-      if (isPortuguese) return "Cortar vídeo";
-      if (isItalian) return "Taglia video";
-      if (isDutch) return "Video bijsnijden";
-      if (isCatalan) return "Retallar vídeo";
-    }
-    if (label === "Rotate Video") {
-      if (isSwedish) return "Rotera video";
-      if (isGerman) return "Video drehen";
-      if (isFrench) return "Faire pivoter la vidéo";
-      if (isSpanish) return "Rotar video";
-      if (isArabic) return "تدوير الفيديو";
-      if (isPortuguese) return "Rodar vídeo";
-      if (isItalian) return "Ruota video";
-      if (isDutch) return "Video draaien";
-      if (isCatalan) return "Girar vídeo";
-    }
-    if (label === "Extract ZIP") {
-      if (isSwedish) return "Packa upp ZIP";
-      if (isGerman) return "ZIP entpacken";
-      if (isFrench) return "Extraire ZIP";
-      if (isSpanish) return "Extraer ZIP";
-      if (isArabic) return "استخراج ZIP";
-      if (isPortuguese) return "Extrair ZIP";
-      if (isItalian) return "Estrai ZIP";
-      if (isDutch) return "ZIP uitpakken";
-      if (isCatalan) return "Extreure ZIP";
-    }
-    if (label === "Extract RAR") {
-      if (isSwedish) return "Packa upp RAR";
-      if (isGerman) return "RAR entpacken";
-      if (isFrench) return "Extraire RAR";
-      if (isSpanish) return "Extraer RAR";
-      if (isArabic) return "استخراج RAR";
-      if (isPortuguese) return "Extrair RAR";
-      if (isItalian) return "Estrai RAR";
-      if (isDutch) return "RAR uitpakken";
-      if (isCatalan) return "Extreure RAR";
-    }
-
-    // Localize common action prefixes
-    if (label.startsWith("Compress ")) {
-      const item = label.replace("Compress ", "");
-      if (isSwedish) return `Komprimera ${item}`;
-      if (isArabic) return `ضغط ${item}`;
-      if (isSpanish) return `Comprimir ${item}`;
-      if (isTurkish) return `${item} Sıkıştır`;
-      if (isFrench) return `Compresser ${item}`;
-      if (isGerman) return `${item} komprimieren`;
-      if (isPortuguese) return `Comprimir ${item}`;
-      if (isItalian) return `Comprimi ${item}`;
-      if (isDutch) return `${item} comprimeren`;
-      if (isCatalan) return `Comprimir ${item}`;
-    }
-    if (label.startsWith("Convert ")) {
-      const item = label.replace("Convert ", "");
-      if (isSwedish) return `Konvertera ${item}`;
-      if (isArabic) return `تحويل ${item}`;
-      if (isSpanish) return `Convertir ${item}`;
-      if (isTurkish) return `${item} Dönüştür`;
-      if (isFrench) return `Convertir ${item}`;
-      if (isGerman) return `${item} konvertieren`;
-      if (isPortuguese) return `Converter ${item}`;
-      if (isItalian) return `Converti ${item}`;
-      if (isDutch) return `${item} converteren`;
-      if (isCatalan) return `Convertir ${item}`;
-    }
-    if (label.startsWith("Extract ")) {
-      const item = label.replace("Extract ", "");
-      if (isSwedish) return `Extrahera ${item}`;
-      if (isArabic) return `استخراج ${item}`;
-      if (isSpanish) return `Extraer ${item}`;
-      if (isTurkish) return `${item} Ayıkla`;
-      if (isFrench) return `Extraire ${item}`;
-      if (isGerman) return `${item} extrahieren`;
-      if (isPortuguese) return `Extrair ${item}`;
-      if (isItalian) return `Estrai ${item}`;
-      if (isDutch) return `${item} extraheren`;
-      if (isCatalan) return `Extreure ${item}`;
-    }
-    if (label.startsWith("Rotate ")) {
-      const item = label.replace("Rotate ", "");
-      if (isSwedish) return `Rotera ${item}`;
-      if (isArabic) return `تدوير ${item}`;
-      if (isSpanish) return `Rotar ${item}`;
-      if (isTurkish) return `${item} Döndür`;
-      if (isFrench) return `Faire pivoter ${item}`;
-      if (isGerman) return `${item} drehen`;
-      if (isPortuguese) return `Rodar ${item}`;
-      if (isItalian) return `Ruota ${item}`;
-      if (isDutch) return `${item} draaien`;
-      if (isCatalan) return `Girar ${item}`;
-    }
-    if (label.startsWith("Trim ")) {
-      const item = label.replace("Trim ", "");
-      if (isSwedish) return `Klipp ${item}`;
-      if (isArabic) return `قص ${item}`;
-      if (isSpanish) return `Recortar ${item}`;
-      if (isTurkish) return `${item} Kırp`;
-      if (isFrench) return `Couper ${item}`;
-      if (isGerman) return `${item} schneiden`;
-      if (isPortuguese) return `Cortar ${item}`;
-      if (isItalian) return `Taglia ${item}`;
-      if (isDutch) return `${item} bijsnijden`;
-      if (isCatalan) return `Retallar ${item}`;
-    }
-
-    // Generic Pair Conversions (e.g. "PNG to JPG", "JPG to PDF", "AVI to MP4", "DWG to PDF")
+    // 2. Format pair conversion (e.g. "JPG to PNG", "PDF to JPG", "TIFF to PDF", "DWG to PDF")
     if (label.includes(" to ")) {
       const [rawSource, rawTarget] = label.split(" to ");
       if (rawSource && rawTarget) {
         let source = rawSource.trim();
         let target = rawTarget.trim();
 
-        if (isSpanish) {
-          if (source === "Image") source = "Imagen";
-          if (target === "Image") target = "imagen";
-          if (target === "Text") target = "texto";
-          if (target === "Picture") target = "imagen";
+        const pairKey = `${source} to ${target}`;
+        if (EXACT_TOOL_LABELS[pairKey]) {
+          const match = EXACT_TOOL_LABELS[pairKey][activeLocale] || EXACT_TOOL_LABELS[pairKey][shortLocale];
+          if (match) return match;
         }
-        if (isGerman) {
-          if (source === "Image") source = "Bild";
-          if (target === "Image") target = "Bild";
-          if (target === "Text") target = "Text";
-          if (target === "Picture") target = "Bild";
+
+        const dict = VERB_DICTIONARY[activeLocale as SupportedLocale];
+        const PREPOSITIONS: Record<string, string> = {
+          ar: "إلى",
+          bg: "в",
+          cs: "na",
+          da: "til",
+          de: "in",
+          el: "σε",
+          es: "a",
+          "es-419": "a",
+          fi: "muotoon",
+          fil: "patungo sa",
+          fr: "en",
+          he: "ל-",
+          hi: "में",
+          hu: "formátumba",
+          id: "ke",
+          it: "in",
+          ja: "→",
+          ko: "→",
+          lt: "į",
+          lv: "par",
+          ms: "kepada",
+          nl: "naar",
+          no: "til",
+          pl: "na",
+          pt: "para",
+          "pt-BR": "para",
+          ro: "în",
+          ru: "в",
+          sk: "na",
+          sl: "v",
+          sv: "till",
+          th: "เป็น",
+          tr: "→",
+          uk: "у",
+          vi: "sang",
+          "zh-CN": "转",
+          "zh-TW": "轉"
+        };
+
+        const toPrep = PREPOSITIONS[activeLocale] || PREPOSITIONS[shortLocale] || dict?.to || "to";
+
+        const NOUN_MAP: Record<string, Record<string, string>> = {
+          Image: {
+            bg: "Изображение",
+            cs: "Obrázek",
+            de: "Bild",
+            es: "Imagen",
+            fr: "Image",
+            hu: "Kép",
+            it: "Immagine",
+            pl: "Obraz",
+            pt: "Imagem",
+            ro: "Imagine",
+            ru: "Изображение",
+            sv: "Bild",
+            uk: "Зображення"
+          },
+          Text: {
+            bg: "Текст",
+            cs: "Text",
+            de: "Text",
+            es: "Texto",
+            fr: "Texte",
+            hu: "Szöveg",
+            it: "Testo",
+            pl: "Tekst",
+            pt: "Texto",
+            ro: "Text",
+            ru: "Текст",
+            sv: "Text",
+            uk: "Текст"
+          }
+        };
+
+        if (NOUN_MAP[source]?.[activeLocale] || NOUN_MAP[source]?.[shortLocale]) {
+          source = NOUN_MAP[source][activeLocale] || NOUN_MAP[source][shortLocale];
         }
-        if (isFrench) {
-          if (source === "Image") source = "Image";
-          if (target === "Image") target = "Image";
-          if (target === "Text") target = "Texte";
-          if (target === "Picture") target = "Image";
-        }
-        if (isPortuguese) {
-          if (source === "Image") source = "Imagem";
-          if (target === "Image") target = "imagem";
-          if (target === "Text") target = "texto";
-          if (target === "Picture") target = "imagem";
-        }
-        if (isItalian) {
-          if (source === "Image") source = "Immagine";
-          if (target === "Image") target = "immagine";
-          if (target === "Text") target = "testo";
-          if (target === "Picture") target = "immagine";
-        }
-        if (isDutch) {
-          if (source === "Image") source = "Afbeelding";
-          if (target === "Image") target = "afbeelding";
-          if (target === "Text") target = "tekst";
-          if (target === "Picture") target = "afbeelding";
-        }
-        if (isCatalan) {
-          if (source === "Image") source = "Imatge";
-          if (target === "Image") target = "imatge";
-          if (target === "Text") target = "text";
-          if (target === "Picture") target = "imatge";
+        if (NOUN_MAP[target]?.[activeLocale] || NOUN_MAP[target]?.[shortLocale]) {
+          target = NOUN_MAP[target][activeLocale] || NOUN_MAP[target][shortLocale];
         }
 
         return `${source} ${toPrep} ${target}`;
@@ -1247,11 +538,16 @@ export default function DesktopMegaMenu({
                         <span className="text-[14px] font-extrabold text-slate-900">{localizedPrimaryLabel}</span>
                       </div>
                       <span className="text-[12px] text-slate-500 font-normal mt-1 leading-snug">
-                        {group.title === "IMAGE"
-                          ? (activeLocale === "sv" ? "Optimera JPG, PNG och WebP lokalt" : activeLocale === "ar" ? "تحسين ملفات JPG وPNG وWebP محلياً" : activeLocale === "tr" ? "JPG, PNG ve WebP'leri yerel olarak optimize edin" : activeLocale === "es" || activeLocale === "es-419" ? "Optimiza imágenes JPG, PNG y WebP en tu dispositivo" : activeLocale === "de" ? "JPG, PNG und WebP lokal optimieren" : activeLocale === "fr" ? "Optimisez JPG, PNG et WebP localement" : (activeLocale === "pt" || activeLocale === "pt-BR") ? "Otimize imagens JPG, PNG e WebP no seu dispositivo" : activeLocale === "it" ? "Ottimizza immagini JPG, PNG e WebP localmente" : activeLocale === "nl" ? "Optimaliseer JPG, PNG en WebP lokaal" : activeLocale === "ca" ? "Optimitza imatges JPG, PNG i WebP localment" : "Optimize JPEGs, PNGs, and WebPs locally")
-                          : (group.primaryLink?.href === "/merge-pdf")
-                          ? (activeLocale === "sv" ? "Kombinera PDF-filer i webbläsaren" : activeLocale === "ar" ? "دمج ملفات PDF في المتصفح" : activeLocale === "tr" ? "PDF dosyalarını tarayıcıda birleştirin" : activeLocale === "es" || activeLocale === "es-419" ? "Combina múltiples archivos PDF en tu navegador" : activeLocale === "de" ? "Mehrere PDF-Dateien im Browser verbinden" : activeLocale === "fr" ? "Combinez plusieurs fichiers PDF dans le navigateur" : (activeLocale === "pt" || activeLocale === "pt-BR") ? "Combine múltiplos ficheiros PDF no navegador" : activeLocale === "it" ? "Combina più file PDF nel browser" : activeLocale === "nl" ? "Combineer meerdere PDF-bestanden in de browser" : activeLocale === "ca" ? "Combina múltiples fitxers PDF al teu navegador" : "Combine multiple PDF files in browser")
-                          : (activeLocale === "sv" ? "Minska PDF under 2 MB i webbläsaren" : activeLocale === "ar" ? "تقليص ملفات PDF لأقل من 2 ميغابايت" : activeLocale === "tr" ? "PDF'leri 2 MB altına küçültün" : activeLocale === "es" || activeLocale === "es-419" ? "Reduce el tamaño de PDFs a menos de 2 MB" : activeLocale === "de" ? "PDFs unter 2 MB im Browser verkleinern" : activeLocale === "fr" ? "Réduisez les PDF à moins de 2 Mo dans le navigateur" : (activeLocale === "pt" || activeLocale === "pt-BR") ? "Reduza PDFs para menos de 2 MB no navegador" : activeLocale === "it" ? "Riduci PDF sotto i 2 MB nel browser" : activeLocale === "nl" ? "Verklein PDF's tot onder 2 MB in de browser" : activeLocale === "ca" ? "Redueix fitxers PDF a menys de 2 MB al navegador" : "Shrink PDFs below 2 MB in browser")}
+                        {(() => {
+                          const shortLocale = activeLocale.split("-")[0];
+                          if (group.title === "IMAGE") {
+                            return (PRIMARY_DESCRIPTIONS.IMAGE_OPTIMIZE as any)[activeLocale] || (PRIMARY_DESCRIPTIONS.IMAGE_OPTIMIZE as any)[shortLocale] || PRIMARY_DESCRIPTIONS.IMAGE_OPTIMIZE.en;
+                          }
+                          if (group.primaryLink?.href === "/merge-pdf") {
+                            return (PRIMARY_DESCRIPTIONS.MERGE_PDF as any)[activeLocale] || (PRIMARY_DESCRIPTIONS.MERGE_PDF as any)[shortLocale] || PRIMARY_DESCRIPTIONS.MERGE_PDF.en;
+                          }
+                          return (PRIMARY_DESCRIPTIONS.SHRINK_PDF as any)[activeLocale] || (PRIMARY_DESCRIPTIONS.SHRINK_PDF as any)[shortLocale] || PRIMARY_DESCRIPTIONS.SHRINK_PDF.en;
+                        })()}
                       </span>
                     </Link>
                   );

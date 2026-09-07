@@ -93,8 +93,26 @@ export class SchemaGenerator {
         {
           "@type": "HowTo",
           "@id": `${canonicalUrl}#howto`,
-          "name": `How to use ${title}`,
-          "description": `Step-by-step instructions to convert and process files with ${title} online for free.`,
+          "name": locale === "ko" || locale === "kr"
+            ? `${title} 사용 방법`
+            : locale === "zh-CN" || (locale as string).startsWith("zh")
+            ? `${title} 使用指南`
+            : locale === "ja"
+            ? `${title} の使い方`
+            : locale === "de"
+            ? `So verwenden Sie ${title}`
+            : locale === "fr"
+            ? `Comment utiliser ${title}`
+            : locale === "es" || locale === "es-419"
+            ? `Cómo usar ${title}`
+            : `How to use ${title}`,
+          "description": locale === "ko" || locale === "kr"
+            ? `${title} 무료 온라인 도구를 사용하여 파일을 변환하고 처리하는 단계별 방법 안내.`
+            : locale === "zh-CN" || (locale as string).startsWith("zh")
+            ? `使用 ${title} 在线免费转换和处理文件的详细步骤。`
+            : locale === "ja"
+            ? `${title} 無料オンラインツールを使用してファイルを変換・処理するステップバイステップの手順。`
+            : `Step-by-step instructions to convert and process files with ${title} online for free.`,
           "step": content.howToSteps.map((step, idx) => ({
             "@type": "HowToStep",
             "position": idx + 1,
@@ -126,7 +144,7 @@ export class SchemaGenerator {
             {
               "@type": "ListItem",
               "position": 1,
-              "name": "Home",
+              "name": locale === "ko" || locale === "kr" ? "홈" : locale === "zh-TW" || (locale as string).toLowerCase() === "zh-tw" ? "首頁" : locale === "zh-CN" || (locale as string).startsWith("zh") ? "首页" : locale === "ja" ? "ホーム" : "Home",
               "item": "https://filekit.co"
             },
             {

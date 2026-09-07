@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MAIN_NAVIGATION, CONVERTER_NAVIGATION_GROUPS } from "@/config/navigation";
 import { useLanguage } from "../layout/LanguageContext";
+import { isValidLocale, normalizeLocale } from "@/config/i18n/locales";
 import { getLocalizedHref } from "@/utils/i18nHelper";
 import FileKitLogo from "../common/FileKitLogo";
 
@@ -17,8 +18,8 @@ export interface MobileNavigationProps {
 export default function MobileNavigation({ isOpen, onClose, triggerRef }: MobileNavigationProps) {
   const pathname = usePathname();
   const { language, t } = useLanguage();
-  const pathLocaleMatch = pathname.match(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/);
-  const activeLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
+  const segments = pathname ? pathname.split("/").filter(Boolean) : [];
+  const activeLocale = segments.length > 0 ? normalizeLocale(segments[0]) : language || "en";
   const [openAccordion, setOpenAccordion] = useState<string | null>("compress");
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -131,6 +132,12 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
 
           // Helper for localized group titles
           const getCategoryHeader = (label: string): string => {
+            const isChinese = activeLocale.startsWith("zh");
+            const isTaiwan = activeLocale === "zh-TW";
+            const isMalay = activeLocale === "ms";
+            const isFilipino = activeLocale === "fil";
+            const isThai = activeLocale === "th";
+            const isVietnamese = activeLocale === "vi";
             const isArabic = activeLocale === "ar";
             const isTurkish = activeLocale === "tr";
             const isSpanish = activeLocale === "es" || activeLocale === "es-419";
@@ -138,8 +145,19 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
             const isGerman = activeLocale === "de";
             const isPortuguese = activeLocale === "pt" || activeLocale === "pt-BR";
             const isItalian = activeLocale === "it";
+            const isSwedish = activeLocale === "sv";
+            const isJapanese = activeLocale === "ja";
+            const isKorean = activeLocale === "ko";
 
             if (label.includes("IMAGE")) {
+              if (isChinese) return isTaiwan ? "圖片" : "图片";
+              if (isKorean) return "이미지";
+              if (isJapanese) return "画像";
+              if (isFilipino) return "IMAHE";
+              if (isVietnamese) return "HÌNH ẢNH";
+              if (isThai) return "รูปภาพ";
+              if (isMalay) return "IMEJ";
+              if (isSwedish) return "BILD";
               if (isArabic) return "تحويل الصور";
               if (isTurkish) return "GÖRSEL";
               if (isSpanish) return "IMAGEN";
@@ -149,13 +167,28 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
               if (isItalian) return "IMMAGINE";
             }
             if (label.includes("PDF")) {
+              if (isChinese) return "PDF";
+              if (isKorean) return "PDF";
+              if (isJapanese) return "PDF";
+              if (isFilipino) return "PDF";
+              if (isVietnamese) return "PDF";
+              if (isThai) return "PDF";
               if (isArabic) return "ملفات PDF";
               if (isTurkish) return "PDF";
               if (isSpanish) return "PDF";
               if (isFrench) return "PDF";
               if (isGerman) return "PDF";
+              if (isMalay) return "PDF";
             }
             if (label.includes("VIDEO")) {
+              if (isChinese) return isTaiwan ? "影片" : "视频";
+              if (isKorean) return "비디오";
+              if (isJapanese) return "動画";
+              if (isFilipino) return "VIDEO";
+              if (isVietnamese) return "VIDEO";
+              if (isThai) return "วิดีโอ";
+              if (isMalay) return "VIDEO";
+              if (isSwedish) return "VIDEO";
               if (isArabic) return "أدوات الفيديو";
               if (isTurkish) return "VİDEO";
               if (isSpanish) return "VIDEO";
@@ -163,6 +196,14 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
               if (isGerman) return "VIDEO";
             }
             if (label.includes("SUBTITLE")) {
+              if (isChinese) return "字幕";
+              if (isKorean) return "자막";
+              if (isJapanese) return "字幕";
+              if (isFilipino) return "MGA SUBTITLE";
+              if (isVietnamese) return "PHỤ ĐỀ";
+              if (isThai) return "คำบรรยาย";
+              if (isMalay) return "SARIKATA";
+              if (isSwedish) return "UNDERTEXTER";
               if (isArabic) return "أدوات الترجمة";
               if (isTurkish) return "ALTYAZI";
               if (isSpanish) return "SUBTÍTULOS";
@@ -170,6 +211,14 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
               if (isGerman) return "UNTERTITEL";
             }
             if (label.includes("DOCUMENTS") || label.includes("DOCUMENT")) {
+              if (isChinese) return isTaiwan ? "檔案與辦公" : "文档与办公";
+              if (isKorean) return "문서 및 오피스";
+              if (isJapanese) return "文書・オフィス";
+              if (isFilipino) return "MGA DOKUMENTO";
+              if (isVietnamese) return "TÀI LIỆU";
+              if (isThai) return "เอกสาร";
+              if (isMalay) return "DOKUMEN";
+              if (isSwedish) return "DOKUMENT";
               if (isArabic) return "المستندات والكتب";
               if (isTurkish) return "BELGELER";
               if (isSpanish) return "DOCUMENTOS";
@@ -177,6 +226,14 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
               if (isGerman) return "DOKUMENTE";
             }
             if (label.includes("CAD")) {
+              if (isChinese) return isTaiwan ? "CAD 與向量" : "CAD 与矢量";
+              if (isKorean) return "CAD 및 벡터";
+              if (isJapanese) return "CAD & ベクター";
+              if (isFilipino) return "CAD & VECTOR";
+              if (isVietnamese) return "CAD & VECTOR";
+              if (isThai) return "CAD และเวกเตอร์";
+              if (isMalay) return "CAD & VEKTOR";
+              if (isSwedish) return "CAD & VEKTOR";
               if (isArabic) return "CAD والمتجهات";
               if (isTurkish) return "CAD VE VEKTÖR";
               if (isSpanish) return "CAD Y VECTOR";
@@ -184,6 +241,14 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
               if (isGerman) return "CAD & VEKTOR";
             }
             if (label.includes("AUDIO")) {
+              if (isChinese) return isTaiwan ? "音訊" : "音频";
+              if (isKorean) return "오디오";
+              if (isJapanese) return "音声";
+              if (isFilipino) return "AUDIO";
+              if (isVietnamese) return "ÂM THANH";
+              if (isThai) return "เสียง";
+              if (isMalay) return "AUDIO";
+              if (isSwedish) return "LJUD";
               if (isArabic) return "أدوات الصوت";
               if (isTurkish) return "SES";
               if (isSpanish) return "AUDIO";
@@ -191,6 +256,14 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
               if (isGerman) return "AUDIO";
             }
             if (label.includes("ARCHIVE")) {
+              if (isChinese) return isTaiwan ? "壓縮檔與封存" : "压缩文件与归档";
+              if (isKorean) return "압축 파일 및 아카이브";
+              if (isJapanese) return "圧縮ファイル・アーカイブ";
+              if (isFilipino) return "ARCHIVE";
+              if (isVietnamese) return "LƯU TRỮ";
+              if (isThai) return "คลังข้อมูล";
+              if (isMalay) return "ARKIB";
+              if (isSwedish) return "ARKIV";
               if (isArabic) return "الأرشيف والأدوات";
               if (isTurkish) return "ARŞİV";
               if (isSpanish) return "ARCHIVOS";
@@ -203,6 +276,9 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
           // Helper for localized link titles
           const getLocalizedLinkLabel = (label: string): string => {
             if (activeLocale === "en") return label;
+            const isChinese = activeLocale.startsWith("zh");
+            const isTaiwan = activeLocale === "zh-TW";
+            const isMalay = activeLocale === "ms";
             const isArabic = activeLocale === "ar";
             const isTurkish = activeLocale === "tr";
             const isSpanish = activeLocale === "es" || activeLocale === "es-419";
@@ -210,18 +286,33 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
             const isGerman = activeLocale === "de";
             const isFrench = activeLocale === "fr";
             const isItalian = activeLocale === "it";
+            const isSwedish = activeLocale === "sv";
+            const isFilipino = activeLocale === "fil";
+            const isJapanese = activeLocale === "ja";
+            const isKorean = activeLocale === "ko";
 
-            const toPrep = isArabic ? "إلى" : isSpanish ? "a" : isPortuguese ? "para" : isGerman ? "in" : isFrench ? "en" : isItalian ? "in" : isTurkish ? "→" : "to";
+            const toPrep = isJapanese ? "から" : isFilipino ? "sa" : activeLocale === "vi" ? "sang" : activeLocale === "th" ? "เป็น" : isMalay ? "ke" : isSwedish ? "till" : isArabic ? "إلى" : isSpanish ? "a" : isPortuguese ? "para" : isGerman ? "in" : isFrench ? "en" : isItalian ? "in" : isTurkish ? "→" : "to";
 
             if (label.includes(" to ")) {
               const [source, target] = label.split(" to ");
               if (source && target) {
+                if (isChinese) return `${source} 轉 ${target}`;
+                if (isKorean) return `${source}에서 ${target}(으)로 변환`;
+                if (isJapanese) return `${source} を ${target} に変換`;
                 return `${source} ${toPrep} ${target}`;
               }
             }
 
             if (label.startsWith("Compress ")) {
               const item = label.replace("Compress ", "");
+              if (isChinese) return `${item} 壓縮`;
+              if (isKorean) return `${item} 압축`;
+              if (isJapanese) return `${item} を圧縮`;
+              if (isFilipino) return `I-compress ang ${item}`;
+              if (activeLocale === "vi") return `Nén ${item}`;
+              if (activeLocale === "th") return `บีบอัด ${item}`;
+              if (isMalay) return `Mampatkan ${item}`;
+              if (isSwedish) return `Komprimera ${item}`;
               if (isArabic) return `ضغط ${item}`;
               if (isSpanish) return `Comprimir ${item}`;
               if (isTurkish) return `${item} Sıkıştır`;
@@ -230,6 +321,14 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
             }
             if (label.startsWith("Convert ")) {
               const item = label.replace("Convert ", "");
+              if (isChinese) return `${item} 轉換`;
+              if (isKorean) return `${item} 변환`;
+              if (isJapanese) return `${item} を変換`;
+              if (isFilipino) return `I-convert ang ${item}`;
+              if (activeLocale === "vi") return `Chuyển đổi ${item}`;
+              if (activeLocale === "th") return `แปลง ${item}`;
+              if (isMalay) return `Tukar ${item}`;
+              if (isSwedish) return `Konvertera ${item}`;
               if (isArabic) return `تحويل ${item}`;
               if (isSpanish) return `Convertir ${item}`;
               if (isTurkish) return `${item} Dönüştür`;
@@ -238,6 +337,14 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
             }
             if (label.startsWith("Extract ")) {
               const item = label.replace("Extract ", "");
+              if (isChinese) return isTaiwan ? `${item} 擷取` : `${item} 提取`;
+              if (isKorean) return `${item} 추출`;
+              if (isJapanese) return `${item} を抽出`;
+              if (isFilipino) return `I-extract ang ${item}`;
+              if (activeLocale === "vi") return `Trích xuất ${item}`;
+              if (activeLocale === "th") return `แยก ${item}`;
+              if (isMalay) return `Ekstrak ${item}`;
+              if (isSwedish) return `Extrahera ${item}`;
               if (isArabic) return `استخراج ${item}`;
               if (isSpanish) return `Extraer ${item}`;
               if (isTurkish) return `${item} Ayıkla`;
@@ -246,6 +353,14 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
             }
             if (label.startsWith("Rotate ")) {
               const item = label.replace("Rotate ", "");
+              if (isChinese) return `${item} 旋轉`;
+              if (isKorean) return `${item} 회전`;
+              if (isJapanese) return `${item} を回転`;
+              if (isFilipino) return `Paikutin ang ${item}`;
+              if (activeLocale === "vi") return `Xoay ${item}`;
+              if (activeLocale === "th") return `หมุน ${item}`;
+              if (isMalay) return `Putar ${item}`;
+              if (isSwedish) return `Rotera ${item}`;
               if (isArabic) return `تدوير ${item}`;
               if (isSpanish) return `Rotar ${item}`;
               if (isTurkish) return `${item} Döndür`;
@@ -254,6 +369,14 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
             }
             if (label.startsWith("Trim ")) {
               const item = label.replace("Trim ", "");
+              if (isChinese) return isTaiwan ? `${item} 剪裁與修剪` : `${item} 裁剪与修剪`;
+              if (isKorean) return `${item} 자르기 및 트리밍`;
+              if (isJapanese) return `${item} をカット・トリミング`;
+              if (isFilipino) return `Gupitin ang ${item}`;
+              if (activeLocale === "vi") return `Cắt ${item}`;
+              if (activeLocale === "th") return `ตัด ${item}`;
+              if (isMalay) return `Potong ${item}`;
+              if (isSwedish) return `Klipp ${item}`;
               if (isArabic) return `قص ${item}`;
               if (isSpanish) return `Recortar ${item}`;
               if (isTurkish) return `${item} Kırp`;

@@ -4,8 +4,13 @@ import React from "react";
 import { useLanguage } from "./LanguageContext";
 import { FileKitAsset } from "@/components/visuals/FileKitAsset";
 
-export default function TrustPanel() {
-  const { t } = useLanguage();
+export interface TrustPanelProps {
+  language?: string;
+}
+
+export default function TrustPanel({ language }: TrustPanelProps = {}) {
+  const { t, language: ctxLang } = useLanguage();
+  const effectiveLang = (language || ctxLang) as any;
 
   return (
     <div className="w-full bg-white border border-fk-border rounded-fk-xl shadow-sm overflow-hidden p-6 md:p-8">
@@ -17,10 +22,10 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.privateTitle") || t("trust.badge4")}
+              {t("trust.privateTitle", effectiveLang) || t("trust.badge4", effectiveLang)}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("trust.privateDesc1") ? `${t("trust.privateDesc1")} ${t("trust.privateDesc2")}` : t("trust.badge1")}
+              {t("trust.privateDesc1", effectiveLang) ? [t("trust.privateDesc1", effectiveLang), t("trust.privateDesc2", effectiveLang)].filter(Boolean).join(" ") : t("trust.badge1", effectiveLang)}
             </span>
           </div>
         </div>
@@ -44,10 +49,10 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.localTitle") || t("trust.badge1")}
+              {t("trust.localTitle", effectiveLang) || t("trust.badge1", effectiveLang)}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("trust.localDesc1") ? `${t("trust.localDesc1")} ${t("trust.localDesc2")}` : t("trust.badge1")}
+              {t("trust.localDesc1", effectiveLang) ? [t("trust.localDesc1", effectiveLang), t("trust.localDesc2", effectiveLang)].filter(Boolean).join(" ") : t("trust.badge1", effectiveLang)}
             </span>
           </div>
         </div>
@@ -71,10 +76,10 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.tempTitle") || t("trust.badge2")}
+              {t("trust.tempTitle", effectiveLang) || t("trust.badge2", effectiveLang)}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("trust.tempDesc1") ? `${t("trust.tempDesc1")} ${t("trust.tempDesc2")}` : t("trust.badge2")}
+              {t("trust.tempDesc1", effectiveLang) ? [t("trust.tempDesc1", effectiveLang), t("trust.tempDesc2", effectiveLang)].filter(Boolean).join(" ") : t("trust.badge2", effectiveLang)}
             </span>
           </div>
         </div>
@@ -86,10 +91,10 @@ export default function TrustPanel() {
           </div>
           <div className="flex flex-col text-left ltr:text-left rtl:text-right">
             <span className="text-[15px] font-bold text-fk-text leading-tight">
-              {t("trust.trialTitle") || t("trust.badge3")}
+              {t("trust.trialTitle", effectiveLang) || t("trust.badge3", effectiveLang)}
             </span>
             <span className="text-[12px] text-fk-text-muted mt-1 leading-normal">
-              {t("trust.trialDesc1") ? `${t("trust.trialDesc1")} ${t("trust.trialDesc2")}` : t("trust.badge3")}
+              {t("trust.trialDesc1", effectiveLang) ? [t("trust.trialDesc1", effectiveLang), t("trust.trialDesc2", effectiveLang)].filter(Boolean).join(" ") : t("trust.badge3", effectiveLang)}
             </span>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { SupportedLocale, getLocaleDirection, isValidLocale, SUPPORTED_LOCALES } from "@/config/i18n/locales";
+import { SupportedLocale, getLocaleDirection, isValidLocale, normalizeLocale, SUPPORTED_LOCALES } from "@/config/i18n/locales";
 import { UI_TRANSLATIONS } from "@/config/i18n/translations";
 
 export type Language = SupportedLocale;
@@ -16,6 +16,262 @@ export interface LanguageContextType {
 }
 
 const translations: Partial<Record<Language, Record<string, string>>> = {
+  "zh-TW": {
+    "nav.allTools": "所有工具",
+    "nav.compress": "壓縮",
+    "nav.convert": "轉換",
+    "nav.merge": "合併",
+    "nav.image": "圖片",
+    "nav.organize": "頁面管理",
+    "nav.resize": "調整尺寸",
+    "nav.pricing": "價格",
+    "nav.searchPlaceholder": "搜尋 100+ 款線上工具...",
+    "nav.allToolsBtn": "所有工具",
+
+    "hero.tagline": "檔案處理，隨心所欲。",
+    "hero.title1": "將檔案轉換為",
+    "hero.title2": "您真正需要的格式。",
+    "hero.subtitle1": "直接在瀏覽器中轉換、壓縮、調整尺寸、整理與修復 PDF、圖片、Office 文件、音訊與影片檔案。",
+    "hero.subtitle2": "在安全的前提下，檔案全程保留在您的瀏覽器本機中；伺服器處理均為臨時進行，完成後自動銷毀。",
+
+    "trust.badge1": "瀏覽器本機極速處理",
+    "trust.badge2": "伺服器處理後自動立即銷毀",
+    "trust.badge3": "完全無需註冊或登入",
+    "trust.badge4": "100% 隱私與安全保障",
+
+    "homepage.searchPlaceholder": "搜尋 100+ 款線上工具...",
+    "homepage.privateTitle": "原生隱私設計",
+    "homepage.privateDesc": "檔案全程留在您的裝置上",
+    "homepage.localTitle": "本機端直接處理",
+    "homepage.localDesc": "安全情況下絕不上傳",
+    "homepage.fallbackTitle": "安全雲端備援",
+    "homepage.fallbackDesc": "TLS 加密傳輸保護",
+    "homepage.dropAnywhere": "將檔案拖曳至此處開始",
+    "homepage.chooseFile": "選取檔案",
+    "homepage.orChoose": "或點擊選擇本機裝置檔案",
+    "homepage.methodShown": "在處理開始前將明確提示運算方式。",
+    "homepage.popularTools": "熱門推薦工具",
+    "homepage.browseAll": "探索全部 100+ 工具 →",
+    "homepage.viewAll": "探索全部 100+ 工具 →",
+    "homepage.footerNote": "免費基礎工具。進階匯出 €4.99 起。無任何隱藏訂閱。",
+
+    "tool.compress.desc": "減少 PDF 檔案大小",
+    "tool.merge.title": "合併 PDF",
+    "tool.merge.desc": "合併多個 PDF 檔案",
+    "tool.split.title": "分割 PDF",
+    "tool.split.desc": "分離 PDF 頁面",
+    "tool.rotate.title": "旋轉 PDF",
+    "tool.rotate.desc": "旋轉 PDF 頁面方向",
+    "tool.watermark.title": "PDF 浮水印",
+    "tool.watermark.desc": "新增文字或圖片浮水印",
+    "tool.resize.title": "調整圖片尺寸",
+    "tool.resize.desc": "精確像素或檔案大小",
+    "tool.convert.title": "圖片轉檔",
+    "tool.convert.desc": "JPG, PNG, WebP 格式",
+    "tool.pdfToWord.title": "PDF 轉 Word",
+    "tool.pdfToWord.desc": "轉換為可編輯 DOCX",
+    "tool.allTools.title": "所有工具",
+    "tool.allTools.desc": "探索完整工具套件",
+
+    "breadcrumb.home": "首頁",
+    "breadcrumb.compress": "壓縮 PDF",
+    "compress.title": "壓縮 PDF 至 2 MB 以下",
+    "compress.subtitle": "在盡可能保留最高畫質的前提下縮減 PDF 檔案體積。",
+
+    "badge.local": "在本機裝置處理",
+    "workspace.dropHere": "將 PDF 檔案拖放到此處",
+    "workspace.pdfOnly": "支援高達 100 MB 的本機 PDF 文件處理",
+    "workspace.stayOnDevice": "🔒 瀏覽器本機安全處理，您的檔案絕不會被上傳。",
+    "workspace.askBeforeTransfer": "FileKit 會在任何臨時伺服器傳輸前徵詢您的同意。",
+
+    "trust.privateTitle": "100% 隱私安全",
+    "trust.privateDesc1": "您的檔案完全由您自主掌控。",
+    "trust.privateDesc2": "",
+    "trust.localTitle": "本機端優先處理",
+    "trust.localDesc1": "在安全的前提下均在瀏覽器本機直接運算。",
+    "trust.localDesc2": "",
+    "trust.tempTitle": "僅臨時保留",
+    "trust.tempDesc1": "伺服器上的臨時檔案會自動過期並完全銷毀。",
+    "trust.tempDesc2": "",
+    "trust.trialTitle": "無任何隱藏訂閱",
+    "trust.trialDesc1": "清晰透明的使用條款與計費說明。",
+    "trust.trialDesc2": "",
+
+    "workspace.troubleText": "遇到問題？僅在您同意的情況下使用安全的臨時伺服器處理。",
+    "workspace.targetSize": "目標大小",
+    "workspace.recommended": "小於 2 MB（建議）",
+    "workspace.qualityNote": "我們將在保持最佳畫質的同時壓縮檔案體積。",
+    "workspace.compressBtn": "壓縮 PDF",
+    "workspace.localReady": "本機處理已就緒。",
+    "workspace.notLeftDevice": "您的檔案從未離開此裝置。",
+    "workspace.selectFile": "選擇 PDF 檔案",
+    "workspace.selectFiles": "選擇多個 PDF 檔案",
+    "workspace.remove": "移除",
+
+    "paywall.title": "解鎖下載",
+    "paywall.subtitle": "檔案已成功處理完成。請選擇方案以下載。",
+    "paywall.resultVerified": "處理結果已驗證",
+    "paywall.fileLabel": "檔案名稱",
+    "paywall.originalLabel": "原始大小",
+    "paywall.outputLabel": "新檔案大小",
+    "paywall.changeLabel": "體積變化",
+    "paywall.pagesLabel": "頁數",
+    "paywall.locationLabel": "處理位置",
+    "paywall.localLocation": "本機（在您的裝置上）",
+    "paywall.serverLocation": "伺服器（雲端）",
+    "paywall.tlsGuarantee": "傳輸過程全程使用 TLS 加密",
+    "paywall.single.title": "單次進階匯出",
+    "paywall.single.billing": "不自動續約",
+    "paywall.single.tagline": "單一檔案。單次付費。無隱藏訂閱。",
+    "paywall.pass.title": "24 小時通行證",
+    "paywall.pass.billing": "不自動續約",
+    "paywall.pass.tagline": "包含 10 次雲端額度。",
+    "paywall.pass.badge": "超值推薦",
+    "paywall.pro.title": "Pro 月度方案",
+    "paywall.pro.billing": "按月續約",
+    "paywall.pro.tagline": "可隨時在下個計費日前取消。",
+    "paywall.ctaUnlock": "解鎖並下載",
+    "paywall.ctaSelect": "選擇方案以解鎖",
+    "paywall.pending": "正在建立安全結帳管道...",
+    "paywall.cancel": "返回處理結果",
+    "paywall.viewDetails": "檢視驗證詳情",
+    "paywall.localTrust": "在您的裝置上隱私處理",
+    "paywall.localTrustSub": "完全無需上傳檔案",
+    "paywall.serverTrust": "傳輸全程採用 TLS 加密",
+    "paywall.serverTrustSub": "在隔離的環境中運算處理",
+    "paywall.checkoutSecure": "結帳全程使用高強度加密連線",
+
+    "lang.en": "English",
+    "lang.zh-TW": "繁體中文"
+  },
+  "zh-CN": {
+    "nav.allTools": "所有工具",
+    "nav.compress": "压缩",
+    "nav.convert": "转换",
+    "nav.merge": "合并",
+    "nav.image": "图片",
+    "nav.organize": "页面管理",
+    "nav.resize": "调整尺寸",
+    "nav.pricing": "价格",
+    "nav.searchPlaceholder": "搜索 100+ 款实用工具...",
+    "nav.allToolsBtn": "所有工具",
+
+    "hero.tagline": "文件处理，随心所欲。",
+    "hero.title1": "将文件转换为",
+    "hero.title2": "您真正需要的格式。",
+    "hero.subtitle1": "直接在浏览器中转换、压缩、调整尺寸、整理与修复 PDF、图片、Office 文档、音频与视频文件。",
+    "hero.subtitle2": "在安全的前提下，文件全程保留在您的浏览器本地中；服务器处理均为临时进行，完成后自动销毁。",
+
+    "trust.badge1": "浏览器本地极速处理",
+    "trust.badge2": "服务器临时文件自动销毁",
+    "trust.badge3": "完全无需注册登录",
+    "trust.badge4": "100% 隐私与数据安全",
+
+    "homepage.searchPlaceholder": "搜索 100+ 款实用工具...",
+    "homepage.privateTitle": "原生隐私设计",
+    "homepage.privateDesc": "文件全程留在您的设备上",
+    "homepage.localTitle": "本地端直接处理",
+    "homepage.localDesc": "安全情况下绝不上载",
+    "homepage.fallbackTitle": "安全云端备援",
+    "homepage.fallbackDesc": "TLS 加密传输保护",
+    "homepage.dropAnywhere": "将文件拖放到此处即可开始",
+    "homepage.chooseFile": "选择文件",
+    "homepage.orChoose": "或点击选择本地设备文件",
+    "homepage.methodShown": "在处理开始前将明确提示运算方式。",
+    "homepage.popularTools": "常用热门工具",
+    "homepage.browseAll": "探索全部 100+ 工具 →",
+    "homepage.viewAll": "探索全部 100+ 工具 →",
+    "homepage.footerNote": "免费基础工具。高级导出 €4.99 起。无任何隐藏订阅。",
+
+    "tool.compress.desc": "缩减 PDF 文件体积",
+    "tool.merge.title": "合并 PDF",
+    "tool.merge.desc": "合并多个 PDF 文件",
+    "tool.split.title": "分割 PDF",
+    "tool.split.desc": "拆分 PDF 页面",
+    "tool.rotate.title": "旋转 PDF",
+    "tool.rotate.desc": "旋转 PDF 页面方向",
+    "tool.watermark.title": "PDF 水印",
+    "tool.watermark.desc": "添加文字或图片水印",
+    "tool.resize.title": "调整图片尺寸",
+    "tool.resize.desc": "精准像素或文件大小",
+    "tool.convert.title": "图片转换",
+    "tool.convert.desc": "JPG, PNG, WebP 格式",
+    "tool.pdfToWord.title": "PDF 转 Word",
+    "tool.pdfToWord.desc": "转换为可编辑 DOCX",
+    "tool.allTools.title": "所有工具",
+    "tool.allTools.desc": "探索完整工具套件",
+
+    "breadcrumb.home": "首页",
+    "breadcrumb.compress": "压缩 PDF",
+    "compress.title": "压缩 PDF 至 2 MB 以下",
+    "compress.subtitle": "在尽可能保留最高画质的前提下缩减 PDF 文件体积。",
+
+    "badge.local": "在本地设备处理",
+    "workspace.dropHere": "将 PDF 文件拖放到此处",
+    "workspace.pdfOnly": "支持高达 100 MB 的本地 PDF 文档处理",
+    "workspace.stayOnDevice": "🔒 浏览器本地安全处理，您的文件绝不会被上传。",
+    "workspace.askBeforeTransfer": "FileKit 会在任何临时服务器传输前征求您的同意。",
+
+    "trust.privateTitle": "100% 隐私安全",
+    "trust.privateDesc1": "您的文件完全由您自主掌控。",
+    "trust.privateDesc2": "",
+    "trust.localTitle": "本地端优先处理",
+    "trust.localDesc1": "在安全的前提下均在浏览器本地直接运算。",
+    "trust.localDesc2": "",
+    "trust.tempTitle": "仅临时保留",
+    "trust.tempDesc1": "服务器上的临时文件会自动过期并完全销毁。",
+    "trust.tempDesc2": "",
+    "trust.trialTitle": "无任何隐藏订阅",
+    "trust.trialDesc1": "清晰透明的使用条款与计费说明。",
+    "trust.trialDesc2": "",
+
+    "workspace.troubleText": "遇到问题？仅在您同意的情况下使用安全的临时服务器处理。",
+    "workspace.targetSize": "目标大小",
+    "workspace.recommended": "小于 2 MB（推荐）",
+    "workspace.qualityNote": "我们将在保持最佳画质的同时压缩文件体积。",
+    "workspace.compressBtn": "压缩 PDF",
+    "workspace.localReady": "本地处理已就绪。",
+    "workspace.notLeftDevice": "您的文件从未离开此设备。",
+    "workspace.selectFile": "选择 PDF 文件",
+    "workspace.selectFiles": "选择多个 PDF 文件",
+    "workspace.remove": "移除",
+
+    "paywall.title": "解锁下载",
+    "paywall.subtitle": "文件已成功处理完成。请选择方案以下载。",
+    "paywall.resultVerified": "处理结果已验证",
+    "paywall.fileLabel": "文件名称",
+    "paywall.originalLabel": "原始大小",
+    "paywall.outputLabel": "新文件大小",
+    "paywall.changeLabel": "体积变化",
+    "paywall.pagesLabel": "页数",
+    "paywall.locationLabel": "处理位置",
+    "paywall.localLocation": "本地（在您的设备上）",
+    "paywall.serverLocation": "服务器（云端）",
+    "paywall.tlsGuarantee": "传输过程全程使用 TLS 加密",
+    "paywall.single.title": "单次高级导出",
+    "paywall.single.billing": "不自动续约",
+    "paywall.single.tagline": "单个文件。单次付费。无隐藏订阅。",
+    "paywall.pass.title": "24 小时通行证",
+    "paywall.pass.billing": "不自动续约",
+    "paywall.pass.tagline": "包含 10 次云端额度。",
+    "paywall.pass.badge": "超值推荐",
+    "paywall.pro.title": "Pro 月度方案",
+    "paywall.pro.billing": "按月续约",
+    "paywall.pro.tagline": "可随时在下个计费日前取消。",
+    "paywall.ctaUnlock": "解锁并下载",
+    "paywall.ctaSelect": "选择方案以解锁",
+    "paywall.pending": "正在建立安全结账通道...",
+    "paywall.cancel": "返回处理结果",
+    "paywall.viewDetails": "查看验证详情",
+    "paywall.localTrust": "在您的设备上隐私处理",
+    "paywall.localTrustSub": "完全无需上传文件",
+    "paywall.serverTrust": "传输全程采用 TLS 加密",
+    "paywall.serverTrustSub": "在隔离的环境中运算处理",
+    "paywall.checkoutSecure": "结账全程使用高强度加密连接",
+
+    "lang.en": "English",
+    "lang.zh-CN": "简体中文"
+  },
   en: {
     "nav.allTools": "All Tools",
     "nav.compress": "Compress",
@@ -1671,7 +1927,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (!path) return "en";
     const segments = path.split("/").filter(Boolean);
     if (segments.length > 0 && isValidLocale(segments[0])) {
-      return segments[0] as Language;
+      return normalizeLocale(segments[0]);
     }
     return "en";
   };
@@ -1693,8 +1949,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   const setLanguage = (lang: Language) => {
-    if (!isValidLocale(lang)) return;
-    setLanguageState(lang);
+    const norm = normalizeLocale(lang);
+    setLanguageState(norm);
     if (typeof window !== "undefined") {
       localStorage.setItem("fk-lang", lang);
       const dir = getLocaleDirection(lang);
@@ -1705,7 +1961,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   const t = (key: string, overrideLocale?: Language): string => {
-    const effectiveLang = overrideLocale || language;
+    const effectiveLang = normalizeLocale(overrideLocale || language);
 
     // 1. Direct match in active language's legacy dictionary
     const legacyActive = translations[effectiveLang]?.[key];
@@ -1723,20 +1979,43 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
 
     // 2b. Dynamic translations for generic dropzone & workspace notices across all 39 locales
-    if (key === "workspace.pdfOnly" || key === "workspace.stayOnDevice") {
-      const isArabic = effectiveLang === "ar";
-      const isTurkish = effectiveLang === "tr";
-      const isSwedish = effectiveLang === "sv" || effectiveLang === "no" || effectiveLang === "da";
-      const isGerman = effectiveLang === "de";
-      const isFrench = effectiveLang === "fr";
-      const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
-      const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
-      const isItalian = effectiveLang === "it";
-      const isPolish = effectiveLang === "pl";
-      const isRussian = effectiveLang === "ru" || effectiveLang === "uk";
-      const isJapanese = effectiveLang === "ja";
-      const isKorean = effectiveLang === "ko";
-      const isChinese = effectiveLang.startsWith("zh");
+    const isArabic = effectiveLang === "ar";
+    const isTurkish = effectiveLang === "tr";
+    const isSwedish = effectiveLang === "sv" || effectiveLang === "no" || effectiveLang === "da";
+    const isGerman = effectiveLang === "de";
+    const isFrench = effectiveLang === "fr";
+    const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
+    const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
+    const isItalian = effectiveLang === "it";
+    const isPolish = effectiveLang === "pl";
+    const isRussian = effectiveLang === "ru" || effectiveLang === "uk";
+    const isJapanese = effectiveLang === "ja";
+    const isKorean = effectiveLang === "ko";
+    const isChinese = effectiveLang.startsWith("zh");
+
+    if (key === "workspace.selectFile") {
+      if (isChinese) return effectiveLang === "zh-TW" ? "選擇 PDF 檔案" : "选择 PDF 文件";
+      if (isJapanese) return "PDFファイルを選択";
+      if (isKorean) return "PDF 파일 선택";
+      if (isRussian) return "Выбрать файл PDF";
+      return "Select PDF File";
+    }
+
+      if (key === "workspace.selectFiles") {
+        if (isChinese) return effectiveLang === "zh-TW" ? "選擇多個 PDF 檔案" : "选择多个 PDF 文件";
+        if (isJapanese) return "PDFファイルを選択";
+        if (isKorean) return "PDF 파일 선택";
+        if (isRussian) return "Выбрать файлы PDF";
+        return "Select PDF Files";
+      }
+
+      if (key === "workspace.dropHere") {
+        if (isChinese) return effectiveLang === "zh-TW" ? "將 PDF 檔案拖放到此處" : "将 PDF 文件拖放到此处";
+        if (isJapanese) return "ここにPDFファイルをドロップ";
+        if (isKorean) return "여기에 PDF 파일을 드롭하세요";
+        if (isRussian) return "Перетащите PDF сюда";
+        return "Drop your PDF here";
+      }
 
       if (key === "workspace.pdfOnly") {
         if (isArabic) return "معالجة آمنة · يتم إنجاز المهام محلياً في متصفحك مباشرة";
@@ -1751,7 +2030,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         if (isRussian) return "Безопасная обработка · Задачи выполняются локально прямо в браузере";
         if (isJapanese) return "安全な処理 · ブラウザ内でローカルに実行されます";
         if (isKorean) return "안전한 로컬 처리 · 브라우저 내에서 직접 실행됩니다";
-        if (isChinese) return "安全本地处理 · 任务直接在浏览器中执行，无需上传";
+        if (isChinese) return effectiveLang === "zh-TW" ? "支援高達 100 MB 的本機 PDF 文件處理" : "支持高达 100 MB 的本地 PDF 文档处理";
         return "Secure Processing · Operations execute locally directly in your browser";
       }
 
@@ -1768,9 +2047,39 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         if (isRussian) return "Ваш файл остается на устройстве во время локальной обработки.";
         if (isJapanese) return "ローカル処理中、ファイルはお使いのデバイス内に保持されます。";
         if (isKorean) return "로컬 처리 중에는 파일이 기기를 벗어나지 않습니다.";
-        if (isChinese) return "在本地安全处理过程中，您的文件绝不会离开您的设备。";
+        if (isChinese) return effectiveLang === "zh-TW" ? "🔒 瀏覽器本機安全處理，您的檔案絕不會被上傳。" : "🔒 浏览器本地安全处理，您的文件绝不会被上传。";
         return "Your file stays on this device whenever local processing is safe.";
       }
+
+      if (key.startsWith("trust.")) {
+        if (isChinese) {
+          const isTaiwan = effectiveLang === "zh-TW";
+          if (key === "trust.privateTitle") return "100% 隱私安全";
+          if (key === "trust.privateDesc1") return isTaiwan ? "您的檔案完全由您自主掌控。" : "您的文件完全由您自主掌控。";
+          if (key === "trust.privateDesc2") return "";
+          if (key === "trust.localTitle") return isTaiwan ? "本機端優先處理" : "本地端优先处理";
+          if (key === "trust.localDesc1") return isTaiwan ? "在安全的前提下均在瀏覽器本機直接運算。" : "在安全的前提下均在浏览器本地直接运算。";
+          if (key === "trust.localDesc2") return "";
+          if (key === "trust.tempTitle") return isTaiwan ? "僅臨時保留" : "仅临时保留";
+          if (key === "trust.tempDesc1") return isTaiwan ? "伺服器上的臨時檔案會自動過期並完全銷毀。" : "服务器上的临时文件会自动过期并完全销毁。";
+          if (key === "trust.tempDesc2") return "";
+          if (key === "trust.trialTitle") return isTaiwan ? "無任何隱藏訂閱" : "无任何隐藏订阅";
+          if (key === "trust.trialDesc1") return isTaiwan ? "清晰透明的使用條款與計費說明。" : "清晰透明的使用条款与计费说明。";
+          if (key === "trust.trialDesc2") return "";
+        }
+      }
+
+    if (key === "homepage.searchPlaceholder") {
+      if (isChinese) return effectiveLang === "zh-TW" ? "搜尋 100+ 款線上工具..." : "搜索 100+ 款实用工具...";
+    }
+    if (key === "homepage.footerNote") {
+      if (isChinese) return effectiveLang === "zh-TW" ? "免費基礎工具。進階匯出 €4.99 起。無任何隱藏訂閱。" : "免费基础工具。高级导出 €4.99 起。无任何隐藏订阅。";
+    }
+    if (key === "homepage.popularTools") {
+      if (isChinese) return effectiveLang === "zh-TW" ? "熱門推薦工具" : "常用热门工具";
+    }
+    if (key === "homepage.viewAll" || key === "homepage.browseAll") {
+      if (isChinese) return effectiveLang === "zh-TW" ? "探索全部 100+ 工具 →" : "探索全部 100+ 工具 →";
     }
 
     // 3. Fallback to English UI_TRANSLATIONS
@@ -1871,8 +2180,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // 5. Dynamic lookup for top navigation links
     if (key === "nav.resize") {
+      const isChinese = effectiveLang.startsWith("zh");
       const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
       const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
       const isGerman = effectiveLang === "de";
@@ -1881,6 +2190,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const isArabic = effectiveLang === "ar";
       const isTurkish = effectiveLang === "tr";
 
+      if (isChinese) return effectiveLang === "zh-TW" ? "調整尺寸" : "调整尺寸";
       if (isSpanish) return "Redimensionar";
       if (isPortuguese) return "Redimensionar";
       if (isGerman) return "Größe ändern";
@@ -1891,6 +2201,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (key === "nav.pricing") {
+      const isChinese = effectiveLang.startsWith("zh");
       const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
       const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
       const isGerman = effectiveLang === "de";
@@ -1899,6 +2210,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const isArabic = effectiveLang === "ar";
       const isTurkish = effectiveLang === "tr";
 
+      if (isChinese) return effectiveLang === "zh-TW" ? "價格" : "价格";
       if (isSpanish) return "Precios";
       if (isPortuguese) return "Preços";
       if (isGerman) return "Preise";

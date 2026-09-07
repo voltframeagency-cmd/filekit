@@ -13,6 +13,7 @@ export interface PdfCompressionWorkspaceProps {
   routeConfig: PdfRouteConfig;
   initialTargetValue?: string;
   initialTargetUnit?: "kb" | "mb";
+  language?: string;
 }
 
 const MIN_BYTES = 100 * 1024; // 100 KB
@@ -550,16 +551,133 @@ const workspaceI18n: Record<string, {
     recompressBtn: "Recomprimir PDF",
     compressingBtn: "Comprimint PDF...",
   },
+  "zh-tw": {
+    dropPdf: "將 PDF 檔案拖放到此處或點擊選取",
+    supportsPdf: "支援高達 50 MB 的標準 PDF 文件",
+    privacyPdf: "🔒 您的 PDF 在瀏覽器本機處理，絕不會上傳至伺服器。",
+    originalSize: "原始大小",
+    chooseAnother: "選取其他檔案",
+    compressing: "正在本機極速壓縮 PDF...",
+    noBeneficial: "無需進一步壓縮",
+    targetNotMet: "PDF 已壓縮，但未能安全達到目標大小",
+    alreadyBelow: "您的 PDF 大小已低於目標大小",
+    compressedOk: "PDF 壓縮成功",
+    noReductionDesc: "使用目前設定，該 PDF 已具備最高壓縮率。已為您保留原始檔案。",
+    original: "原大小",
+    newSize: "新大小",
+    pages: "頁數",
+    reduction: "壓縮率",
+    processingLocal: "處理方式：瀏覽器本機處理",
+    downloadOriginal: "下載原始 PDF",
+    downloadBest: "下載最佳結果",
+    downloadCompressed: "下載壓縮後的 PDF",
+    adjustSettings: "調整壓縮設定",
+    settingsTitle: "PDF 壓縮選項",
+    compressionGoal: "壓縮目標",
+    betterQuality: "較佳畫質",
+    betterQualityDesc: "保留更多影像細節與清晰度",
+    balanced: "均衡模式",
+    balancedDesc: "推薦大多數文件使用",
+    smallerFile: "最小檔案",
+    smallerFileDesc: "優先極致縮減檔案體積",
+    targetFileSize: "目標檔案大小",
+    quickTargets: "常用設定：",
+    targetOutcome: "壓縮目標",
+    below2mb: "2 MB 以內",
+    targetOutcomeDesc: "此工具自動將 PDF 最佳化至 2 MB 以內，方便電子郵件寄送與線上上傳。",
+    compressBtn: "立即壓縮 PDF",
+    recompressBtn: "重新壓縮 PDF",
+    compressingBtn: "正在壓縮 PDF...",
+  },
+  "zh-cn": {
+    dropPdf: "将 PDF 文件拖放到此处或点击选择",
+    supportsPdf: "支持高达 50 MB 的标准 PDF 文档",
+    privacyPdf: "🔒 您的 PDF 在浏览器本地处理，绝不会上传至服务器。",
+    originalSize: "原始大小",
+    chooseAnother: "选择其他文件",
+    compressing: "正在本地快速压缩 PDF...",
+    noBeneficial: "无需进一步压缩",
+    targetNotMet: "PDF 已压缩，但未能安全达到目标大小",
+    alreadyBelow: "您的 PDF 大小已低于目标大小",
+    compressedOk: "PDF 压缩成功",
+    noReductionDesc: "使用当前设置，该 PDF 已具备最高压缩率。已为您保留原始文件。",
+    original: "原大小",
+    newSize: "新大小",
+    pages: "页数",
+    reduction: "压缩率",
+    processingLocal: "处理方式：浏览器本地处理",
+    downloadOriginal: "下载原始 PDF",
+    downloadBest: "下载最佳结果",
+    downloadCompressed: "下载压缩后的 PDF",
+    adjustSettings: "调整压缩设置",
+    settingsTitle: "PDF 压缩选项",
+    compressionGoal: "压缩目标",
+    betterQuality: "较佳画质",
+    betterQualityDesc: "保留更多图像细节与清晰度",
+    balanced: "均衡模式",
+    balancedDesc: "推荐大多数文档使用",
+    smallerFile: "最小文件",
+    smallerFileDesc: "优先极致缩减文件体积",
+    targetFileSize: "目标文件大小",
+    quickTargets: "常用设置：",
+    targetOutcome: "压缩目标",
+    below2mb: "2 MB 以内",
+    targetOutcomeDesc: "此工具自动将 PDF 优化至 2 MB 以内，方便电子邮件发送与线上上传。",
+    compressBtn: "立即压缩 PDF",
+    recompressBtn: "重新压缩 PDF",
+    compressingBtn: "正在压缩 PDF...",
+  },
+  zh: {
+    dropPdf: "将 PDF 文件拖放到此处或点击选择",
+    supportsPdf: "支持高达 50 MB 的标准 PDF 文档",
+    privacyPdf: "🔒 您的 PDF 在浏览器本地处理，绝不会上传至服务器。",
+    originalSize: "原始大小",
+    chooseAnother: "选择其他文件",
+    compressing: "正在本地快速压缩 PDF...",
+    noBeneficial: "无需进一步压缩",
+    targetNotMet: "PDF 已压缩，但未能安全达到目标大小",
+    alreadyBelow: "您的 PDF 大小已低于目标大小",
+    compressedOk: "PDF 压缩成功",
+    noReductionDesc: "使用当前设置，该 PDF 已具备最高压缩率。已为您保留原始文件。",
+    original: "原大小",
+    newSize: "新大小",
+    pages: "页数",
+    reduction: "压缩率",
+    processingLocal: "处理方式：浏览器本地处理",
+    downloadOriginal: "下载原始 PDF",
+    downloadBest: "下载最佳结果",
+    downloadCompressed: "下载压缩后的 PDF",
+    adjustSettings: "调整压缩设置",
+    settingsTitle: "PDF 压缩选项",
+    compressionGoal: "压缩目标",
+    betterQuality: "较佳画质",
+    betterQualityDesc: "保留更多图像细节与清晰度",
+    balanced: "均衡模式",
+    balancedDesc: "推荐大多数文档使用",
+    smallerFile: "最小文件",
+    smallerFileDesc: "优先极致缩减文件体积",
+    targetFileSize: "目标文件大小",
+    quickTargets: "常用设置：",
+    targetOutcome: "压缩目标",
+    below2mb: "2 MB 以内",
+    targetOutcomeDesc: "此工具自动将 PDF 优化至 2 MB 以内，方便电子邮件发送与线上上传。",
+    compressBtn: "立即压缩 PDF",
+    recompressBtn: "重新压缩 PDF",
+    compressingBtn: "正在压缩 PDF...",
+  },
 };
 
 export default function PdfCompressionWorkspace({
   routeConfig,
   initialTargetValue = "2",
-  initialTargetUnit = "mb"
+  initialTargetUnit = "mb",
+  language: propLang
 }: PdfCompressionWorkspaceProps) {
-  const { language } = useLanguage();
-  const langKey = language?.slice(0, 2).toLowerCase() || 'en';
-  const wt = workspaceI18n[langKey] || workspaceI18n.en;
+  const { language: ctxLang } = useLanguage();
+  const language = propLang || ctxLang || "en";
+  const fullKey = (language || 'en').toLowerCase();
+  const shortKey = fullKey.slice(0, 2);
+  const wt = workspaceI18n[fullKey] || workspaceI18n[shortKey] || workspaceI18n.en;
   // Mode selection & controls
   const [qualityPriority, setQualityPriority] = useState<QualityPriority>("BALANCED");
   const [targetValue, setTargetValue] = useState<string>(initialTargetValue);

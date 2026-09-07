@@ -20,6 +20,7 @@ interface CadWorkspaceProps {
   mode?: "dwg-to-pdf" | "dxf-to-pdf" | "dwg-to-dxf" | "eps-to-pdf" | "eps-to-png" | "psd-to-png" | "ai-to-pdf" | "ai-to-png";
   title?: string;
   embedded?: boolean;
+  language?: string;
 }
 
 export function CadWorkspace({
@@ -31,6 +32,7 @@ export function CadWorkspace({
   mode,
   title,
   embedded = false,
+  language: propLang,
 }: CadWorkspaceProps) {
   // Normalize parameters
   const effectiveSlug = toolSlug || (mode ? `/${mode}` : "/dwg-to-pdf");
@@ -50,6 +52,9 @@ export function CadWorkspace({
     else if (mode.startsWith("ai")) { effectiveExt = ".ai"; effectiveLabel = "Adobe Illustrator AI"; }
   }
 
+  const { language: contextLang } = useLanguage();
+  const language = propLang || contextLang || "en";
+
   if (embedded) {
     return (
       <OfficeConverterWorkspace
@@ -58,6 +63,7 @@ export function CadWorkspace({
         apiEndpoint="/api/internal/convert/word-to-pdf"
         acceptedExtensions={effectiveExt}
         documentTypeLabel={effectiveLabel}
+        language={language}
       />
     );
   }
@@ -68,7 +74,6 @@ export function CadWorkspace({
     description,
   });
 
-  const { language } = useLanguage();
   const seoContent = getToolSeoContent(effectiveSlug, effectiveTitle, language);
 
   return (

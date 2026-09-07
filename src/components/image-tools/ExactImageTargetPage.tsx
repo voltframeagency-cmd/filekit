@@ -262,18 +262,86 @@ export default function ExactImageTargetPage({ config }: ExactImageTargetPagePro
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
               </svg>
               <p className="text-[15px] font-bold text-fk-text">{(() => {
-                const l = (language || 'en').slice(0, 2);
-                const map: Record<string, string> = { en: 'Drop your image here or browse', ar: 'اسحب صورتك هنا أو تصفّح', tr: 'Görselinizi buraya bırakın veya seçin', sv: 'Dra och släpp din bild här eller bläddra', es: 'Suelta tu imagen aquí o busca', fr: 'Déposez votre image ici ou parcourir', de: 'Bild hier ablegen oder durchsuchen', pt: 'Solte a sua imagem aqui ou procure', it: 'Trascina la tua immagine qui o sfoglia', ja: '画像をここにドロップまたは参照', ko: '이미지를 여기에 놓거나 찾아보기' };
-                return map[l] || map.en;
+                const l = (language || 'en').toLowerCase();
+                const prefix = l.split('-')[0];
+                const map: Record<string, string> = {
+                  en: 'Drop your image here or browse',
+                  fil: 'I-drop ang iyong imahe rito o mag-browse',
+                  vi: 'Kéo thả hình ảnh của bạn vào đây hoặc duyệt tệp',
+                  th: 'ลากรูปภาพมาวางที่นี่หรือเรียกดู',
+                  ms: 'Lepaskan imej anda di sini atau semak imbas',
+                  hu: 'Húzza ide a képet vagy tallózzon',
+                  cs: 'Přetáhněte obrázek sem nebo procházejte',
+                  pl: 'Przeciągnij obraz tutaj lub przeglądaj',
+                  ro: 'Trageți imaginea aici sau căutați',
+                  bg: 'Плъзнете изображението тук или прегледайте',
+                  el: 'Σύρετε την εικόνα σας εδώ ή περιηγηθείτε',
+                  sk: 'Presuňte obrázok sem alebo prehľadávajte',
+                  sl: 'Povlecite sliko sem ali brskajte',
+                  ru: 'Перетащите изображение сюда или выберите файл',
+                  uk: 'Перетягніть зображення сюди або виберіть файл',
+                  da: 'Træk og slip dit billede her eller vælg fil',
+                  fi: 'Pudota kuvasi tähän tai selaa',
+                  no: 'Slipp bildet ditt her eller bla gjennom',
+                  ar: 'اسحب صورتك هنا أو تصفّح',
+                  tr: 'Görselinizi buraya bırakın veya seçin',
+                  sv: 'Dra och släpp din bild här eller bläddra',
+                  es: 'Suelta tu imagen aquí o busca',
+                  fr: 'Déposez votre image ici ou parcourir',
+                  de: 'Bild hier ablegen oder durchsuchen',
+                  pt: 'Solte a sua imagem aqui ou procure',
+                  it: 'Trascina la tua immagine qui o sfoglia',
+                  nl: 'Sleep je afbeelding hierheen of blader',
+                  ca: 'Arrossega la imatge aquí o navega',
+                  ja: '画像をここにドロップまたは参照',
+                  ko: '이미지를 여기에 놓거나 찾아보기',
+                  'zh-tw': '將圖片拖放到此處或瀏覽選取',
+                  zh: '将图片拖放到此处或浏览选择'
+                };
+                return map[l] || map[prefix] || map.en;
               })()}</p>
               <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
-                Target: {"\u2066"}{config.targetLabel} max{"\u2069"} • Supports JPG, PNG, and static WebP
+                {language === "fil" ? `Target: maximum na ${config.targetLabel} • Sumusuporta sa JPG, PNG, at static WebP` : language === "vi" ? `Mục tiêu: tối đa ${config.targetLabel} • Hỗ trợ JPG, PNG và WebP tĩnh` : language === "th" ? `เป้าหมาย: สูงสุด ${config.targetLabel} • รองรับ JPG, PNG และ WebP แบบคงที่` : language === "hu" ? `Célméret: max ${config.targetLabel} • JPG, PNG és statikus WebP támogatása` : language === "cs" ? `Cíl: max ${config.targetLabel} • Podporuje JPG, PNG a statický WebP` : language === "pl" ? `Cel: maks ${config.targetLabel} • Obsługuje JPG, PNG i statyczny WebP` : (language === "zh-TW" || (language as string).toLowerCase() === "zh-tw") ? `目標大小：最大 ${config.targetLabel} • 支援 JPG、PNG 與靜態 WebP` : language.startsWith("zh") ? `目标大小：最大 ${config.targetLabel} • 支持 JPG、PNG 和静态 WebP` : `Target: ${config.targetLabel} max • Supports JPG, PNG, and static WebP`}
               </p>
               <p className="text-[11px] font-medium text-fk-text-subtle mt-2 bg-fk-surface-muted px-3 py-1 rounded-full border border-fk-border">
                 {(() => {
-                  const l = (language || 'en').slice(0, 2);
-                  const map: Record<string, string> = { en: '🔒 Your image is processed locally in your browser and is not uploaded.', ar: '🔒 تتم معالجة صورتك محلياً في المتصفح ولا يتم رفعها.', tr: '🔒 Görseliniz tarayıcınızda yerel olarak işlenir ve yüklenmez.', sv: '🔒 Din bild bearbetas lokalt i webbläsaren och laddas inte upp.', es: '🔒 Tu imagen se procesa localmente en tu navegador y no se sube.', fr: '🔒 Votre image est traitée localement et n\'est pas téléchargée.', de: '🔒 Ihr Bild wird lokal verarbeitet und nicht hochgeladen.', pt: '🔒 Sua imagem é processada localmente e não é enviada.', it: '🔒 La tua immagine viene elaborata localmente e non viene caricata.', ja: '🔒 画像はブラウザでローカルに処理されます。', ko: '🔒 이미지는 로컬로 처리되며 업로드되지 않습니다.' };
-                  return map[l] || map.en;
+                  const l = (language || 'en').toLowerCase();
+                  const prefix = l.split('-')[0];
+                  const map: Record<string, string> = {
+                    en: '🔒 Your image is processed locally in your browser and is not uploaded.',
+                    fil: '🔒 Ang iyong imahe ay lokal na pinoproseso sa iyong browser at hindi ina-upload.',
+                    vi: '🔒 Hình ảnh của bạn được xử lý cục bộ trong trình duyệt và không được tải lên.',
+                    th: '🔒 รูปภาพของคุณได้รับการประมวลผลในเบราว์เซอร์และไม่มีการอัปโหลด',
+                    ms: '🔒 Imej anda diproses secara tempatan dalam pelayar anda dan tidak dimuat naik.',
+                    hu: '🔒 A képet helyileg a böngésző dolgozza fel, és nem töltődik fel.',
+                    cs: '🔒 Váš obrázek je zpracován lokálně v prohlížeči a není nahráván na server.',
+                    pl: '🔒 Twój obraz jest przetwarzany lokalnie w przeglądarce i nie jest przesyłany.',
+                    ro: '🔒 Imaginea dvs. este procesată local în browser și nu este încărcată.',
+                    bg: '🔒 Вашето изображение се обработва локално в браузъра и не се качва.',
+                    el: '🔒 Η εικόνα σας υποβάλλεται σε τοπική επεξεργασία στο πρόγραμμα περιήγησης και δεν μεταφορτώνεται.',
+                    sk: '🔒 Váš obrázok sa spracováva lokálne v prehliadači a nenahráva sa.',
+                    sl: '🔒 Vaša slika se obdela lokalno v brskalniku in se ne naloži.',
+                    ru: '🔒 Ваше изображение обрабатывается локально в браузере и не загружается на сервер.',
+                    uk: '🔒 Ваше зображення обробляється локально у браузері та не завантажується.',
+                    da: '🔒 Dit billede behandles lokalt i din browser og uploades ikke.',
+                    fi: '🔒 Kuvasi käsitellään paikallisesti selaimessasi eikä sitä ladata palvelimelle.',
+                    no: '🔒 Bildet ditt behandles lokalt i nettleseren din og lastes ikke opp.',
+                    ar: '🔒 تتم معالجة صورتك محلياً في المتصفح ولا يتم رفعها.',
+                    tr: '🔒 Görseliniz tarayıcınızda yerel olarak işlenir ve yüklenmez.',
+                    sv: '🔒 Din bild bearbetas lokalt i webbläsaren och laddas inte upp.',
+                    es: '🔒 Tu imagen se procesa localmente en tu navegador y no se sube.',
+                    fr: '🔒 Votre image est traitée localement et n\'est pas téléchargée.',
+                    de: '🔒 Ihr Bild wird lokal verarbeitet und nicht hochgeladen.',
+                    pt: '🔒 Sua imagem é processada localmente e não é enviada.',
+                    it: '🔒 La tua immagine viene elaborata localmente e non viene caricata.',
+                    nl: '🔒 Je afbeelding wordt lokaal in je browser verwerkt en niet geüpload.',
+                    ca: '🔒 La teva imatge es processa localment al navegador i no es puja.',
+                    ja: '🔒 画像はブラウザでローカルに処理されます。',
+                    ko: '🔒 이미지는 로컬로 처리되며 업로드되지 않습니다.',
+                    'zh-tw': '🔒 您的圖片直接在瀏覽器本機處理，絕不上傳到伺服器。',
+                    zh: '🔒 您的图片直接在浏览器本地处理，绝不上传到服务器。'
+                  };
+                  return map[l] || map[prefix] || map.en;
                 })()}
               </p>
             </div>
@@ -291,7 +359,7 @@ export default function ExactImageTargetPage({ config }: ExactImageTargetPagePro
                   onClick={() => { setFile(null); setPreflight(null); setError(null); }}
                   className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text"
                 >
-                  Change File
+                  {language === "fil" ? "Palitan ang File" : language === "vi" ? "Đổi tệp" : language === "th" ? "เปลี่ยนไฟล์" : language === "ms" ? "Tukar Fail" : "Change File"}
                 </button>
               </div>
 

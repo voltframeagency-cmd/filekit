@@ -17,6 +17,7 @@ export interface ImageCompressionWorkspaceProps {
   initialMode?: CompressionGoalMode;
   initialTargetValue?: string;
   initialTargetUnit?: "kb" | "mb";
+  language?: string;
 }
 
 const MIN_BYTES = 20 * 1024; // 20 KB
@@ -25,9 +26,13 @@ const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 export default function ImageCompressionWorkspace({
   initialMode = "BALANCED",
   initialTargetValue = "200",
-  initialTargetUnit = "kb"
+  initialTargetUnit = "kb",
+  language: propLanguage
 }: ImageCompressionWorkspaceProps) {
-  const { language } = useLanguage();
+  const { language: contextLang } = useLanguage();
+  const language = propLanguage || contextLang || "en";
+  const isChinese = language.startsWith("zh");
+  const isTaiwan = language === "zh-TW";
   // Mode selection
   const [mode, setMode] = useState<CompressionGoalMode>(initialMode);
 
@@ -336,22 +341,139 @@ export default function ImageCompressionWorkspace({
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
             <p className="text-[15px] font-bold text-fk-text">{(() => {
-              const l = (language || 'en').slice(0, 2);
-              const map: Record<string, string> = { en: 'Drop your image here or browse', ar: 'اسحب صورتك هنا أو تصفّح', tr: 'Görselinizi buraya bırakın veya seçin', sv: 'Dra och släpp din bild här eller bläddra', es: 'Suelta tu imagen aquí o busca', fr: 'Déposez votre image ici ou parcourir', de: 'Bild hier ablegen oder durchsuchen', pt: 'Solte a sua imagem aqui ou procure', it: 'Trascina la tua immagine qui o sfoglia', ja: '画像をここにドロップまたは参照', ko: '이미지를 여기에 놓거나 찾아보기' };
-              return map[l] || map.en;
+              const l = (language || 'en').toLowerCase();
+              const prefix = l.split('-')[0];
+              const map: Record<string, string> = {
+                en: 'Drop your image here or browse',
+                ru: 'Перетащите изображение сюда или выберите файл',
+                uk: 'Перетягніть зображення сюди або виберіть файл',
+                pl: 'Upuść obraz tutaj lub przeglądaj',
+                cs: 'Přetáhněte obrázek sem nebo vyberte soubor',
+                hu: 'Húzza ide a képet vagy tallózzon',
+                ro: 'Trageți imaginea aici sau răsfoiți',
+                bg: 'Пуснете вашето изображение тук или прегледайте',
+                el: 'Σύρετε την εικόνα σας εδώ ή περιηγηθείτε',
+                sk: 'Presuňte obrázok sem alebo prehľadávajte',
+                sl: 'Spustite sliko sem ali prebrskajte',
+                da: 'Træk dit billede herhen eller gennemse',
+                fi: 'Pudota kuvasi tähän tai selaa',
+                no: 'Slipp bildet ditt her eller bla gjennom',
+                nl: 'Sleep je afbeelding hierheen of blader',
+                ca: 'Arrossega la teva imatge aquí o navega',
+                lv: 'Ievelciet attēlu šeit vai pārlūkojiet',
+                lt: 'Vilkite paveikslėlį čia arba naršykite',
+                he: 'גרור את התמונה לכאן או עיין',
+                hi: 'अपनी छवि यहाँ खींचें या ब्राउज़ करें',
+                id: 'Tarik gambar Anda ke sini atau telusuri',
+                fil: 'I-drop ang iyong imahe rito o mag-browse',
+                vi: 'Kéo thả hình ảnh của bạn vào đây hoặc duyệt tệp',
+                th: 'ลากรูปภาพมาวางที่นี่หรือเรียกดู',
+                ms: 'Lepaskan imej anda di sini atau semak imbas',
+                ar: 'اسحب صورتك هنا أو تصفّح',
+                tr: 'Görselinizi buraya bırakın veya seçin',
+                sv: 'Dra och släpp din bild här eller bläddra',
+                es: 'Suelta tu imagen aquí o busca',
+                fr: 'Déposez votre image ici ou parcourir',
+                de: 'Bild hier ablegen oder durchsuchen',
+                pt: 'Solte a sua imagem aqui ou procure',
+                it: 'Trascina la tua immagine qui o sfoglia',
+                ja: '画像をここにドロップまたは参照',
+                ko: '이미지를 여기에 놓거나 찾아보기',
+                'zh-tw': '將圖片拖放到此處或瀏覽選取',
+                zh: '将图片拖放到此处或浏览选择'
+              };
+              return map[l] || map[prefix] || map.en;
             })()}</p>
             <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
               {(() => {
-                const l = (language || 'en').slice(0, 2);
-                const map: Record<string, string> = { en: 'Supports JPG, PNG, and static WebP up to 50 MB', ar: 'يدعم JPG وPNG وWebP حتى 50 ميجابايت', tr: 'JPG, PNG ve statik WebP destekler (50 MB\'a kadar)', sv: 'Stöder JPG, PNG och statisk WebP upp till 50 MB', es: 'Admite JPG, PNG y WebP estático hasta 50 MB', fr: 'Prend en charge JPG, PNG et WebP statique jusqu\'à 50 Mo', de: 'Unterstützt JPG, PNG und statisches WebP bis 50 MB', pt: 'Suporta JPG, PNG e WebP estático até 50 MB', it: 'Supporta JPG, PNG e WebP statico fino a 50 MB', ja: 'JPG、PNG、静的WebP（50 MBまで）をサポート', ko: 'JPG, PNG, 정적 WebP 지원 (50 MB까지)' };
-                return map[l] || map.en;
+                const l = (language || 'en').toLowerCase();
+                const prefix = l.split('-')[0];
+                const map: Record<string, string> = {
+                  en: 'Supports JPG, PNG, and static WebP up to 50 MB',
+                  ru: 'Поддержка JPG, PNG и статических WebP до 50 МБ',
+                  uk: 'Підтримка JPG, PNG та статичних WebP до 50 МБ',
+                  pl: 'Obsługa formatów JPG, PNG i statycznych WebP do 50 MB',
+                  cs: 'Podpora JPG, PNG a statických WebP do 50 MB',
+                  hu: 'Támogatja a JPG, PNG és statikus WebP fájlokat 50 MB-ig',
+                  ro: 'Suportă JPG, PNG și WebP static până la 50 MB',
+                  bg: 'Поддържа JPG, PNG и статичен WebP до 50 MB',
+                  el: 'Υποστηρίζει JPG, PNG και στατικό WebP έως 50 MB',
+                  sk: 'Podpora JPG, PNG a statických WebP do 50 MB',
+                  sl: 'Podpira JPG, PNG in statični WebP do 50 MB',
+                  da: 'Understøtter JPG, PNG og statisk WebP op til 50 MB',
+                  fi: 'Tukee JPG-, PNG- ja staattisia WebP-tiedostoja 50 Mt asti',
+                  no: 'Støtter JPG, PNG og statisk WebP opptil 50 MB',
+                  nl: 'Ondersteunt JPG, PNG en statische WebP tot 50 MB',
+                  ca: 'Admet JPG, PNG i WebP estàtic fins a 50 MB',
+                  lv: 'Atbalsta JPG, PNG un statiskus WebP līdz 50 MB',
+                  lt: 'Palaiko JPG, PNG ir statinius WebP iki 50 MB',
+                  he: 'תומך ב-JPG, PNG ו-WebP סטטי עד 50 מ״ב',
+                  hi: 'JPG, PNG और स्थिर WebP का समर्थन करता है (50 MB तक)',
+                  id: 'Mendukung JPG, PNG, dan WebP statis hingga 50 MB',
+                  fil: 'Sumusuporta sa JPG, PNG, at static WebP hanggang 50 MB',
+                  vi: 'Hỗ trợ JPG, PNG và WebP tĩnh tối đa 50 MB',
+                  th: 'รองรับ JPG, PNG และ WebP แบบคงที่ สูงสุด 50 MB',
+                  ms: 'Menyokong JPG, PNG, dan WebP statik sehingga 50 MB',
+                  ar: 'يدعم JPG وPNG وWebP حتى 50 ميجابايت',
+                  tr: 'JPG, PNG ve statik WebP destekler (50 MB\'a kadar)',
+                  sv: 'Stöder JPG, PNG och statisk WebP upp till 50 MB',
+                  es: 'Admite JPG, PNG y WebP estático hasta 50 MB',
+                  fr: 'Prend en charge JPG, PNG et WebP statique jusqu\'à 50 Mo',
+                  de: 'Unterstützt JPG, PNG und statisches WebP bis 50 MB',
+                  pt: 'Suporta JPG, PNG e WebP estático até 50 MB',
+                  it: 'Supporta JPG, PNG e WebP statico fino a 50 MB',
+                  ja: 'JPG、PNG、静的WebP（50 MBまで）をサポート',
+                  ko: 'JPG, PNG, 정적 WebP 지원 (50 MB까지)',
+                  'zh-tw': '支援 JPG、PNG 與靜態 WebP，最大 50 MB',
+                  zh: '支持 JPG、PNG 和静态 WebP，最大 50 MB'
+                };
+                return map[l] || map[prefix] || map.en;
               })()}
             </p>
             <p className="text-[11px] font-medium text-fk-text-subtle mt-2 bg-fk-surface-muted px-3 py-1 rounded-full border border-fk-border">
               {(() => {
-                const l = (language || 'en').slice(0, 2);
-                const map: Record<string, string> = { en: '🔒 Your image is processed locally in your browser and is not uploaded.', ar: '🔒 تتم معالجة صورتك محلياً في المتصفح ولا يتم رفعها.', tr: '🔒 Görseliniz tarayıcınızda yerel olarak işlenir ve yüklenmez.', sv: '🔒 Din bild bearbetas lokalt i webbläsaren och laddas inte upp.', es: '🔒 Tu imagen se procesa localmente en tu navegador y no se sube.', fr: '🔒 Votre image est traitée localement dans votre navigateur et n\'est pas téléchargée.', de: '🔒 Ihr Bild wird lokal in Ihrem Browser verarbeitet und nicht hochgeladen.', pt: '🔒 Sua imagem é processada localmente no navegador e não é enviada.', it: '🔒 La tua immagine viene elaborata localmente nel browser e non viene caricata.', ja: '🔒 画像はブラウザでローカルに処理され、アップロードされません。', ko: '🔒 이미지는 브라우저에서 로컬로 처리되며 업로드되지 않습니다.' };
-                return map[l] || map.en;
+                const l = (language || 'en').toLowerCase();
+                const prefix = l.split('-')[0];
+                const map: Record<string, string> = {
+                  en: '🔒 Your image is processed locally in your browser and is not uploaded.',
+                  ru: '🔒 Ваше изображение обрабатывается локально в браузере и не загружается.',
+                  uk: '🔒 Ваше зображення обробляється локально у браузері та не завантажується.',
+                  pl: '🔒 Twój obraz jest przetwarzany lokalnie w przeglądarce i nie jest przesyłany na serwer.',
+                  cs: '🔒 Váš obrázek je zpracován lokálně v prohlížeči a nikam se nenahrává.',
+                  hu: '🔒 A képet a böngésző helyileg dolgozza fel, és nem tölti fel.',
+                  ro: '🔒 Imaginea dvs. este procesată local în browser și nu este încărcată.',
+                  bg: '🔒 Вашето изображение се обработва локално във вашия браузър и не се качва.',
+                  el: '🔒 Η εικόνα σας επεξεργάζεται τοπικά στο πρόγραμμα περιήγησης και δεν μεταφορτώνεται.',
+                  sk: '🔒 Váš obrázok sa spracováva lokálne v prehliadači a nenahráva sa.',
+                  sl: '🔒 Vaša slika se obdela lokalno v brskalniku in se ne naloži.',
+                  da: '🔒 Dit billede behandles lokalt i din browser og uploades ikke.',
+                  fi: '🔒 Kuvasi käsitellään paikallisesti selaimessasi eikä sitä ladata palvelimelle.',
+                  no: '🔒 Bildet ditt behandles lokalt i nettleseren din og lastes ikke opp.',
+                  nl: '🔒 Je afbeelding wordt lokaal in je browser verwerkt en niet geüpload.',
+                  ca: '🔒 La vostra imatge es processa localment al navegador i no es puja.',
+                  lv: '🔒 Jūsu attēls tiek apstrādāts lokāli pārlūkprogrammā un netiek augšupielādēts.',
+                  lt: '🔒 Jūsų atvaizdas apdorojamas vietiškai naršyklėje ir nėra įkeliamas.',
+                  he: '🔒 התמונה שלך מעובדת באופן מקומי בדפדפן ואינה מועלית.',
+                  hi: '🔒 आपकी छवि आपके ब्राउज़र में स्थानीय रूप से संसाधित होती है और अपलोड नहीं की जाती है।',
+                  id: '🔒 Gambar Anda diproses secara lokal di peramban Anda dan tidak diunggah.',
+                  fil: '🔒 Ang iyong imahe ay lokal na pinoproseso sa iyong browser at hindi ina-upload.',
+                  vi: '🔒 Hình ảnh của bạn được xử lý cục bộ trong trình duyệt và không được tải lên.',
+                  th: '🔒 รูปภาพของคุณได้รับการประมวลผลในเบราว์เซอร์และไม่มีการอัปโหลด',
+                  ms: '🔒 Imej anda diproses secara tempatan dalam pelayar anda dan tidak dimuat naik.',
+                  ar: '🔒 تتم معالجة صورتك محلياً في المتصفح ولا يتم رفعها.',
+                  tr: '🔒 Görseliniz tarayıcınızda yerel olarak işlenir ve yüklenmez.',
+                  sv: '🔒 Din bild bearbetas lokalt i webbläsaren och laddas inte upp.',
+                  es: '🔒 Tu imagen se procesa localmente en tu navegador y no se sube.',
+                  fr: '🔒 Votre image est traitée localement dans votre navigateur et n\'est pas téléchargée.',
+                  de: '🔒 Ihr Bild wird lokal in Ihrem Browser verarbeitet und nicht hochgeladen.',
+                  pt: '🔒 Sua imagem é processada localmente no navegador e não é enviada.',
+                  it: '🔒 La tua immagine viene elaborata localmente nel browser e non viene caricata.',
+                  ja: '🔒 画像はブラウザでローカルに処理され、アップロードされません。',
+                  ko: '🔒 이미지는 브라우저에서 로컬로 처리되며 업로드되지 않습니다.',
+                  'zh-tw': '🔒 您的圖片直接在瀏覽器本機處理，絕不上傳到伺服器。',
+                  zh: '🔒 您的图片直接在浏览器本地处理，绝不上传到服务器。'
+                };
+                return map[l] || map[prefix] || map.en;
               })()}
             </p>
           </div>
@@ -378,7 +500,7 @@ export default function ImageCompressionWorkspace({
                   onClick={handleResetWorkspace}
                   className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-3 py-1.5 border border-fk-border rounded-fk-md bg-white hover:bg-fk-surface-muted transition-colors shrink-0"
                 >
-                  Choose Another
+                  {isChinese ? (isTaiwan ? "選擇其他檔案" : "选择其他文件") : "Choose Another"}
                 </button>
               </div>
 
@@ -387,7 +509,7 @@ export default function ImageCompressionWorkspace({
                 {isProcessing ? (
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-blue-50 border-blue-200 text-blue-800 w-fit animate-pulse">
                     <span>⚡</span>
-                    <span>Updating Preview...</span>
+                    <span>{isChinese ? (isTaiwan ? "正在更新預覽..." : "正在更新预览...") : "Updating Preview..."}</span>
                   </div>
                 ) : result ? (
                   <div
@@ -404,19 +526,21 @@ export default function ImageCompressionWorkspace({
                     <span>{isNoReduction ? "ℹ️" : result.outcome === "TARGET_NOT_MET" ? "⚠️" : "✓"}</span>
                     <span>
                       {isNoReduction
-                        ? "No beneficial reduction"
+                        ? isChinese ? (isTaiwan ? "檔案已達到最優大小" : "文件已达到最优大小") : "No beneficial reduction"
                         : result.outcome === "TARGET_NOT_MET"
-                        ? "We reduced the image, but could not reach requested size safely"
+                        ? isChinese ? (isTaiwan ? "已盡可能壓縮圖片，但無法在保持畫質下達到目標大小" : "已尽可能压缩图片，但无法在保持画质下达到目标大小") : "We reduced the image, but could not reach requested size safely"
                         : result.outcome === "ALREADY_WITHIN_TARGET"
-                        ? "Your image is already below requested size"
-                        : "Image compressed successfully"}
+                        ? isChinese ? (isTaiwan ? "您的圖片已小於目標大小" : "您的图片已小于目标大小") : "Your image is already below requested size"
+                        : isChinese ? (isTaiwan ? "圖片已成功壓縮" : "图片已成功压缩") : "Image compressed successfully"}
                     </span>
                   </div>
                 ) : null}
 
                 {!isProcessing && isNoReduction && (
                   <p className="text-[13px] text-fk-text-muted leading-relaxed">
-                    This image is already efficiently compressed with the selected settings. The original file has been preserved.
+                    {isChinese
+                      ? isTaiwan ? "此圖片在目前的設定下已經過最佳壓縮，已為您保留原始檔案。" : "此图片在当前设置下已经过最佳压缩，已为您保留原始文件。"
+                      : "This image is already efficiently compressed with the selected settings. The original file has been preserved."}
                   </p>
                 )}
               </div>
@@ -427,8 +551,8 @@ export default function ImageCompressionWorkspace({
                   <ImageComparisonSlider
                     originalUrl={originalPreviewUrl}
                     outputUrl={outputPreviewUrl || originalPreviewUrl}
-                    originalLabel="Original"
-                    outputLabel={result && !isProcessing ? "Optimized" : "Preview"}
+                    originalLabel={isChinese ? (isTaiwan ? "原始" : "原始") : "Original"}
+                    outputLabel={result && !isProcessing ? (isChinese ? (isTaiwan ? "已最佳化" : "已优化") : "Optimized") : (isChinese ? (isTaiwan ? "預覽" : "预览") : "Preview")}
                     onSliderUsed={() => trackEvent("comparison_slider_used")}
                   />
                 </div>
@@ -438,14 +562,22 @@ export default function ImageCompressionWorkspace({
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-center gap-6 w-full p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
                   <div className="flex flex-col items-center">
-                    <span className="text-[11px] font-bold text-fk-text-subtle uppercase">Original</span>
+                    <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
+                      {isChinese ? (isTaiwan ? "原始大小" : "原始大小") : "Original"}
+                    </span>
                     <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(file.size)}</span>
                   </div>
                   <div className="text-[22px] font-light text-fk-text-subtle ltr:rotate-0 rtl:rotate-180">→</div>
                   <div className="flex flex-col items-center">
-                    <span className="text-[11px] font-bold text-fk-primary uppercase">New Size</span>
+                    <span className="text-[11px] font-bold text-fk-primary uppercase">
+                      {isChinese ? (isTaiwan ? "新大小" : "新大小") : "New Size"}
+                    </span>
                     <span className="text-[20px] font-black text-fk-primary mt-1">
-                      {isProcessing ? "Calculating..." : result ? formatBytes(result.outputSizeBytes) : "..."}
+                      {isProcessing
+                        ? isChinese ? (isTaiwan ? "計算中..." : "计算中...") : "Calculating..."
+                        : result
+                        ? formatBytes(result.outputSizeBytes)
+                        : "..."}
                     </span>
                   </div>
                 </div>
@@ -459,12 +591,12 @@ export default function ImageCompressionWorkspace({
                     className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
                   >
                     {isProcessing
-                      ? "Updating Preview..."
+                      ? isChinese ? (isTaiwan ? "正在更新預覽..." : "正在更新预览...") : "Updating Preview..."
                       : isNoReduction || (result && result.outcome === "ALREADY_WITHIN_TARGET")
-                      ? "Download Original Image"
+                      ? isChinese ? (isTaiwan ? "下載原始圖片" : "下载原始图片") : "Download Original Image"
                       : result && result.outcome === "TARGET_NOT_MET"
-                      ? "Download Best Result"
-                      : "Download Compressed Image"}
+                      ? isChinese ? (isTaiwan ? "下載最佳結果" : "下载最佳结果") : "Download Best Result"
+                      : isChinese ? (isTaiwan ? "下載壓縮後的圖片" : "下载压缩后的图片") : "Download Compressed Image"}
                   </button>
 
                   <button
@@ -472,7 +604,7 @@ export default function ImageCompressionWorkspace({
                     onClick={handleAdjustSettings}
                     className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
                   >
-                    Adjust Settings
+                    {isChinese ? (isTaiwan ? "調整設定" : "调整设置") : "Adjust Settings"}
                   </button>
                 </div>
               </div>
@@ -484,12 +616,14 @@ export default function ImageCompressionWorkspace({
             <div className="bg-white border border-fk-border rounded-fk-xl p-6 shadow-sm flex flex-col gap-6">
               <h2 className="text-[16px] font-black text-fk-text flex items-center gap-2 border-b border-fk-border pb-3">
                 <span>⚙️</span>
-                <span>Compression Settings</span>
+                <span>{isChinese ? (isTaiwan ? "壓縮設定" : "压缩设置") : "Compression Settings"}</span>
               </h2>
 
               {/* Compression Goal Mode Selection */}
               <fieldset className="flex flex-col gap-2">
-                <legend className="text-[13px] font-bold text-fk-text">Compression Goal</legend>
+                <legend className="text-[13px] font-bold text-fk-text">
+                  {isChinese ? (isTaiwan ? "壓縮目標" : "压缩目标") : "Compression Goal"}
+                </legend>
                 <div className="grid grid-cols-3 gap-1.5 p-1 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <button
                     type="button"
@@ -501,7 +635,7 @@ export default function ImageCompressionWorkspace({
                       mode === "BALANCED" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
                     }`}
                   >
-                    Balanced
+                    {isChinese ? (isTaiwan ? "平衡模式" : "平衡模式") : "Balanced"}
                   </button>
 
                   <button
@@ -514,7 +648,7 @@ export default function ImageCompressionWorkspace({
                       mode === "TARGET_SIZE" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
                     }`}
                   >
-                    Target Size
+                    {isChinese ? (isTaiwan ? "目標大小" : "目标大小") : "Target Size"}
                   </button>
 
                   <button
@@ -527,7 +661,7 @@ export default function ImageCompressionWorkspace({
                       mode === "MANUAL" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
                     }`}
                   >
-                    Manual
+                    {isChinese ? (isTaiwan ? "自訂調整" : "自定义") : "Manual"}
                   </button>
                 </div>
               </fieldset>
@@ -535,12 +669,26 @@ export default function ImageCompressionWorkspace({
               {/* MODE 1: BALANCED */}
               {mode === "BALANCED" && (
                 <div className="flex flex-col gap-3 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
-                  <label className="text-[13px] font-bold text-fk-text">Quality Priority</label>
+                  <label className="text-[13px] font-bold text-fk-text">
+                    {isChinese ? (isTaiwan ? "畫質優先等級" : "画质优先级别") : "Quality Priority"}
+                  </label>
                   <div className="flex flex-col gap-2">
                     {[
-                      { key: "BETTER_QUALITY", label: "Better quality", desc: "Preserves more visual detail" },
-                      { key: "BALANCED", label: "Balanced", desc: "Recommended balance of clarity & size" },
-                      { key: "SMALLER_FILE", label: "Smaller file", desc: "Prioritizes maximum reduction" }
+                      {
+                        key: "BETTER_QUALITY",
+                        label: isChinese ? (isTaiwan ? "較高畫質" : "较高画质") : "Better quality",
+                        desc: isChinese ? (isTaiwan ? "保留更多影像細節" : "保留更多视觉细节") : "Preserves more visual detail"
+                      },
+                      {
+                        key: "BALANCED",
+                        label: isChinese ? (isTaiwan ? "推薦平衡" : "推荐平衡") : "Balanced",
+                        desc: isChinese ? (isTaiwan ? "畫質與檔案大小的最佳平衡" : "清晰度与体积的最佳平衡") : "Recommended balance of clarity & size"
+                      },
+                      {
+                        key: "SMALLER_FILE",
+                        label: isChinese ? (isTaiwan ? "最小體積" : "更小体积") : "Smaller file",
+                        desc: isChinese ? (isTaiwan ? "優先進行最大程度的壓縮" : "优先进行最大程度的压缩") : "Prioritizes maximum reduction"
+                      }
                     ].map((item) => (
                       <button
                         key={item.key}
@@ -565,7 +713,9 @@ export default function ImageCompressionWorkspace({
               {/* MODE 2: TARGET_SIZE */}
               {mode === "TARGET_SIZE" && (
                 <div className="flex flex-col gap-4 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
-                  <label className="text-[13px] font-bold text-fk-text">Target File Size</label>
+                  <label className="text-[13px] font-bold text-fk-text">
+                    {isChinese ? (isTaiwan ? "目標檔案大小" : "目标文件大小") : "Target File Size"}
+                  </label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -595,7 +745,9 @@ export default function ImageCompressionWorkspace({
 
                   {/* Quick-fill Chips */}
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-bold text-fk-text-subtle">Quick Targets:</span>
+                    <span className="text-[11px] font-bold text-fk-text-subtle">
+                      {isChinese ? (isTaiwan ? "快速目標:" : "快速目标:") : "Quick Targets:"}
+                    </span>
                     <div className="grid grid-cols-4 gap-1.5">
                       {[
                         { label: "100 KB", val: "100", unit: "kb" },
@@ -626,7 +778,9 @@ export default function ImageCompressionWorkspace({
                   {/* Quality Slider */}
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <label className="text-[13px] font-bold text-fk-text">Quality</label>
+                      <label className="text-[13px] font-bold text-fk-text">
+                        {isChinese ? (isTaiwan ? "畫質" : "画质") : "Quality"}
+                      </label>
                       <span className="text-[13px] font-mono font-bold text-fk-primary">{qualitySlider}%</span>
                     </div>
                     <input
@@ -641,22 +795,24 @@ export default function ImageCompressionWorkspace({
                       className="w-full h-2 bg-fk-border rounded-lg appearance-none cursor-pointer accent-fk-primary"
                     />
                     <div className="flex items-center justify-between text-[11px] font-medium text-fk-text-subtle">
-                      <span>Low</span>
-                      <span>Balanced</span>
-                      <span>High</span>
+                      <span>{isChinese ? (isTaiwan ? "低" : "低") : "Low"}</span>
+                      <span>{isChinese ? (isTaiwan ? "標準" : "标准") : "Balanced"}</span>
+                      <span>{isChinese ? (isTaiwan ? "高" : "高") : "High"}</span>
                     </div>
                   </div>
 
                   {/* Dimension Presets */}
                   <div className="flex flex-col gap-2 border-t border-fk-border pt-4">
-                    <label className="text-[13px] font-bold text-fk-text">Dimensions</label>
+                    <label className="text-[13px] font-bold text-fk-text">
+                      {isChinese ? (isTaiwan ? "解析度與尺寸" : "分辨率与尺寸") : "Dimensions"}
+                    </label>
                     <div className="grid grid-cols-2 gap-1.5">
                       {[
-                        { key: "ORIGINAL", label: "Keep original" },
+                        { key: "ORIGINAL", label: isChinese ? (isTaiwan ? "保持原尺寸" : "保持原尺寸") : "Keep original" },
                         { key: "1920", label: "1920 px" },
                         { key: "1024", label: "1024 px" },
                         { key: "640", label: "640 px" },
-                        { key: "CUSTOM", label: "Custom width" }
+                        { key: "CUSTOM", label: isChinese ? (isTaiwan ? "自訂寬度" : "自定义宽度") : "Custom width" }
                       ].map((preset) => (
                         <button
                           key={preset.key}
@@ -677,7 +833,9 @@ export default function ImageCompressionWorkspace({
 
                     {dimensionPreset === "CUSTOM" && (
                       <div className="flex items-center gap-2 mt-2">
-                        <label className="text-[12px] font-bold text-fk-text whitespace-nowrap">Width (px):</label>
+                        <label className="text-[12px] font-bold text-fk-text whitespace-nowrap">
+                          {isChinese ? (isTaiwan ? "寬度 (px):" : "宽度 (px):") : "Width (px):"}
+                        </label>
                         <input
                           type="number"
                           min="50"
@@ -702,7 +860,9 @@ export default function ImageCompressionWorkspace({
                 disabled={isProcessing}
                 className="w-full h-[46px] border border-fk-border hover:bg-fk-surface-muted text-fk-text rounded-fk-md text-[13px] font-bold transition-colors disabled:opacity-50"
               >
-                {isProcessing ? "Updating Preview..." : "Update Preview"}
+                {isProcessing
+                  ? isChinese ? (isTaiwan ? "正在更新預覽..." : "正在更新预览...") : "Updating Preview..."
+                  : isChinese ? (isTaiwan ? "更新預覽" : "更新预览") : "Update Preview"}
               </button>
 
               {error && (

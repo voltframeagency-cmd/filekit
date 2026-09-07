@@ -21,6 +21,7 @@ export interface ImageTransformWorkspaceProps {
   toolTitle: string;
   toolSlug: string;
   allowedExtensions: string[]; // e.g. [".svg"] or [".jpg", ".png", ".webp", ".avif", ".heic", ".ico"]
+  language?: string;
 }
 
 export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = ({
@@ -28,8 +29,10 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
   toolTitle,
   toolSlug,
   allowedExtensions,
+  language: propLang,
 }) => {
-  const { language } = useLanguage();
+  const { language: ctxLang } = useLanguage();
+  const language = propLang || ctxLang || "en";
   const isSpanish = language === "es" || language === "es-419";
   const isGerman = language === "de";
   const isFrench = language === "fr";
@@ -40,6 +43,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
   const isSwedish = language === "sv";
   const isDanish = language === "da";
   const isFinnish = language === "fi";
+  const isTaiwan = language === "zh-TW" || (language as string).toLowerCase() === "zh-tw";
+  const isSimplifiedChinese = !isTaiwan && (language === "zh-CN" || (language as string).toLowerCase() === "zh-cn" || language.startsWith("zh"));
+  const isChinese = isTaiwan || isSimplifiedChinese;
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceDataUrl, setSourceDataUrl] = useState<string | null>(null);
@@ -442,7 +448,11 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isSwedish
+              {isTaiwan
+                ? `選取${mode.startsWith("svg") ? "SVG 檔案" : mode === "ico-to-png" ? "ICO 圖示" : "圖片"}`
+                : isSimplifiedChinese
+                ? `选择${mode.startsWith("svg") ? "SVG 文件" : mode === "ico-to-png" ? "ICO 图标" : "图片"}`
+                : isSwedish
                 ? `Välj ${mode.startsWith("svg") ? "SVG-fil" : mode === "ico-to-png" ? "ICO-ikon" : "bild"}`
                 : isDanish
                 ? `Vælg ${mode.startsWith("svg") ? "SVG-fil" : mode === "ico-to-png" ? "ICO-ikon" : "billede"}`
@@ -465,7 +475,11 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 : `Select ${mode.startsWith("svg") ? "SVG File" : mode === "ico-to-png" ? "ICO Favicon" : "Image"}`}
             </h2>
             <p className="text-sm text-slate-400">
-              {isSwedish
+              {isTaiwan
+                ? "100% 瀏覽器記憶體安全本機處理，檔案絕不離開您的裝置。"
+                : isSimplifiedChinese
+                ? "100% 浏览器内存安全本地处理，文件绝不离开您的设备。"
+                : isSwedish
                 ? "100% privat bearbetning i din webbläsares minne."
                 : isDanish
                 ? "100% privat behandling i din browsers hukommelse."
@@ -501,7 +515,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isSwedish ? "Välj fil" : isDanish ? "Vælg fil" : isFinnish ? "Valitse tiedosto" : isCatalan ? "Triar fitxer" : isDutch ? "Kies bestand" : isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
+            {isTaiwan ? "選取檔案" : isSimplifiedChinese ? "选择文件" : isSwedish ? "Välj fil" : isDanish ? "Vælg fil" : isFinnish ? "Valitse tiedosto" : isCatalan ? "Triar fitxer" : isDutch ? "Kies bestand" : isItalian ? "Scegli file" : isPortuguese ? "Escolher ficheiro" : isFrench ? "Choisir un fichier" : isGerman ? "Datei wählen" : isSpanish ? "Elegir archivo" : "Choose File"}
             <input
               type="file"
               accept={allowedExtensions.join(",")}
@@ -539,7 +553,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isSwedish ? "Byt fil" : isDanish ? "Skift fil" : isFinnish ? "Vaihda tiedosto" : isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {isTaiwan ? "更換檔案" : isSimplifiedChinese ? "更换文件" : isSwedish ? "Byt fil" : isDanish ? "Skift fil" : isFinnish ? "Vaihda tiedosto" : isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
               </button>
             </div>
           </div>
@@ -548,7 +562,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           {(mode === "svg-to-png" || mode === "svg-to-jpg") && (
             <div className="flex flex-col gap-4 bg-slate-800/40 p-4 rounded-xl border border-slate-800">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-slate-300">Resolution Multiplier (DPI):</span>
+                <span className="text-xs font-semibold text-slate-300">{isTaiwan ? "解析度倍數 (DPI)：" : isSimplifiedChinese ? "分辨率倍数 (DPI):" : "Resolution Multiplier (DPI):"}</span>
                 <div className="flex items-center gap-2">
                   {[1, 2, 3, 4].map((scale) => (
                     <button
@@ -576,11 +590,11 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                       onChange={(e) => setPreserveTransparency(e.target.checked)}
                       className="w-4 h-4 rounded text-fk-primary bg-slate-900 border-slate-700"
                     />
-                    <span>Preserve Transparent Background</span>
+                    <span>{isTaiwan ? "保留透明背景" : isSimplifiedChinese ? "保留透明背景" : "Preserve Transparent Background"}</span>
                   </label>
                   {!preserveTransparency && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400">Background:</span>
+                      <span className="text-xs text-slate-400">{isTaiwan ? "背景顏色：" : isSimplifiedChinese ? "背景颜色:" : "Background:"}</span>
                       <input
                         type="color"
                         value={backgroundColor}
@@ -594,7 +608,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
 
               {mode === "svg-to-jpg" && (
                 <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-700/50">
-                  <span className="text-xs text-slate-300">Background Fill Color:</span>
+                  <span className="text-xs text-slate-300">{isTaiwan ? "背景填滿顏色：" : isSimplifiedChinese ? "背景填充颜色:" : "Background Fill Color:"}</span>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -611,7 +625,13 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
 
           {mode === "ico-to-png" && (
             <div className="flex flex-col gap-4 bg-slate-800/40 p-4 rounded-xl border border-slate-800">
-              <span className="text-xs font-semibold text-slate-300">Select Embedded Sub-Image to Extract:</span>
+              <span className="text-xs font-semibold text-slate-300">
+                {isTaiwan
+                  ? "選取要擷取的內嵌子圖示："
+                  : isSimplifiedChinese
+                  ? "选择要提取的嵌入子图像:"
+                  : "Select Embedded Sub-Image to Extract:"}
+              </span>
               <div className="flex flex-wrap gap-2">
                 {icoImages.map((img, idx) => (
                   <button
@@ -639,7 +659,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           {mode === "rotate" && (
             <div className="flex flex-col gap-4 bg-slate-800/40 p-4 rounded-xl border border-slate-800">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-slate-300">Rotation Angle:</span>
+                <span className="text-xs font-semibold text-slate-300">
+                  {isTaiwan ? "旋轉角度：" : isSimplifiedChinese ? "旋转角度:" : "Rotation Angle:"}
+                </span>
                 <div className="flex items-center gap-2">
                   {([90, 180, 270] as RotationAngle[]).map((angle) => (
                     <button
@@ -652,7 +674,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                           : "bg-slate-800 text-slate-400 hover:text-white"
                       }`}
                     >
-                      {angle === 90 ? "90° CW" : angle === 180 ? "180°" : "270° (90° CCW)"}
+                      {angle === 90 ? (isTaiwan ? "順時針 90°" : isSimplifiedChinese ? "顺时针 90°" : "90° CW") : angle === 180 ? "180°" : (isTaiwan ? "逆時針 90°" : isSimplifiedChinese ? "逆时针 90°" : "270° (90° CCW)")}
                     </button>
                   ))}
                 </div>
@@ -663,7 +685,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           {mode === "flip" && (
             <div className="flex flex-col gap-4 bg-slate-800/40 p-4 rounded-xl border border-slate-800">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-slate-300">Flip Direction:</span>
+                <span className="text-xs font-semibold text-slate-300">
+                  {isTaiwan ? "翻轉方向：" : isSimplifiedChinese ? "翻转方向:" : "Flip Direction:"}
+                </span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -674,7 +698,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                         : "bg-slate-800 text-slate-400 hover:text-white"
                     }`}
                   >
-                    ↔ Horizontal Flip
+                    {isTaiwan ? "↔ 水平翻轉" : isSimplifiedChinese ? "↔ 水平翻转" : "↔ Horizontal Flip"}
                   </button>
                   <button
                     type="button"
@@ -685,7 +709,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                         : "bg-slate-800 text-slate-400 hover:text-white"
                     }`}
                   >
-                    ↕ Vertical Flip
+                    {isTaiwan ? "↕ 垂直翻轉" : isSimplifiedChinese ? "↕ 垂直翻转" : "↕ Vertical Flip"}
                   </button>
                 </div>
               </div>
@@ -695,7 +719,9 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
           {mode === "crop" && (
             <div className="flex flex-col gap-4 bg-slate-800/40 p-4 rounded-xl border border-slate-800">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-slate-300">Aspect Ratio Preset:</span>
+                <span className="text-xs font-semibold text-slate-300">
+                  {isTaiwan ? "長寬比預設：" : isSimplifiedChinese ? "宽高比预设:" : "Aspect Ratio Preset:"}
+                </span>
                 <div className="flex flex-wrap gap-2">
                   {(["freeform", "1:1", "16:9", "4:3", "3:2", "9:16"] as AspectRatioPreset[]).map((preset) => (
                     <button
@@ -708,14 +734,14 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                           : "bg-slate-800 text-slate-400 hover:text-white"
                       }`}
                     >
-                      {preset === "freeform" ? "Freeform" : preset}
+                      {preset === "freeform" ? (isTaiwan ? "自訂比例" : isSimplifiedChinese ? "自由比例" : "Freeform") : preset}
                     </button>
                   ))}
                 </div>
               </div>
               <div className="text-xs text-slate-400 flex items-center justify-between">
-                <span>Crop Selection: {cropBox.width} × {cropBox.height} px</span>
-                <span>Origin: ({cropBox.x}, {cropBox.y})</span>
+                <span>{isTaiwan ? `裁切區域：${cropBox.width} × ${cropBox.height} px` : isSimplifiedChinese ? `裁剪区域: ${cropBox.width} × ${cropBox.height} px` : `Crop Selection: ${cropBox.width} × ${cropBox.height} px`}</span>
+                <span>{isTaiwan ? `起點座標：(${cropBox.x}, ${cropBox.y})` : isSimplifiedChinese ? `起点坐标: (${cropBox.x}, ${cropBox.y})` : `Origin: (${cropBox.x}, ${cropBox.y})`}</span>
               </div>
             </div>
           )}
@@ -725,7 +751,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
               {/* Dimensions Input */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Target Width (px)</label>
+                  <label className="text-xs font-semibold text-slate-300">{isTaiwan ? "目標寬度 (px)" : isSimplifiedChinese ? "目标宽度 (px)" : "Target Width (px)"}</label>
                   <input
                     type="number"
                     value={targetWidth || ""}
@@ -734,7 +760,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Target Height (px)</label>
+                  <label className="text-xs font-semibold text-slate-300">{isTaiwan ? "目標高度 (px)" : isSimplifiedChinese ? "目标高度 (px)" : "Target Height (px)"}</label>
                   <input
                     type="number"
                     value={targetHeight || ""}
@@ -753,7 +779,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                     lockAspectRatio ? "bg-blue-600/30 text-blue-300 border border-blue-500/30" : "bg-slate-800 text-slate-400"
                   }`}
                 >
-                  <span>{lockAspectRatio ? "🔒 Aspect Ratio Locked" : "🔓 Independent Dimensions"}</span>
+                  <span>{isTaiwan ? (lockAspectRatio ? "🔒 鎖定長寬比" : "🔓 自由調整尺寸") : isSimplifiedChinese ? (lockAspectRatio ? "🔒 锁定宽高比" : "🔓 自由尺寸调整") : (lockAspectRatio ? "🔒 Aspect Ratio Locked" : "🔓 Independent Dimensions")}</span>
                 </button>
                 <div className="flex items-center gap-1.5">
                   {[25, 50, 75, 150, 200].map((pct) => (
@@ -811,22 +837,22 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
               {isProcessing ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>{isSwedish ? "Bearbetar på denna enhet..." : isDanish ? "Behandler på denne enhed..." : isFinnish ? "Käsitellään tällä laitteella..." : isCatalan ? "Processant en aquest dispositiu..." : isDutch ? "Bezig met verwerken op dit apparaat..." : "Processing on this device..."}</span>
+                  <span>{isTaiwan ? "正在本機處理..." : isSimplifiedChinese ? "正在本地处理..." : isSwedish ? "Bearbetar på denna enhet..." : isDanish ? "Behandler på denne enhed..." : isFinnish ? "Käsitellään tällä laitteella..." : isCatalan ? "Processant en aquest dispositiu..." : isDutch ? "Bezig met verwerken op dit apparaat..." : "Processing on this device..."}</span>
                 </>
               ) : mode === "svg-to-png" ? (
-                isSwedish ? "Exportera som PNG" : isDanish ? "Eksporter som PNG" : isFinnish ? "Vie PNG-muodossa" : isCatalan ? "Exportar com a PNG" : isDutch ? "Exporteren als PNG" : "Export as PNG"
+                isTaiwan ? "匯出為 PNG" : isSimplifiedChinese ? "导出为 PNG" : isSwedish ? "Exportera som PNG" : isDanish ? "Eksporter som PNG" : isFinnish ? "Vie PNG-muodossa" : isCatalan ? "Exportar com a PNG" : isDutch ? "Exporteren als PNG" : "Export as PNG"
               ) : mode === "svg-to-jpg" ? (
-                isSwedish ? "Exportera som JPG" : isDanish ? "Eksporter som JPG" : isFinnish ? "Vie JPG-muodossa" : isCatalan ? "Exportar com a JPG" : isDutch ? "Exporteren als JPG" : "Export as JPG"
+                isTaiwan ? "匯出為 JPG" : isSimplifiedChinese ? "导出为 JPG" : isSwedish ? "Exportera som JPG" : isDanish ? "Eksporter som JPG" : isFinnish ? "Vie JPG-muodossa" : isCatalan ? "Exportar com a JPG" : isDutch ? "Exporteren als JPG" : "Export as JPG"
               ) : mode === "crop" ? (
-                isSwedish ? "Beskär bild" : isDanish ? "Beskær billede" : isFinnish ? "Rajaa kuva" : isCatalan ? "Retallar imatge" : isDutch ? "Afbeelding bijsnijden" : "Crop Image"
+                isTaiwan ? "裁切圖片" : isSimplifiedChinese ? "裁剪图片" : isSwedish ? "Beskär bild" : isDanish ? "Beskær billede" : isFinnish ? "Rajaa kuva" : isCatalan ? "Retallar imatge" : isDutch ? "Afbeelding bijsnijden" : "Crop Image"
               ) : mode === "rotate" ? (
-                isSwedish ? `Rotera bild (${rotationAngle}°)` : isDanish ? `Roter billede (${rotationAngle}°)` : isFinnish ? `Kierrä kuvaa (${rotationAngle}°)` : isCatalan ? `Girar imatge (${rotationAngle}°)` : isDutch ? `Afbeelding draaien (${rotationAngle}°)` : `Rotate Image (${rotationAngle}°)`
+                isTaiwan ? `旋轉圖片 (${rotationAngle}°)` : isSimplifiedChinese ? `旋转图片 (${rotationAngle}°)` : isSwedish ? `Rotera bild (${rotationAngle}°)` : isDanish ? `Roter billede (${rotationAngle}°)` : isFinnish ? `Kierrä kuvaa (${rotationAngle}°)` : isCatalan ? `Girar imatge (${rotationAngle}°)` : isDutch ? `Afbeelding draaien (${rotationAngle}°)` : `Rotate Image (${rotationAngle}°)`
               ) : mode === "flip" ? (
-                isSwedish ? `Spegla bild (${flipDirection === "horizontal" ? "Horisontellt" : "Vertikalt"})` : isDanish ? `Spejl billede (${flipDirection === "horizontal" ? "Horisontalt" : "Vertikalt"})` : isFinnish ? `Käännä kuva (${flipDirection === "horizontal" ? "Vaakasuunnassa" : "Pystysuunnassa"})` : isCatalan ? `Girar imatge (${flipDirection === "horizontal" ? "Horitzontal" : "Vertical"})` : isDutch ? `Afbeelding spiegelen (${flipDirection === "horizontal" ? "Horizontaal" : "Verticaal"})` : `Flip Image (${flipDirection === "horizontal" ? "Horizontal" : "Vertical"})`
+                isTaiwan ? `翻轉圖片 (${flipDirection === "horizontal" ? "水平" : "垂直"})` : isSimplifiedChinese ? `翻转图片 (${flipDirection === "horizontal" ? "水平" : "垂直"})` : isSwedish ? `Spegla bild (${flipDirection === "horizontal" ? "Horisontellt" : "Vertikalt"})` : isDanish ? `Spejl billede (${flipDirection === "horizontal" ? "Horisontalt" : "Vertikalt"})` : isFinnish ? `Käännä kuva (${flipDirection === "horizontal" ? "Vaakasuunnassa" : "Pystysuunnassa"})` : isCatalan ? `Girar imatge (${flipDirection === "horizontal" ? "Horitzontal" : "Vertical"})` : isDutch ? `Afbeelding spiegelen (${flipDirection === "horizontal" ? "Horizontaal" : "Verticaal"})` : `Flip Image (${flipDirection === "horizontal" ? "Horizontal" : "Vertical"})`
               ) : mode === "ico-to-png" ? (
-                isSwedish ? "Extrahera PNG-ikon" : isDanish ? "Udtræk PNG-ikon" : isFinnish ? "Pura PNG-kuvake" : isCatalan ? "Extreure icona PNG" : isDutch ? "PNG-icoon extraheren" : "Extract PNG Icon"
+                isTaiwan ? "擷取 PNG 圖示" : isSimplifiedChinese ? "提取 PNG 图标" : isSwedish ? "Extrahera PNG-ikon" : isDanish ? "Udtræk PNG-ikon" : isFinnish ? "Pura PNG-kuvake" : isCatalan ? "Extreure icona PNG" : isDutch ? "PNG-icoon extraheren" : "Extract PNG Icon"
               ) : (
-                isSwedish ? "Ändra storlek på bild" : isDanish ? "Tilpas billedstørrelse" : isFinnish ? "Muuta kuvan kokoa" : isCatalan ? "Redimensionar imatge" : isDutch ? "Formaat van afbeelding wijzigen" : "Resize Image"
+                isTaiwan ? "調整圖片大小" : isSimplifiedChinese ? "调整图片大小" : isSwedish ? "Ändra storlek på bild" : isDanish ? "Tilpas billedstørrelse" : isFinnish ? "Muuta kuvan kokoa" : isCatalan ? "Redimensionar imatge" : isDutch ? "Formaat van afbeelding wijzigen" : "Resize Image"
               )}
             </button>
           )}
@@ -840,10 +866,10 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">
-                    {isSwedish ? "Bilden är klar för nedladdning" : isDanish ? "Billede klar til download" : isFinnish ? "Kuva valmis ladattavaksi" : isCatalan ? "Imatge a punt per descarregar" : isDutch ? "Afbeelding gereed voor downloaden" : "Image Export Ready"}
+                    {isTaiwan ? "圖片已準備就緒，可立即下載" : isSimplifiedChinese ? "图片已就绪，可立即下载" : isSwedish ? "Bilden är klar för nedladdning" : isDanish ? "Billede klar til download" : isFinnish ? "Kuva valmis ladattavaksi" : isCatalan ? "Imatge a punt per descarregar" : isDutch ? "Afbeelding gereed voor downloaden" : "Image Export Ready"}
                   </h4>
                   <p className="text-xs text-slate-400">
-                    {result.width} × {result.height} px • {(result.outputSizeBytes / 1024).toFixed(1)} KB • {isSwedish ? `Bearbetad lokalt på ${result.durationMs}ms` : isDanish ? `Behandlet lokalt på ${result.durationMs}ms` : isFinnish ? `Käsitelty paikallisesti ajassa ${result.durationMs}ms` : isCatalan ? `Processat localment en ${result.durationMs}ms` : isDutch ? `Lokaal verwerkt in ${result.durationMs}ms` : `Processed in ${result.durationMs}ms locally`}
+                    {result.width} × {result.height} px • {(result.outputSizeBytes / 1024).toFixed(1)} KB • {isTaiwan ? `於本機裝置耗時 ${result.durationMs}ms 完成` : isSimplifiedChinese ? `在本地设备上历时 ${result.durationMs}ms 完成` : isSwedish ? `Bearbetad lokalt på ${result.durationMs}ms` : isDanish ? `Behandlet lokalt på ${result.durationMs}ms` : isFinnish ? `Käsitelty paikallisesti ajassa ${result.durationMs}ms` : isCatalan ? `Processat localment en ${result.durationMs}ms` : isDutch ? `Lokaal verwerkt in ${result.durationMs}ms` : `Processed in ${result.durationMs}ms locally`}
                   </p>
                 </div>
               </div>
@@ -852,7 +878,7 @@ export const ImageTransformWorkspace: React.FC<ImageTransformWorkspaceProps> = (
                 onClick={handleDownload}
                 className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition shadow-lg"
               >
-                {isSwedish ? "Ladda ner bild" : isDanish ? "Download billede" : isFinnish ? "Lataa kuva" : isCatalan ? "Descarregar imatge" : isDutch ? "Afbeelding downloaden" : "Download Image"}
+                {isTaiwan ? "下載圖片" : isSimplifiedChinese ? "下载图片" : isSwedish ? "Ladda ner bild" : isDanish ? "Download billede" : isFinnish ? "Lataa kuva" : isCatalan ? "Descarregar imatge" : isDutch ? "Afbeelding downloaden" : "Download Image"}
               </button>
             </div>
           )}

@@ -119,6 +119,32 @@ export function getLocaleDirection(locale: SupportedLocale): "ltr" | "rtl" {
   return SUPPORTED_LOCALES[locale]?.direction || "ltr";
 }
 
+export function normalizeLocale(raw: string | undefined | null): SupportedLocale {
+  if (!raw) return DEFAULT_LOCALE;
+  const lower = raw.toLowerCase().trim();
+  if (lower === "zh" || lower === "zh-cn" || lower === "zh_cn" || lower === "cn") return "zh-CN";
+  if (lower === "zh-tw" || lower === "zh_tw" || lower === "tw" || lower === "zh-hk") return "zh-TW";
+  if (lower === "kr") return "ko";
+  if (lower === "pt-br" || lower === "pt_br") return "pt-BR";
+  if (lower === "es-419" || lower === "es_419") return "es-419";
+  
+  if (isValidLocale(raw)) return raw;
+  
+  const matched = ALL_LOCALES.find((loc) => loc.toLowerCase() === lower);
+  if (matched) return matched;
+
+  return DEFAULT_LOCALE;
+}
+
 export function isValidLocale(locale: string): locale is SupportedLocale {
-  return locale in SUPPORTED_LOCALES;
+  if (locale in SUPPORTED_LOCALES) return true;
+  const lower = locale.toLowerCase().trim();
+  return (
+    lower === "zh" ||
+    lower === "zh-cn" ||
+    lower === "zh-tw" ||
+    lower === "kr" ||
+    lower === "pt-br" ||
+    lower === "es-419"
+  );
 }

@@ -12,6 +12,7 @@ interface UploadDropzoneProps {
   accept?: string;
   className?: string;
   assetName?: FileKitAssetName;
+  language?: string;
 }
 
 // Map pathnames to brand illustration assets
@@ -47,9 +48,15 @@ export default function UploadDropzone({
   accept = ".pdf",
   className = "",
   assetName,
+  language: propLanguage,
 }: UploadDropzoneProps) {
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { language: contextLang, t } = useLanguage();
+  const language = propLanguage || contextLang || "en";
+  const translate = (k: string) => {
+    const val = t(k, language as any);
+    return val === k ? "" : val;
+  };
   const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -111,18 +118,18 @@ export default function UploadDropzone({
         <FileKitAsset
           name={effectiveAssetName}
           className="w-28 h-28 sm:w-36 sm:h-36 max-w-[180px] max-h-[120px] object-contain filter drop-shadow-md hover:scale-105 transition-transform duration-300"
-          alt="Tool operation illustration"
+          decorative={true}
         />
       </div>
 
       {/* Main Drop Text */}
       <h3 className="text-[20px] font-bold text-fk-text leading-tight mb-1">
-        {isGeneric ? (t("homepage.dropzoneTitle") || t("homepage.dropAnywhere")) : (t("workspace.selectFile") || t("workspace.dropHere"))}
+        {isGeneric ? (translate("homepage.dropzoneTitle") || translate("homepage.dropAnywhere")) : (translate("workspace.selectFile") || translate("workspace.dropHere"))}
       </h3>
 
       {/* Sub Drop Text */}
       <p className="text-[13px] text-fk-text-muted mb-5 leading-normal">
-        {isGeneric ? (t("homepage.dropzoneSubtitle") || t("homepage.orChoose")) : t("workspace.pdfOnly")}
+        {isGeneric ? (translate("homepage.dropzoneSubtitle") || translate("homepage.orChoose")) : (translate("workspace.dropNotice") || translate("workspace.pdfOnly"))}
       </p>
 
       {/* Choose File Button */}
@@ -131,12 +138,12 @@ export default function UploadDropzone({
         onClick={onButtonClick}
         className="h-[48px] px-8 bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fk-primary focus-visible:ring-offset-2 mb-4"
       >
-        {t("workspace.selectFile") || t("homepage.chooseFile")}
+        {translate("workspace.selectFile") || translate("homepage.chooseFile")}
       </button>
 
       {/* Small Help Text */}
       <p className="text-[11px] text-fk-text-subtle max-w-[380px] mx-auto leading-normal">
-        {isGeneric ? (t("trust.badge1") || t("homepage.methodShown")) : t("workspace.freeNotice")}
+        {isGeneric ? (translate("trust.badge1") || translate("homepage.methodShown")) : translate("workspace.freeNotice")}
       </p>
     </div>
   );

@@ -10,13 +10,15 @@ export interface VideoWorkspaceProps {
   title: string;
   subtitle: string;
   allowedAccept?: string;
+  language?: string;
 }
 
 export default function VideoWorkspace({
   mode,
   title,
   subtitle,
-  allowedAccept = "video/*"
+  allowedAccept = "video/*",
+  language
 }: VideoWorkspaceProps) {
   const [file, setFile] = useState<File | null>(null);
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
@@ -163,6 +165,7 @@ export default function VideoWorkspace({
             onFileSelect={handleFileSelected}
             accept={allowedAccept}
             isGeneric={false}
+            language={language}
           />
         ) : (
           <div className="flex flex-col gap-6">

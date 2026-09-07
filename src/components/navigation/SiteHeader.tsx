@@ -7,7 +7,7 @@ import { MAIN_NAVIGATION, TopNavItem } from "@/config/navigation";
 import DesktopMegaMenu from "./DesktopMegaMenu";
 import MobileNavigation from "./MobileNavigation";
 import { useLanguage } from "@/components/layout/LanguageContext";
-import { SUPPORTED_LOCALES, SupportedLocale } from "@/config/i18n/locales";
+import { SUPPORTED_LOCALES, SupportedLocale, isValidLocale, normalizeLocale } from "@/config/i18n/locales";
 import { getLocalizedHref } from "@/utils/i18nHelper";
 import FileKitLogo from "../common/FileKitLogo";
 
@@ -23,12 +23,6 @@ const LANGUAGES = Object.values(SUPPORTED_LOCALES).map((loc) => ({
 // Tool search database for live header auto-complete
 const ALL_SEARCHABLE_TOOLS = [
   { name: "Merge PDF Files", route: "/merge-pdf", tag: "PDF", desc: "Combine multiple PDF documents into one" },
-  { name: "Split PDF Document", route: "/split-pdf", tag: "PDF", desc: "Extract pages or split PDF into separate files" },
-  { name: "Rotate PDF Pages", route: "/rotate-pdf-pages", tag: "PDF", desc: "Rotate upside down PDF pages" },
-  { name: "Delete PDF Pages", route: "/delete-pdf-pages", tag: "PDF", desc: "Remove unwanted pages from PDF" },
-  { name: "Extract PDF Pages", route: "/extract-pdf-pages", tag: "PDF", desc: "Extract specific PDF pages into new file" },
-  { name: "Reorder PDF Pages", route: "/reorder-pdf-pages", tag: "PDF", desc: "Drag and drop to rearrange PDF page order" },
-  { name: "Watermark PDF", route: "/watermark-pdf", tag: "PDF", desc: "Add text or logo watermark overlay" },
   { name: "Compress PDF", route: "/compress-pdf", tag: "PDF", desc: "Reduce PDF file size in browser" },
   { name: "Compress PDF to 2 MB", route: "/compress-pdf-to-2mb", tag: "PDF", desc: "Shrink PDF below 2 MB target size" },
   { name: "Compress PDF to Custom Size", route: "/compress-pdf-to-size", tag: "PDF", desc: "Compress PDF to exact target size" },
@@ -57,8 +51,8 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const { language, setLanguage, t } = useLanguage();
 
-  const pathLocaleMatch = pathname.match(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/);
-  const activeLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
+  const segments = pathname ? pathname.split("/").filter(Boolean) : [];
+  const activeLocale = segments.length > 0 ? normalizeLocale(segments[0]) : language || "en";
 
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [initialFocus, setInitialFocus] = useState<"FIRST" | "LAST" | undefined>(undefined);
@@ -245,12 +239,13 @@ export default function SiteHeader() {
           {/* Interactive Language Dropdown with Active Flag & Code */}
           <div className="relative" ref={langMenuRef}>
             {(() => {
-              const pathLocaleMatch = pathname.match(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/);
-              const currentLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
+              const currentLocale = activeLocale;
               const activeLang = LANGUAGES.find(l => l.code === currentLocale) || LANGUAGES[0];
 
-              // Extract current tool slug from pathname (e.g., "/png-to-jpg" or "/es/png-to-jpg" -> "png-to-jpg")
-              const currentSlug = pathname.replace(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/, "").replace(/^\//, "");
+              // Extract current tool slug from pathname
+              const currentSlug = segments.length > 0 && isValidLocale(segments[0])
+                ? segments.slice(1).join("/")
+                : segments.join("/");
 
               return (
                 <>
@@ -323,8 +318,7 @@ export default function SiteHeader() {
 
           {/* All Tools Button */}
           {(() => {
-            const pathLocaleMatch = pathname.match(/^\/([a-z]{2}(?:-[A-Za-z0-9]+)?)(\/|$)/);
-            const currentLocale = pathLocaleMatch ? pathLocaleMatch[1] : language || "en";
+            const currentLocale = activeLocale;
             const allToolsHref = currentLocale && currentLocale !== "en" ? `/${currentLocale}/#all-tools` : "/#all-tools";
 
             return (
@@ -342,7 +336,21 @@ export default function SiteHeader() {
             type="button"
             ref={(el) => { triggerRefs.current["mobile-burger"] = el; }}
             onClick={() => setIsMobileOpen(true)}
-            aria-label="Open navigation menu"
+            aria-label={
+              activeLocale === "ko" || (activeLocale as string) === "kr"
+                ? "내비게이션 메뉴 열기"
+                : activeLocale === "zh-TW" || (activeLocale as string).toLowerCase() === "zh-tw"
+                ? "開啟導覽選單"
+                : activeLocale === "zh-CN" || (activeLocale as string).startsWith("zh")
+                ? "打开导航菜单"
+                : activeLocale === "ja"
+                ? "ナビゲーションメニューを開く"
+                : activeLocale === "ru"
+                ? "Открыть меню навигации"
+                : activeLocale === "uk"
+                ? "Відкрити меню навігації"
+                : "Open navigation menu"
+            }
             className="md:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-xl"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>

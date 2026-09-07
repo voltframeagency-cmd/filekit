@@ -10,13 +10,15 @@ export interface AudioWorkspaceProps {
   title: string;
   subtitle: string;
   allowedAccept?: string;
+  language?: string;
 }
 
 export default function AudioWorkspace({
   mode,
   title,
   subtitle,
-  allowedAccept = "audio/*,video/*"
+  allowedAccept = "audio/*,video/*",
+  language
 }: AudioWorkspaceProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [audioBuffers, setAudioBuffers] = useState<AudioBuffer[]>([]);
@@ -318,6 +320,7 @@ export default function AudioWorkspace({
             onFileSelect={handleFileSelected}
             accept={allowedAccept}
             isGeneric={false}
+            language={language}
           />
         ) : (
           <div className="flex flex-col gap-6">

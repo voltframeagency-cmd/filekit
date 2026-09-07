@@ -9,10 +9,12 @@ interface ArchiveWorkspaceProps {
   title?: string;
   description?: string;
   embedded?: boolean;
+  language?: string;
 }
 
-export function ArchiveWorkspace({ mode, title, description, embedded = true }: ArchiveWorkspaceProps) {
-  const { language } = useLanguage();
+export function ArchiveWorkspace({ mode, title, description, embedded = true, language: propLang }: ArchiveWorkspaceProps) {
+  const { language: ctxLang } = useLanguage();
+  const language = propLang || ctxLang || "en";
   const isSpanish = language === "es" || language === "es-419";
   const isGerman = language === "de";
   const isFrench = language === "fr";
@@ -23,6 +25,9 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
   const isSwedish = language === "sv";
   const isDanish = language === "da";
   const isFinnish = language === "fi";
+  const isTaiwan = language === "zh-TW" || (language as string).toLowerCase() === "zh-tw";
+  const isSimplifiedChinese = !isTaiwan && (language === "zh-CN" || (language as string).toLowerCase() === "zh-cn" || language.startsWith("zh"));
+  const isChinese = isTaiwan || isSimplifiedChinese;
   const [files, setFiles] = useState<File[]>([]);
   const [extractedEntries, setExtractedEntries] = useState<ArchiveEntry[]>([]);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -282,6 +287,10 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   ? "Dateien ablegen, um sie als ZIP zu packen"
                   : isSpanish
                   ? "Suelta archivos para comprimirlos en ZIP"
+                  : isTaiwan
+                  ? "拖放檔案以壓縮為 ZIP"
+                  : isSimplifiedChinese
+                  ? "拖放文件以压缩为 ZIP"
                   : "Drop files to zip together") 
               : (isSwedish
                   ? "Välj arkivfil att extrahera eller konvertera"
@@ -303,6 +312,10 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   ? "Archivdatei zum Entpacken oder Konvertieren auswählen"
                   : isSpanish
                   ? "Selecciona el archivo para extraer o convertir"
+                  : isTaiwan
+                  ? "選取要解壓縮或轉換的壓縮檔"
+                  : isSimplifiedChinese
+                  ? "选择要解压或转换的压缩文件"
                   : "Select archive file to extract")}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
@@ -327,6 +340,10 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   ? "Unterstützt alle Dateiformate (Mehrfachauswahl)"
                   : isSpanish
                   ? "Admite todos los formatos de archivo (Selección múltiple)"
+                  : isTaiwan
+                  ? "支援所有檔案格式（支援多選）"
+                  : isSimplifiedChinese
+                  ? "支持所有文件格式（支持多选）"
                   : "Supports all file formats (Multi-file enabled)") 
               : (isSwedish
                   ? "100% lokal behandling i webbläsaren"
@@ -348,6 +365,10 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   ? "100% lokale Verarbeitung in Ihrem Browser"
                   : isSpanish
                   ? "Procesamiento 100% privado en tu navegador"
+                  : isTaiwan
+                  ? "在瀏覽器中 100% 本機安全處理"
+                  : isSimplifiedChinese
+                  ? "在浏览器中 100% 本地私密处理"
                   : "Processed locally inside your browser")}
           </span>
         </div>
@@ -391,7 +412,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isSwedish ? "Återställ" : isDanish ? "Nulstil" : isFinnish ? "Nollaa" : isCatalan ? "Reiniciar" : isDutch ? "Opnieuw instellen" : isItalian ? "Reimposta" : isPortuguese ? "Repor" : isFrench ? "Réinitialiser" : isGerman ? "Zurücksetzen" : isSpanish ? "Reiniciar" : "Reset"}
+              {isSwedish ? "Återställ" : isDanish ? "Nulstil" : isFinnish ? "Nollaa" : isCatalan ? "Reiniciar" : isDutch ? "Opnieuw instellen" : isItalian ? "Reimposta" : isPortuguese ? "Repor" : isFrench ? "Réinitialiser" : isGerman ? "Zurücksetzen" : isSpanish ? "Reiniciar" : isTaiwan ? "重設" : isSimplifiedChinese ? "重置" : "Reset"}
             </button>
           </div>
 
@@ -399,7 +420,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <label className="text-sm font-semibold text-slate-700">
-                  {isSwedish ? "Arkivnamn:" : isDanish ? "Arkivnavn:" : isFinnish ? "Arkiston nimi:" : isCatalan ? "Nom de l'arxiu:" : isDutch ? "Archiefnaam:" : isItalian ? "Nome archivio:" : isPortuguese ? "Nome do arquivo:" : isFrench ? "Nom de l'archive :" : isGerman ? "Archivname:" : isSpanish ? "Nombre del archivo:" : "Archive Name:"}
+                  {isSwedish ? "Arkivnamn:" : isDanish ? "Arkivnavn:" : isFinnish ? "Arkiston nimi:" : isCatalan ? "Nom de l'arxiu:" : isDutch ? "Archiefnaam:" : isItalian ? "Nome archivio:" : isPortuguese ? "Nome do arquivo:" : isFrench ? "Nom de l'archive :" : isGerman ? "Archivname:" : isSpanish ? "Nombre del archivo:" : isTaiwan ? "壓縮檔名稱：" : isSimplifiedChinese ? "压缩包名称:" : "Archive Name:"}
                 </label>
                 <input
                   type="text"
@@ -415,7 +436,11 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold rounded-fk-lg shadow-fk-button transition-all text-base flex items-center justify-center gap-2"
               >
                 {loading
-                  ? (isSwedish
+                  ? (isTaiwan
+                      ? "正在壓縮檔案至 ZIP..."
+                      : isSimplifiedChinese
+                      ? "正在压缩文件为 ZIP..."
+                      : isSwedish
                       ? "Komprimerar filer till ZIP..."
                       : isDanish
                       ? "Komprimerer filer til ZIP..."
@@ -436,7 +461,11 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                       : isSpanish
                       ? "Comprimiendo archivos en ZIP..."
                       : "Compressing files into ZIP...")
-                  : (isSwedish
+                  : (isTaiwan
+                      ? "建立 ZIP 壓縮檔"
+                      : isSimplifiedChinese
+                      ? "创建 ZIP 压缩包"
+                      : isSwedish
                       ? "Skapa ZIP-arkiv"
                       : isDanish
                       ? "Opret ZIP-arkiv"
@@ -484,6 +513,10 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                   ? `Entpackte Dateien (${extractedEntries.length}):`
                   : isSpanish
                   ? `Archivos extraídos (${extractedEntries.length}):`
+                  : isTaiwan
+                  ? `已解壓縮檔案 (${extractedEntries.length})：`
+                  : isSimplifiedChinese
+                  ? `已解压文件 (${extractedEntries.length}):`
                   : `Extracted Files (${extractedEntries.length}):`}
               </span>
               <div className="max-h-72 overflow-y-auto border border-slate-200 rounded-fk-lg divide-y divide-slate-100">
@@ -494,7 +527,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                       onClick={() => downloadEntry(entry)}
                       className="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold rounded"
                     >
-                      {isSwedish ? "Ladda ner" : isDanish ? "Download" : isFinnish ? "Lataa" : isCatalan ? "Descarregar" : isDutch ? "Downloaden" : isItalian ? "Scarica" : isPortuguese ? "Descarregar" : isFrench ? "Télécharger" : isGerman ? "Herunterladen" : isSpanish ? "Descargar" : "Download"}
+                      {isSwedish ? "Ladda ner" : isDanish ? "Download" : isFinnish ? "Lataa" : isCatalan ? "Descarregar" : isDutch ? "Downloaden" : isItalian ? "Scarica" : isPortuguese ? "Descarregar" : isFrench ? "Télécharger" : isGerman ? "Herunterladen" : isSpanish ? "Descargar" : isTaiwan ? "下載" : isSimplifiedChinese ? "下载" : "Download"}
                     </button>
                   </div>
                 ))}
@@ -526,6 +559,10 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                     ? `✓ ZIP bereit: ${outputFileName}`
                     : isSpanish
                     ? `✓ ZIP listo: ${outputFileName}`
+                    : isTaiwan
+                    ? `✓ ZIP 壓縮檔已就緒：${outputFileName}`
+                    : isSimplifiedChinese
+                    ? `✓ ZIP 压缩包已就绪：${outputFileName}`
                     : `✓ Ready ZIP: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-emerald-700">
@@ -549,6 +586,10 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                     ? `Größe: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% Im Browser`
                     : isSpanish
                     ? `Tamaño: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% En el navegador`
+                    : isTaiwan
+                    ? `大小：${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% 瀏覽器本機運算`
+                    : isSimplifiedChinese
+                    ? `大小：${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% 浏览器本地运算`
                     : `Size: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% In-Browser`}
                 </span>
               </div>
@@ -557,7 +598,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true }: 
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isSwedish ? "Ladda ner ZIP" : isDanish ? "Download ZIP" : isFinnish ? "Lataa ZIP" : isCatalan ? "Descarregar ZIP" : isDutch ? "ZIP downloaden" : isItalian ? "Scarica ZIP" : isPortuguese ? "Descarregar ZIP" : isFrench ? "Télécharger le ZIP" : isGerman ? "ZIP herunterladen" : isSpanish ? "Descargar ZIP" : "Download ZIP"}
+                {isSwedish ? "Ladda ner ZIP" : isDanish ? "Download ZIP" : isFinnish ? "Lataa ZIP" : isCatalan ? "Descarregar ZIP" : isDutch ? "ZIP downloaden" : isItalian ? "Scarica ZIP" : isPortuguese ? "Descarregar ZIP" : isFrench ? "Télécharger le ZIP" : isGerman ? "ZIP herunterladen" : isSpanish ? "Descargar ZIP" : isTaiwan ? "下載 ZIP" : isSimplifiedChinese ? "下载 ZIP" : "Download ZIP"}
               </a>
             </div>
           )}

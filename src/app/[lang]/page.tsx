@@ -18,7 +18,8 @@ import { fileManager } from "@/utils/fileManager";
 export default function LocalizedHomePage() {
   const params = useParams();
   const router = useRouter();
-  const rawLang = (params?.lang as string) || "en";
+  const rawLangInput = (params?.lang as string) || "en";
+  const rawLang = rawLangInput === "kr" ? "ko" : rawLangInput;
   const locale = (NON_DEFAULT_LOCALES.includes(rawLang as SupportedLocale) ? rawLang : "en") as SupportedLocale;
   const direction = getLocaleDirection(locale);
 
