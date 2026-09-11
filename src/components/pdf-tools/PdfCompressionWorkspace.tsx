@@ -6,6 +6,7 @@ import { LocalPdfEngineAdapter } from "@/utils/engine/LocalPdfEngineAdapter";
 import { VerificationResult, ProcessingJob, ProcessingProgressEvent, ProcessingFailure } from "@/utils/engine/types";
 import { PdfCompressionMode, PdfRouteConfig } from "@/config/pdfCompressionRoutes";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { PDF_COMPRESSION_I18N } from "./pdfCompressionTranslations";
 
 export type QualityPriority = "BETTER_QUALITY" | "BALANCED" | "SMALLER_FILE";
 
@@ -19,654 +20,6 @@ export interface PdfCompressionWorkspaceProps {
 const MIN_BYTES = 100 * 1024; // 100 KB
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 
-const workspaceI18n: Record<string, {
-  dropPdf: string;
-  supportsPdf: string;
-  privacyPdf: string;
-  originalSize: string;
-  chooseAnother: string;
-  compressing: string;
-  noBeneficial: string;
-  targetNotMet: string;
-  alreadyBelow: string;
-  compressedOk: string;
-  noReductionDesc: string;
-  original: string;
-  newSize: string;
-  pages: string;
-  reduction: string;
-  processingLocal: string;
-  downloadOriginal: string;
-  downloadBest: string;
-  downloadCompressed: string;
-  adjustSettings: string;
-  settingsTitle: string;
-  compressionGoal: string;
-  betterQuality: string;
-  betterQualityDesc: string;
-  balanced: string;
-  balancedDesc: string;
-  smallerFile: string;
-  smallerFileDesc: string;
-  targetFileSize: string;
-  quickTargets: string;
-  targetOutcome: string;
-  below2mb: string;
-  targetOutcomeDesc: string;
-  compressBtn: string;
-  recompressBtn: string;
-  compressingBtn: string;
-}> = {
-  en: {
-    dropPdf: "Drop your PDF document here or browse",
-    supportsPdf: "Supports standard PDF documents up to 50 MB",
-    privacyPdf: "🔒 Your PDF is processed locally in your browser memory and is not uploaded.",
-    originalSize: "Original Size",
-    chooseAnother: "Choose Another",
-    compressing: "Compressing PDF locally...",
-    noBeneficial: "No beneficial reduction",
-    targetNotMet: "We reduced the PDF, but could not reach requested size safely",
-    alreadyBelow: "Your PDF is already below requested size",
-    compressedOk: "PDF compressed successfully",
-    noReductionDesc: "This PDF is already efficiently compressed with the selected settings. The original file has been preserved.",
-    original: "Original",
-    newSize: "New Size",
-    pages: "Pages",
-    reduction: "Reduction",
-    processingLocal: "Processing: Local Browser",
-    downloadOriginal: "Download Original PDF",
-    downloadBest: "Download Best Result",
-    downloadCompressed: "Download Compressed PDF",
-    adjustSettings: "Adjust Settings",
-    settingsTitle: "PDF Compression Settings",
-    compressionGoal: "Compression Goal",
-    betterQuality: "Better quality",
-    betterQualityDesc: "Preserves more visual detail",
-    balanced: "Balanced",
-    balancedDesc: "Recommended for most documents",
-    smallerFile: "Smaller file",
-    smallerFileDesc: "Prioritizes stronger file-size reduction",
-    targetFileSize: "Target File Size",
-    quickTargets: "Quick Targets:",
-    targetOutcome: "Target Outcome",
-    below2mb: "Below 2 MB",
-    targetOutcomeDesc: "This tool automatically optimizes your PDF document to fit below 2 MB for easy email and upload compatibility.",
-    compressBtn: "Compress PDF",
-    recompressBtn: "Recompress PDF",
-    compressingBtn: "Compressing PDF...",
-  },
-  ar: {
-    dropPdf: "اسحب مستند PDF هنا أو تصفّح",
-    supportsPdf: "يدعم مستندات PDF القياسية حتى 50 ميجابايت",
-    privacyPdf: "🔒 تتم معالجة ملف PDF محلياً في ذاكرة المتصفح ولا يتم رفعه.",
-    originalSize: "الحجم الأصلي",
-    chooseAnother: "اختر ملفاً آخر",
-    compressing: "جارِ ضغط PDF محلياً...",
-    noBeneficial: "لا يوجد تقليل مفيد",
-    targetNotMet: "تم تقليل حجم PDF لكن لم نتمكن من الوصول للحجم المطلوب بأمان",
-    alreadyBelow: "ملف PDF الخاص بك أقل من الحجم المطلوب بالفعل",
-    compressedOk: "تم ضغط PDF بنجاح",
-    noReductionDesc: "ملف PDF هذا مضغوط بكفاءة بالفعل مع الإعدادات المحددة. تم الحفاظ على الملف الأصلي.",
-    original: "الأصلي",
-    newSize: "الحجم الجديد",
-    pages: "الصفحات",
-    reduction: "التقليل",
-    processingLocal: "المعالجة: المتصفح المحلي",
-    downloadOriginal: "تحميل PDF الأصلي",
-    downloadBest: "تحميل أفضل نتيجة",
-    downloadCompressed: "تحميل PDF المضغوط",
-    adjustSettings: "تعديل الإعدادات",
-    settingsTitle: "إعدادات ضغط PDF",
-    compressionGoal: "هدف الضغط",
-    betterQuality: "جودة أفضل",
-    betterQualityDesc: "يحافظ على المزيد من التفاصيل المرئية",
-    balanced: "متوازن",
-    balancedDesc: "موصى به لمعظم المستندات",
-    smallerFile: "ملف أصغر",
-    smallerFileDesc: "يُعطي أولوية لتقليل حجم الملف",
-    targetFileSize: "حجم الملف المستهدف",
-    quickTargets: "أهداف سريعة:",
-    targetOutcome: "النتيجة المستهدفة",
-    below2mb: "أقل من 2 ميجابايت",
-    targetOutcomeDesc: "تعمل هذه الأداة على تحسين مستند PDF ليكون أقل من 2 ميجابايت لسهولة الإرسال والرفع.",
-    compressBtn: "ضغط PDF",
-    recompressBtn: "إعادة ضغط PDF",
-    compressingBtn: "جارِ ضغط PDF...",
-  },
-  tr: {
-    dropPdf: "PDF belgenizi buraya bırakın veya seçin",
-    supportsPdf: "50 MB'a kadar standart PDF belgelerini destekler",
-    privacyPdf: "🔒 PDF'iniz tarayıcınızda yerel olarak işlenir ve yüklenmez.",
-    originalSize: "Orijinal Boyut",
-    chooseAnother: "Başka Seç",
-    compressing: "PDF yerel olarak sıkıştırılıyor...",
-    noBeneficial: "Faydalı küçültme yok",
-    targetNotMet: "PDF küçültüldü ancak istenen boyuta güvenli şekilde ulaşılamadı",
-    alreadyBelow: "PDF'iniz zaten istenen boyutun altında",
-    compressedOk: "PDF başarıyla sıkıştırıldı",
-    noReductionDesc: "Bu PDF seçili ayarlarla zaten verimli şekilde sıkıştırılmış. Orijinal dosya korunmuştur.",
-    original: "Orijinal",
-    newSize: "Yeni Boyut",
-    pages: "Sayfalar",
-    reduction: "Küçültme",
-    processingLocal: "İşlem: Yerel Tarayıcı",
-    downloadOriginal: "Orijinal PDF'i İndir",
-    downloadBest: "En İyi Sonucu İndir",
-    downloadCompressed: "Sıkıştırılmış PDF'i İndir",
-    adjustSettings: "Ayarları Düzenle",
-    settingsTitle: "PDF Sıkıştırma Ayarları",
-    compressionGoal: "Sıkıştırma Hedefi",
-    betterQuality: "Daha iyi kalite",
-    betterQualityDesc: "Daha fazla görsel detay korur",
-    balanced: "Dengeli",
-    balancedDesc: "Çoğu belge için önerilir",
-    smallerFile: "Daha küçük dosya",
-    smallerFileDesc: "Daha güçlü dosya küçültmeye öncelik verir",
-    targetFileSize: "Hedef Dosya Boyutu",
-    quickTargets: "Hızlı Hedefler:",
-    targetOutcome: "Hedef Sonuç",
-    below2mb: "2 MB altı",
-    targetOutcomeDesc: "Bu araç, e-posta ve yükleme uyumluluğu için PDF'nizi otomatik olarak 2 MB altına optimize eder.",
-    compressBtn: "PDF'i Sıkıştır",
-    recompressBtn: "PDF'i Yeniden Sıkıştır",
-    compressingBtn: "PDF sıkıştırılıyor...",
-  },
-  sv: {
-    dropPdf: "Dra och släpp ditt PDF-dokument här eller bläddra",
-    supportsPdf: "Stöder standard PDF-dokument upp till 50 MB",
-    privacyPdf: "🔒 Din PDF bearbetas lokalt i webbläsarens minne och laddas inte upp.",
-    originalSize: "Originalstorlek",
-    chooseAnother: "Välj en annan",
-    compressing: "Komprimerar PDF lokalt...",
-    noBeneficial: "Ingen fördelaktig minskning",
-    targetNotMet: "Vi minskade PDF:en men kunde inte nå begärd storlek säkert",
-    alreadyBelow: "Din PDF är redan under begärd storlek",
-    compressedOk: "PDF komprimerad framgångsrikt",
-    noReductionDesc: "Denna PDF är redan effektivt komprimerad med valda inställningar. Originalfilen har bevarats.",
-    original: "Original",
-    newSize: "Ny storlek",
-    pages: "Sidor",
-    reduction: "Minskning",
-    processingLocal: "Bearbetning: Lokal webbläsare",
-    downloadOriginal: "Ladda ner original-PDF",
-    downloadBest: "Ladda ner bästa resultat",
-    downloadCompressed: "Ladda ner komprimerad PDF",
-    adjustSettings: "Justera inställningar",
-    settingsTitle: "PDF-komprimeringsinställningar",
-    compressionGoal: "Komprimeringsmål",
-    betterQuality: "Bättre kvalitet",
-    betterQualityDesc: "Bevarar mer visuell detalj",
-    balanced: "Balanserad",
-    balancedDesc: "Rekommenderas för de flesta dokument",
-    smallerFile: "Mindre fil",
-    smallerFileDesc: "Prioriterar starkare filstorleksminskning",
-    targetFileSize: "Målfilstorlek",
-    quickTargets: "Snabbval:",
-    targetOutcome: "Målresultat",
-    below2mb: "Under 2 MB",
-    targetOutcomeDesc: "Detta verktyg optimerar automatiskt ditt PDF-dokument till under 2 MB för enkel e-post- och uppladdningskompatibilitet.",
-    compressBtn: "Komprimera PDF",
-    recompressBtn: "Komprimera igen",
-    compressingBtn: "Komprimerar PDF...",
-  },
-  es: {
-    dropPdf: "Suelta tu documento PDF aquí o busca",
-    supportsPdf: "Admite documentos PDF estándar de hasta 50 MB",
-    privacyPdf: "🔒 Tu PDF se procesa localmente en la memoria del navegador y no se sube.",
-    originalSize: "Tamaño original",
-    chooseAnother: "Elegir otro",
-    compressing: "Comprimiendo PDF localmente...",
-    noBeneficial: "Sin reducción beneficiosa",
-    targetNotMet: "Redujimos el PDF pero no se pudo alcanzar el tamaño solicitado de forma segura",
-    alreadyBelow: "Tu PDF ya está por debajo del tamaño solicitado",
-    compressedOk: "PDF comprimido exitosamente",
-    noReductionDesc: "Este PDF ya está comprimido eficientemente con la configuración seleccionada. El archivo original se ha preservado.",
-    original: "Original",
-    newSize: "Nuevo tamaño",
-    pages: "Páginas",
-    reduction: "Reducción",
-    processingLocal: "Procesamiento: Navegador local",
-    downloadOriginal: "Descargar PDF original",
-    downloadBest: "Descargar mejor resultado",
-    downloadCompressed: "Descargar PDF comprimido",
-    adjustSettings: "Ajustar configuración",
-    settingsTitle: "Configuración de compresión PDF",
-    compressionGoal: "Objetivo de compresión",
-    betterQuality: "Mejor calidad",
-    betterQualityDesc: "Preserva más detalle visual",
-    balanced: "Equilibrado",
-    balancedDesc: "Recomendado para la mayoría de documentos",
-    smallerFile: "Archivo más pequeño",
-    smallerFileDesc: "Prioriza una mayor reducción de tamaño",
-    targetFileSize: "Tamaño objetivo",
-    quickTargets: "Objetivos rápidos:",
-    targetOutcome: "Resultado objetivo",
-    below2mb: "Menos de 2 MB",
-    targetOutcomeDesc: "Esta herramienta optimiza automáticamente tu PDF para que sea menor de 2 MB.",
-    compressBtn: "Comprimir PDF",
-    recompressBtn: "Recomprimir PDF",
-    compressingBtn: "Comprimiendo PDF...",
-  },
-  fr: {
-    dropPdf: "Déposez votre document PDF ici ou parcourir",
-    supportsPdf: "Prend en charge les documents PDF standard jusqu'à 50 Mo",
-    privacyPdf: "🔒 Votre PDF est traité localement dans la mémoire de votre navigateur et n'est pas téléchargé.",
-    originalSize: "Taille originale",
-    chooseAnother: "Choisir un autre",
-    compressing: "Compression du PDF en cours...",
-    noBeneficial: "Aucune réduction bénéfique",
-    targetNotMet: "Le PDF a été réduit mais la taille demandée n'a pas pu être atteinte en toute sécurité",
-    alreadyBelow: "Votre PDF est déjà en dessous de la taille demandée",
-    compressedOk: "PDF compressé avec succès",
-    noReductionDesc: "Ce PDF est déjà compressé efficacement avec les paramètres sélectionnés. Le fichier original a été préservé.",
-    original: "Original",
-    newSize: "Nouvelle taille",
-    pages: "Pages",
-    reduction: "Réduction",
-    processingLocal: "Traitement : Navigateur local",
-    downloadOriginal: "Télécharger le PDF original",
-    downloadBest: "Télécharger le meilleur résultat",
-    downloadCompressed: "Télécharger le PDF compressé",
-    adjustSettings: "Ajuster les paramètres",
-    settingsTitle: "Paramètres de compression PDF",
-    compressionGoal: "Objectif de compression",
-    betterQuality: "Meilleure qualité",
-    betterQualityDesc: "Préserve plus de détails visuels",
-    balanced: "Équilibré",
-    balancedDesc: "Recommandé pour la plupart des documents",
-    smallerFile: "Fichier plus petit",
-    smallerFileDesc: "Priorité à une réduction de taille plus forte",
-    targetFileSize: "Taille cible",
-    quickTargets: "Cibles rapides :",
-    targetOutcome: "Résultat cible",
-    below2mb: "Moins de 2 Mo",
-    targetOutcomeDesc: "Cet outil optimise automatiquement votre PDF pour qu'il soit inférieur à 2 Mo.",
-    compressBtn: "Compresser le PDF",
-    recompressBtn: "Recompresser le PDF",
-    compressingBtn: "Compression du PDF...",
-  },
-  de: {
-    dropPdf: "PDF-Dokument hier ablegen oder durchsuchen",
-    supportsPdf: "Unterstützt Standard-PDF-Dokumente bis 50 MB",
-    privacyPdf: "🔒 Ihre PDF wird lokal im Browser-Speicher verarbeitet und nicht hochgeladen.",
-    originalSize: "Originalgröße",
-    chooseAnother: "Andere wählen",
-    compressing: "PDF wird lokal komprimiert...",
-    noBeneficial: "Keine vorteilhafte Reduzierung",
-    targetNotMet: "Die PDF wurde reduziert, aber die gewünschte Größe konnte nicht sicher erreicht werden",
-    alreadyBelow: "Ihre PDF liegt bereits unter der gewünschten Größe",
-    compressedOk: "PDF erfolgreich komprimiert",
-    noReductionDesc: "Diese PDF ist mit den gewählten Einstellungen bereits effizient komprimiert. Die Originaldatei wurde beibehalten.",
-    original: "Original",
-    newSize: "Neue Größe",
-    pages: "Seiten",
-    reduction: "Reduzierung",
-    processingLocal: "Verarbeitung: Lokaler Browser",
-    downloadOriginal: "Original-PDF herunterladen",
-    downloadBest: "Bestes Ergebnis herunterladen",
-    downloadCompressed: "Komprimierte PDF herunterladen",
-    adjustSettings: "Einstellungen anpassen",
-    settingsTitle: "PDF-Komprimierungseinstellungen",
-    compressionGoal: "Komprimierungsziel",
-    betterQuality: "Bessere Qualität",
-    betterQualityDesc: "Erhält mehr visuelle Details",
-    balanced: "Ausgewogen",
-    balancedDesc: "Empfohlen für die meisten Dokumente",
-    smallerFile: "Kleinere Datei",
-    smallerFileDesc: "Priorisiert stärkere Dateigrößenreduzierung",
-    targetFileSize: "Zieldateigröße",
-    quickTargets: "Schnellziele:",
-    targetOutcome: "Zielergebnis",
-    below2mb: "Unter 2 MB",
-    targetOutcomeDesc: "Dieses Tool optimiert Ihr PDF-Dokument automatisch auf unter 2 MB.",
-    compressBtn: "PDF komprimieren",
-    recompressBtn: "PDF erneut komprimieren",
-    compressingBtn: "PDF wird komprimiert...",
-  },
-  pt: {
-    dropPdf: "Solte o seu documento PDF aqui ou procure",
-    supportsPdf: "Suporta documentos PDF padrão até 50 MB",
-    privacyPdf: "🔒 Seu PDF é processado localmente na memória do navegador e não é enviado.",
-    originalSize: "Tamanho original",
-    chooseAnother: "Escolher outro",
-    compressing: "Comprimindo PDF localmente...",
-    noBeneficial: "Sem redução benéfica",
-    targetNotMet: "Reduzimos o PDF mas não conseguimos atingir o tamanho solicitado com segurança",
-    alreadyBelow: "Seu PDF já está abaixo do tamanho solicitado",
-    compressedOk: "PDF comprimido com sucesso",
-    noReductionDesc: "Este PDF já está comprimido de forma eficiente com as configurações selecionadas. O arquivo original foi preservado.",
-    original: "Original",
-    newSize: "Novo tamanho",
-    pages: "Páginas",
-    reduction: "Redução",
-    processingLocal: "Processamento: Navegador local",
-    downloadOriginal: "Baixar PDF original",
-    downloadBest: "Baixar melhor resultado",
-    downloadCompressed: "Baixar PDF comprimido",
-    adjustSettings: "Ajustar configurações",
-    settingsTitle: "Configurações de compressão PDF",
-    compressionGoal: "Objetivo de compressão",
-    betterQuality: "Melhor qualidade",
-    betterQualityDesc: "Preserva mais detalhes visuais",
-    balanced: "Equilibrado",
-    balancedDesc: "Recomendado para a maioria dos documentos",
-    smallerFile: "Arquivo menor",
-    smallerFileDesc: "Prioriza maior redução de tamanho",
-    targetFileSize: "Tamanho alvo",
-    quickTargets: "Alvos rápidos:",
-    targetOutcome: "Resultado alvo",
-    below2mb: "Abaixo de 2 MB",
-    targetOutcomeDesc: "Esta ferramenta otimiza automaticamente seu PDF para ficar abaixo de 2 MB.",
-    compressBtn: "Comprimir PDF",
-    recompressBtn: "Recomprimir PDF",
-    compressingBtn: "Comprimindo PDF...",
-  },
-  it: {
-    dropPdf: "Trascina il tuo documento PDF qui o sfoglia",
-    supportsPdf: "Supporta documenti PDF standard fino a 50 MB",
-    privacyPdf: "🔒 Il tuo PDF viene elaborato localmente nella memoria del browser e non viene caricato.",
-    originalSize: "Dimensione originale",
-    chooseAnother: "Scegli un altro",
-    compressing: "Compressione PDF in corso...",
-    noBeneficial: "Nessuna riduzione utile",
-    targetNotMet: "Il PDF è stato ridotto ma non è stato possibile raggiungere la dimensione richiesta in sicurezza",
-    alreadyBelow: "Il tuo PDF è già sotto la dimensione richiesta",
-    compressedOk: "PDF compresso con successo",
-    noReductionDesc: "Questo PDF è già compresso in modo efficiente con le impostazioni selezionate. Il file originale è stato preservato.",
-    original: "Originale",
-    newSize: "Nuova dimensione",
-    pages: "Pagine",
-    reduction: "Riduzione",
-    processingLocal: "Elaborazione: Browser locale",
-    downloadOriginal: "Scarica PDF originale",
-    downloadBest: "Scarica miglior risultato",
-    downloadCompressed: "Scarica PDF compresso",
-    adjustSettings: "Regola impostazioni",
-    settingsTitle: "Impostazioni compressione PDF",
-    compressionGoal: "Obiettivo compressione",
-    betterQuality: "Qualità migliore",
-    betterQualityDesc: "Preserva più dettagli visivi",
-    balanced: "Bilanciato",
-    balancedDesc: "Consigliato per la maggior parte dei documenti",
-    smallerFile: "File più piccolo",
-    smallerFileDesc: "Priorità a una maggiore riduzione delle dimensioni",
-    targetFileSize: "Dimensione obiettivo",
-    quickTargets: "Obiettivi rapidi:",
-    targetOutcome: "Risultato obiettivo",
-    below2mb: "Sotto 2 MB",
-    targetOutcomeDesc: "Questo strumento ottimizza automaticamente il tuo PDF per essere inferiore a 2 MB.",
-    compressBtn: "Comprimi PDF",
-    recompressBtn: "Ricomprimi PDF",
-    compressingBtn: "Compressione PDF...",
-  },
-  ja: {
-    dropPdf: "PDFドキュメントをここにドロップまたは参照",
-    supportsPdf: "50 MBまでの標準PDFドキュメントをサポート",
-    privacyPdf: "🔒 PDFはブラウザのメモリでローカルに処理され、アップロードされません。",
-    originalSize: "元のサイズ",
-    chooseAnother: "別を選択",
-    compressing: "PDFをローカルで圧縮中...",
-    noBeneficial: "有益な削減なし",
-    targetNotMet: "PDFは縮小されましたが、要求サイズに安全に到達できませんでした",
-    alreadyBelow: "PDFは既に要求サイズ以下です",
-    compressedOk: "PDF圧縮成功",
-    noReductionDesc: "このPDFは選択した設定で既に効率的に圧縮されています。元のファイルは保存されています。",
-    original: "元",
-    newSize: "新サイズ",
-    pages: "ページ",
-    reduction: "削減",
-    processingLocal: "処理: ローカルブラウザ",
-    downloadOriginal: "元のPDFをダウンロード",
-    downloadBest: "最良結果をダウンロード",
-    downloadCompressed: "圧縮PDFをダウンロード",
-    adjustSettings: "設定を調整",
-    settingsTitle: "PDF圧縮設定",
-    compressionGoal: "圧縮目標",
-    betterQuality: "より良い品質",
-    betterQualityDesc: "より多くの視覚的詳細を保持",
-    balanced: "バランス",
-    balancedDesc: "ほとんどのドキュメントに推奨",
-    smallerFile: "より小さいファイル",
-    smallerFileDesc: "ファイルサイズ削減を優先",
-    targetFileSize: "目標ファイルサイズ",
-    quickTargets: "クイック目標:",
-    targetOutcome: "目標結果",
-    below2mb: "2 MB以下",
-    targetOutcomeDesc: "このツールはPDFを2 MB以下に自動最適化します。",
-    compressBtn: "PDFを圧縮",
-    recompressBtn: "PDFを再圧縮",
-    compressingBtn: "PDF圧縮中...",
-  },
-  ko: {
-    dropPdf: "PDF 문서를 여기에 놓거나 찾아보기",
-    supportsPdf: "50 MB까지 표준 PDF 문서 지원",
-    privacyPdf: "🔒 PDF는 브라우저 메모리에서 로컬로 처리되며 업로드되지 않습니다.",
-    originalSize: "원본 크기",
-    chooseAnother: "다른 파일 선택",
-    compressing: "PDF를 로컬에서 압축 중...",
-    noBeneficial: "유익한 감소 없음",
-    targetNotMet: "PDF가 줄었지만 요청 크기에 안전하게 도달하지 못했습니다",
-    alreadyBelow: "PDF가 이미 요청 크기 이하입니다",
-    compressedOk: "PDF 압축 성공",
-    noReductionDesc: "이 PDF는 선택한 설정으로 이미 효율적으로 압축되어 있습니다.",
-    original: "원본",
-    newSize: "새 크기",
-    pages: "페이지",
-    reduction: "감소",
-    processingLocal: "처리: 로컬 브라우저",
-    downloadOriginal: "원본 PDF 다운로드",
-    downloadBest: "최상의 결과 다운로드",
-    downloadCompressed: "압축 PDF 다운로드",
-    adjustSettings: "설정 조정",
-    settingsTitle: "PDF 압축 설정",
-    compressionGoal: "압축 목표",
-    betterQuality: "더 나은 품질",
-    betterQualityDesc: "더 많은 시각적 디테일 보존",
-    balanced: "균형",
-    balancedDesc: "대부분의 문서에 권장",
-    smallerFile: "더 작은 파일",
-    smallerFileDesc: "더 강한 파일 크기 감소 우선",
-    targetFileSize: "목표 파일 크기",
-    quickTargets: "빠른 목표:",
-    targetOutcome: "목표 결과",
-    below2mb: "2 MB 이하",
-    targetOutcomeDesc: "이 도구는 PDF를 2 MB 이하로 자동 최적화합니다.",
-    compressBtn: "PDF 압축",
-    recompressBtn: "PDF 재압축",
-    compressingBtn: "PDF 압축 중...",
-  },
-  nl: {
-    dropPdf: "Sleep je PDF-document hierheen of blader",
-    supportsPdf: "Ondersteunt standaard PDF-documenten tot 50 MB",
-    privacyPdf: "🔒 Je PDF wordt lokaal in het browsergeheugen verwerkt en niet geüpload.",
-    originalSize: "Oorspronkelijke grootte",
-    chooseAnother: "Kies een ander bestand",
-    compressing: "PDF lokaal comprimeren...",
-    noBeneficial: "Geen nuttige verkleining mogelijk",
-    targetNotMet: "We hebben de PDF verkleind maar konden de gewenste grootte niet veilig bereiken",
-    alreadyBelow: "Je PDF is al kleiner dan de gewenste grootte",
-    compressedOk: "PDF succesvol gecomprimeerd",
-    noReductionDesc: "Deze PDF is met de geselecteerde instellingen al optimaal gecomprimeerd. Het originele bestand is bewaard.",
-    original: "Origineel",
-    newSize: "Nieuwe grootte",
-    pages: "Pagina's",
-    reduction: "Verkleining",
-    processingLocal: "Verwerking: Lokale browser",
-    downloadOriginal: "Originele PDF downloaden",
-    downloadBest: "Beste resultaat downloaden",
-    downloadCompressed: "Gecomprimeerde PDF downloaden",
-    adjustSettings: "Instellingen aanpassen",
-    settingsTitle: "PDF-compressie instellingen",
-    compressionGoal: "Compressiedoel",
-    betterQuality: "Betere kwaliteit",
-    betterQualityDesc: "Behoudt meer visuele details",
-    balanced: "Gebalanceerd",
-    balancedDesc: "Aanbevolen voor de meeste documenten",
-    smallerFile: "Kleiner bestand",
-    smallerFileDesc: "Geeft prioriteit aan maximale bestandsverkleining",
-    targetFileSize: "Gewenste bestandsgrootte",
-    quickTargets: "Snelle doelen:",
-    targetOutcome: "Beoogd resultaat",
-    below2mb: "Onder 2 MB",
-    targetOutcomeDesc: "Deze tool optimaliseert je PDF automatisch tot onder 2 MB voor eenvoudig e-mailen en uploaden.",
-    compressBtn: "PDF Comprimeren",
-    recompressBtn: "PDF Opnieuw Comprimeren",
-    compressingBtn: "PDF comprimeren...",
-  },
-  ca: {
-    dropPdf: "Arrossega el teu document PDF aquí o cerca",
-    supportsPdf: "Admet documents PDF estàndard de fins a 50 MB",
-    privacyPdf: "🔒 El teu PDF es processa localment a la memòria del navegador i no es puja.",
-    originalSize: "Mida original",
-    chooseAnother: "Triar un altre",
-    compressing: "Comprimint PDF localment...",
-    noBeneficial: "Sense reducció beneficiosa",
-    targetNotMet: "Hem reduït el PDF però no s'ha pogut assolir la mida sol·licitada amb seguretat",
-    alreadyBelow: "El teu PDF ja està per sota de la mida sol·licitada",
-    compressedOk: "PDF comprimit amb èxit",
-    noReductionDesc: "Aquest PDF ja està comprimit de manera eficient amb la configuració seleccionada. El fitxer original s'ha preservat.",
-    original: "Original",
-    newSize: "Nova mida",
-    pages: "Pàgines",
-    reduction: "Reducció",
-    processingLocal: "Processament: Navegador local",
-    downloadOriginal: "Descarregar PDF original",
-    downloadBest: "Descarregar millor resultat",
-    downloadCompressed: "Descarregar PDF comprimit",
-    adjustSettings: "Ajustar configuració",
-    settingsTitle: "Configuració de compressió PDF",
-    compressionGoal: "Objectiu de compressió",
-    betterQuality: "Millor qualitat",
-    betterQualityDesc: "Preserva més detall visual",
-    balanced: "Equilibrat",
-    balancedDesc: "Recomanat per a la majoria de documents",
-    smallerFile: "Fitxer més petit",
-    smallerFileDesc: "Prioritza una reducció de mida més gran",
-    targetFileSize: "Mida objectiu",
-    quickTargets: "Objectius ràpids:",
-    targetOutcome: "Resultat objectiu",
-    below2mb: "Menys de 2 MB",
-    targetOutcomeDesc: "Aquesta eina optimitza automàticament el teu document PDF perquè ocupi menys de 2 MB.",
-    compressBtn: "Comprimir PDF",
-    recompressBtn: "Recomprimir PDF",
-    compressingBtn: "Comprimint PDF...",
-  },
-  "zh-tw": {
-    dropPdf: "將 PDF 檔案拖放到此處或點擊選取",
-    supportsPdf: "支援高達 50 MB 的標準 PDF 文件",
-    privacyPdf: "🔒 您的 PDF 在瀏覽器本機處理，絕不會上傳至伺服器。",
-    originalSize: "原始大小",
-    chooseAnother: "選取其他檔案",
-    compressing: "正在本機極速壓縮 PDF...",
-    noBeneficial: "無需進一步壓縮",
-    targetNotMet: "PDF 已壓縮，但未能安全達到目標大小",
-    alreadyBelow: "您的 PDF 大小已低於目標大小",
-    compressedOk: "PDF 壓縮成功",
-    noReductionDesc: "使用目前設定，該 PDF 已具備最高壓縮率。已為您保留原始檔案。",
-    original: "原大小",
-    newSize: "新大小",
-    pages: "頁數",
-    reduction: "壓縮率",
-    processingLocal: "處理方式：瀏覽器本機處理",
-    downloadOriginal: "下載原始 PDF",
-    downloadBest: "下載最佳結果",
-    downloadCompressed: "下載壓縮後的 PDF",
-    adjustSettings: "調整壓縮設定",
-    settingsTitle: "PDF 壓縮選項",
-    compressionGoal: "壓縮目標",
-    betterQuality: "較佳畫質",
-    betterQualityDesc: "保留更多影像細節與清晰度",
-    balanced: "均衡模式",
-    balancedDesc: "推薦大多數文件使用",
-    smallerFile: "最小檔案",
-    smallerFileDesc: "優先極致縮減檔案體積",
-    targetFileSize: "目標檔案大小",
-    quickTargets: "常用設定：",
-    targetOutcome: "壓縮目標",
-    below2mb: "2 MB 以內",
-    targetOutcomeDesc: "此工具自動將 PDF 最佳化至 2 MB 以內，方便電子郵件寄送與線上上傳。",
-    compressBtn: "立即壓縮 PDF",
-    recompressBtn: "重新壓縮 PDF",
-    compressingBtn: "正在壓縮 PDF...",
-  },
-  "zh-cn": {
-    dropPdf: "将 PDF 文件拖放到此处或点击选择",
-    supportsPdf: "支持高达 50 MB 的标准 PDF 文档",
-    privacyPdf: "🔒 您的 PDF 在浏览器本地处理，绝不会上传至服务器。",
-    originalSize: "原始大小",
-    chooseAnother: "选择其他文件",
-    compressing: "正在本地快速压缩 PDF...",
-    noBeneficial: "无需进一步压缩",
-    targetNotMet: "PDF 已压缩，但未能安全达到目标大小",
-    alreadyBelow: "您的 PDF 大小已低于目标大小",
-    compressedOk: "PDF 压缩成功",
-    noReductionDesc: "使用当前设置，该 PDF 已具备最高压缩率。已为您保留原始文件。",
-    original: "原大小",
-    newSize: "新大小",
-    pages: "页数",
-    reduction: "压缩率",
-    processingLocal: "处理方式：浏览器本地处理",
-    downloadOriginal: "下载原始 PDF",
-    downloadBest: "下载最佳结果",
-    downloadCompressed: "下载压缩后的 PDF",
-    adjustSettings: "调整压缩设置",
-    settingsTitle: "PDF 压缩选项",
-    compressionGoal: "压缩目标",
-    betterQuality: "较佳画质",
-    betterQualityDesc: "保留更多图像细节与清晰度",
-    balanced: "均衡模式",
-    balancedDesc: "推荐大多数文档使用",
-    smallerFile: "最小文件",
-    smallerFileDesc: "优先极致缩减文件体积",
-    targetFileSize: "目标文件大小",
-    quickTargets: "常用设置：",
-    targetOutcome: "压缩目标",
-    below2mb: "2 MB 以内",
-    targetOutcomeDesc: "此工具自动将 PDF 优化至 2 MB 以内，方便电子邮件发送与线上上传。",
-    compressBtn: "立即压缩 PDF",
-    recompressBtn: "重新压缩 PDF",
-    compressingBtn: "正在压缩 PDF...",
-  },
-  zh: {
-    dropPdf: "将 PDF 文件拖放到此处或点击选择",
-    supportsPdf: "支持高达 50 MB 的标准 PDF 文档",
-    privacyPdf: "🔒 您的 PDF 在浏览器本地处理，绝不会上传至服务器。",
-    originalSize: "原始大小",
-    chooseAnother: "选择其他文件",
-    compressing: "正在本地快速压缩 PDF...",
-    noBeneficial: "无需进一步压缩",
-    targetNotMet: "PDF 已压缩，但未能安全达到目标大小",
-    alreadyBelow: "您的 PDF 大小已低于目标大小",
-    compressedOk: "PDF 压缩成功",
-    noReductionDesc: "使用当前设置，该 PDF 已具备最高压缩率。已为您保留原始文件。",
-    original: "原大小",
-    newSize: "新大小",
-    pages: "页数",
-    reduction: "压缩率",
-    processingLocal: "处理方式：浏览器本地处理",
-    downloadOriginal: "下载原始 PDF",
-    downloadBest: "下载最佳结果",
-    downloadCompressed: "下载压缩后的 PDF",
-    adjustSettings: "调整压缩设置",
-    settingsTitle: "PDF 压缩选项",
-    compressionGoal: "压缩目标",
-    betterQuality: "较佳画质",
-    betterQualityDesc: "保留更多图像细节与清晰度",
-    balanced: "均衡模式",
-    balancedDesc: "推荐大多数文档使用",
-    smallerFile: "最小文件",
-    smallerFileDesc: "优先极致缩减文件体积",
-    targetFileSize: "目标文件大小",
-    quickTargets: "常用设置：",
-    targetOutcome: "压缩目标",
-    below2mb: "2 MB 以内",
-    targetOutcomeDesc: "此工具自动将 PDF 优化至 2 MB 以内，方便电子邮件发送与线上上传。",
-    compressBtn: "立即压缩 PDF",
-    recompressBtn: "重新压缩 PDF",
-    compressingBtn: "正在压缩 PDF...",
-  },
-};
-
 export default function PdfCompressionWorkspace({
   routeConfig,
   initialTargetValue = "2",
@@ -677,7 +30,8 @@ export default function PdfCompressionWorkspace({
   const language = propLang || ctxLang || "en";
   const fullKey = (language || 'en').toLowerCase();
   const shortKey = fullKey.slice(0, 2);
-  const wt = workspaceI18n[fullKey] || workspaceI18n[shortKey] || workspaceI18n.en;
+  const wt = PDF_COMPRESSION_I18N[fullKey] || PDF_COMPRESSION_I18N[shortKey] || PDF_COMPRESSION_I18N.en;
+
   // Mode selection & controls
   const [qualityPriority, setQualityPriority] = useState<QualityPriority>("BALANCED");
   const [targetValue, setTargetValue] = useState<string>(initialTargetValue);
@@ -721,7 +75,7 @@ export default function PdfCompressionWorkspace({
     if (!selected) return;
 
     if (selected.type !== "application/pdf" && !selected.name.toLowerCase().endsWith(".pdf")) {
-      setError("Please select a valid PDF document.");
+      setError(wt.errInvalidPdf);
       return;
     }
 
@@ -762,20 +116,20 @@ export default function PdfCompressionWorkspace({
       const num = parseFloat(targetValue);
       const decimalCount = (targetValue.split(".")[1] || "").length;
       if (isNaN(num) || num <= 0) {
-        setError("Please enter a valid numeric target size.");
+        setError(wt.errInvalidNumber);
         return;
       }
       if (decimalCount > 2) {
-        setError("Target size supports at most 2 decimal places (e.g. 1.5 MB).");
+        setError(wt.errDecimalPlaces);
         return;
       }
       const bytes = targetUnit === "mb" ? Math.round(num * 1024 * 1024) : Math.round(num * 1024);
       if (bytes < MIN_BYTES) {
-        setError("Minimum PDF target size limit is 100 KB.");
+        setError(wt.errMinSize);
         return;
       }
       if (bytes > MAX_BYTES) {
-        setError("Maximum PDF target size limit is 50 MB.");
+        setError(wt.errMaxSize);
         return;
       }
     }
@@ -790,7 +144,7 @@ export default function PdfCompressionWorkspace({
     const currentReqId = ++requestIdRef.current;
     setIsProcessing(true);
     setError(null);
-    setProgressMsg("Reading PDF document...");
+    setProgressMsg(wt.readingPdf);
 
     const targetSizeBytes = calculateTargetSizeBytes();
     trackEvent("compression_settings_submitted", {
@@ -829,13 +183,13 @@ export default function PdfCompressionWorkspace({
         },
         onError: (failure: ProcessingFailure) => {
           if (requestIdRef.current !== currentReqId || controller.signal.aborted) return;
-          let msg = failure.message || "PDF compression failed.";
+          let msg = failure.message || wt.errGeneric;
           if (msg.includes("REJECTED_ENCRYPTED") || failure.category === "PASSWORD_PROTECTED" || failure.category === "PDF_ENCRYPTED_OR_LOCKED") {
-            msg = "Encrypted or password-protected PDFs cannot be compressed locally.";
+            msg = wt.errEncrypted;
           } else if (msg.includes("REJECTED_SIGNED") || failure.category === "UNSUPPORTED_SIGNED_DOCUMENT") {
-            msg = "Digitally signed PDFs cannot be re-compressed without invalidating signatures.";
+            msg = wt.errSigned;
           } else if (msg.includes("MEMORY_LIMIT_EXCEEDED") || failure.category === "LOCAL_MEMORY_LIMIT") {
-            msg = "This PDF document is too large to process safely in browser memory.";
+            msg = wt.errMemory;
           }
           setError(msg);
           setIsProcessing(false);
@@ -846,7 +200,7 @@ export default function PdfCompressionWorkspace({
       await adapter.compress(file, targetSizeStr, job);
     } catch (err: any) {
       if (requestIdRef.current !== currentReqId || controller.signal.aborted) return;
-      setError(err.message || "An error occurred during PDF compression.");
+      setError(err.message || wt.errGeneric);
       setIsProcessing(false);
     }
   };
@@ -1160,7 +514,7 @@ export default function PdfCompressionWorkspace({
         </div>
       )}
 
-      <TrustPanel />
+      <TrustPanel language={language} />
     </div>
   );
 }

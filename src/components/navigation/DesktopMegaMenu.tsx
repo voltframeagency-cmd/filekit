@@ -7,7 +7,7 @@ import { TopNavItem, CONVERTER_NAVIGATION_GROUPS } from "@/config/navigation";
 import { useLanguage } from "@/components/layout/LanguageContext";
 import { getLocalizedHref, VERB_DICTIONARY } from "@/utils/i18nHelper";
 import { SupportedLocale, isValidLocale, normalizeLocale } from "@/config/i18n/locales";
-import { MEGA_MENU_CATEGORIES, EXACT_TOOL_LABELS, PRIMARY_DESCRIPTIONS } from "./megaMenuTranslations";
+import { MEGA_MENU_CATEGORIES, EXACT_TOOL_LABELS, PRIMARY_DESCRIPTIONS, NOUN_MAP, NAV_ACCESSIBILITY_LABELS } from "./megaMenuTranslations";
 
 export interface DesktopMegaMenuProps {
   navItem: TopNavItem;
@@ -150,6 +150,7 @@ export default function DesktopMegaMenu({
   const { language } = useLanguage();
   const segments = pathname ? pathname.split("/").filter(Boolean) : [];
   const activeLocale = segments.length > 0 ? normalizeLocale(segments[0]) : language || "en";
+  const shortLocale = activeLocale.split("-")[0];
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const megaMenu = navItem.megaMenu;
@@ -364,39 +365,6 @@ export default function DesktopMegaMenu({
 
         const toPrep = PREPOSITIONS[activeLocale] || PREPOSITIONS[shortLocale] || dict?.to || "to";
 
-        const NOUN_MAP: Record<string, Record<string, string>> = {
-          Image: {
-            bg: "Изображение",
-            cs: "Obrázek",
-            de: "Bild",
-            es: "Imagen",
-            fr: "Image",
-            hu: "Kép",
-            it: "Immagine",
-            pl: "Obraz",
-            pt: "Imagem",
-            ro: "Imagine",
-            ru: "Изображение",
-            sv: "Bild",
-            uk: "Зображення"
-          },
-          Text: {
-            bg: "Текст",
-            cs: "Text",
-            de: "Text",
-            es: "Texto",
-            fr: "Texte",
-            hu: "Szöveg",
-            it: "Testo",
-            pl: "Tekst",
-            pt: "Texto",
-            ro: "Text",
-            ru: "Текст",
-            sv: "Text",
-            uk: "Текст"
-          }
-        };
-
         if (NOUN_MAP[source]?.[activeLocale] || NOUN_MAP[source]?.[shortLocale]) {
           source = NOUN_MAP[source][activeLocale] || NOUN_MAP[source][shortLocale];
         }
@@ -456,7 +424,7 @@ export default function DesktopMegaMenu({
         id="convert-menu"
         ref={menuRef}
         role="region"
-        aria-label="Convert Tools"
+        aria-label={NAV_ACCESSIBILITY_LABELS.convertTools[activeLocale] || NAV_ACCESSIBILITY_LABELS.convertTools[shortLocale] || "Convert Tools"}
         className="fixed top-16 left-1/2 -translate-x-1/2 mt-2 w-[1240px] max-w-[calc(100vw-2rem)] max-h-[86vh] overflow-y-auto bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl ring-1 ring-slate-900/10 z-50 animate-in fade-in zoom-in-95 duration-150 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent"
       >
         <div className="grid grid-cols-6 gap-5 items-start">
@@ -504,7 +472,7 @@ export default function DesktopMegaMenu({
         id={megaMenu?.id || "mega-menu"}
         ref={menuRef}
         role="region"
-        aria-label={megaMenu?.label || "Mega Menu"}
+        aria-label={(megaMenu?.label && getCategoryHeader(megaMenu.label)) || NAV_ACCESSIBILITY_LABELS.megaMenu[activeLocale] || NAV_ACCESSIBILITY_LABELS.megaMenu[shortLocale] || "Mega Menu"}
         className="absolute top-full ltr:left-0 rtl:right-0 mt-3.5 w-[600px] max-w-[calc(100vw-3rem)] bg-white border border-slate-200 rounded-3xl p-7 shadow-2xl ring-1 ring-slate-900/10 z-50 animate-in fade-in zoom-in-95 duration-150"
       >
         <div className="grid grid-cols-2 gap-7">

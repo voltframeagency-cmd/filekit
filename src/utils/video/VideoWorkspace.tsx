@@ -4,6 +4,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { VideoEngine, TargetBitrateResult } from "./VideoEngine";
 import UploadDropzone from "@/components/upload/UploadDropzone";
 import { fileManager } from "@/utils/fileManager";
+import { useLanguage } from "@/components/layout/LanguageContext";
+import { MEDIA_WORKSPACE_TRANSLATIONS } from "@/config/i18n/mediaWorkspaceTranslations";
+import { SupportedLocale } from "@/config/i18n/locales";
 
 export interface VideoWorkspaceProps {
   mode: "compress" | "convert" | "gif" | "trim" | "mute" | "speed" | "rotate";
@@ -18,8 +21,12 @@ export default function VideoWorkspace({
   title,
   subtitle,
   allowedAccept = "video/*",
-  language
+  language: propLang
 }: VideoWorkspaceProps) {
+  const { language: ctxLang } = useLanguage();
+  const rawLang = propLang || ctxLang || "en";
+  const tr = MEDIA_WORKSPACE_TRANSLATIONS[rawLang as SupportedLocale] || MEDIA_WORKSPACE_TRANSLATIONS[rawLang.split("-")[0] as SupportedLocale] || MEDIA_WORKSPACE_TRANSLATIONS.en;
+
   const [file, setFile] = useState<File | null>(null);
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [duration, setDuration] = useState<number>(0);
@@ -63,46 +70,41 @@ export default function VideoWorkspace({
     if (videoSrc) URL.revokeObjectURL(videoSrc);
     if (outputUrl) URL.revokeObjectURL(outputUrl);
 
-    setLoading(true);
+    setFile(selectedFile);
     setErrorMessage(null);
     setOutputUrl(null);
     setOutputBlob(null);
-    setBitratePlan(null);
 
     const url = URL.createObjectURL(selectedFile);
-    setFile(selectedFile);
     setVideoSrc(url);
-
-    // Initial default target size if compressing
-    if (selectedFile.size > 50 * 1024 * 1024) {
-      setTargetSizeMB(25);
-    } else {
-      setTargetSizeMB(Math.max(5, Math.floor((selectedFile.size * 0.5) / (1024 * 1024))));
-    }
   };
 
   const handleVideoLoadedMetadata = () => {
-    if (videoRef.current && file) {
-      const dur = videoRef.current.duration;
-      const w = videoRef.current.videoWidth;
-      const h = videoRef.current.videoHeight;
+    if (videoRef.current) {
+      const dur = videoRef.current.duration || 0;
+      const w = videoRef.current.videoWidth || 0;
+      const h = videoRef.current.videoHeight || 0;
       setDuration(dur);
       setResolution({ width: w, height: h });
       setTrimRange([0, dur]);
-      setLoading(false);
 
-      if (mode === "compress" && dur > 0) {
-        const plan = VideoEngine.calculateTargetBitrate(dur, targetSizeMB * 1024 * 1024);
-        setBitratePlan(plan);
+      if (file && mode === "compress") {
+        updateBitrateCalculation(dur, targetSizeMB);
       }
     }
   };
 
-  const handleTargetSizeChange = (mb: number) => {
-    setTargetSizeMB(mb);
-    if (duration > 0) {
-      const plan = VideoEngine.calculateTargetBitrate(duration, mb * 1024 * 1024);
+  const updateBitrateCalculation = (dur: number, sizeMB: number) => {
+    if (dur > 0) {
+      const plan = VideoEngine.calculateTargetBitrate(dur, sizeMB * 1024 * 1024);
       setBitratePlan(plan);
+    }
+  };
+
+  const handleTargetSizeChange = (sizeMB: number) => {
+    setTargetSizeMB(sizeMB);
+    if (duration > 0) {
+      updateBitrateCalculation(duration, sizeMB);
     }
   };
 
@@ -144,7 +146,7 @@ export default function VideoWorkspace({
       setOutputFileName(outName);
     } catch (err) {
       console.error("Video processing failed:", err);
-      setErrorMessage("Failed to process video.");
+      setErrorMessage(tr.decodeErrorVideo);
     } finally {
       setProcessing(false);
     }
@@ -165,7 +167,7 @@ export default function VideoWorkspace({
             onFileSelect={handleFileSelected}
             accept={allowedAccept}
             isGeneric={false}
-            language={language}
+            language={rawLang}
           />
         ) : (
           <div className="flex flex-col gap-6">
@@ -186,25 +188,25 @@ export default function VideoWorkspace({
               {/* Metadata Info */}
               <div className="w-full md:w-1/2 flex flex-col gap-3 text-left">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Source File</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{tr.sourceFile}</span>
                   <span className="text-sm font-semibold text-slate-900 truncate max-w-[200px]">{file.name}</span>
                 </div>
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Original Size</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{tr.originalSize}</span>
                   <span className="text-sm font-semibold text-slate-900">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
                 </div>
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Duration</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{tr.duration}</span>
                   <span className="text-sm font-semibold text-slate-900">{formatSeconds(duration)} ({duration.toFixed(1)}s)</span>
                 </div>
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Resolution</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{tr.resolution}</span>
                   <span className="text-sm font-semibold text-slate-900">{resolution.width} × {resolution.height}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Processing Tier</span>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{tr.processingTier}</span>
                   <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                    High-Efficiency Stream Sandbox
+                    {tr.highEfficiencyStream}
                   </span>
                 </div>
               </div>
@@ -215,11 +217,11 @@ export default function VideoWorkspace({
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-fk-lg flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Target File Size Limit
+                    {tr.targetFileSizeLimit}
                   </label>
                   {bitratePlan && (
                     <span className="text-xs font-semibold text-blue-600 font-mono">
-                      Calculated Video Bitrate: {bitratePlan.videoBitrateKbps} kbps
+                      {tr.calculatedBitrate(bitratePlan.videoBitrateKbps)}
                     </span>
                   )}
                 </div>
@@ -236,7 +238,7 @@ export default function VideoWorkspace({
                           : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
                       }`}
                     >
-                      Under {mb} MB {mb === 25 ? "(Email Limit)" : mb === 10 ? "(Discord)" : ""}
+                      {tr.underMb(mb)} {mb === 25 ? "(Email)" : mb === 10 ? "(Discord)" : ""}
                     </button>
                   ))}
                 </div>
@@ -246,7 +248,7 @@ export default function VideoWorkspace({
             {mode === "convert" && (
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-fk-lg flex flex-col gap-3">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Target Video Format
+                  {tr.targetVideoFormat}
                 </label>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                   {["mp4", "webm", "mov", "mkv", "avi"].map((fmt) => (
@@ -284,7 +286,7 @@ export default function VideoWorkspace({
                           : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
                       }`}
                     >
-                      {fps} FPS {fps === 15 ? "(Smooth)" : fps === 10 ? "(Lightweight)" : "(High Quality)"}
+                      {fps} FPS
                     </button>
                   ))}
                 </div>
@@ -295,7 +297,7 @@ export default function VideoWorkspace({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 border border-slate-200 rounded-fk-lg">
                 <div>
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">
-                    Start Timestamp (seconds)
+                    {tr.startTimeSeconds}
                   </label>
                   <input
                     type="number"
@@ -313,7 +315,7 @@ export default function VideoWorkspace({
                 </div>
                 <div>
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">
-                    End Timestamp (seconds)
+                    {tr.endTimeSeconds}
                   </label>
                   <input
                     type="number"
@@ -339,7 +341,7 @@ export default function VideoWorkspace({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
                 </svg>
                 <span className="text-xs text-blue-900 font-medium">
-                  Zero-Reencode Audio Stripping: Audio tracks will be completely purged while preserving 100% original video stream quality.
+                  {tr.browserPrivacyBadge}
                 </span>
               </div>
             )}
@@ -347,15 +349,15 @@ export default function VideoWorkspace({
             {mode === "speed" && (
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-fk-lg flex flex-col gap-3">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Playback Speed Multiplier
+                  {tr.speedFactor}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {[
-                    { label: "0.5x (Slow-Mo)", val: 0.5 },
+                    { label: "0.5x", val: 0.5 },
                     { label: "0.75x", val: 0.75 },
                     { label: "1.25x", val: 1.25 },
-                    { label: "1.5x (Fast)", val: 1.5 },
-                    { label: "2.0x (2x Speed)", val: 2.0 }
+                    { label: "1.5x", val: 1.5 },
+                    { label: "2.0x", val: 2.0 }
                   ].map((item) => (
                     <button
                       key={item.val}
@@ -377,13 +379,13 @@ export default function VideoWorkspace({
             {mode === "rotate" && (
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-fk-lg flex flex-col gap-3">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Video Rotation Angle
+                  {tr.videoRotationAngle}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { label: "90° Clockwise", val: 90 },
-                    { label: "180° Flip", val: 180 },
-                    { label: "270° (90° CCW)", val: 270 }
+                    { label: "90°", val: 90 },
+                    { label: "180°", val: 180 },
+                    { label: "270°", val: 270 }
                   ].map((item) => (
                     <button
                       key={item.val}
@@ -421,7 +423,7 @@ export default function VideoWorkspace({
                 }}
                 className="text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors"
               >
-                Choose different file
+                {tr.chooseDifferentFile}
               </button>
 
               <button
@@ -429,7 +431,7 @@ export default function VideoWorkspace({
                 disabled={processing || loading}
                 className="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-base rounded-fk-lg shadow-sm hover:shadow transition-all disabled:opacity-50"
               >
-                {processing ? "Processing Video..." : `Export ${title.split(" ")[0]} Output`}
+                {processing ? tr.processingVideo : tr.exportOutput(title.split(" ")[0])}
               </button>
             </div>
 
@@ -441,10 +443,10 @@ export default function VideoWorkspace({
                     <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    Ready for Download (Result Verified)
+                    {tr.readyForDownload}
                   </span>
                   <span className="text-xs text-emerald-700 mt-0.5 font-mono">
-                    {outputFileName} · {(outputBlob.size / (1024 * 1024)).toFixed(2)} MB · Zero Watermarks
+                    {outputFileName} · {(outputBlob.size / (1024 * 1024)).toFixed(2)} MB · {tr.zeroWatermarks}
                   </span>
                 </div>
                 <a
@@ -452,7 +454,7 @@ export default function VideoWorkspace({
                   download={outputFileName}
                   className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm rounded-fk-md shadow-sm transition-all"
                 >
-                  Download Output
+                  {tr.downloadOutput}
                 </a>
               </div>
             )}

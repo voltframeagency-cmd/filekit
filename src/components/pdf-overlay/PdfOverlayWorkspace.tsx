@@ -13,6 +13,7 @@ import { PdfWatermarkControls } from "./PdfWatermarkControls";
 import { PdfPagePreview } from "./PdfPagePreview";
 import { PdfOverlayResultCard } from "./PdfOverlayResultCard";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { PDF_OVERLAY_I18N } from "./pdfOverlayTranslations";
 
 interface PdfOverlayWorkspaceProps {
   language?: string;
@@ -21,6 +22,10 @@ interface PdfOverlayWorkspaceProps {
 export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ language: propLang }) => {
   const { t, language: ctxLang } = useLanguage();
   const language = propLang || ctxLang || "en";
+  const rawLang = (language || "en").toLowerCase();
+  const shortLang = rawLang.split("-")[0];
+  const tr = PDF_OVERLAY_I18N[language] || PDF_OVERLAY_I18N[rawLang] || PDF_OVERLAY_I18N[shortLang] || PDF_OVERLAY_I18N.en;
+
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceBuffer, setSourceBuffer] = useState<Uint8Array | null>(null);
   const [progress, setProgress] = useState<PdfOverlayProgress | null>(null);
@@ -56,18 +61,18 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
   const getValidationError = (): string | null => {
     if (watermarkConfig.type === "image") {
       if (!watermarkConfig.imageBuffer || watermarkConfig.imageBuffer.length === 0) {
-        return "Please upload a PNG or JPG logo image.";
+        return tr.uploadLogoPrompt;
       }
       const detectedMime = detectImageMimeType(watermarkConfig.imageBuffer);
       if (!detectedMime) {
-        return "Watermark file must be a valid PNG or JPEG image.";
+        return tr.invalidImageFormat;
       }
     } else if (watermarkConfig.type === "text") {
       if (!watermarkConfig.text || !watermarkConfig.text.trim()) {
-        return "Please enter watermark text.";
+        return tr.enterWatermarkText;
       }
       if (!isWinAnsiSupported(watermarkConfig.text)) {
-        return "Text contains characters not supported by standard PDF fonts.";
+        return tr.unsupportedWinAnsi;
       }
     }
     return null;
@@ -89,7 +94,7 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
 
     setProgress({
       stage: "inspecting",
-      message: "Reading PDF document...",
+      message: tr.readingPdf,
       processedItems: 0,
       totalItems: 1,
       percentage: 10,
@@ -128,14 +133,11 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
 
       if (preflight.signatureWarning) {
         setSignatureWarning(preflight.signatureWarning);
-      } else {
-        setSignatureWarning(null);
       }
 
       setSourceFile(file);
       setSourceBuffer(buffer);
       setProgress(null);
-      setArtifact(null);
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to load PDF file.");
       setProgress(null);
@@ -147,38 +149,44 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
   };
 
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const arrayBuf = await file.arrayBuffer();
-      const imgBuffer = new Uint8Array(arrayBuf);
-      const mimeType = detectImageMimeType(imgBuffer) || (file.type === "image/png" ? "image/png" : "image/jpeg");
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
       setWatermarkConfig((prev) => ({
         ...prev,
-        imageBuffer: imgBuffer,
-        imageMimeType: mimeType,
+        type: "image",
+        imageBuffer: bytes,
+        imageFileName: file.name,
       }));
+    } catch (err: any) {
+      setErrorMessage("Could not read uploaded logo image.");
     }
   };
 
-  const handleApplyWatermark = async () => {
-    if (!sourceBuffer || !sourceFile || isApplyDisabled) return;
+  const handleApplyWatermark = () => {
+    if (isApplyDisabled || !sourceBuffer || !sourceFile) return;
+
     setIsProcessing(true);
     setErrorMessage(null);
-
-    const outputName = `watermarked-${sourceFile.name}`;
+    setProgress({
+      stage: "applying-overlay",
+      message: tr.applyingWatermark,
+      processedItems: 0,
+      totalItems: 100,
+      percentage: 20,
+    });
 
     try {
-      if (typeof Worker === "undefined") {
-        setErrorMessage("WORKER_EXECUTION_FAILED: Web Worker execution is required but not supported in this environment.");
-        setIsProcessing(false);
-        return;
-      }
-
       const worker = new Worker(
-        new URL("../../utils/pdf-overlay/pdfOverlay.worker.ts", import.meta.url),
-        { type: "module" }
+        new URL("../../utils/pdf-overlay/pdfOverlay.worker.ts", import.meta.url)
       );
       workerRef.current = worker;
+
+      const baseName = sourceFile.name.replace(/\.[^/.]+$/, "");
+      const outputName = `${baseName}_watermarked.pdf`;
 
       worker.onmessage = (e: MessageEvent<WorkerResponseMessage>) => {
         const msg = e.data;
@@ -297,91 +305,13 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
             </svg>
           </div>
           <h3 className="text-lg font-bold text-slate-100 mb-1">
-            {language === "ja"
-              ? "ここにPDFファイルをドロップ"
-              : language === "ru"
-              ? "Перетащите PDF сюда"
-              : language === "uk"
-              ? "Перетягніть PDF сюди"
-              : language === "el"
-              ? "Σύρετε το PDF σας εδώ"
-              : language === "sk"
-              ? "Presuňte PDF sem"
-              : language === "sl"
-              ? "Povlecite PDF sem"
-              : language === "bg"
-              ? "Пуснете вашия PDF тук"
-              : language === "hi"
-              ? "यहाँ PDF छोड़ें"
-              : language === "id"
-              ? "Tarik PDF ke sini"
-              : language === "th"
-              ? "ลากไฟล์ PDF มาวางที่นี่"
-              : language === "vi"
-              ? "Kéo thả PDF vào đây"
-              : language === "ms"
-              ? "Lepaskan PDF di sini"
-              : language === "fil"
-              ? "I-drop ang iyong PDF dito"
-              : t("workspace.dropHere") || "Drop your PDF here"}
+            {tr.dropHere}
           </h3>
           <p className="text-xs text-slate-400 mb-4">
-            {language === "ja"
-              ? "またはクリックしてお使いの端末から選択（最大 100 MB）"
-              : language === "ru"
-              ? "или нажмите для выбора с компьютера (до 100 МБ)"
-              : language === "uk"
-              ? "або натисніть для вибору з комп’ютера (до 100 МБ)"
-              : language === "el"
-              ? "ή κάντε κλικ για περιήγηση (έως 100 MB)"
-              : language === "sk"
-              ? "alebo kliknite a vyberte z počítača (až 100 MB)"
-              : language === "sl"
-              ? "ali kliknite za brskanje po računalniku (do 100 MB)"
-              : language === "bg"
-              ? "или кликнете за преглед от компютъра (до 100 MB)"
-              : language === "hi"
-              ? "या कंप्यूटर से चुनने के लिए क्लिक करें (100 MB तक)"
-              : language === "id"
-              ? "atau klik untuk memilih dari komputer Anda (Hingga 100 MB)"
-              : language === "th"
-              ? "หรือคลิกเพื่อเลือกจากคอมพิวเตอร์ของคุณ (สูงสุด 100 MB)"
-              : language === "vi"
-              ? "hoặc nhấp để chọn từ máy tính của bạn (Tối đa 100 MB)"
-              : language === "ms"
-              ? "atau klik untuk memilih dari komputer anda (Sehingga 100 MB)"
-              : language === "fil"
-              ? "o mag-click upang mag-browse mula sa iyong computer (Hanggang 100 MB)"
-              : t("workspace.pdfOnly") || "or click to browse from your computer (Up to 100 MB)"}
+            {tr.pdfOnlyNotice}
           </p>
           <span className="inline-block px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-500/25 transition">
-            {language === "ja"
-              ? "PDFファイルを選択"
-              : language === "ru"
-              ? "Выбрать PDF-файл"
-              : language === "uk"
-              ? "Вибрати PDF-файл"
-              : language === "el"
-              ? "Επιλέξτε αρχείο PDF"
-              : language === "sk"
-              ? "Vybrať PDF súbor"
-              : language === "sl"
-              ? "Izberite datoteko PDF"
-              : language === "bg"
-              ? "Изберете PDF файл"
-              : language === "hi"
-              ? "PDF फ़ाइल चुनें"
-              : language === "id"
-              ? "Pilih File PDF"
-              : language === "th"
-              ? "เลือกไฟล์ PDF"
-              : language === "vi"
-              ? "Chọn tệp PDF"
-              : language === "ms"
-              ? "Pilih Fail PDF"
-              : language === "fil"
-              ? "Pumili ng PDF File"
-              : t("workspace.selectFile") || "Select PDF File"}
+            {tr.selectPdfFile}
           </span>
         </div>
       ) : (
@@ -424,7 +354,7 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
                     onClick={handleCancelWorker}
                     className="text-xs text-red-400 hover:text-red-300 font-semibold"
                   >
-                    {(language === "zh-TW" || (language as string).toLowerCase() === "zh-tw") ? "取消處理" : language.startsWith("zh") ? "取消处理" : language === "ko" ? "처리 취소" : language === "ja" ? "処理を中止" : language === "fil" ? "Kanselahin ang Pagproseso" : "Cancel Processing"}
+                    {tr.cancelProcessing}
                   </button>
                 </div>
               )}
@@ -451,7 +381,7 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
               {/* Live Preview Column */}
               <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col items-center justify-center min-h-[500px]">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 self-start">
-                  Live Placement Preview
+                  {tr.livePlacementPreview}
                 </h3>
                 <PdfPagePreview
                   sourceBuffer={sourceBuffer}

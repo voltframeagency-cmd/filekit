@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { SupportedLocale, getLocaleDirection, isValidLocale, normalizeLocale, SUPPORTED_LOCALES } from "@/config/i18n/locales";
 import { UI_TRANSLATIONS } from "@/config/i18n/translations";
+import { TRUST_TRANSLATIONS } from "@/config/i18n/trustTranslations";
 
 export type Language = SupportedLocale;
 export type Direction = "ltr" | "rtl";
@@ -1979,106 +1980,165 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
 
     // 2b. Dynamic translations for generic dropzone & workspace notices across all 39 locales
-    const isArabic = effectiveLang === "ar";
-    const isTurkish = effectiveLang === "tr";
-    const isSwedish = effectiveLang === "sv" || effectiveLang === "no" || effectiveLang === "da";
-    const isGerman = effectiveLang === "de";
-    const isFrench = effectiveLang === "fr";
-    const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
-    const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
-    const isItalian = effectiveLang === "it";
-    const isPolish = effectiveLang === "pl";
-    const isRussian = effectiveLang === "ru" || effectiveLang === "uk";
-    const isJapanese = effectiveLang === "ja";
-    const isKorean = effectiveLang === "ko";
-    const isChinese = effectiveLang.startsWith("zh");
+    const trustItem = TRUST_TRANSLATIONS[effectiveLang] || TRUST_TRANSLATIONS["en"];
 
-    if (key === "workspace.selectFile") {
-      if (isChinese) return effectiveLang === "zh-TW" ? "選擇 PDF 檔案" : "选择 PDF 文件";
-      if (isJapanese) return "PDFファイルを選択";
-      if (isKorean) return "PDF 파일 선택";
-      if (isRussian) return "Выбрать файл PDF";
-      return "Select PDF File";
+    if (key === "common.or") {
+      const orMap: Record<string, string> = {
+        en: "OR",
+        no: "ELLER",
+        bg: "ИЛИ",
+        es: "O",
+        "es-419": "O",
+        de: "ODER",
+        fr: "OU",
+        pt: "OU",
+        "pt-BR": "OU",
+        it: "O",
+        nl: "OF",
+        sv: "ELLER",
+        da: "ELLER",
+        fi: "TAI",
+        pl: "LUB",
+        cs: "NEBO",
+        hu: "VAGY",
+        ro: "SAU",
+        el: "Ή",
+        sk: "ALEBO",
+        sl: "ALI",
+        ru: "ИЛИ",
+        uk: "АБО",
+        tr: "VEYA",
+        ar: "أو",
+        he: "או",
+        hi: "या",
+        id: "ATAU",
+        ms: "ATAU",
+        th: "หรือ",
+        vi: "HOẶC",
+        fil: "O",
+        ja: "または",
+        ko: "또는",
+        zh: "或",
+        "zh-CN": "或",
+        "zh-TW": "或",
+        ca: "O",
+        lv: "VAI",
+        lt: "ARBA",
+      };
+      return orMap[effectiveLang] || orMap[effectiveLang.split("-")[0]] || "OR";
     }
 
-      if (key === "workspace.selectFiles") {
-        if (isChinese) return effectiveLang === "zh-TW" ? "選擇多個 PDF 檔案" : "选择多个 PDF 文件";
-        if (isJapanese) return "PDFファイルを選択";
-        if (isKorean) return "PDF 파일 선택";
-        if (isRussian) return "Выбрать файлы PDF";
-        return "Select PDF Files";
-      }
+    if (key === "workspace.selectFile") {
+      return trustItem.selectFile;
+    }
+    if (key === "workspace.selectFiles") {
+      return trustItem.selectFile;
+    }
+    if (key === "workspace.dropHere") {
+      return trustItem.dropHere;
+    }
+    if (key === "workspace.pdfOnly" || key === "workspace.dropNotice") {
+      return trustItem.pdfOnly;
+    }
+    if (key === "workspace.supportsPdf") {
+      const supportsMap: Record<string, string> = {
+        en: "Supports PDF up to 50 MB",
+        no: "Støtter PDF opptil 50 MB",
+        bg: "Поддържа PDF до 50 MB",
+        es: "Admite PDF de hasta 50 MB",
+        "es-419": "Admite PDF de hasta 50 MB",
+        de: "Unterstützt PDF bis zu 50 MB",
+        fr: "Prend en charge les PDF jusqu'à 50 Mo",
+        it: "Supporta PDF fino a 50 MB",
+        pt: "Suporta PDF até 50 MB",
+        "pt-BR": "Suporta PDF até 50 MB",
+        nl: "Ondersteunt PDF tot 50 MB",
+        sv: "Stöder PDF upp till 50 MB",
+        da: "Understøtter PDF op til 50 MB",
+        fi: "Tukee jopa 50 Mt:n PDF-tiedostoja",
+        pl: "Obsługuje pliki PDF do 50 MB",
+        cs: "Podporuje PDF až do 50 MB",
+        hu: "Akár 50 MB méretű PDF-ek támogatása",
+        ro: "Acceptă PDF de până la 50 MB",
+        el: "Υποστηρίζει PDF έως 50 MB",
+        sk: "Podporuje PDF až do 50 MB",
+        sl: "Podpira PDF do 50 MB",
+        ru: "Поддерживает PDF до 50 МБ",
+        uk: "Підтримує PDF до 50 МБ",
+        tr: "50 MB'a kadar PDF destekler",
+        ar: "يدعم ملفات PDF حتى 50 ميجابايت",
+        he: "תומך ב-PDF עד 50 מ\"ב",
+        hi: "50 MB तक PDF का समर्थन करता है",
+        id: "Mendukung PDF hingga 50 MB",
+        ms: "Menyokong PDF sehingga 50 MB",
+        th: "รองรับ PDF สูงสุด 50 MB",
+        vi: "Hỗ trợ PDF lên đến 50 MB",
+        fil: "Sumusuporta sa PDF hanggang 50 MB",
+        ja: "最大50MBのPDFをサポート",
+        ko: "최대 50MB PDF 지원",
+        zh: "支持高达 50 MB 的 PDF",
+        "zh-CN": "支持高达 50 MB 的 PDF",
+        "zh-TW": "支援高達 50 MB 的 PDF",
+        ca: "Admet PDF de fins a 50 MB",
+        lv: "Atbalsta PDF līdz 50 MB",
+        lt: "Palaiko PDF iki 50 MB"
+      };
+      return supportsMap[effectiveLang] || supportsMap[effectiveLang.split("-")[0]] || "Supports PDF up to 50 MB";
+    }
+    if (key === "workspace.stayOnDevice") {
+      return trustItem.stayOnDevice;
+    }
 
-      if (key === "workspace.dropHere") {
-        if (isChinese) return effectiveLang === "zh-TW" ? "將 PDF 檔案拖放到此處" : "将 PDF 文件拖放到此处";
-        if (isJapanese) return "ここにPDFファイルをドロップ";
-        if (isKorean) return "여기에 PDF 파일을 드롭하세요";
-        if (isRussian) return "Перетащите PDF сюда";
-        return "Drop your PDF here";
-      }
+    if (key === "workspace.askBeforeTransfer") {
+      const askMap: Record<string, string> = {
+        no: "FileKit vil be om tillatelse før eventuell midlertidig serveroverføring.",
+        bg: "FileKit ще поиска вашето разрешение преди всяко временно прехвърляне към сървър.",
+      };
+      if (askMap[effectiveLang]) return askMap[effectiveLang];
+    }
+    if (key === "workspace.troubleText") {
+      const troubleMap: Record<string, string> = {
+        no: "Har du problemer? Sikker midlertidig behandling er kun tilgjengelig med ditt samtykke.",
+        bg: "Имате проблем? Сигурната временна обработка е достъпна само с вашето съгласие.",
+      };
+      if (troubleMap[effectiveLang]) return troubleMap[effectiveLang];
+    }
+    if (key === "workspace.compressBtn") {
+      const compressBtnMap: Record<string, string> = {
+        no: "Komprimer PDF",
+        bg: "Компресиране на PDF",
+      };
+      if (compressBtnMap[effectiveLang]) return compressBtnMap[effectiveLang];
+    }
 
-      if (key === "workspace.pdfOnly") {
-        if (isArabic) return "معالجة آمنة · يتم إنجاز المهام محلياً في متصفحك مباشرة";
-        if (isTurkish) return "Güvenli İşlem · Görevler doğrudan tarayıcınızda yerel olarak çalıştırılır";
-        if (isSwedish) return "Säker bearbetning · Uppgifter körs lokalt direkt i webbläsaren";
-        if (isGerman) return "Sichere Verarbeitung · Aufgaben werden direkt im Browser ausgeführt";
-        if (isFrench) return "Traitement sécurisé · Les tâches s'exécutent localement dans votre navigateur";
-        if (isSpanish) return "Procesamiento seguro · Las tareas se ejecutan localmente en tu navegador";
-        if (isPortuguese) return "Processamento seguro · As tarefas são executadas localmente no navegador";
-        if (isItalian) return "Elaborazione sicura · Le operazioni vengono eseguite localmente nel browser";
-        if (isPolish) return "Bezpieczne przetwarzanie · Zadania wykonywane lokalnie w przeglądarce";
-        if (isRussian) return "Безопасная обработка · Задачи выполняются локально прямо в браузере";
-        if (isJapanese) return "安全な処理 · ブラウザ内でローカルに実行されます";
-        if (isKorean) return "안전한 로컬 처리 · 브라우저 내에서 직접 실행됩니다";
-        if (isChinese) return effectiveLang === "zh-TW" ? "支援高達 100 MB 的本機 PDF 文件處理" : "支持高达 100 MB 的本地 PDF 文档处理";
-        return "Secure Processing · Operations execute locally directly in your browser";
-      }
-
-      if (key === "workspace.stayOnDevice") {
-        if (isArabic) return "يظل ملفك على هذا الجهاز أثناء المعالجة المحلية الآمنة.";
-        if (isTurkish) return "Yerel işleme güvenli olduğunda dosyanız bu cihazda kalır.";
-        if (isSwedish) return "Filen lämnar inte din enhet vid lokal behandling.";
-        if (isGerman) return "Ihre Datei verbleibt während der lokalen Verarbeitung auf Ihrem Gerät.";
-        if (isFrench) return "Votre fichier reste sur votre appareil lors du traitement local.";
-        if (isSpanish) return "Tu archivo permanece en tu dispositivo durante el procesamiento local.";
-        if (isPortuguese) return "O seu arquivo permanece no seu dispositivo durante o processamento local.";
-        if (isItalian) return "Il tuo file rimane sul tuo dispositivo durante l'elaborazione locale.";
-        if (isPolish) return "Twój plik pozostaje na Twoim urządzeniu podczas przetwarzania lokalnego.";
-        if (isRussian) return "Ваш файл остается на устройстве во время локальной обработки.";
-        if (isJapanese) return "ローカル処理中、ファイルはお使いのデバイス内に保持されます。";
-        if (isKorean) return "로컬 처리 중에는 파일이 기기를 벗어나지 않습니다.";
-        if (isChinese) return effectiveLang === "zh-TW" ? "🔒 瀏覽器本機安全處理，您的檔案絕不會被上傳。" : "🔒 浏览器本地安全处理，您的文件绝不会被上传。";
-        return "Your file stays on this device whenever local processing is safe.";
-      }
-
-      if (key.startsWith("trust.")) {
-        if (isChinese) {
-          const isTaiwan = effectiveLang === "zh-TW";
-          if (key === "trust.privateTitle") return "100% 隱私安全";
-          if (key === "trust.privateDesc1") return isTaiwan ? "您的檔案完全由您自主掌控。" : "您的文件完全由您自主掌控。";
-          if (key === "trust.privateDesc2") return "";
-          if (key === "trust.localTitle") return isTaiwan ? "本機端優先處理" : "本地端优先处理";
-          if (key === "trust.localDesc1") return isTaiwan ? "在安全的前提下均在瀏覽器本機直接運算。" : "在安全的前提下均在浏览器本地直接运算。";
-          if (key === "trust.localDesc2") return "";
-          if (key === "trust.tempTitle") return isTaiwan ? "僅臨時保留" : "仅临时保留";
-          if (key === "trust.tempDesc1") return isTaiwan ? "伺服器上的臨時檔案會自動過期並完全銷毀。" : "服务器上的临时文件会自动过期并完全销毁。";
-          if (key === "trust.tempDesc2") return "";
-          if (key === "trust.trialTitle") return isTaiwan ? "無任何隱藏訂閱" : "无任何隐藏订阅";
-          if (key === "trust.trialDesc1") return isTaiwan ? "清晰透明的使用條款與計費說明。" : "清晰透明的使用条款与计费说明。";
-          if (key === "trust.trialDesc2") return "";
-        }
-      }
+    if (key.startsWith("trust.")) {
+      if (key === "trust.privateTitle") return trustItem.privateTitle;
+      if (key === "trust.privateDesc1") return trustItem.privateDesc1;
+      if (key === "trust.privateDesc2") return "";
+      if (key === "trust.localTitle") return trustItem.localTitle;
+      if (key === "trust.localDesc1") return trustItem.localDesc1;
+      if (key === "trust.localDesc2") return "";
+      if (key === "trust.tempTitle") return trustItem.tempTitle;
+      if (key === "trust.tempDesc1") return trustItem.tempDesc1;
+      if (key === "trust.tempDesc2") return "";
+      if (key === "trust.trialTitle") return trustItem.trialTitle;
+      if (key === "trust.trialDesc1") return trustItem.trialDesc1;
+      if (key === "trust.trialDesc2") return "";
+    }
 
     if (key === "homepage.searchPlaceholder") {
+      const isChinese = effectiveLang.startsWith("zh");
       if (isChinese) return effectiveLang === "zh-TW" ? "搜尋 100+ 款線上工具..." : "搜索 100+ 款实用工具...";
     }
     if (key === "homepage.footerNote") {
-      if (isChinese) return effectiveLang === "zh-TW" ? "免費基礎工具。進階匯出 €4.99 起。無任何隱藏訂閱。" : "免费基础工具。高级导出 €4.99 起。无任何隐藏订阅。";
+      return trustItem.footerNote;
     }
     if (key === "homepage.popularTools") {
+      const isChinese = effectiveLang.startsWith("zh");
       if (isChinese) return effectiveLang === "zh-TW" ? "熱門推薦工具" : "常用热门工具";
     }
     if (key === "homepage.viewAll" || key === "homepage.browseAll") {
+      const isChinese = effectiveLang.startsWith("zh");
       if (isChinese) return effectiveLang === "zh-TW" ? "探索全部 100+ 工具 →" : "探索全部 100+ 工具 →";
     }
 
@@ -2094,6 +2154,52 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
     // 4. Match common tool keys across languages
     if (key.startsWith("tool.") || key.startsWith("breadcrumb.")) {
+      if (key === "breadcrumb.home") {
+        const homeMap: Record<string, string> = {
+          en: "Home",
+          no: "Hjem",
+          bg: "Начало",
+          es: "Inicio",
+          "es-419": "Inicio",
+          de: "Startseite",
+          fr: "Accueil",
+          it: "Home",
+          pt: "Início",
+          "pt-BR": "Início",
+          nl: "Home",
+          sv: "Hem",
+          da: "Hjem",
+          fi: "Koti",
+          pl: "Strona główna",
+          cs: "Domů",
+          hu: "Főoldal",
+          ro: "Acasă",
+          el: "Αρχική",
+          sk: "Domov",
+          sl: "Domov",
+          ru: "Главная",
+          uk: "Головна",
+          tr: "Ana Sayfa",
+          ar: "الرئيسية",
+          he: "בית",
+          hi: "होम",
+          id: "Beranda",
+          ms: "Utama",
+          th: "หน้าแรก",
+          vi: "Trang chủ",
+          fil: "Home",
+          ja: "ホーム",
+          ko: "홈",
+          zh: "首页",
+          "zh-CN": "首页",
+          "zh-TW": "首頁",
+          ca: "Inici",
+          lv: "Sākums",
+          lt: "Pradžia"
+        };
+        return homeMap[effectiveLang] || homeMap[effectiveLang.split("-")[0]] || "Home";
+      }
+
       const isArabic = effectiveLang === "ar";
       const isTurkish = effectiveLang === "tr";
       const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
@@ -2101,6 +2207,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const isGerman = effectiveLang === "de";
       const isFrench = effectiveLang === "fr";
       const isItalian = effectiveLang === "it";
+      const isNorwegian = effectiveLang === "no";
+      const isBulgarian = effectiveLang === "bg";
 
       if (isSpanish) {
         if (key === "tool.merge.title" || key === "breadcrumb.merge") return "Unir PDF";
@@ -2177,47 +2285,129 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         if (key === "tool.resize.desc") return "Pixel o KB esatti";
         if (key === "tool.pdfToWord.title") return "PDF in Word";
         if (key === "tool.pdfToWord.desc") return "File DOCX modificabile";
+      } else if (isNorwegian) {
+        if (key === "breadcrumb.compress" || key === "tool.compress.title") return "Komprimer PDF";
+        if (key === "tool.merge.title" || key === "breadcrumb.merge") return "Slå sammen PDF";
+        if (key === "tool.merge.desc") return "Kombiner PDF-filer";
+        if (key === "tool.compress.desc") return "Gjør PDF-filer mindre";
+        if (key === "tool.split.title" || key === "breadcrumb.split") return "Del opp PDF";
+        if (key === "tool.split.desc") return "Separer PDF-sider";
+        if (key === "tool.rotate.title" || key === "breadcrumb.rotate") return "Roter PDF";
+        if (key === "tool.rotate.desc") return "Roter PDF-sider";
+        if (key === "tool.watermark.title") return "Vannmerke PDF";
+        if (key === "tool.watermark.desc") return "Legg til tekst eller bilde";
+        if (key === "tool.resize.title") return "Endre bildestørrelse";
+        if (key === "tool.resize.desc") return "Nøyaktige piksler eller KB";
+        if (key === "tool.pdfToWord.title") return "PDF til Word";
+        if (key === "tool.pdfToWord.desc") return "Redigerbart DOCX-format";
+      } else if (isBulgarian) {
+        if (key === "breadcrumb.compress" || key === "tool.compress.title") return "Компресиране на PDF";
+        if (key === "tool.merge.title" || key === "breadcrumb.merge") return "Обединяване на PDF";
+        if (key === "tool.merge.desc") return "Комбиниране на PDF файлове";
+        if (key === "tool.compress.desc") return "Намаляване размера на PDF";
+        if (key === "tool.split.title" || key === "breadcrumb.split") return "Разделяне на PDF";
+        if (key === "tool.split.desc") return "Разделяне на страници от PDF";
+        if (key === "tool.rotate.title" || key === "breadcrumb.rotate") return "Завъртане на PDF";
+        if (key === "tool.rotate.desc") return "Завъртане на PDF страници";
+        if (key === "tool.watermark.title") return "Воден знак за PDF";
+        if (key === "tool.watermark.desc") return "Добавяне на текст или лого";
+        if (key === "tool.resize.title") return "Преоразмеряване на изображение";
+        if (key === "tool.resize.desc") return "Точни пиксели или KB";
+        if (key === "tool.pdfToWord.title") return "PDF в Word";
+        if (key === "tool.pdfToWord.desc") return "Редактируем DOCX файл";
       }
     }
 
     if (key === "nav.resize") {
-      const isChinese = effectiveLang.startsWith("zh");
-      const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
-      const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
-      const isGerman = effectiveLang === "de";
-      const isFrench = effectiveLang === "fr";
-      const isItalian = effectiveLang === "it";
-      const isArabic = effectiveLang === "ar";
-      const isTurkish = effectiveLang === "tr";
-
-      if (isChinese) return effectiveLang === "zh-TW" ? "調整尺寸" : "调整尺寸";
-      if (isSpanish) return "Redimensionar";
-      if (isPortuguese) return "Redimensionar";
-      if (isGerman) return "Größe ändern";
-      if (isFrench) return "Redimensionner";
-      if (isItalian) return "Ridimensiona";
-      if (isArabic) return "تغيير الحجم";
-      if (isTurkish) return "Yeniden Boyutlandır";
+      const resizeMap: Record<string, string> = {
+        en: "Resize",
+        no: "Endre størrelse",
+        bg: "Преоразмеряване",
+        da: "Tilpas størrelse",
+        sv: "Ändra storlek",
+        fi: "Muuta kokoa",
+        de: "Größe ändern",
+        es: "Redimensionar",
+        "es-419": "Redimensionar",
+        fr: "Redimensionner",
+        it: "Ridimensiona",
+        pt: "Redimensionar",
+        "pt-BR": "Redimensionar",
+        nl: "Formaat wijzigen",
+        ca: "Redimensionar",
+        pl: "Zmień rozmiar",
+        cs: "Změnit velikost",
+        sk: "Zmeniť veľkosť",
+        sl: "Spremeni velikost",
+        hu: "Átméretezés",
+        ro: "Redimensionează",
+        el: "Αλλαγή μεγέθους",
+        ru: "Изменить размер",
+        uk: "Змінити розмір",
+        tr: "Yeniden Boyutlandır",
+        ar: "تغيير الحجم",
+        he: "שינוי גודל",
+        hi: "रीसाइज़ करें",
+        id: "Ubah Ukuran",
+        ms: "Ubah Saiz",
+        th: "ปรับขนาด",
+        vi: "Đổi kích thước",
+        fil: "Baguhin ang laki",
+        ja: "リサイズ",
+        ko: "크기 조정",
+        "zh-CN": "调整尺寸",
+        "zh-TW": "調整尺寸",
+        lv: "Mainīt izmēru",
+        lt: "Keisti dydį"
+      };
+      const shortLocale = effectiveLang.split("-")[0];
+      return resizeMap[effectiveLang] || resizeMap[shortLocale] || "Resize";
     }
 
     if (key === "nav.pricing") {
-      const isChinese = effectiveLang.startsWith("zh");
-      const isSpanish = effectiveLang === "es" || effectiveLang === "es-419";
-      const isPortuguese = effectiveLang === "pt" || effectiveLang === "pt-BR";
-      const isGerman = effectiveLang === "de";
-      const isFrench = effectiveLang === "fr";
-      const isItalian = effectiveLang === "it";
-      const isArabic = effectiveLang === "ar";
-      const isTurkish = effectiveLang === "tr";
-
-      if (isChinese) return effectiveLang === "zh-TW" ? "價格" : "价格";
-      if (isSpanish) return "Precios";
-      if (isPortuguese) return "Preços";
-      if (isGerman) return "Preise";
-      if (isFrench) return "Tarifs";
-      if (isItalian) return "Prezzi";
-      if (isArabic) return "الأسعار";
-      if (isTurkish) return "Fiyatlandırma";
+      const pricingMap: Record<string, string> = {
+        en: "Pricing",
+        no: "Priser",
+        bg: "Цени",
+        da: "Priser",
+        sv: "Priser",
+        fi: "Hinnoittelu",
+        de: "Preise",
+        es: "Precios",
+        "es-419": "Precios",
+        fr: "Tarifs",
+        it: "Prezzi",
+        pt: "Preços",
+        "pt-BR": "Preços",
+        nl: "Prijzen",
+        ca: "Preus",
+        pl: "Cennik",
+        cs: "Ceník",
+        sk: "Cenník",
+        sl: "Cene",
+        hu: "Árak",
+        ro: "Prețuri",
+        el: "Τιμές",
+        ru: "Тарифы",
+        uk: "Ціни",
+        tr: "Fiyatlandırma",
+        ar: "الأسعار",
+        he: "מחירים",
+        hi: "कीमतें",
+        id: "Harga",
+        ms: "Harga",
+        th: "ราคา",
+        vi: "Bảng giá",
+        fil: "Presyo",
+        ja: "料金",
+        ko: "요금제",
+        "zh-CN": "价格",
+        "zh-TW": "價格",
+        lv: "Cenas",
+        lt: "Kainos"
+      };
+      const shortLocale = effectiveLang.split("-")[0];
+      return pricingMap[effectiveLang] || pricingMap[shortLocale] || "Pricing";
     }
 
     // 6. Fallback to English legacy dictionary

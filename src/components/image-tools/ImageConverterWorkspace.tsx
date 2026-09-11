@@ -11,6 +11,7 @@ import { ImageConversionResult, ImageConversionPreflightReport, SupportedImageFo
 import { ImageConversionRouteConfig } from "@/config/imageConversionRoutes";
 import { FileKitAsset } from "@/components/visuals/FileKitAsset";
 import { FileKitAssetName, fileKitAssets } from "@/components/visuals/assetRegistry";
+import { IMAGE_CONVERTER_I18N } from "./imageConverterTranslations";
 
 export interface ImageConverterWorkspaceProps {
   routeConfig: ImageConversionRouteConfig;
@@ -20,25 +21,10 @@ export interface ImageConverterWorkspaceProps {
 export default function ImageConverterWorkspace({ routeConfig, language: propLanguage }: ImageConverterWorkspaceProps) {
   const pathname = usePathname();
   const { t, language: contextLanguage } = useLanguage();
-  const language = propLanguage || contextLanguage;
-  const isMalay = language === "ms";
-  const isThai = language === "th";
-  const isVietnamese = language === "vi";
-  const isFilipino = language === "fil";
-  const isSpanish = language === "es" || language === "es-419";
-  const isGerman = language === "de";
-  const isFrench = language === "fr";
-  const isPortuguese = language === "pt" || language === "pt-BR";
-  const isItalian = language === "it";
-  const isDutch = language === "nl";
-  const isCatalan = language === "ca";
-  const isSwedish = language === "sv";
-  const isDanish = language === "da";
-  const isFinnish = language === "fi";
-  const isJapanese = language === "ja";
-  const isKorean = language === "ko";
-  const isChinese = language.startsWith("zh");
-  const isTaiwan = language === "zh-TW";
+  const language = propLanguage || contextLanguage || "en";
+  const rawLang = language.toLowerCase();
+  const shortLang = rawLang.split("-")[0];
+  const tr = IMAGE_CONVERTER_I18N[language] || IMAGE_CONVERTER_I18N[rawLang] || IMAGE_CONVERTER_I18N[shortLang] || IMAGE_CONVERTER_I18N.en;
 
   // Target format state
   const [targetFormat, setTargetFormat] = useState<SupportedImageFormat>(
@@ -342,41 +328,7 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
                   onClick={handleResetWorkspace}
                   className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-3 py-1.5 border border-fk-border rounded-fk-md bg-white hover:bg-fk-surface-muted transition-colors shrink-0"
                 >
-                  {isChinese
-                    ? isTaiwan ? "選擇其他檔案" : "选择其他文件"
-                    : isJapanese
-                    ? "別の画像を選択"
-                    : isKorean
-                    ? "다른 파일 선택"
-                    : isFilipino
-                    ? "Pumili ng Iba"
-                    : isVietnamese
-                    ? "Chọn tệp khác"
-                    : isThai
-                    ? "เลือกไฟล์อื่น"
-                    : isMalay
-                    ? "Pilih Yang Lain"
-                    : isSwedish
-                    ? "Välj en annan"
-                    : isDanish
-                    ? "Vælg et andet"
-                    : isFinnish
-                    ? "Valitse toinen"
-                    : isCatalan
-                    ? "Tria'n un altre"
-                    : isDutch
-                    ? "Kies een andere"
-                    : isItalian
-                    ? "Scegli un'altra"
-                    : isPortuguese
-                    ? "Escolher outra"
-                    : isFrench
-                    ? "Choisir une autre"
-                    : isGerman
-                    ? "Andere wählen"
-                    : isSpanish
-                    ? "Elegir otra"
-                    : "Choose Another"}
+                  {tr.chooseAnother}
                 </button>
               </div>
 
@@ -385,41 +337,7 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
                 {isProcessing ? (
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-blue-50 border-blue-200 text-blue-800 w-fit animate-pulse">
                     <span>⚡</span>
-                    <span>
-                      {isChinese
-                        ? isTaiwan ? "正在轉檔圖片..." : "正在转换图片..."
-                        : isJapanese
-                        ? "画像を変換中..."
-                        : isKorean
-                        ? "이미지 변환 중..."
-                        : isFilipino
-                        ? "Kinukumberte ang Larawan..."
-                        : isThai
-                        ? "กำลังแปลงรูปภาพ..."
-                        : isMalay
-                        ? "Menukar imej..."
-                        : isSwedish
-                        ? "Konverterar bild..."
-                        : isDanish
-                        ? "Konverterer billede..."
-                        : isFinnish
-                        ? "Muunnetaan kuvaa..."
-                        : isCatalan
-                        ? "Convertint imatge..."
-                        : isDutch
-                        ? "Afbeelding converteren..."
-                        : isItalian
-                        ? "Conversione dell'immagine in corso..."
-                        : isPortuguese
-                        ? "A converter imagem..."
-                        : isFrench
-                        ? "Conversion de l'image en cours..."
-                        : isGerman
-                        ? "Bild wird konvertiert..."
-                        : isSpanish
-                        ? "Convirtiendo imagen..."
-                        : "Converting Image..."}
-                    </span>
+                    <span>{tr.converting}</span>
                   </div>
                 ) : result ? (
                   <div
@@ -428,82 +346,14 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
                     className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-fk-success-bg border-[#BBF7D0] text-fk-success w-fit focus:outline-none"
                   >
                     <span>✓</span>
-                    <span>
-                      {isChinese
-                        ? isTaiwan ? "圖片已成功轉檔" : "图片已成功转换"
-                        : isJapanese
-                        ? "画像の変換が完了しました"
-                        : isKorean
-                        ? "이미지 변환이 완료되었습니다"
-                        : isFilipino
-                        ? "Matagumpay na nakumberte ang larawan"
-                        : isThai
-                        ? "แปลงรูปภาพสำเร็จแล้ว"
-                        : isMalay
-                        ? "Imej berjaya ditukar"
-                        : isSwedish
-                        ? "Bilden har konverterats"
-                        : isDanish
-                        ? "Billede konverteret med succes"
-                        : isFinnish
-                        ? "Kuva muunnettu onnistuneesti"
-                        : isCatalan
-                        ? "Imatge convertida amb èxit"
-                        : isDutch
-                        ? "Afbeelding succesvol geconverteerd"
-                        : isItalian
-                        ? "Immagine convertita con successo"
-                        : isPortuguese
-                        ? "Imagem convertida com sucesso"
-                        : isFrench
-                        ? "Image convertie avec succès"
-                        : isGerman
-                        ? "Bild erfolgreich konvertiert"
-                        : isSpanish
-                        ? "Imagen convertida exitosamente"
-                        : "Image converted successfully"}
-                    </span>
+                    <span>{tr.convertedSuccess}</span>
                   </div>
                 ) : null}
 
                 {/* Transparency Warning Notice */}
                 {!isProcessing && isTransparentToJpg && (
                   <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 text-[12px] rounded-fk-md font-medium">
-                    {isChinese
-                      ? isTaiwan
-                        ? "⚠️ JPEG 不支援透明度。透明區域將填入所選的背景顏色。"
-                        : "⚠️ JPEG 不支持透明度。透明区域将填充所选背景颜色。"
-                      : isJapanese
-                      ? "⚠️ JPEGは透明度をサポートしていません。透明な領域には選択した背景色が適用されます。"
-                      : isKorean
-                      ? "⚠️ JPEG은 투명도를 지원하지 않습니다. 투명한 영역에는 선택한 배경색이 적용됩니다."
-                      : isFilipino
-                      ? "⚠️ Hindi sinusuportahan ng JPEG ang transparency. Gagamitin ng mga transparent na bahagi ang napiling kulay ng background."
-                      : isThai
-                      ? "⚠️ รูปแบบ JPEG ไม่รองรับความโปร่งใส พื้นที่โปร่งใสจะถูกแทนที่ด้วยสีพื้นหลังที่เลือก"
-                      : isMalay
-                      ? "⚠️ Format JPEG tidak menyokong ketelusan. Kawasan lut sinar akan menggunakan warna latar belakang yang dipilih."
-                      : isSwedish
-                      ? "⚠️ JPEG stöder inte transparens. Genomskinliga områden får vald bakgrundsfärg."
-                      : isDanish
-                      ? "⚠️ JPEG understøtter ikke gennemsigtighed. Gennemsigtige områder bruger den valgte baggrundsfarve."
-                      : isFinnish
-                      ? "⚠️ JPEG ei tue läpinäkyvyyttä. Läpinäkyvät alueet käyttävät valittua taustaväriä."
-                      : isCatalan
-                      ? "⚠️ JPEG no admet transparència. Les àrees transparents utilitzaran el color de fons seleccionat."
-                      : isDutch
-                      ? "⚠️ JPEG ondersteunt geen transparantie. Transparante delen krijgen de geselecteerde achtergrondkleur."
-                      : isItalian
-                      ? "⚠️ Il formato JPEG non supporta la trasparenza. Le aree trasparenti useranno il colore di sfondo selezionato."
-                      : isPortuguese
-                      ? "⚠️ O formato JPEG não suporta transparência. As áreas transparentes usarão a cor de fundo selecionada."
-                      : isFrench
-                      ? "⚠️ Le format JPEG ne gère pas la transparence. Les zones transparentes utiliseront la couleur d'arrière-plan choisie."
-                      : isGerman
-                      ? "⚠️ JPEG unterstützt keine Transparenz. Transparente Bereiche verwenden die ausgewählte Hintergrundfarbe."
-                      : isSpanish
-                      ? "⚠️ JPEG no admite transparencia. Las áreas transparentes usarán el color de fondo seleccionado."
-                      : "⚠️ JPEG does not support transparency. Transparent areas will use the selected background color."}
+                    {tr.transparencyWarning}
                   </div>
                 )}
               </div>
@@ -540,76 +390,8 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
                     <span>📐 {result.outputWidth} × {result.outputHeight} px</span>
                     <span>
                       {result.isLarger
-                        ? isChinese
-                          ? isTaiwan
-                            ? `📈 檔案大小增加了 ${result.sizeChangePercentage}%`
-                            : `📈 文件大小增加了 ${result.sizeChangePercentage}%`
-                          : isJapanese
-                          ? `📈 出力ファイルが ${result.sizeChangePercentage}% 増加しました`
-                          : isKorean
-                          ? `📈 파일 크기가 ${result.sizeChangePercentage}% 증가했습니다`
-                          : isFilipino
-                          ? `📈 Ang output ay ${result.sizeChangePercentage}% na mas malaki`
-                          : isThai
-                          ? `📈 ไฟล์มีขนาดใหญ่ขึ้น ${result.sizeChangePercentage}%`
-                          : isMalay
-                          ? `📈 Fail adalah ${result.sizeChangePercentage}% lebih besar`
-                          : isSwedish
-                          ? `📈 Filen är ${result.sizeChangePercentage}% större`
-                          : isDanish
-                          ? `📈 Filen er ${result.sizeChangePercentage}% større`
-                          : isFinnish
-                          ? `📈 Tiedosto on ${result.sizeChangePercentage}% suurempi`
-                          : isCatalan
-                          ? `📈 El fitxer és un ${result.sizeChangePercentage}% més gran`
-                          : isDutch
-                          ? `📈 Het bestand is ${result.sizeChangePercentage}% groter`
-                          : isItalian
-                          ? `📈 Il file è più grande del ${result.sizeChangePercentage}%`
-                          : isPortuguese
-                          ? `📈 O ficheiro é ${result.sizeChangePercentage}% maior`
-                          : isFrench
-                          ? `📈 Le fichier est ${result.sizeChangePercentage}% plus lourd`
-                          : isGerman
-                          ? `📈 Datei ist ${result.sizeChangePercentage}% größer`
-                          : isSpanish
-                          ? `📈 Archivo es ${result.sizeChangePercentage}% mayor`
-                          : `📈 Output is ${result.sizeChangePercentage}% larger`
-                        : isChinese
-                        ? isTaiwan
-                          ? `📉 檔案大小減少了 ${result.sizeChangePercentage}%`
-                          : `📉 文件大小减少了 ${result.sizeChangePercentage}%`
-                        : isJapanese
-                        ? `📉 出力ファイルが ${result.sizeChangePercentage}% 縮小しました`
-                        : isKorean
-                        ? `📉 파일 크기가 ${result.sizeChangePercentage}% 감소했습니다`
-                        : isFilipino
-                        ? `📉 Ang output ay ${result.sizeChangePercentage}% na mas maliit`
-                        : isThai
-                        ? `📉 ไฟล์มีขนาดเล็กลง ${result.sizeChangePercentage}%`
-                        : isMalay
-                        ? `📉 Fail adalah ${result.sizeChangePercentage}% lebih kecil`
-                        : isSwedish
-                        ? `📉 Filen är ${result.sizeChangePercentage}% mindre`
-                        : isDanish
-                        ? `📉 Filen er ${result.sizeChangePercentage}% mindre`
-                        : isFinnish
-                        ? `📉 Tiedosto on ${result.sizeChangePercentage}% pienempi`
-                        : isCatalan
-                        ? `📉 El fitxer és un ${result.sizeChangePercentage}% més petit`
-                        : isDutch
-                        ? `📉 Het bestand is ${result.sizeChangePercentage}% kleiner`
-                        : isItalian
-                        ? `📉 Il file è più piccolo del ${result.sizeChangePercentage}%`
-                        : isPortuguese
-                        ? `📉 O ficheiro é ${result.sizeChangePercentage}% menor`
-                        : isFrench
-                        ? `📉 Le fichier est ${result.sizeChangePercentage}% plus léger`
-                        : isGerman
-                        ? `📉 Datei ist ${result.sizeChangePercentage}% kleiner`
-                        : isSpanish
-                        ? `📉 Archivo es ${result.sizeChangePercentage}% menor`
-                        : `📉 Output is ${result.sizeChangePercentage}% smaller`}
+                        ? tr.sizeLarger(result.sizeChangePercentage)
+                        : tr.sizeSmaller(result.sizeChangePercentage)}
                     </span>
                   </div>
 
@@ -621,41 +403,7 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
                       disabled={isProcessing}
                       className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
                     >
-                      {isChinese
-                        ? isTaiwan ? "下載轉檔後的圖片" : "下载转换后的图片"
-                        : isJapanese
-                        ? "変換した画像をダウンロード"
-                        : isKorean
-                        ? "변환된 이미지 다운로드"
-                        : isFilipino
-                        ? "I-download ang Nakumberteng Larawan"
-                        : isVietnamese
-                        ? "Tải xuống hình ảnh đã chuyển đổi"
-                        : isThai
-                        ? "ดาวน์โหลดรูปภาพที่แปลงแล้ว"
-                        : isMalay
-                        ? "Muat Turun Imej Ditukar"
-                        : isSwedish
-                        ? "Ladda ner konverterad bild"
-                        : isDanish
-                        ? "Download konverteret billede"
-                        : isFinnish
-                        ? "Lataa muunnettu kuva"
-                        : isCatalan
-                        ? "Descarregar imatge convertida"
-                        : isDutch
-                        ? "Geconverteerde afbeelding downloaden"
-                        : isItalian
-                        ? "Scarica immagine convertita"
-                        : isPortuguese
-                        ? "Descarregar imagem convertida"
-                        : isFrench
-                        ? "Télécharger l'image convertie"
-                        : isGerman
-                        ? "Konvertiertes Bild herunterladen"
-                        : isSpanish
-                        ? "Descargar imagen convertida"
-                        : "Download Converted Image"}
+                      {tr.downloadConverted}
                     </button>
 
                     <button
@@ -663,41 +411,7 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
                       onClick={handleAdjustSettings}
                       className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
                     >
-                      {isChinese
-                        ? isTaiwan ? "調整設定" : "调整设置"
-                        : isJapanese
-                        ? "設定を調整"
-                        : isKorean
-                        ? "설정 조정"
-                        : isFilipino
-                        ? "Isaayos ang mga Setting"
-                        : isVietnamese
-                        ? "Điều chỉnh cài đặt"
-                        : isThai
-                        ? "ปรับการตั้งค่า"
-                        : isMalay
-                        ? "Laraskan Tetapan"
-                        : isSwedish
-                        ? "Justera inställningar"
-                        : isDanish
-                        ? "Juster indstillinger"
-                        : isFinnish
-                        ? "Säädä asetuksia"
-                        : isCatalan
-                        ? "Ajustar paràmetres"
-                        : isDutch
-                        ? "Instellingen aanpassen"
-                        : isItalian
-                        ? "Modifica impostazioni"
-                        : isPortuguese
-                        ? "Ajustar opções"
-                        : isFrench
-                        ? "Modifier les paramètres"
-                        : isGerman
-                        ? "Einstellungen anpassen"
-                        : isSpanish
-                        ? "Ajustar opciones"
-                        : "Adjust Settings"}
+                      {tr.adjustSettings}
                     </button>
                   </div>
                 </div>
@@ -710,78 +424,15 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
             <div className="bg-white border border-fk-border rounded-fk-xl p-6 shadow-sm flex flex-col gap-6">
               <h2 className="text-[16px] font-black text-fk-text flex items-center gap-2 border-b border-fk-border pb-3">
                 <span>⚙️</span>
-                <span>
-                  {isChinese
-                    ? isTaiwan ? "轉檔選項" : "转换选项"
-                    : isJapanese
-                    ? "変換オプション"
-                    : isFilipino
-                    ? "Mga Opsyon sa Pagkumberte"
-                    : isVietnamese
-                    ? "Tùy chọn chuyển đổi"
-                    : isThai
-                    ? "ตัวเลือกการแปลง"
-                    : isMalay
-                    ? "Pilihan Penukaran"
-                    : isSwedish
-                    ? "Konverteringsalternativ"
-                    : isDanish
-                    ? "Konverteringsindstillinger"
-                    : isFinnish
-                    ? "Muunnosasetukset"
-                    : isCatalan
-                    ? "Opcions de conversió"
-                    : isDutch
-                    ? "Conversie-opties"
-                    : isItalian
-                    ? "Opzioni di conversione"
-                    : isPortuguese
-                    ? "Opções de conversão"
-                    : isFrench
-                    ? "Paramètres de conversion"
-                    : isGerman
-                    ? "Konvertierungsoptionen"
-                    : isSpanish
-                    ? "Opciones de conversión"
-                    : "Conversion Options"}
-                </span>
+                <span>{tr.conversionOptions}</span>
               </h2>
 
+              {/* GENERAL MODE FORMAT SELECTOR */}
               {/* GENERAL MODE FORMAT SELECTOR */}
               {routeConfig.mode === "GENERAL" && (
                 <div className="flex flex-col gap-2">
                   <label className="text-[13px] font-bold text-fk-text">
-                    {isChinese
-                      ? isTaiwan ? "目標格式" : "目标格式"
-                      : isJapanese
-                      ? "変換先フォーマット"
-                      : isFilipino
-                      ? "Target na Format"
-                      : isVietnamese
-                      ? "Định dạng đích"
-                      : isThai
-                      ? "รูปแบบเป้าหมาย"
-                      : isMalay
-                      ? "Format Sasaran"
-                      : isSwedish
-                      ? "Målformat"
-                      : isDanish
-                      ? "Målformat"
-                      : isFinnish
-                      ? "Kohdemuoto"
-                      : isCatalan
-                      ? "Format de destinació"
-                      : isDutch
-                      ? "Doelformaat"
-                      : isPortuguese
-                      ? "Formato de destino"
-                      : isFrench
-                      ? "Format de destination"
-                      : isGerman
-                      ? "Zielformat"
-                      : isSpanish
-                      ? "Formato de destino"
-                      : "Target Format"}
+                    {tr.targetFormat}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
@@ -810,37 +461,7 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
               {routeConfig.mode === "FIXED_PAIR" && (
                 <div className="flex items-center justify-between p-3 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <span className="text-[13px] font-bold text-fk-text">
-                    {isChinese
-                      ? isTaiwan ? "輸出格式" : "输出格式"
-                      : isJapanese
-                      ? "出力フォーマット"
-                      : isFilipino
-                      ? "Format ng Output"
-                      : isVietnamese
-                      ? "Định dạng đầu ra"
-                      : isThai
-                      ? "รูปแบบผลลัพธ์"
-                      : isMalay
-                      ? "Format Output"
-                      : isSwedish
-                      ? "Utdataformat"
-                      : isDanish
-                      ? "Outputformat"
-                      : isFinnish
-                      ? "Tulostusmuoto"
-                      : isCatalan
-                      ? "Format de sortida"
-                      : isDutch
-                      ? "Uitvoerformaat"
-                      : isPortuguese
-                      ? "Formato de saída"
-                      : isFrench
-                      ? "Format de sortie"
-                      : isGerman
-                      ? "Ausgabeformat"
-                      : isSpanish
-                      ? "Formato de salida"
-                      : "Output Format"}
+                    {tr.outputFormat}
                   </span>
                   <span className="text-[13px] font-mono font-bold text-fk-primary bg-white px-3 py-1 border border-fk-border rounded-fk-sm">
                     {targetFormat.split("/")[1].toUpperCase()}
@@ -852,35 +473,13 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
               {isTransparentToJpg && (
                 <div className="flex flex-col gap-3 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <label className="text-[13px] font-bold text-fk-text">
-                    {isChinese
-                      ? isTaiwan ? "背景顏色（填補透明部分）" : "背景颜色（填补透明部分）"
-                      : isJapanese
-                      ? "背景色（透明部分の補完）"
-                      : isFilipino
-                      ? "Kulay ng Background (para sa alpha)"
-                      : isVietnamese
-                      ? "Màu nền (cho độ trong suốt)"
-                      : isThai
-                      ? "สีพื้นหลัง (สำหรับความโปร่งใส)"
-                      : isMalay
-                      ? "Warna Latar Belakang (untuk alfa)"
-                      : isSwedish
-                      ? "Bakgrundsfärg (för alfa)"
-                      : isDanish
-                      ? "Baggrundsfarve (til alfa)"
-                      : isFinnish
-                      ? "Taustaväri (alfalle)"
-                      : isCatalan
-                      ? "Color de fons (per a alfa)"
-                      : isDutch
-                      ? "Achtergrondkleur (voor alpha)"
-                      : "Background Color (for alpha)"}
+                    {tr.backgroundColorAlpha}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { key: "WHITE", label: isChinese ? (isTaiwan ? "白色" : "白色") : isKorean ? "흰색" : isJapanese ? "白" : isFilipino ? "Puti" : isVietnamese ? "Trắng" : isThai ? "สีขาว" : isMalay ? "Putih" : isSwedish ? "Vit" : isDanish ? "Hvid" : isFinnish ? "Valkoinen" : isCatalan ? "Blanc" : isDutch ? "Wit" : "White", hex: "#FFFFFF" },
-                      { key: "BLACK", label: isChinese ? (isTaiwan ? "黑色" : "黑色") : isKorean ? "검은색" : isJapanese ? "黒" : isFilipino ? "Itim" : isVietnamese ? "Đen" : isThai ? "สีดำ" : isMalay ? "Hitam" : isSwedish ? "Svart" : isDanish ? "Sort" : isFinnish ? "Musta" : isCatalan ? "Negre" : isDutch ? "Zwart" : "Black", hex: "#000000" },
-                      { key: "CUSTOM", label: isChinese ? (isTaiwan ? "自訂" : "自定义") : isKorean ? "사용자 정의" : isJapanese ? "カスタム" : isFilipino ? "Pasadya" : isVietnamese ? "Tùy chỉnh" : isThai ? "กำหนดเอง" : isMalay ? "Tersuai" : isSwedish ? "Anpassad" : isDanish ? "Brugerdefineret" : isFinnish ? "Mukautettu" : isCatalan ? "Personalitzat" : isDutch ? "Aangepast" : "Custom", hex: customHex }
+                      { key: "WHITE", label: tr.white, hex: "#FFFFFF" },
+                      { key: "BLACK", label: tr.black, hex: "#000000" },
+                      { key: "CUSTOM", label: tr.custom, hex: customHex }
                     ].map((item) => (
                       <button
                         key={item.key}
@@ -921,7 +520,7 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
                 <div className="flex flex-col gap-2 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <div className="flex items-center justify-between">
                     <label className="text-[13px] font-bold text-fk-text">
-                      {isChinese ? (isTaiwan ? "畫質" : "画质") : isKorean ? "품질" : isJapanese ? "品質" : isFilipino ? "Kalidad" : isVietnamese ? "Chất lượng" : isThai ? "คุณภาพ" : isMalay ? "Kualiti" : isSwedish ? "Kvalitet" : isDanish ? "Kvalitet" : isFinnish ? "Laatu" : isCatalan ? "Qualitat" : isDutch ? "Kwaliteit" : "Quality"}
+                      {tr.quality}
                     </label>
                     <span className="text-[13px] font-mono font-bold text-fk-primary">{qualitySlider}%</span>
                   </div>
@@ -935,9 +534,9 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
                     className="w-full h-2 bg-fk-border rounded-lg appearance-none cursor-pointer accent-fk-primary"
                   />
                   <div className="flex items-center justify-between text-[11px] font-medium text-fk-text-subtle">
-                    <span>{isChinese ? (isTaiwan ? "低" : "低") : isKorean ? "낮음" : isJapanese ? "低" : isFilipino ? "Mababa" : isVietnamese ? "Thấp" : isThai ? "ต่ำ" : isMalay ? "Rendah" : isSwedish ? "Låg" : isDanish ? "Lav" : isFinnish ? "Matala" : isCatalan ? "Baixa" : isDutch ? "Laag" : "Low"}</span>
-                    <span>{isChinese ? (isTaiwan ? "標準" : "标准") : isKorean ? "표준" : isJapanese ? "標準" : isFilipino ? "Balansado" : isVietnamese ? "Cân bằng" : isThai ? "สมดุล" : isMalay ? "Seimbang" : isSwedish ? "Balanserad" : isDanish ? "Balanceret" : isFinnish ? "Tasapainotettu" : isCatalan ? "Equilibrada" : isDutch ? "Gebalanceerd" : "Balanced"}</span>
-                    <span>{isChinese ? (isTaiwan ? "高" : "高") : isKorean ? "높음" : isJapanese ? "高" : isFilipino ? "Mataas" : isVietnamese ? "Cao" : isThai ? "สูง" : isMalay ? "Tinggi" : isSwedish ? "Hög" : isDanish ? "Høj" : isFinnish ? "Korkea" : isCatalan ? "Alta" : isDutch ? "Hoog" : "High"}</span>
+                    <span>{tr.low}</span>
+                    <span>{tr.balanced}</span>
+                    <span>{tr.high}</span>
                   </div>
                 </div>
               )}
@@ -950,76 +549,10 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
                 className="w-full h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
               >
                 {isProcessing
-                  ? isChinese
-                    ? isTaiwan ? "正在轉檔圖片..." : "正在转换图片..."
-                    : isJapanese
-                    ? "画像を変換中..."
-                    : isFilipino
-                    ? "Kinukumberte ang larawan..."
-                    : isVietnamese
-                    ? "Đang chuyển đổi hình ảnh..."
-                    : isThai
-                    ? "กำลังแปลงรูปภาพ..."
-                    : isMalay
-                    ? "Menukar imej..."
-                    : isSwedish
-                    ? "Konverterar bild..."
-                    : isDanish
-                    ? "Konverterer billede..."
-                    : isFinnish
-                    ? "Muunnetaan kuvaa..."
-                    : isCatalan
-                    ? "Convertint imatge..."
-                    : isDutch
-                    ? "Afbeelding converteren..."
-                    : "Converting..."
+                  ? tr.converting
                   : result
-                  ? isChinese
-                    ? isTaiwan ? "重新轉檔圖片" : "重新转换图片"
-                    : isJapanese
-                    ? "画像を再変換"
-                    : isFilipino
-                    ? "Muling Kumbertihin ang Larawan"
-                    : isVietnamese
-                    ? "Chuyển đổi lại hình ảnh"
-                    : isThai
-                    ? "แปลงรูปภาพอีกครั้ง"
-                    : isMalay
-                    ? "Tukar Semula Imej"
-                    : isSwedish
-                    ? "Konvertera bilden igen"
-                    : isDanish
-                    ? "Genkonverter billede"
-                    : isFinnish
-                    ? "Muunna kuva uudelleen"
-                    : isCatalan
-                    ? "Tornar a convertir la imatge"
-                    : isDutch
-                    ? "Afbeelding opnieuw converteren"
-                    : "Reconvert Image"
-                  : isChinese
-                  ? isTaiwan ? "轉檔圖片" : "转换图片"
-                  : isJapanese
-                  ? "画像を変換"
-                  : isFilipino
-                  ? "Kumbertihin ang Larawan"
-                  : isVietnamese
-                  ? "Chuyển đổi hình ảnh"
-                  : isThai
-                  ? "แปลงรูปภาพ"
-                  : isMalay
-                  ? "Tukar Imej"
-                  : isSwedish
-                  ? "Konvertera bild"
-                  : isDanish
-                  ? "Konverter billede"
-                  : isFinnish
-                  ? "Muunna kuva"
-                  : isCatalan
-                  ? "Convertir imatge"
-                  : isDutch
-                  ? "Afbeelding converteren"
-                  : "Convert Image"}
+                  ? tr.reconvert
+                  : tr.convert}
               </button>
 
               {error && (

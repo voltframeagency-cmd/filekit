@@ -47,6 +47,8 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
   const isFilipino = language === "fil";
   const isJapanese = language === "ja";
   const isKorean = language === "ko";
+  const isArabic = language === "ar";
+  const isHebrew = language === "he";
 
   const [file, setFile] = useState<File | null>(null);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -150,6 +152,10 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
           ? "Gagal mengonversi eBook ke PDF. Harap pastikan file bebas DRM."
           : isFilipino
           ? "Nabigong i-convert ang eBook sa PDF. Pakitiyak na walang DRM ang file."
+          : isArabic
+          ? "فشل تحويل الكتاب الإلكتروني إلى PDF. يرجى التأكد من خلو الملف من إدارة الحقوق الرقمية (DRM)."
+          : isHebrew
+          ? "המרת הספר האלקטרוני ל-PDF נכשלה. נא לוודא שהקובץ נקי מ-DRM."
           : "Failed to convert eBook to PDF. Please ensure the file is DRM-free."
       );
     } finally {
@@ -250,6 +256,10 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
               ? `Pilih File eBook (${getAcceptExtensions().toUpperCase()})`
               : isFilipino
               ? `Pumili ng eBook File (${getAcceptExtensions().toUpperCase()})`
+              : isArabic
+              ? `اختر ملف الكتاب الإلكتروني (${getAcceptExtensions().toUpperCase()})`
+              : isHebrew
+              ? `בחר קובץ ספר אלקטרוני (${getAcceptExtensions().toUpperCase()})`
               : `Select eBook File (${getAcceptExtensions().toUpperCase()})`}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
@@ -307,6 +317,10 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
               ? "Nol Unggahan Server · 100% Konversi Privat di Browser"
               : isFilipino
               ? "Walang Pag-upload sa Server · 100% Pribadong Pag-convert sa Browser"
+              : isArabic
+              ? "بدون رفع إلى الخادم · تحويل خاص 100% في المتصفح"
+              : isHebrew
+              ? "ללא העלאה לשרת · 100% המרה פרטית בדפדפן"
               : "Zero Server Uploads · 100% In-Browser Private Conversion"}
           </span>
         </div>
@@ -325,7 +339,7 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isChinese ? (isTaiwan ? "變更檔案" : "更改文件") : isKorean ? "파일 변경" : isJapanese ? "ファイルを変更" : isRussian ? "Изменить файл" : isUkrainian ? "Змінити файл" : isSlovak ? "Zmeniť súbor" : isSlovenian ? "Spremeni datoteko" : isBulgarian ? "Промяна на файла" : isNorwegian ? "Endre fil" : isPolish ? "Zmień plik" : isCzech ? "Změnit soubor" : isHungarian ? "Fájl módosítása" : isRomanian ? "Schimbă fișierul" : isGreek ? "Αλλαγή αρχείου" : isTurkish ? "Dosyayı Değiştir" : isSwedish ? "Byt fil" : isDanish ? "Skift fil" : isFinnish ? "Vaihda tiedosto" : isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : isHindi ? "फ़ाइल बदलें" : isIndonesian ? "Ganti File" : isMalay ? "Tukar Fail" : isVietnamese ? "Đổi tệp" : isThai ? "เปลี่ยนไฟล์" : isFilipino ? "Palitan ang File" : "Change File"}
+              {isArabic ? "تغيير الملف" : isHebrew ? "החלף קובץ" : isChinese ? (isTaiwan ? "變更檔案" : "更改文件") : isKorean ? "파일 변경" : isJapanese ? "ファイルを変更" : isRussian ? "Изменить файл" : isUkrainian ? "Змінити файл" : isSlovak ? "Zmeniť súbor" : isSlovenian ? "Spremeni datoteko" : isBulgarian ? "Промяна на файла" : isNorwegian ? "Endre fil" : isPolish ? "Zmień plik" : isCzech ? "Změnit soubor" : isHungarian ? "Fájl módosítása" : isRomanian ? "Schimbă fișierul" : isGreek ? "Αλλαγή αρχείου" : isTurkish ? "Dosyayı Değiştir" : isSwedish ? "Byt fil" : isDanish ? "Skift fil" : isFinnish ? "Vaihda tiedosto" : isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : isHindi ? "फ़ाइल बदलें" : isIndonesian ? "Ganti File" : isMalay ? "Tukar Fail" : isVietnamese ? "Đổi tệp" : isThai ? "เปลี่ยนไฟล์" : isFilipino ? "Palitan ang File" : "Change File"}
             </button>
           </div>
 
@@ -389,6 +403,10 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
                   ? "กำลังเรนเดอร์หน้า eBook เป็น PDF..."
                   : isFilipino
                   ? "Nire-render ang mga pahina ng eBook sa PDF..."
+                  : isArabic
+                  ? "جارٍ تحويل صفحات الكتاب الإلكتروني إلى PDF..."
+                  : isHebrew
+                  ? "מרנדר דפי ספר אלקטרוני ל-PDF..."
                   : "Rendering eBook pages to PDF..."}
               </span>
             </div>
@@ -454,6 +472,10 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
                     ? `✓ แปลงสำเร็จ: ${outputFileName}`
                     : isFilipino
                     ? `✓ Na-convert: ${outputFileName}`
+                    : isArabic
+                    ? `✓ تم التحويل: ${outputFileName}`
+                    : isHebrew
+                    ? `✓ הומר בהצלחה: ${outputFileName}`
                     : `✓ Converted: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-amber-700">
@@ -513,6 +535,10 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
                     ? `ขนาด: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · เอกสาร PDF`
                     : isFilipino
                     ? `Laki: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · Dokumentong PDF`
+                    : isArabic
+                    ? `الحجم: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} م.ب · مستند PDF`
+                    : isHebrew
+                    ? `גודל: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · מסמך PDF`
                     : `Size: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · PDF Document`}
                 </span>
               </div>
@@ -521,7 +547,7 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isChinese ? (isTaiwan ? "下載 PDF" : "下载 PDF") : isKorean ? "PDF 다운로드" : isJapanese ? "PDFをダウンロード" : isRussian ? "Скачать PDF" : isUkrainian ? "Завантажити PDF" : isSlovak ? "Stiahnuť PDF" : isSlovenian ? "Prenesi PDF" : isBulgarian ? "Изтеглете PDF" : isNorwegian ? "Last ned PDF" : isPolish ? "Pobierz PDF" : isCzech ? "Stáhnout PDF" : isHungarian ? "PDF letöltése" : isRomanian ? "Descarcă PDF" : isGreek ? "Λήψη PDF" : isTurkish ? "PDF İndir" : isSwedish ? "Ladda ner PDF" : isDanish ? "Download PDF" : isFinnish ? "Lataa PDF" : isCatalan ? "Descarregar PDF" : isDutch ? "PDF downloaden" : isItalian ? "Scarica PDF" : isPortuguese ? "Descarregar PDF" : isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : isHindi ? "PDF डाउनलोड करें" : isIndonesian ? "Unduh PDF" : isMalay ? "Muat Turun PDF" : isVietnamese ? "Tải xuống PDF" : isThai ? "ดาวน์โหลด PDF" : isFilipino ? "I-download ang PDF" : "Download PDF"}
+                {isArabic ? "تحميل PDF" : isHebrew ? "הורד PDF" : isChinese ? (isTaiwan ? "下載 PDF" : "下载 PDF") : isKorean ? "PDF 다운로드" : isJapanese ? "PDFをダウンロード" : isRussian ? "Скачать PDF" : isUkrainian ? "Завантажити PDF" : isSlovak ? "Stiahnuť PDF" : isSlovenian ? "Prenesi PDF" : isBulgarian ? "Изтеглете PDF" : isNorwegian ? "Last ned PDF" : isPolish ? "Pobierz PDF" : isCzech ? "Stáhnout PDF" : isHungarian ? "PDF letöltése" : isRomanian ? "Descarcă PDF" : isGreek ? "Λήψη PDF" : isTurkish ? "PDF İndir" : isSwedish ? "Ladda ner PDF" : isDanish ? "Download PDF" : isFinnish ? "Lataa PDF" : isCatalan ? "Descarregar PDF" : isDutch ? "PDF downloaden" : isItalian ? "Scarica PDF" : isPortuguese ? "Descarregar PDF" : isFrench ? "Télécharger le PDF" : isGerman ? "PDF herunterladen" : isSpanish ? "Descargar PDF" : isHindi ? "PDF डाउनलोड करें" : isIndonesian ? "Unduh PDF" : isMalay ? "Muat Turun PDF" : isVietnamese ? "Tải xuống PDF" : isThai ? "ดาวน์โหลด PDF" : isFilipino ? "I-download ang PDF" : "Download PDF"}
               </a>
             </div>
           )}

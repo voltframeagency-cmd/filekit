@@ -124,12 +124,12 @@ export default function UploadDropzone({
 
       {/* Main Drop Text */}
       <h3 className="text-[20px] font-bold text-fk-text leading-tight mb-1">
-        {isGeneric ? (translate("homepage.dropzoneTitle") || translate("homepage.dropAnywhere")) : (translate("workspace.selectFile") || translate("workspace.dropHere"))}
+        {isGeneric ? (translate("homepage.dropzoneTitle") || translate("homepage.dropAnywhere")) : (translate("workspace.dropHere") || translate("homepage.dropzoneTitle") || translate("workspace.selectFile"))}
       </h3>
 
       {/* Sub Drop Text */}
       <p className="text-[13px] text-fk-text-muted mb-5 leading-normal">
-        {isGeneric ? (translate("homepage.dropzoneSubtitle") || translate("homepage.orChoose")) : (translate("workspace.dropNotice") || translate("workspace.pdfOnly"))}
+        {isGeneric ? (translate("homepage.dropzoneSubtitle") || translate("homepage.orChoose")) : (translate("workspace.dropNotice") || translate("workspace.pdfOnly") || translate("homepage.dropzoneSubtitle"))}
       </p>
 
       {/* Choose File Button */}
@@ -143,7 +143,7 @@ export default function UploadDropzone({
 
       {/* Small Help Text */}
       <p className="text-[11px] text-fk-text-subtle max-w-[380px] mx-auto leading-normal">
-        {isGeneric ? (translate("trust.badge1") || translate("homepage.methodShown")) : translate("workspace.freeNotice")}
+        {isGeneric ? (translate("trust.badge1") || translate("homepage.methodShown")) : (translate("workspace.freeNotice") || translate("trust.badge1"))}
       </p>
     </div>
   );

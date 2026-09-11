@@ -8,6 +8,7 @@ import { ImagePreflightInspector } from "@/utils/image-engine/ImagePreflightInsp
 import { ImageCapabilityRouter } from "@/utils/image-engine/ImageCapabilityRouter";
 import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { IMAGE_COMPRESSION_I18N } from "./imageCompressionTranslations";
 
 export type CompressionGoalMode = "BALANCED" | "TARGET_SIZE" | "MANUAL";
 export type QualityPriority = "BETTER_QUALITY" | "BALANCED" | "SMALLER_FILE";
@@ -31,8 +32,9 @@ export default function ImageCompressionWorkspace({
 }: ImageCompressionWorkspaceProps) {
   const { language: contextLang } = useLanguage();
   const language = propLanguage || contextLang || "en";
-  const isChinese = language.startsWith("zh");
-  const isTaiwan = language === "zh-TW";
+  const rawLang = language.toLowerCase();
+  const shortLang = rawLang.split("-")[0];
+  const tr = IMAGE_COMPRESSION_I18N[language] || IMAGE_COMPRESSION_I18N[rawLang] || IMAGE_COMPRESSION_I18N[shortLang] || IMAGE_COMPRESSION_I18N.en;
   // Mode selection
   const [mode, setMode] = useState<CompressionGoalMode>(initialMode);
 
@@ -500,7 +502,7 @@ export default function ImageCompressionWorkspace({
                   onClick={handleResetWorkspace}
                   className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text px-3 py-1.5 border border-fk-border rounded-fk-md bg-white hover:bg-fk-surface-muted transition-colors shrink-0"
                 >
-                  {isChinese ? (isTaiwan ? "選擇其他檔案" : "选择其他文件") : "Choose Another"}
+                  {tr.chooseAnother}
                 </button>
               </div>
 
@@ -509,7 +511,7 @@ export default function ImageCompressionWorkspace({
                 {isProcessing ? (
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-blue-50 border-blue-200 text-blue-800 w-fit animate-pulse">
                     <span>⚡</span>
-                    <span>{isChinese ? (isTaiwan ? "正在更新預覽..." : "正在更新预览...") : "Updating Preview..."}</span>
+                    <span>{tr.updatingPreview}</span>
                   </div>
                 ) : result ? (
                   <div
@@ -526,21 +528,19 @@ export default function ImageCompressionWorkspace({
                     <span>{isNoReduction ? "ℹ️" : result.outcome === "TARGET_NOT_MET" ? "⚠️" : "✓"}</span>
                     <span>
                       {isNoReduction
-                        ? isChinese ? (isTaiwan ? "檔案已達到最優大小" : "文件已达到最优大小") : "No beneficial reduction"
+                        ? tr.noBeneficial
                         : result.outcome === "TARGET_NOT_MET"
-                        ? isChinese ? (isTaiwan ? "已盡可能壓縮圖片，但無法在保持畫質下達到目標大小" : "已尽可能压缩图片，但无法在保持画质下达到目标大小") : "We reduced the image, but could not reach requested size safely"
+                        ? tr.targetNotMet
                         : result.outcome === "ALREADY_WITHIN_TARGET"
-                        ? isChinese ? (isTaiwan ? "您的圖片已小於目標大小" : "您的图片已小于目标大小") : "Your image is already below requested size"
-                        : isChinese ? (isTaiwan ? "圖片已成功壓縮" : "图片已成功压缩") : "Image compressed successfully"}
+                        ? tr.alreadyBelow
+                        : tr.compressedOk}
                     </span>
                   </div>
                 ) : null}
 
                 {!isProcessing && isNoReduction && (
                   <p className="text-[13px] text-fk-text-muted leading-relaxed">
-                    {isChinese
-                      ? isTaiwan ? "此圖片在目前的設定下已經過最佳壓縮，已為您保留原始檔案。" : "此图片在当前设置下已经过最佳压缩，已为您保留原始文件。"
-                      : "This image is already efficiently compressed with the selected settings. The original file has been preserved."}
+                    {tr.noReductionDesc}
                   </p>
                 )}
               </div>
@@ -551,8 +551,8 @@ export default function ImageCompressionWorkspace({
                   <ImageComparisonSlider
                     originalUrl={originalPreviewUrl}
                     outputUrl={outputPreviewUrl || originalPreviewUrl}
-                    originalLabel={isChinese ? (isTaiwan ? "原始" : "原始") : "Original"}
-                    outputLabel={result && !isProcessing ? (isChinese ? (isTaiwan ? "已最佳化" : "已优化") : "Optimized") : (isChinese ? (isTaiwan ? "預覽" : "预览") : "Preview")}
+                    originalLabel={tr.original}
+                    outputLabel={result && !isProcessing ? tr.optimized : tr.preview}
                     onSliderUsed={() => trackEvent("comparison_slider_used")}
                   />
                 </div>
@@ -563,18 +563,18 @@ export default function ImageCompressionWorkspace({
                 <div className="flex items-center justify-center gap-6 w-full p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
                   <div className="flex flex-col items-center">
                     <span className="text-[11px] font-bold text-fk-text-subtle uppercase">
-                      {isChinese ? (isTaiwan ? "原始大小" : "原始大小") : "Original"}
+                      {tr.originalLabel}
                     </span>
                     <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(file.size)}</span>
                   </div>
                   <div className="text-[22px] font-light text-fk-text-subtle ltr:rotate-0 rtl:rotate-180">→</div>
                   <div className="flex flex-col items-center">
                     <span className="text-[11px] font-bold text-fk-primary uppercase">
-                      {isChinese ? (isTaiwan ? "新大小" : "新大小") : "New Size"}
+                      {tr.newSize}
                     </span>
                     <span className="text-[20px] font-black text-fk-primary mt-1">
                       {isProcessing
-                        ? isChinese ? (isTaiwan ? "計算中..." : "计算中...") : "Calculating..."
+                        ? tr.calculating
                         : result
                         ? formatBytes(result.outputSizeBytes)
                         : "..."}
@@ -591,12 +591,12 @@ export default function ImageCompressionWorkspace({
                     className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors disabled:opacity-50"
                   >
                     {isProcessing
-                      ? isChinese ? (isTaiwan ? "正在更新預覽..." : "正在更新预览...") : "Updating Preview..."
+                      ? tr.updatingPreview
                       : isNoReduction || (result && result.outcome === "ALREADY_WITHIN_TARGET")
-                      ? isChinese ? (isTaiwan ? "下載原始圖片" : "下载原始图片") : "Download Original Image"
+                      ? tr.downloadOriginal
                       : result && result.outcome === "TARGET_NOT_MET"
-                      ? isChinese ? (isTaiwan ? "下載最佳結果" : "下载最佳结果") : "Download Best Result"
-                      : isChinese ? (isTaiwan ? "下載壓縮後的圖片" : "下载压缩后的图片") : "Download Compressed Image"}
+                      ? tr.downloadBest
+                      : tr.downloadCompressed}
                   </button>
 
                   <button
@@ -604,7 +604,7 @@ export default function ImageCompressionWorkspace({
                     onClick={handleAdjustSettings}
                     className="h-[50px] px-5 border border-fk-border hover:bg-fk-surface-muted text-fk-text font-bold rounded-fk-md text-[13px] transition-colors"
                   >
-                    {isChinese ? (isTaiwan ? "調整設定" : "调整设置") : "Adjust Settings"}
+                    {tr.adjustSettings}
                   </button>
                 </div>
               </div>
@@ -616,13 +616,13 @@ export default function ImageCompressionWorkspace({
             <div className="bg-white border border-fk-border rounded-fk-xl p-6 shadow-sm flex flex-col gap-6">
               <h2 className="text-[16px] font-black text-fk-text flex items-center gap-2 border-b border-fk-border pb-3">
                 <span>⚙️</span>
-                <span>{isChinese ? (isTaiwan ? "壓縮設定" : "压缩设置") : "Compression Settings"}</span>
+                <span>{tr.settingsTitle}</span>
               </h2>
 
               {/* Compression Goal Mode Selection */}
               <fieldset className="flex flex-col gap-2">
                 <legend className="text-[13px] font-bold text-fk-text">
-                  {isChinese ? (isTaiwan ? "壓縮目標" : "压缩目标") : "Compression Goal"}
+                  {tr.compressionGoal}
                 </legend>
                 <div className="grid grid-cols-3 gap-1.5 p-1 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <button
@@ -635,7 +635,7 @@ export default function ImageCompressionWorkspace({
                       mode === "BALANCED" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
                     }`}
                   >
-                    {isChinese ? (isTaiwan ? "平衡模式" : "平衡模式") : "Balanced"}
+                    {tr.balanced}
                   </button>
 
                   <button
@@ -648,7 +648,7 @@ export default function ImageCompressionWorkspace({
                       mode === "TARGET_SIZE" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
                     }`}
                   >
-                    {isChinese ? (isTaiwan ? "目標大小" : "目标大小") : "Target Size"}
+                    {tr.targetSize}
                   </button>
 
                   <button
@@ -661,7 +661,7 @@ export default function ImageCompressionWorkspace({
                       mode === "MANUAL" ? "bg-fk-primary text-white shadow-sm" : "text-fk-text hover:bg-white/60"
                     }`}
                   >
-                    {isChinese ? (isTaiwan ? "自訂調整" : "自定义") : "Manual"}
+                    {tr.manual}
                   </button>
                 </div>
               </fieldset>
@@ -670,24 +670,24 @@ export default function ImageCompressionWorkspace({
               {mode === "BALANCED" && (
                 <div className="flex flex-col gap-3 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <label className="text-[13px] font-bold text-fk-text">
-                    {isChinese ? (isTaiwan ? "畫質優先等級" : "画质优先级别") : "Quality Priority"}
+                    {tr.qualityPriority}
                   </label>
                   <div className="flex flex-col gap-2">
                     {[
                       {
                         key: "BETTER_QUALITY",
-                        label: isChinese ? (isTaiwan ? "較高畫質" : "较高画质") : "Better quality",
-                        desc: isChinese ? (isTaiwan ? "保留更多影像細節" : "保留更多视觉细节") : "Preserves more visual detail"
+                        label: tr.betterQuality,
+                        desc: tr.betterQualityDesc
                       },
                       {
                         key: "BALANCED",
-                        label: isChinese ? (isTaiwan ? "推薦平衡" : "推荐平衡") : "Balanced",
-                        desc: isChinese ? (isTaiwan ? "畫質與檔案大小的最佳平衡" : "清晰度与体积的最佳平衡") : "Recommended balance of clarity & size"
+                        label: tr.balancedQuality,
+                        desc: tr.balancedQualityDesc
                       },
                       {
                         key: "SMALLER_FILE",
-                        label: isChinese ? (isTaiwan ? "最小體積" : "更小体积") : "Smaller file",
-                        desc: isChinese ? (isTaiwan ? "優先進行最大程度的壓縮" : "优先进行最大程度的压缩") : "Prioritizes maximum reduction"
+                        label: tr.smallerFile,
+                        desc: tr.smallerFileDesc
                       }
                     ].map((item) => (
                       <button
@@ -714,7 +714,7 @@ export default function ImageCompressionWorkspace({
               {mode === "TARGET_SIZE" && (
                 <div className="flex flex-col gap-4 p-4 bg-fk-surface-muted border border-fk-border rounded-fk-md">
                   <label className="text-[13px] font-bold text-fk-text">
-                    {isChinese ? (isTaiwan ? "目標檔案大小" : "目标文件大小") : "Target File Size"}
+                    {tr.targetFileSize}
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -746,7 +746,7 @@ export default function ImageCompressionWorkspace({
                   {/* Quick-fill Chips */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[11px] font-bold text-fk-text-subtle">
-                      {isChinese ? (isTaiwan ? "快速目標:" : "快速目标:") : "Quick Targets:"}
+                      {tr.quickTargets}
                     </span>
                     <div className="grid grid-cols-4 gap-1.5">
                       {[
@@ -779,7 +779,7 @@ export default function ImageCompressionWorkspace({
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
                       <label className="text-[13px] font-bold text-fk-text">
-                        {isChinese ? (isTaiwan ? "畫質" : "画质") : "Quality"}
+                        {tr.quality}
                       </label>
                       <span className="text-[13px] font-mono font-bold text-fk-primary">{qualitySlider}%</span>
                     </div>
@@ -795,24 +795,24 @@ export default function ImageCompressionWorkspace({
                       className="w-full h-2 bg-fk-border rounded-lg appearance-none cursor-pointer accent-fk-primary"
                     />
                     <div className="flex items-center justify-between text-[11px] font-medium text-fk-text-subtle">
-                      <span>{isChinese ? (isTaiwan ? "低" : "低") : "Low"}</span>
-                      <span>{isChinese ? (isTaiwan ? "標準" : "标准") : "Balanced"}</span>
-                      <span>{isChinese ? (isTaiwan ? "高" : "高") : "High"}</span>
+                      <span>{tr.low}</span>
+                      <span>{tr.standard}</span>
+                      <span>{tr.high}</span>
                     </div>
                   </div>
 
                   {/* Dimension Presets */}
                   <div className="flex flex-col gap-2 border-t border-fk-border pt-4">
                     <label className="text-[13px] font-bold text-fk-text">
-                      {isChinese ? (isTaiwan ? "解析度與尺寸" : "分辨率与尺寸") : "Dimensions"}
+                      {tr.dimensions}
                     </label>
                     <div className="grid grid-cols-2 gap-1.5">
                       {[
-                        { key: "ORIGINAL", label: isChinese ? (isTaiwan ? "保持原尺寸" : "保持原尺寸") : "Keep original" },
+                        { key: "ORIGINAL", label: tr.keepOriginal },
                         { key: "1920", label: "1920 px" },
                         { key: "1024", label: "1024 px" },
                         { key: "640", label: "640 px" },
-                        { key: "CUSTOM", label: isChinese ? (isTaiwan ? "自訂寬度" : "自定义宽度") : "Custom width" }
+                        { key: "CUSTOM", label: tr.customWidth }
                       ].map((preset) => (
                         <button
                           key={preset.key}
@@ -834,7 +834,7 @@ export default function ImageCompressionWorkspace({
                     {dimensionPreset === "CUSTOM" && (
                       <div className="flex items-center gap-2 mt-2">
                         <label className="text-[12px] font-bold text-fk-text whitespace-nowrap">
-                          {isChinese ? (isTaiwan ? "寬度 (px):" : "宽度 (px):") : "Width (px):"}
+                          {tr.widthPx}
                         </label>
                         <input
                           type="number"
@@ -861,8 +861,8 @@ export default function ImageCompressionWorkspace({
                 className="w-full h-[46px] border border-fk-border hover:bg-fk-surface-muted text-fk-text rounded-fk-md text-[13px] font-bold transition-colors disabled:opacity-50"
               >
                 {isProcessing
-                  ? isChinese ? (isTaiwan ? "正在更新預覽..." : "正在更新预览...") : "Updating Preview..."
-                  : isChinese ? (isTaiwan ? "更新預覽" : "更新预览") : "Update Preview"}
+                  ? tr.updatingPreview
+                  : tr.updatePreview}
               </button>
 
               {error && (

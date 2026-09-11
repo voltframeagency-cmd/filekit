@@ -469,6 +469,7 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
 
   return (
     <div className="flex flex-col min-h-screen bg-fk-bg" lang={locale} dir={getLocaleDirection(locale)}>
+      <title>{meta.title}</title>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -442,6 +442,28 @@ export const OFFICE_I18N: Record<string, OfficeI18nEntry> = {
     cancel: "Annuller",
     authorizeAndConvert: "Godkend og konverter"
   },
+  no: {
+    connecting: "Kobler til isolert microVM...",
+    rendering: "Gjengir dokumentsider...",
+    serverFailed: "Serverkonvertering mislyktes",
+    verifying: "Verifiserer resulterende PDF-fil...",
+    convertFailed: "Kunne ikke konvertere dokumentet.",
+    unexpectedError: "En uventet feil oppsto under konverteringen.",
+    selectDoc: (label) => `Velg ${label}`,
+    subDescription: "Presisjonskonvertering i isolert microVM med 0% datalagring.",
+    chooseFile: (label) => `Velg ${label}-fil`,
+    changeFile: "Bytt fil",
+    sandboxTitle: "Isolert MicroVM-sandkasse",
+    sandboxDesc: "Dokumentbehandlingen kjører i en isolert microVM-container. Filer krypteres under overføring og slettes automatisk fra minnet umiddelbart etter konvertering.",
+    convertBtn: "Konverter til PDF",
+    convertSuccess: "Konvertert til PDF",
+    renderedSummary: (ms, kb) => `Behandlet på ${ms}ms • ${kb} KB • Midlertidig container tømt`,
+    downloadPdf: "Last ned PDF",
+    noticeTitle: "Varsel om sikker serverkonvertering",
+    noticeBody: "Denne dokumentkonverteringen krever en isolert nettsky-microVM for å sikre fullstendig typografi- og layoutnøyaktighet. Filen din behandles i minnet og slettes umiddelbart etterpå.",
+    cancel: "Avbryt",
+    authorizeAndConvert: "Godkjenn og konverter"
+  },
   fi: {
     connecting: "Yhdistetään eristettyyn microVM:ään...",
     rendering: "Renderoidaan asiakirjan sivuja...",

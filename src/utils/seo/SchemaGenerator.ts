@@ -93,26 +93,62 @@ export class SchemaGenerator {
         {
           "@type": "HowTo",
           "@id": `${canonicalUrl}#howto`,
-          "name": locale === "ko" || locale === "kr"
-            ? `${title} 사용 방법`
-            : locale === "zh-CN" || (locale as string).startsWith("zh")
-            ? `${title} 使用指南`
-            : locale === "ja"
-            ? `${title} の使い方`
-            : locale === "de"
-            ? `So verwenden Sie ${title}`
-            : locale === "fr"
-            ? `Comment utiliser ${title}`
-            : locale === "es" || locale === "es-419"
-            ? `Cómo usar ${title}`
-            : `How to use ${title}`,
-          "description": locale === "ko" || locale === "kr"
-            ? `${title} 무료 온라인 도구를 사용하여 파일을 변환하고 처리하는 단계별 방법 안내.`
-            : locale === "zh-CN" || (locale as string).startsWith("zh")
-            ? `使用 ${title} 在线免费转换和处理文件的详细步骤。`
-            : locale === "ja"
-            ? `${title} 無料オンラインツールを使用してファイルを変換・処理するステップバイステップの手順。`
-            : `Step-by-step instructions to convert and process files with ${title} online for free.`,
+          "name": (() => {
+            const cleanTitle = title
+              .replace(/ \| FileKit$/i, "")
+              .replace(/\(FileKit\)$/i, "")
+              .replace(/Ücretsiz Çevrimiçi/i, "")
+              .replace(/مجاناً أونلاين/i, "")
+              .replace(/Online Gratis/i, "")
+              .replace(/Gratis en Línea/i, "")
+              .replace(/Gratuit en Ligne/i, "")
+              .replace(/Kostenlos Online/i, "")
+              .replace(/Online Free/i, "")
+              .replace(/Free Online/i, "")
+              .trim();
+            const HOWTO_NAMES: Record<string, string> = {
+              sv: `Så här använder du ${cleanTitle} i 3 enkla steg`,
+              da: `Sådan bruger du ${cleanTitle} i 3 enkle trin`,
+              fi: `Näin käytät ${cleanTitle} -työkalua 3 yksinkertaisessa vaiheessa`,
+              no: `Slik bruker du ${cleanTitle} i 3 enkle trinn`,
+              nl: `Hoe ${cleanTitle} te gebruiken in 3 eenvoudige stappen`,
+              pl: `Jak używać ${cleanTitle} w 3 prostych krokach`,
+              cs: `Jak používat ${cleanTitle} ve 3 jednoduchých krocích`,
+              hu: `Hogyan használd a következőt: ${cleanTitle} 3 egyszerű lépésben`,
+              ro: `Cum să utilizați ${cleanTitle} în 3 pași simpli`,
+              bg: `Как да използвате ${cleanTitle} в 3 лесни стъпки`,
+              el: `Πώς να χρησιμοποιήσετε το ${cleanTitle} σε 3 απλά βήματα`,
+              sk: `Ako používať ${cleanTitle} v 3 jednoduchých krokoch`,
+              sl: `Kako uporabljati ${cleanTitle} v 3 preprostih korakih`,
+              ru: `Как использовать ${cleanTitle} за 3 простых шага`,
+              uk: `Як використовувати ${cleanTitle} у 3 простих кроки`,
+              lv: `Kā lietot ${cleanTitle} 3 vienkāršos soļos`,
+              lt: `Kaip naudotis ${cleanTitle} atlikus 3 paprastus veiksmus`,
+              ar: `كيفية استخدام ${cleanTitle} في 3 خطوات بسيطة`,
+              he: `כיצד להשתמש ב-${cleanTitle} ב-3 שלבים פשוטים`,
+              tr: `3 Basit Adımda ${cleanTitle} Nasıl Kullanılır`,
+              pt: `Como usar ${cleanTitle} em 3 passos simples`,
+              "pt-BR": `Como usar ${cleanTitle} em 3 passos simples`,
+              es: `Cómo usar ${cleanTitle} en 3 sencillos pasos`,
+              "es-419": `Cómo usar ${cleanTitle} en 3 sencillos pasos`,
+              de: `So verwenden Sie ${cleanTitle} in 3 einfachen Schritten`,
+              fr: `Comment utiliser ${cleanTitle} en 3 étapes simples`,
+              it: `Come utilizzare ${cleanTitle} in 3 semplici passaggi`,
+              ca: `Com utilitzar ${cleanTitle} en 3 passos senzills`,
+              hi: `3 सरल चरणों में ${cleanTitle} का उपयोग कैसे करें`,
+              id: `Cara menggunakan ${cleanTitle} dalam 3 langkah mudah`,
+              ms: `Cara menggunakan ${cleanTitle} dalam 3 langkah mudah`,
+              th: `วิธีใช้ ${cleanTitle} ใน 3 ขั้นตอนง่ายๆ`,
+              vi: `Cách sử dụng ${cleanTitle} trong 3 bước đơn giản`,
+              fil: `Paano gamitin ang ${cleanTitle} sa 3 simpleng hakbang`,
+              ja: `3つの簡単なステップで ${cleanTitle} を使用する方法`,
+              ko: `간단한 3단계로 ${cleanTitle} 사용하는 방법`,
+              "zh-CN": `只需简单3步即可使用 ${cleanTitle}`,
+              "zh-TW": `只需簡單3步即可使用 ${cleanTitle}`,
+            };
+            return HOWTO_NAMES[locale] || HOWTO_NAMES[locale.split("-")[0]] || `How to use ${cleanTitle} in 3 simple steps`;
+          })(),
+          "description": content.entityDefinition || description || `${title}`,
           "step": content.howToSteps.map((step, idx) => ({
             "@type": "HowToStep",
             "position": idx + 1,

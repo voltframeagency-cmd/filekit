@@ -13,6 +13,7 @@ import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-eng
 import { ExactImageRouteConfig } from "@/config/exactImageRoutes";
 
 import { buildCanonicalUrl } from "@/utils/siteUrl";
+import { IMAGE_COMPRESSION_I18N } from "./imageCompressionTranslations";
 
 export interface ExactImageTargetPageProps {
   config: ExactImageRouteConfig;
@@ -20,6 +21,9 @@ export interface ExactImageTargetPageProps {
 
 export default function ExactImageTargetPage({ config }: ExactImageTargetPageProps) {
   const { t, language } = useLanguage();
+  const rawLang = (language || "en").toLowerCase();
+  const shortLang = rawLang.split("-")[0];
+  const tr = IMAGE_COMPRESSION_I18N[language] || IMAGE_COMPRESSION_I18N[rawLang] || IMAGE_COMPRESSION_I18N[shortLang] || IMAGE_COMPRESSION_I18N.en;
   const [file, setFile] = useState<File | null>(null);
   const [preflight, setPreflight] = useState<ImagePreflightReport | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -359,7 +363,7 @@ export default function ExactImageTargetPage({ config }: ExactImageTargetPagePro
                   onClick={() => { setFile(null); setPreflight(null); setError(null); }}
                   className="text-[12px] font-bold text-fk-text-muted hover:text-fk-text"
                 >
-                  {language === "fil" ? "Palitan ang File" : language === "vi" ? "Đổi tệp" : language === "th" ? "เปลี่ยนไฟล์" : language === "ms" ? "Tukar Fail" : "Change File"}
+                  {tr.chooseAnother}
                 </button>
               </div>
 
@@ -401,20 +405,20 @@ export default function ExactImageTargetPage({ config }: ExactImageTargetPagePro
                 <ImageComparisonSlider
                   originalUrl={originalPreviewUrl}
                   outputUrl={outputPreviewUrl}
-                  originalLabel="Original"
-                  outputLabel="Optimized"
+                  originalLabel={tr.originalLabel || "Original"}
+                  outputLabel={tr.optimized || "Optimized"}
                   onSliderUsed={() => trackEvent("comparison_slider_used")}
                 />
               )}
 
               <div className="flex items-center justify-center gap-6 w-full max-w-[460px] p-4 bg-fk-surface-muted border border-fk-border rounded-fk-xl font-mono">
                 <div className="flex flex-col items-center">
-                  <span className="text-[11px] font-bold text-fk-text-subtle uppercase">Original</span>
+                  <span className="text-[11px] font-bold text-fk-text-subtle uppercase">{tr.originalLabel || "Original"}</span>
                   <span className="text-[18px] font-bold text-fk-text mt-1">{formatBytes(result.originalSizeBytes)}</span>
                 </div>
                 <div className="text-[22px] font-light text-fk-text-subtle ltr:rotate-0 rtl:rotate-180">→</div>
                 <div className="flex flex-col items-center">
-                  <span className="text-[11px] font-bold text-fk-primary uppercase">New Size</span>
+                  <span className="text-[11px] font-bold text-fk-primary uppercase">{tr.newSize || "New Size"}</span>
                   <span className="text-[20px] font-black text-fk-primary mt-1">{formatBytes(result.outputSizeBytes)}</span>
                 </div>
               </div>
@@ -434,14 +438,14 @@ export default function ExactImageTargetPage({ config }: ExactImageTargetPagePro
                   onClick={handleDownload}
                   className="flex-1 h-[50px] bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors"
                 >
-                  {`Download Image (< ${config.targetLabel})`}
+                  {`${tr.downloadCompressed || "Download"} (< ${config.targetLabel})`}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setResult(null); setFile(null); }}
                   className="h-[50px] px-6 border border-fk-border hover:bg-fk-surface-muted text-fk-text-muted rounded-fk-md text-[13px] font-bold transition-colors"
                 >
-                  Process Another
+                  {tr.chooseAnother}
                 </button>
               </div>
             </div>

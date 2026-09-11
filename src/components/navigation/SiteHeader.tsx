@@ -10,6 +10,7 @@ import { useLanguage } from "@/components/layout/LanguageContext";
 import { SUPPORTED_LOCALES, SupportedLocale, isValidLocale, normalizeLocale } from "@/config/i18n/locales";
 import { getLocalizedHref } from "@/utils/i18nHelper";
 import FileKitLogo from "../common/FileKitLogo";
+import { NAV_ACCESSIBILITY_LABELS, SEARCH_HEADER_LABELS, formatFoundCount } from "./megaMenuTranslations";
 
 const LANGUAGES = Object.values(SUPPORTED_LOCALES).map((loc) => ({
   code: loc.code,
@@ -53,6 +54,7 @@ export default function SiteHeader() {
 
   const segments = pathname ? pathname.split("/").filter(Boolean) : [];
   const activeLocale = segments.length > 0 ? normalizeLocale(segments[0]) : language || "en";
+  const shortLocale = activeLocale.split("-")[0];
 
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [initialFocus, setInitialFocus] = useState<"FIRST" | "LAST" | undefined>(undefined);
@@ -207,12 +209,12 @@ export default function SiteHeader() {
             {isSearchOpen && filteredTools.length > 0 && (
               <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-slate-200/90 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in duration-150 space-y-1">
                 <div className="px-3 py-1.5 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 flex items-center justify-between">
-                  <span>Matching Tools</span>
-                  <span>{filteredTools.length} found</span>
+                  <span>{SEARCH_HEADER_LABELS.matchingTools[activeLocale] || SEARCH_HEADER_LABELS.matchingTools[shortLocale] || "Matching Tools"}</span>
+                  <span>{formatFoundCount(filteredTools.length, activeLocale)}</span>
                 </div>
                 <div className="max-h-64 overflow-y-auto space-y-1 py-1">
                   {filteredTools.map((tItem, idx) => {
-                    const searchHref = getLocalizedHref(tItem.route, language);
+                    const searchHref = getLocalizedHref(tItem.route, activeLocale);
                     return (
                       <Link
                         key={idx}
@@ -336,21 +338,7 @@ export default function SiteHeader() {
             type="button"
             ref={(el) => { triggerRefs.current["mobile-burger"] = el; }}
             onClick={() => setIsMobileOpen(true)}
-            aria-label={
-              activeLocale === "ko" || (activeLocale as string) === "kr"
-                ? "내비게이션 메뉴 열기"
-                : activeLocale === "zh-TW" || (activeLocale as string).toLowerCase() === "zh-tw"
-                ? "開啟導覽選單"
-                : activeLocale === "zh-CN" || (activeLocale as string).startsWith("zh")
-                ? "打开导航菜单"
-                : activeLocale === "ja"
-                ? "ナビゲーションメニューを開く"
-                : activeLocale === "ru"
-                ? "Открыть меню навигации"
-                : activeLocale === "uk"
-                ? "Відкрити меню навігації"
-                : "Open navigation menu"
-            }
+            aria-label={NAV_ACCESSIBILITY_LABELS.openMenu[activeLocale] || NAV_ACCESSIBILITY_LABELS.openMenu[shortLocale] || "Open navigation menu"}
             className="md:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-xl"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>

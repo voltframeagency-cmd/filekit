@@ -30,6 +30,9 @@ import { PdfSelectionToolbar } from "./PdfSelectionToolbar";
 import { PdfPageThumbnailGrid } from "./PdfPageThumbnailGrid";
 import { PdfEditorResultCard } from "./PdfEditorResultCard";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { PDF_EDITOR_STRINGS } from "@/config/i18n/pdfEditorTranslations";
+import { PDF_OVERLAY_I18N } from "@/components/pdf-overlay/pdfOverlayTranslations";
+import { SupportedLocale } from "@/config/i18n/locales";
 
 // Configure pdfjs-dist worker location
 if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
@@ -54,6 +57,10 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
 }) => {
   const { language: contextLang, t } = useLanguage();
   const language = propLanguage || contextLang || "en";
+  const rawLang = language as SupportedLocale;
+  const shortLang = language.split("-")[0] as SupportedLocale;
+  const tr = PDF_EDITOR_STRINGS[rawLang] || PDF_EDITOR_STRINGS[shortLang] || PDF_EDITOR_STRINGS.en;
+  const overlayTr = PDF_OVERLAY_I18N[language] || PDF_OVERLAY_I18N[rawLang] || PDF_OVERLAY_I18N[shortLang] || PDF_OVERLAY_I18N.en;
   const [inputDocs, setInputDocs] = useState<InputPdfDoc[]>([]);
   const [pageItems, setPageItems] = useState<PageOperationItem[]>([]);
   const [progress, setProgress] = useState<PdfEditorProgress | null>(null);
@@ -302,78 +309,16 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
           </div>
 
           <h3 className="text-lg font-bold text-slate-200 mb-1">
-            {language.startsWith("zh")
-              ? (language === "zh-TW"
-                  ? (targetRoute === "/merge-pdf" ? "將多個 PDF 檔案拖放到此處" : "將 PDF 檔案拖放到此處")
-                  : (targetRoute === "/merge-pdf" ? "将多个 PDF 文件拖放到此处" : "将 PDF 文件拖放到此处"))
-              : language === "ja"
-              ? (targetRoute === "/merge-pdf" ? "ここに複数のPDFファイルをドロップ" : "ここにPDFファイルをドロップ")
-              : language === "ko"
-              ? (targetRoute === "/merge-pdf" ? "여기에 여러 PDF 파일을 드롭하세요" : "여기에 PDF 파일을 드롭하세요")
-              : language === "ru"
-              ? "Перетащите PDF сюда"
-              : language === "uk"
-              ? "Перетягніть PDF сюди"
-              : language === "el"
-              ? "Σύρετε το PDF σας εδώ"
-              : language === "sk"
-              ? "Presuňte PDF sem"
-              : language === "sl"
-              ? "Povlecite PDF sem"
-              : language === "bg"
-              ? "Пуснете вашия PDF тук"
-              : language === "hi"
-              ? "यहाँ PDF दस्तावेज़ छोड़ें"
-              : language === "id"
-              ? "Tarik dokumen PDF ke sini"
-              : language === "th"
-              ? "ลากไฟล์ PDF มาวางที่นี่"
-              : language === "vi"
-              ? "Kéo thả tệp PDF vào đây"
-              : language === "ms"
-              ? "Lepaskan dokumen PDF di sini"
-              : language === "fil"
-              ? "I-drop ang dokumentong PDF dito"
-              : t("workspace.dropHere") || (targetRoute === "/merge-pdf" ? "Drop PDF documents here" : "Drop PDF document here")}
+            {overlayTr.dropHere || (targetRoute === "/merge-pdf" ? "Drop PDF documents here" : "Drop PDF document here")}
           </h3>
           <p className="text-xs text-slate-400 mb-6">
-            {language.startsWith("zh")
-              ? (language === "zh-TW" ? "在瀏覽器中安全處理高達 100 MB 的本機 PDF 文件" : "在浏览器中安全处理高达 100 MB 的本地 PDF 文档")
-              : language === "ja"
-              ? "最大100MBのPDFドキュメントをブラウザ内で安全にローカル処理"
-              : language === "ko"
-              ? "최대 100MB의 PDF 문서를 브라우저에서 안전하게 로컬 처리"
-              : language === "ru"
-              ? "Локальная обработка документов PDF до 100 МБ"
-              : language === "uk"
-              ? "Локальна обробка документів PDF до 100 МБ"
-              : language === "el"
-              ? "Τοπική επεξεργασία εγγράφων PDF έως 100 MB"
-              : language === "sk"
-              ? "Lokálne spracovanie PDF dokumentov až do 100 MB"
-              : language === "sl"
-              ? "Lokalna obdelava dokumentov PDF do 100 MB"
-              : language === "bg"
-              ? "Локална обработка на PDF документи до 100 MB"
-              : language === "hi"
-              ? "100 MB तक के स्थानीय PDF दस्तावेज़ों का प्रसंस्करण समर्थित है"
-              : language === "id"
-              ? "Mendukung pemrosesan dokumen PDF lokal hingga 100 MB"
-              : language === "th"
-              ? "รองรับการจัดการเอกสาร PDF ในเครื่องสูงสุด 100 MB"
-              : language === "vi"
-              ? "Hỗ trợ xử lý tài liệu PDF cục bộ lên đến 100 MB"
-              : language === "ms"
-              ? "Menyokong pemprosesan dokumen PDF setempat sehingga 100 MB"
-              : language === "fil"
-              ? "Sumusuporta sa lokal na pagproseso ng PDF hanggang 100 MB"
-              : t("workspace.pdfOnly") || "Supports local PDF document manipulation up to 100 MB"}
+            {overlayTr.pdfOnlyNotice || "Supports local PDF document manipulation up to 100 MB"}
           </p>
 
           <label className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-500/20 transition">
-            {(targetRoute === "/merge-pdf" || (targetRoute as string) === "merge-pdf")
-              ? (language.startsWith("zh") ? (language === "zh-TW" ? "選擇多個 PDF 檔案" : "选择多个 PDF 文件") : language === "ja" ? "PDFファイルを選択" : language === "ko" ? "PDF 파일 선택" : language === "ru" ? "Выбрать файлы PDF" : language === "uk" ? "Вибрати файли PDF" : language === "el" ? "Επιλογή αρχείων PDF" : language === "sk" ? "Vybrať súbory PDF" : language === "sl" ? "Izberite datoteke PDF" : language === "bg" ? "Изберете PDF файлове" : language === "hi" ? "PDF फ़ाइलें चुनें" : language === "id" ? "Pilih File PDF" : language === "th" ? "เลือกไฟล์ PDF หลายไฟล์" : language === "vi" ? "Chọn nhiều tệp PDF" : language === "ms" ? "Pilih Fail PDF" : language === "fil" ? "Pumili ng mga PDF File" : t("workspace.selectFiles") || "Select PDF Files")
-              : (language.startsWith("zh") ? (language === "zh-TW" ? "選擇 PDF 檔案" : "选择 PDF 文件") : language === "ja" ? "PDFファイルを選択" : language === "ko" ? "PDF 파일 선택" : language === "ru" ? "Выбрать файл PDF" : language === "uk" ? "Вибрати файл PDF" : language === "el" ? "Επιλογή αρχείου PDF" : language === "sk" ? "Vybrať súbor PDF" : language === "sl" ? "Izberite datoteko PDF" : language === "bg" ? "Изберете PDF файл" : language === "hi" ? "PDF फ़ाइल चुनें" : language === "id" ? "Pilih File PDF" : language === "th" ? "เลือกไฟล์ PDF" : language === "vi" ? "Chọn tệp PDF" : language === "ms" ? "Pilih Fail PDF" : language === "fil" ? "Pumili ng PDF File" : t("workspace.selectFile") || "Select PDF File")}
+            {targetRoute === "/merge-pdf" || (targetRoute as string) === "merge-pdf"
+              ? (tr.addMorePdf || overlayTr.selectPdfFile)
+              : overlayTr.selectPdfFile}
             <input
               type="file"
               multiple={targetRoute === "/merge-pdf" || (targetRoute as string) === "merge-pdf"}
@@ -430,6 +375,7 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
             items={pageItems}
             documentBuffers={documentBuffers}
             pdfDocProxies={pdfProxiesRef.current}
+            language={language}
             onRotate={handleRotate}
             onToggleDelete={handleToggleDelete}
             onToggleSelect={handleToggleSelect}
@@ -447,40 +393,14 @@ export const PdfPageEditorWorkspace: React.FC<PdfPageEditorWorkspaceProps> = ({
               {isProcessing ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  {language.startsWith("zh") ? (language === "zh-TW" ? "正在處理 PDF..." : "正在处理 PDF...") : language === "ja" ? "PDFを処理中..." : language === "ko" ? "PDF 처리 중..." : language === "hi" ? "PDF प्रोसेस हो रहा है..." : language === "th" ? "กำลังประมวลผล PDF..." : language === "id" ? "Memproses PDF..." : language === "fil" ? "Pinoproseso ang PDF..." : "Processing PDF..."}
+                  {tr.processingPdf}
                 </>
               ) : (
                 <>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  {actionButtonText === "Process PDF" && language.startsWith("zh")
-                    ? (language === "zh-TW" ? "處理 PDF" : "处理 PDF")
-                    : actionButtonText === "Process PDF" && language === "ja"
-                    ? "PDFを処理"
-                    : actionButtonText === "Process PDF" && language === "ko"
-                    ? "PDF 처리"
-                    : actionButtonText === "Process PDF" && language === "hi"
-                    ? "PDF प्रोसेस करें"
-                    : actionButtonText === "Process PDF" && language === "th"
-                    ? "ประมวลผล PDF"
-                    : actionButtonText === "Process PDF" && language === "id"
-                    ? "Proses PDF"
-                    : actionButtonText === "Process PDF" && language === "fil"
-                    ? "Iproseso ang PDF"
-                    : actionButtonText} ({activePages.length} {
-                  language.startsWith("zh") ? (language === "zh-TW" ? "頁" : "页") :
-                  language === "ja" ? "ページ" :
-                  language === "ko" ? "페이지" :
-                  language === "ru" ? "страниц" :
-                  language === "uk" ? "сторінок" :
-                  language === "el" ? "σελίδες" :
-                  language === "sk" ? "strán" :
-                  language === "sl" ? "strani" :
-                  language === "bg" ? "страници" :
-                  language === "hi" ? "पृष्ठ" :
-                  language === "th" ? "หน้า" : language === "id" ? "halaman" : language === "fil" ? "mga pahina" : "Pages"
-                })
+                  {actionButtonText === "Process PDF" ? tr.processPdf : actionButtonText} ({activePages.length} {tr.pagesSuffix})
                 </>
               )}
             </button>

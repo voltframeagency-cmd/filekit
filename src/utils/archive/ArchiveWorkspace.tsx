@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { ArchiveEngine, ArchiveEntry } from "./ArchiveEngine";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { ARCHIVE_TRANSLATIONS } from "@/config/i18n/archiveTranslations";
+import { SupportedLocale } from "@/config/i18n/locales";
 
 interface ArchiveWorkspaceProps {
   mode: "extract" | "create" | "tar-to-zip" | "rar-to-zip" | "extract-rar" | "7z-to-zip";
@@ -14,20 +16,9 @@ interface ArchiveWorkspaceProps {
 
 export function ArchiveWorkspace({ mode, title, description, embedded = true, language: propLang }: ArchiveWorkspaceProps) {
   const { language: ctxLang } = useLanguage();
-  const language = propLang || ctxLang || "en";
-  const isSpanish = language === "es" || language === "es-419";
-  const isGerman = language === "de";
-  const isFrench = language === "fr";
-  const isPortuguese = language === "pt" || language === "pt-BR";
-  const isItalian = language === "it";
-  const isDutch = language === "nl";
-  const isCatalan = language === "ca";
-  const isSwedish = language === "sv";
-  const isDanish = language === "da";
-  const isFinnish = language === "fi";
-  const isTaiwan = language === "zh-TW" || (language as string).toLowerCase() === "zh-tw";
-  const isSimplifiedChinese = !isTaiwan && (language === "zh-CN" || (language as string).toLowerCase() === "zh-cn" || language.startsWith("zh"));
-  const isChinese = isTaiwan || isSimplifiedChinese;
+  const rawLang = propLang || ctxLang || "en";
+  const tr = ARCHIVE_TRANSLATIONS[rawLang as SupportedLocale] || ARCHIVE_TRANSLATIONS[rawLang.split("-")[0] as SupportedLocale] || ARCHIVE_TRANSLATIONS.en;
+
   const [files, setFiles] = useState<File[]>([]);
   const [extractedEntries, setExtractedEntries] = useState<ArchiveEntry[]>([]);
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -57,57 +48,13 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
         const buf = new Uint8Array(await selectedFiles[0].arrayBuffer());
         const entries = mode === "extract-rar" ? ArchiveEngine.extractRar(buf) : ArchiveEngine.extractZip(buf);
         if (entries.length === 0) {
-          setError(
-            isSwedish
-              ? "Inga filer hittades i arkivet eller så är arkivet tomt."
-              : isDanish
-              ? "Ingen filer fundet i arkivet eller arkivet er tomt."
-              : isFinnish
-              ? "Arkistosta ei löytynyt purettavia tiedostoja tai arkisto on tyhjä."
-              : isCatalan
-              ? "No s'han trobat fitxers descomprimibles a l'arxiu o l'arxiu és buit."
-              : isDutch
-              ? "Geen uitgepakte bestanden gevonden in het archief of het archief is leeg."
-              : isItalian
-              ? "Nessun file decomprimibile trovato nell'archivio o l'archivio è vuoto."
-              : isPortuguese
-              ? "Nenhum ficheiro descompactável encontrado no arquivo ou o arquivo está vazio."
-              : isFrench
-              ? "Aucun fichier décompressible trouvé dans l'archive ou l'archive est vide."
-              : isGerman
-              ? "Keine entpackbaren Dateien im Archiv gefunden oder Archiv ist leer."
-              : isSpanish
-              ? "No se encontraron archivos en el archivo o está vacío."
-              : "No uncompressed files found in archive or archive is empty."
-          );
+          setError(tr.noFilesFound);
         } else {
           setExtractedEntries(entries);
         }
       } catch (err) {
         console.error(err);
-        setError(
-          isSwedish
-            ? "Kunde inte läsa arkivfilen."
-            : isDanish
-            ? "Kunne ikke læse arkivfilen."
-            : isFinnish
-            ? "Arkistotiedoston lukeminen epäonnistui."
-            : isCatalan
-            ? "Error en llegir el fitxer d'arxiu."
-            : isDutch
-            ? "Kan archiefbestand niet lezen."
-            : isItalian
-            ? "Impossibile leggere il file di archivio."
-            : isPortuguese
-            ? "Falha ao ler o ficheiro de arquivo."
-            : isFrench
-            ? "Échec de la lecture du fichier d'archive."
-            : isGerman
-            ? "Fehler beim Lesen der Archivdatei."
-            : isSpanish
-            ? "Error al leer el archivo."
-            : "Failed to read archive file."
-        );
+        setError(tr.cannotReadFile);
       } finally {
         setLoading(false);
       }
@@ -131,29 +78,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
         setOutputFileName(selectedFiles[0].name.replace(/\.(tar|tar\.gz|tgz|rar|7z)$/i, "") + ".zip");
       } catch (err) {
         console.error(err);
-        setError(
-          isSwedish
-            ? "Kunde inte konvertera arkivet till ZIP."
-            : isDanish
-            ? "Kunne ikke konvertere arkivet til ZIP."
-            : isFinnish
-            ? "Arkiston muuntaminen ZIP-muotoon epäonnistui."
-            : isCatalan
-            ? "Error en convertir l'arxiu a ZIP."
-            : isDutch
-            ? "Kan archief niet naar ZIP converteren."
-            : isItalian
-            ? "Impossibile convertire in ZIP."
-            : isPortuguese
-            ? "Falha ao converter para ZIP."
-            : isFrench
-            ? "Échec de la conversion en ZIP."
-            : isGerman
-            ? "Fehler beim Konvertieren in ZIP."
-            : isSpanish
-            ? "Error al convertir a ZIP."
-            : "Failed to convert archive to ZIP."
-        );
+        setError(tr.cannotConvert);
       } finally {
         setLoading(false);
       }
@@ -182,29 +107,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
       setOutputFileName(outName);
     } catch (err) {
       console.error(err);
-      setError(
-        isSwedish
-          ? "Kunde inte skapa ZIP-arkivet."
-          : isDanish
-          ? "Kunne ikke oprette ZIP-arkivet."
-          : isFinnish
-          ? "ZIP-arkiston luominen epäonnistui."
-          : isCatalan
-          ? "Error en crear el fitxer ZIP."
-          : isDutch
-          ? "Kan ZIP-archief niet maken."
-          : isItalian
-          ? "Impossibile creare l'archivio ZIP."
-          : isPortuguese
-          ? "Falha ao criar o arquivo ZIP."
-          : isFrench
-          ? "Échec de la création de l'archive ZIP."
-          : isGerman
-          ? "Fehler beim Erstellen des ZIP-Archivs."
-          : isSpanish
-          ? "Error al crear archivo ZIP."
-          : "Failed to create ZIP archive."
-      );
+      setError(tr.cannotCreate);
     } finally {
       setLoading(false);
     }
@@ -266,110 +169,10 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
             </svg>
           </div>
           <span className="font-bold text-slate-800 text-base block">
-            {mode === "create" 
-              ? (isSwedish
-                  ? "Släpp filer för att packa dem i ett ZIP-arkiv"
-                  : isDanish
-                  ? "Slip filer for at pakke dem i et ZIP-arkiv"
-                  : isFinnish
-                  ? "Pudota tiedostot pakataksesi ne ZIP-arkistoon"
-                  : isCatalan
-                  ? "Arrossega fitxers per empaquetar-los en un ZIP"
-                  : isDutch
-                  ? "Sleep bestanden om ze samen te voegen in een ZIP"
-                  : isItalian
-                  ? "Trascina i file per comprimerli in ZIP"
-                  : isPortuguese
-                  ? "Arrastar ficheiros para comprimir em ZIP"
-                  : isFrench
-                  ? "Déposer les fichiers pour les compresser en ZIP"
-                  : isGerman
-                  ? "Dateien ablegen, um sie als ZIP zu packen"
-                  : isSpanish
-                  ? "Suelta archivos para comprimirlos en ZIP"
-                  : isTaiwan
-                  ? "拖放檔案以壓縮為 ZIP"
-                  : isSimplifiedChinese
-                  ? "拖放文件以压缩为 ZIP"
-                  : "Drop files to zip together") 
-              : (isSwedish
-                  ? "Välj arkivfil att extrahera eller konvertera"
-                  : isDanish
-                  ? "Vælg arkivfil til udpakning eller konvertering"
-                  : isFinnish
-                  ? "Valitse purettava tai muunnettava arkisto"
-                  : isCatalan
-                  ? "Selecciona l'arxiu per extreure o convertir"
-                  : isDutch
-                  ? "Selecteer het archief om uit te pakken of te converteren"
-                  : isItalian
-                  ? "Seleziona l'archivio da estrarre o convertire"
-                  : isPortuguese
-                  ? "Selecionar o arquivo para extrair ou converter"
-                  : isFrench
-                  ? "Sélectionner l'archive à extraire ou convertir"
-                  : isGerman
-                  ? "Archivdatei zum Entpacken oder Konvertieren auswählen"
-                  : isSpanish
-                  ? "Selecciona el archivo para extraer o convertir"
-                  : isTaiwan
-                  ? "選取要解壓縮或轉換的壓縮檔"
-                  : isSimplifiedChinese
-                  ? "选择要解压或转换的压缩文件"
-                  : "Select archive file to extract")}
+            {mode === "create" ? tr.dropFilesToZip : tr.selectArchiveToExtract}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
-            {mode === "create" 
-              ? (isSwedish
-                  ? "Stöder alla filformat (flerfilsval)"
-                  : isDanish
-                  ? "Understøtter alle filformater (flere filer tilladt)"
-                  : isFinnish
-                  ? "Tukee kaikkia tiedostomuotoja (monivalinta sallittu)"
-                  : isCatalan
-                  ? "Admet tots els formats de fitxer (selecció múltiple)"
-                  : isDutch
-                  ? "Ondersteunt alle bestandsformaten (meervoudige selectie)"
-                  : isItalian
-                  ? "Supporta tutti i formati di file (selezione multipla)"
-                  : isPortuguese
-                  ? "Suporta todos os formatos de ficheiro (seleção múltipla)"
-                  : isFrench
-                  ? "Prend en charge tous les formats de fichiers (sélection multiple)"
-                  : isGerman
-                  ? "Unterstützt alle Dateiformate (Mehrfachauswahl)"
-                  : isSpanish
-                  ? "Admite todos los formatos de archivo (Selección múltiple)"
-                  : isTaiwan
-                  ? "支援所有檔案格式（支援多選）"
-                  : isSimplifiedChinese
-                  ? "支持所有文件格式（支持多选）"
-                  : "Supports all file formats (Multi-file enabled)") 
-              : (isSwedish
-                  ? "100% lokal behandling i webbläsaren"
-                  : isDanish
-                  ? "100% lokal behandling i din browser"
-                  : isFinnish
-                  ? "100% paikallinen käsittely selaimessasi"
-                  : isCatalan
-                  ? "Processament 100% local i privat al navegador"
-                  : isDutch
-                  ? "100% lokale verwerking in uw browser"
-                  : isItalian
-                  ? "Elaborazione 100% privata e locale nel browser"
-                  : isPortuguese
-                  ? "Processamento 100% privado e local no seu navegador"
-                  : isFrench
-                  ? "Traitement 100% privé et local dans votre navigateur"
-                  : isGerman
-                  ? "100% lokale Verarbeitung in Ihrem Browser"
-                  : isSpanish
-                  ? "Procesamiento 100% privado en tu navegador"
-                  : isTaiwan
-                  ? "在瀏覽器中 100% 本機安全處理"
-                  : isSimplifiedChinese
-                  ? "在浏览器中 100% 本地私密处理"
-                  : "Processed locally inside your browser")}
+            {mode === "create" ? tr.supportsAllFormats : tr.localProcessing}
           </span>
         </div>
       ) : (
@@ -377,27 +180,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
           <div className="flex items-center justify-between bg-slate-50 p-4 rounded-fk-lg border border-slate-200">
             <div>
               <span className="text-sm font-bold text-slate-800">
-                {isSwedish
-                  ? `${files.length} fil${files.length > 1 ? "er" : ""} vald${files.length > 1 ? "a" : ""}`
-                  : isDanish
-                  ? `${files.length} fil${files.length > 1 ? "er" : ""} valgt`
-                  : isFinnish
-                  ? `${files.length} tiedosto${files.length > 1 ? "a" : ""} valittu`
-                  : isCatalan
-                  ? `${files.length} fitxer${files.length > 1 ? "s" : ""} seleccionat${files.length > 1 ? "s" : ""}`
-                  : isDutch
-                  ? `${files.length} bestand${files.length > 1 ? "en" : ""} geselecteerd`
-                  : isItalian
-                  ? `${files.length} file selezionat${files.length > 1 ? "i" : "o"}`
-                  : isPortuguese
-                  ? `${files.length} ficheiro${files.length > 1 ? "s" : ""} selecionado${files.length > 1 ? "s" : ""}`
-                  : isFrench
-                  ? `${files.length} fichier${files.length > 1 ? "s" : ""} sélectionné${files.length > 1 ? "s" : ""}`
-                  : isGerman
-                  ? `${files.length} Datei${files.length > 1 ? "en" : ""} ausgewählt`
-                  : isSpanish
-                  ? `${files.length} archivo${files.length > 1 ? "s" : ""} seleccionado${files.length > 1 ? "s" : ""}`
-                  : `${files.length} file${files.length > 1 ? "s" : ""} selected`}
+                {tr.filesSelected(files.length)}
               </span>
               <span className="text-xs text-slate-500 block">
                 Total: {((files.reduce((acc, f) => acc + f.size, 0)) / 1024 / 1024).toFixed(2)} MB
@@ -412,7 +195,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isSwedish ? "Återställ" : isDanish ? "Nulstil" : isFinnish ? "Nollaa" : isCatalan ? "Reiniciar" : isDutch ? "Opnieuw instellen" : isItalian ? "Reimposta" : isPortuguese ? "Repor" : isFrench ? "Réinitialiser" : isGerman ? "Zurücksetzen" : isSpanish ? "Reiniciar" : isTaiwan ? "重設" : isSimplifiedChinese ? "重置" : "Reset"}
+              {tr.reset}
             </button>
           </div>
 
@@ -420,7 +203,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <label className="text-sm font-semibold text-slate-700">
-                  {isSwedish ? "Arkivnamn:" : isDanish ? "Arkivnavn:" : isFinnish ? "Arkiston nimi:" : isCatalan ? "Nom de l'arxiu:" : isDutch ? "Archiefnaam:" : isItalian ? "Nome archivio:" : isPortuguese ? "Nome do arquivo:" : isFrench ? "Nom de l'archive :" : isGerman ? "Archivname:" : isSpanish ? "Nombre del archivo:" : isTaiwan ? "壓縮檔名稱：" : isSimplifiedChinese ? "压缩包名称:" : "Archive Name:"}
+                  {tr.archiveNameLabel}
                 </label>
                 <input
                   type="text"
@@ -435,57 +218,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
                 disabled={loading}
                 className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold rounded-fk-lg shadow-fk-button transition-all text-base flex items-center justify-center gap-2"
               >
-                {loading
-                  ? (isTaiwan
-                      ? "正在壓縮檔案至 ZIP..."
-                      : isSimplifiedChinese
-                      ? "正在压缩文件为 ZIP..."
-                      : isSwedish
-                      ? "Komprimerar filer till ZIP..."
-                      : isDanish
-                      ? "Komprimerer filer til ZIP..."
-                      : isFinnish
-                      ? "Pakataan tiedostoja ZIP-muotoon..."
-                      : isCatalan
-                      ? "Comprimint fitxers en un ZIP..."
-                      : isDutch
-                      ? "Bestanden worden ingepakt in ZIP..."
-                      : isItalian
-                      ? "Compressione dei file in ZIP in corso..."
-                      : isPortuguese
-                      ? "A comprimir ficheiros em ZIP..."
-                      : isFrench
-                      ? "Compression des fichiers en ZIP..."
-                      : isGerman
-                      ? "Dateien werden in ZIP gepackt..."
-                      : isSpanish
-                      ? "Comprimiendo archivos en ZIP..."
-                      : "Compressing files into ZIP...")
-                  : (isTaiwan
-                      ? "建立 ZIP 壓縮檔"
-                      : isSimplifiedChinese
-                      ? "创建 ZIP 压缩包"
-                      : isSwedish
-                      ? "Skapa ZIP-arkiv"
-                      : isDanish
-                      ? "Opret ZIP-arkiv"
-                      : isFinnish
-                      ? "Luo ZIP-arkisto"
-                      : isCatalan
-                      ? "Crear arxiu ZIP"
-                      : isDutch
-                      ? "ZIP-archief maken"
-                      : isItalian
-                      ? "Crea archivio ZIP"
-                      : isPortuguese
-                      ? "Criar arquivo ZIP"
-                      : isFrench
-                      ? "Créer l'archive ZIP"
-                      : isGerman
-                      ? "ZIP-Archiv erstellen"
-                      : isSpanish
-                      ? "Crear archivo ZIP"
-                      : "Create ZIP Archive")}
+                {loading ? tr.compressingToZip : tr.createZipButton}
               </button>
             </div>
           )}
@@ -493,31 +226,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
           {mode === "extract" && extractedEntries.length > 0 && (
             <div className="flex flex-col gap-3">
               <span className="text-sm font-bold text-slate-800">
-                {isSwedish
-                  ? `Extraherade filer (${extractedEntries.length}):`
-                  : isDanish
-                  ? `Udtrukne filer (${extractedEntries.length}):`
-                  : isFinnish
-                  ? `Puretut tiedostot (${extractedEntries.length}):`
-                  : isCatalan
-                  ? `Fitxers extrets (${extractedEntries.length}):`
-                  : isDutch
-                  ? `Uitgepakte bestanden (${extractedEntries.length}):`
-                  : isItalian
-                  ? `File estratti (${extractedEntries.length}):`
-                  : isPortuguese
-                  ? `Ficheiros extraídos (${extractedEntries.length}):`
-                  : isFrench
-                  ? `Fichiers extraits (${extractedEntries.length}) :`
-                  : isGerman
-                  ? `Entpackte Dateien (${extractedEntries.length}):`
-                  : isSpanish
-                  ? `Archivos extraídos (${extractedEntries.length}):`
-                  : isTaiwan
-                  ? `已解壓縮檔案 (${extractedEntries.length})：`
-                  : isSimplifiedChinese
-                  ? `已解压文件 (${extractedEntries.length}):`
-                  : `Extracted Files (${extractedEntries.length}):`}
+                {tr.extractedFiles(extractedEntries.length)}
               </span>
               <div className="max-h-72 overflow-y-auto border border-slate-200 rounded-fk-lg divide-y divide-slate-100">
                 {extractedEntries.map((entry, idx) => (
@@ -527,7 +236,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
                       onClick={() => downloadEntry(entry)}
                       className="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-bold rounded"
                     >
-                      {isSwedish ? "Ladda ner" : isDanish ? "Download" : isFinnish ? "Lataa" : isCatalan ? "Descarregar" : isDutch ? "Downloaden" : isItalian ? "Scarica" : isPortuguese ? "Descarregar" : isFrench ? "Télécharger" : isGerman ? "Herunterladen" : isSpanish ? "Descargar" : isTaiwan ? "下載" : isSimplifiedChinese ? "下载" : "Download"}
+                      {tr.download}
                     </button>
                   </div>
                 ))}
@@ -539,58 +248,10 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-fk-lg flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-sm font-bold text-emerald-900 block truncate">
-                  {isSwedish
-                    ? `✓ ZIP klar: ${outputFileName}`
-                    : isDanish
-                    ? `✓ ZIP klar: ${outputFileName}`
-                    : isFinnish
-                    ? `✓ ZIP valmis: ${outputFileName}`
-                    : isCatalan
-                    ? `✓ ZIP a punt: ${outputFileName}`
-                    : isDutch
-                    ? `✓ ZIP gereed: ${outputFileName}`
-                    : isItalian
-                    ? `✓ ZIP pronto: ${outputFileName}`
-                    : isPortuguese
-                    ? `✓ ZIP pronto: ${outputFileName}`
-                    : isFrench
-                    ? `✓ ZIP prêt : ${outputFileName}`
-                    : isGerman
-                    ? `✓ ZIP bereit: ${outputFileName}`
-                    : isSpanish
-                    ? `✓ ZIP listo: ${outputFileName}`
-                    : isTaiwan
-                    ? `✓ ZIP 壓縮檔已就緒：${outputFileName}`
-                    : isSimplifiedChinese
-                    ? `✓ ZIP 压缩包已就绪：${outputFileName}`
-                    : `✓ Ready ZIP: ${outputFileName}`}
+                  {tr.readyZip(outputFileName)}
                 </span>
                 <span className="text-xs text-emerald-700">
-                  {isSwedish
-                    ? `Storlek: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% I webbläsaren`
-                    : isDanish
-                    ? `Størrelse: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% I browseren`
-                    : isFinnish
-                    ? `Koko: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% Selaimessa`
-                    : isCatalan
-                    ? `Mida: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% Al navegador`
-                    : isDutch
-                    ? `Grootte: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% In browser`
-                    : isItalian
-                    ? `Dimensione: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% Nel browser`
-                    : isPortuguese
-                    ? `Tamanho: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% No navegador`
-                    : isFrench
-                    ? `Taille : ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} Mo · 100% Dans le navigateur`
-                    : isGerman
-                    ? `Größe: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% Im Browser`
-                    : isSpanish
-                    ? `Tamaño: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% En el navegador`
-                    : isTaiwan
-                    ? `大小：${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% 瀏覽器本機運算`
-                    : isSimplifiedChinese
-                    ? `大小：${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% 浏览器本地运算`
-                    : `Size: ${((outputBlob?.size || 0) / 1024 / 1024).toFixed(2)} MB · 100% In-Browser`}
+                  {tr.sizeLabel(((outputBlob?.size || 0) / 1024 / 1024).toFixed(2))}
                 </span>
               </div>
               <a
@@ -598,7 +259,7 @@ export function ArchiveWorkspace({ mode, title, description, embedded = true, la
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isSwedish ? "Ladda ner ZIP" : isDanish ? "Download ZIP" : isFinnish ? "Lataa ZIP" : isCatalan ? "Descarregar ZIP" : isDutch ? "ZIP downloaden" : isItalian ? "Scarica ZIP" : isPortuguese ? "Descarregar ZIP" : isFrench ? "Télécharger le ZIP" : isGerman ? "ZIP herunterladen" : isSpanish ? "Descargar ZIP" : isTaiwan ? "下載 ZIP" : isSimplifiedChinese ? "下载 ZIP" : "Download ZIP"}
+                {tr.downloadZip}
               </a>
             </div>
           )}

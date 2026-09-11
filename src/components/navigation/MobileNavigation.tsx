@@ -5,9 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MAIN_NAVIGATION, CONVERTER_NAVIGATION_GROUPS } from "@/config/navigation";
 import { useLanguage } from "../layout/LanguageContext";
-import { isValidLocale, normalizeLocale } from "@/config/i18n/locales";
-import { getLocalizedHref } from "@/utils/i18nHelper";
+import { isValidLocale, normalizeLocale, SupportedLocale } from "@/config/i18n/locales";
+import { getLocalizedHref, VERB_DICTIONARY } from "@/utils/i18nHelper";
 import FileKitLogo from "../common/FileKitLogo";
+import { MEGA_MENU_CATEGORIES, EXACT_TOOL_LABELS, NOUN_MAP, NAV_ACCESSIBILITY_LABELS } from "./megaMenuTranslations";
 
 export interface MobileNavigationProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
   const { language, t } = useLanguage();
   const segments = pathname ? pathname.split("/").filter(Boolean) : [];
   const activeLocale = segments.length > 0 ? normalizeLocale(segments[0]) : language || "en";
+  const shortLocale = activeLocale.split("-")[0];
   const [openAccordion, setOpenAccordion] = useState<string | null>("compress");
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -90,7 +92,7 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
       ref={drawerRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Mobile Navigation Menu"
+      aria-label={NAV_ACCESSIBILITY_LABELS.mobileMenu[activeLocale] || NAV_ACCESSIBILITY_LABELS.mobileMenu[shortLocale] || "Mobile Navigation Menu"}
       className="fixed inset-0 z-50 flex flex-col bg-white animate-in slide-in-from-right duration-200 overflow-y-auto"
     >
       {/* Header Bar */}
@@ -106,7 +108,7 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
             onClose();
             triggerRef?.current?.focus();
           }}
-          aria-label="Close navigation menu"
+          aria-label={NAV_ACCESSIBILITY_LABELS.closeMenu[activeLocale] || NAV_ACCESSIBILITY_LABELS.closeMenu[shortLocale] || "Close navigation menu"}
           className="p-2 text-fk-text-muted hover:text-fk-text rounded-fk-md focus:outline-none focus:ring-2 focus:ring-fk-primary"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -130,258 +132,152 @@ export default function MobileNavigation({ isOpen, onClose, triggerRef }: Mobile
             ? (t("nav.pricing") || item.label)
             : item.label;
 
-          // Helper for localized group titles
+          // Localized category header labels
           const getCategoryHeader = (label: string): string => {
-            const isChinese = activeLocale.startsWith("zh");
-            const isTaiwan = activeLocale === "zh-TW";
-            const isMalay = activeLocale === "ms";
-            const isFilipino = activeLocale === "fil";
-            const isThai = activeLocale === "th";
-            const isVietnamese = activeLocale === "vi";
-            const isArabic = activeLocale === "ar";
-            const isTurkish = activeLocale === "tr";
-            const isSpanish = activeLocale === "es" || activeLocale === "es-419";
-            const isFrench = activeLocale === "fr";
-            const isGerman = activeLocale === "de";
-            const isPortuguese = activeLocale === "pt" || activeLocale === "pt-BR";
-            const isItalian = activeLocale === "it";
-            const isSwedish = activeLocale === "sv";
-            const isJapanese = activeLocale === "ja";
-            const isKorean = activeLocale === "ko";
+            const cleanKey = label.trim().toUpperCase();
+            const shortLocale = activeLocale.split("-")[0];
 
-            if (label.includes("IMAGE")) {
-              if (isChinese) return isTaiwan ? "圖片" : "图片";
-              if (isKorean) return "이미지";
-              if (isJapanese) return "画像";
-              if (isFilipino) return "IMAHE";
-              if (isVietnamese) return "HÌNH ẢNH";
-              if (isThai) return "รูปภาพ";
-              if (isMalay) return "IMEJ";
-              if (isSwedish) return "BILD";
-              if (isArabic) return "تحويل الصور";
-              if (isTurkish) return "GÖRSEL";
-              if (isSpanish) return "IMAGEN";
-              if (isFrench) return "IMAGE";
-              if (isGerman) return "BILD";
-              if (isPortuguese) return "IMAGEM";
-              if (isItalian) return "IMMAGINE";
+            if (MEGA_MENU_CATEGORIES[cleanKey]) {
+              const match = MEGA_MENU_CATEGORIES[cleanKey][activeLocale] || MEGA_MENU_CATEGORIES[cleanKey][shortLocale];
+              if (match) return match;
             }
-            if (label.includes("PDF")) {
-              if (isChinese) return "PDF";
-              if (isKorean) return "PDF";
-              if (isJapanese) return "PDF";
-              if (isFilipino) return "PDF";
-              if (isVietnamese) return "PDF";
-              if (isThai) return "PDF";
-              if (isArabic) return "ملفات PDF";
-              if (isTurkish) return "PDF";
-              if (isSpanish) return "PDF";
-              if (isFrench) return "PDF";
-              if (isGerman) return "PDF";
-              if (isMalay) return "PDF";
+
+            if (cleanKey === "IMAGE") {
+              if (item.id === "compress") {
+                return MEGA_MENU_CATEGORIES["IMAGE COMPRESSION"]?.[activeLocale] || MEGA_MENU_CATEGORIES["IMAGE COMPRESSION"]?.[shortLocale] || "IMAGE COMPRESSION";
+              }
+              return MEGA_MENU_CATEGORIES["IMAGE CONVERT"]?.[activeLocale] || MEGA_MENU_CATEGORIES["IMAGE CONVERT"]?.[shortLocale] || "IMAGE CONVERSION";
             }
-            if (label.includes("VIDEO")) {
-              if (isChinese) return isTaiwan ? "影片" : "视频";
-              if (isKorean) return "비디오";
-              if (isJapanese) return "動画";
-              if (isFilipino) return "VIDEO";
-              if (isVietnamese) return "VIDEO";
-              if (isThai) return "วิดีโอ";
-              if (isMalay) return "VIDEO";
-              if (isSwedish) return "VIDEO";
-              if (isArabic) return "أدوات الفيديو";
-              if (isTurkish) return "VİDEO";
-              if (isSpanish) return "VIDEO";
-              if (isFrench) return "VIDÉO";
-              if (isGerman) return "VIDEO";
+            if (cleanKey === "PDF-TYÖKALUT" || cleanKey === "PDF-VERKTØY" || cleanKey === "PDF TOOLS" || cleanKey === "PDF") {
+              return MEGA_MENU_CATEGORIES["PDF"]?.[activeLocale] || MEGA_MENU_CATEGORIES["PDF"]?.[shortLocale] || "PDF TOOLS";
             }
-            if (label.includes("SUBTITLE")) {
-              if (isChinese) return "字幕";
-              if (isKorean) return "자막";
-              if (isJapanese) return "字幕";
-              if (isFilipino) return "MGA SUBTITLE";
-              if (isVietnamese) return "PHỤ ĐỀ";
-              if (isThai) return "คำบรรยาย";
-              if (isMalay) return "SARIKATA";
-              if (isSwedish) return "UNDERTEXTER";
-              if (isArabic) return "أدوات الترجمة";
-              if (isTurkish) return "ALTYAZI";
-              if (isSpanish) return "SUBTÍTULOS";
-              if (isFrench) return "SOUS-TITRES";
-              if (isGerman) return "UNTERTITEL";
+            if (cleanKey === "PAGE MANIPULATION" || cleanKey === "PAGE EDITING & ORGANIZATION") {
+              return MEGA_MENU_CATEGORIES["PAGE EDITING & ORGANIZATION"]?.[activeLocale] || MEGA_MENU_CATEGORIES["PAGE EDITING & ORGANIZATION"]?.[shortLocale] || "PAGE EDITING & ORGANIZATION";
             }
-            if (label.includes("DOCUMENTS") || label.includes("DOCUMENT")) {
-              if (isChinese) return isTaiwan ? "檔案與辦公" : "文档与办公";
-              if (isKorean) return "문서 및 오피스";
-              if (isJapanese) return "文書・オフィス";
-              if (isFilipino) return "MGA DOKUMENTO";
-              if (isVietnamese) return "TÀI LIỆU";
-              if (isThai) return "เอกสาร";
-              if (isMalay) return "DOKUMEN";
-              if (isSwedish) return "DOKUMENT";
-              if (isArabic) return "المستندات والكتب";
-              if (isTurkish) return "BELGELER";
-              if (isSpanish) return "DOCUMENTOS";
-              if (isFrench) return "DOCUMENTS";
-              if (isGerman) return "DOKUMENTE";
+            if (cleanKey === "PDF CONVERSIONS" || cleanKey === "COMPRESS & CONVERT") {
+              return MEGA_MENU_CATEGORIES["COMPRESS & CONVERT"]?.[activeLocale] || MEGA_MENU_CATEGORIES["COMPRESS & CONVERT"]?.[shortLocale] || "COMPRESS & CONVERT";
             }
-            if (label.includes("CAD")) {
-              if (isChinese) return isTaiwan ? "CAD 與向量" : "CAD 与矢量";
-              if (isKorean) return "CAD 및 벡터";
-              if (isJapanese) return "CAD & ベクター";
-              if (isFilipino) return "CAD & VECTOR";
-              if (isVietnamese) return "CAD & VECTOR";
-              if (isThai) return "CAD และเวกเตอร์";
-              if (isMalay) return "CAD & VEKTOR";
-              if (isSwedish) return "CAD & VEKTOR";
-              if (isArabic) return "CAD والمتجهات";
-              if (isTurkish) return "CAD VE VEKTÖR";
-              if (isSpanish) return "CAD Y VECTOR";
-              if (isFrench) return "CAD & VECTORIEL";
-              if (isGerman) return "CAD & VEKTOR";
+            if (cleanKey === "POPULAR TARGET SIZES") {
+              return MEGA_MENU_CATEGORIES["POPULAR TARGET SIZES"]?.[activeLocale] || MEGA_MENU_CATEGORIES["POPULAR TARGET SIZES"]?.[shortLocale] || "POPULAR TARGET SIZES";
             }
-            if (label.includes("AUDIO")) {
-              if (isChinese) return isTaiwan ? "音訊" : "音频";
-              if (isKorean) return "오디오";
-              if (isJapanese) return "音声";
-              if (isFilipino) return "AUDIO";
-              if (isVietnamese) return "ÂM THANH";
-              if (isThai) return "เสียง";
-              if (isMalay) return "AUDIO";
-              if (isSwedish) return "LJUD";
-              if (isArabic) return "أدوات الصوت";
-              if (isTurkish) return "SES";
-              if (isSpanish) return "AUDIO";
-              if (isFrench) return "AUDIO";
-              if (isGerman) return "AUDIO";
+            if (cleanKey === "IMAGE CONVERSION" || cleanKey === "IMAGE CONVERT") {
+              return MEGA_MENU_CATEGORIES["IMAGE CONVERT"]?.[activeLocale] || MEGA_MENU_CATEGORIES["IMAGE CONVERT"]?.[shortLocale] || "IMAGE CONVERSION";
             }
-            if (label.includes("ARCHIVE")) {
-              if (isChinese) return isTaiwan ? "壓縮檔與封存" : "压缩文件与归档";
-              if (isKorean) return "압축 파일 및 아카이브";
-              if (isJapanese) return "圧縮ファイル・アーカイブ";
-              if (isFilipino) return "ARCHIVE";
-              if (isVietnamese) return "LƯU TRỮ";
-              if (isThai) return "คลังข้อมูล";
-              if (isMalay) return "ARKIB";
-              if (isSwedish) return "ARKIV";
-              if (isArabic) return "الأرشيف والأدوات";
-              if (isTurkish) return "ARŞİV";
-              if (isSpanish) return "ARCHIVOS";
-              if (isFrench) return "ARCHIVES";
-              if (isGerman) return "ARCHIV";
+            if (cleanKey === "FORMAT PAIRS") {
+              return MEGA_MENU_CATEGORIES["FORMAT PAIRS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["FORMAT PAIRS"]?.[shortLocale] || "FORMAT PAIRS";
             }
+            if (cleanKey === "FORMATS") {
+              return MEGA_MENU_CATEGORIES["FORMATS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["FORMATS"]?.[shortLocale] || "FORMATS";
+            }
+            if (cleanKey === "MORE FORMATS") {
+              return MEGA_MENU_CATEGORIES["MORE FORMATS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["MORE FORMATS"]?.[shortLocale] || "MORE FORMATS";
+            }
+            if (cleanKey === "IMAGE EDITORS") {
+              return MEGA_MENU_CATEGORIES["IMAGE EDITORS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["IMAGE EDITORS"]?.[shortLocale] || "IMAGE EDITORS";
+            }
+            if (cleanKey === "VIDEO TOOLS" || cleanKey === "VIDEO") {
+              return MEGA_MENU_CATEGORIES["VIDEO TOOLS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["VIDEO TOOLS"]?.[shortLocale] || "VIDEO TOOLS";
+            }
+            if (cleanKey === "SUBTITLE TOOLS" || cleanKey === "SUBTITLES") {
+              return MEGA_MENU_CATEGORIES["SUBTITLE TOOLS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["SUBTITLE TOOLS"]?.[shortLocale] || "SUBTITLE TOOLS";
+            }
+            if (cleanKey === "CONVERT FROM PDF" || cleanKey === "FROM PDF") {
+              return MEGA_MENU_CATEGORIES["CONVERT FROM PDF"]?.[activeLocale] || MEGA_MENU_CATEGORIES["CONVERT FROM PDF"]?.[shortLocale] || "CONVERT FROM PDF";
+            }
+            if (cleanKey === "CONVERT TO PDF" || cleanKey === "TO PDF") {
+              return MEGA_MENU_CATEGORIES["CONVERT TO PDF"]?.[activeLocale] || MEGA_MENU_CATEGORIES["CONVERT TO PDF"]?.[shortLocale] || "CONVERT TO PDF";
+            }
+            if (cleanKey === "DOCUMENTS & EBOOKS" || cleanKey === "DOCUMENTS & E-BOOKS" || cleanKey === "DOCUMENTS") {
+              return MEGA_MENU_CATEGORIES["DOCUMENTS & EBOOKS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["DOCUMENTS & EBOOKS"]?.[shortLocale] || "DOCUMENTS & EBOOKS";
+            }
+            if (cleanKey === "CAD & VECTOR TOOLS" || cleanKey === "CAD") {
+              return MEGA_MENU_CATEGORIES["CAD & VECTOR TOOLS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["CAD & VECTOR TOOLS"]?.[shortLocale] || "CAD & VECTOR TOOLS";
+            }
+            if (cleanKey === "AUDIO TOOLS" || cleanKey === "AUDIO") {
+              return MEGA_MENU_CATEGORIES["AUDIO TOOLS"]?.[activeLocale] || MEGA_MENU_CATEGORIES["AUDIO TOOLS"]?.[shortLocale] || "AUDIO TOOLS";
+            }
+            if (cleanKey === "ARCHIVE & UTILITIES" || cleanKey === "ARCHIVE") {
+              return MEGA_MENU_CATEGORIES["ARCHIVE & UTILITIES"]?.[activeLocale] || MEGA_MENU_CATEGORIES["ARCHIVE & UTILITIES"]?.[shortLocale] || "ARCHIVE & UTILITIES";
+            }
+
             return label;
           };
 
-          // Helper for localized link titles
+          // Localize individual link labels
           const getLocalizedLinkLabel = (label: string): string => {
-            if (activeLocale === "en") return label;
-            const isChinese = activeLocale.startsWith("zh");
-            const isTaiwan = activeLocale === "zh-TW";
-            const isMalay = activeLocale === "ms";
-            const isArabic = activeLocale === "ar";
-            const isTurkish = activeLocale === "tr";
-            const isSpanish = activeLocale === "es" || activeLocale === "es-419";
-            const isPortuguese = activeLocale === "pt" || activeLocale === "pt-BR";
-            const isGerman = activeLocale === "de";
-            const isFrench = activeLocale === "fr";
-            const isItalian = activeLocale === "it";
-            const isSwedish = activeLocale === "sv";
-            const isFilipino = activeLocale === "fil";
-            const isJapanese = activeLocale === "ja";
-            const isKorean = activeLocale === "ko";
+            const shortLocale = activeLocale.split("-")[0];
 
-            const toPrep = isJapanese ? "から" : isFilipino ? "sa" : activeLocale === "vi" ? "sang" : activeLocale === "th" ? "เป็น" : isMalay ? "ke" : isSwedish ? "till" : isArabic ? "إلى" : isSpanish ? "a" : isPortuguese ? "para" : isGerman ? "in" : isFrench ? "en" : isItalian ? "in" : isTurkish ? "→" : "to";
+            // 1. Direct dictionary exact match
+            if (EXACT_TOOL_LABELS[label]) {
+              const exactMatch = EXACT_TOOL_LABELS[label][activeLocale] || EXACT_TOOL_LABELS[label][shortLocale];
+              if (exactMatch) return exactMatch;
+            }
 
+            // 2. Format pair conversion (e.g. "JPG to PNG", "PDF to JPG", "TIFF to PDF", "DWG to PDF")
             if (label.includes(" to ")) {
-              const [source, target] = label.split(" to ");
-              if (source && target) {
-                if (isChinese) return `${source} 轉 ${target}`;
-                if (isKorean) return `${source}에서 ${target}(으)로 변환`;
-                if (isJapanese) return `${source} を ${target} に変換`;
+              const [rawSource, rawTarget] = label.split(" to ");
+              if (rawSource && rawTarget) {
+                let source = rawSource.trim();
+                let target = rawTarget.trim();
+
+                const pairKey = `${source} to ${target}`;
+                if (EXACT_TOOL_LABELS[pairKey]) {
+                  const match = EXACT_TOOL_LABELS[pairKey][activeLocale] || EXACT_TOOL_LABELS[pairKey][shortLocale];
+                  if (match) return match;
+                }
+
+                const dict = VERB_DICTIONARY[activeLocale as SupportedLocale];
+                const PREPOSITIONS: Record<string, string> = {
+                  ar: "إلى",
+                  bg: "в",
+                  cs: "na",
+                  da: "til",
+                  de: "in",
+                  el: "σε",
+                  es: "a",
+                  "es-419": "a",
+                  fi: "muotoon",
+                  fil: "patungo sa",
+                  fr: "en",
+                  he: "ל-",
+                  hi: "में",
+                  hu: "formátumba",
+                  id: "ke",
+                  it: "in",
+                  ja: "→",
+                  ko: "→",
+                  lt: "į",
+                  lv: "par",
+                  ms: "kepada",
+                  nl: "naar",
+                  no: "til",
+                  pl: "na",
+                  pt: "para",
+                  "pt-BR": "para",
+                  ro: "în",
+                  ru: "в",
+                  sk: "na",
+                  sl: "v",
+                  sv: "till",
+                  th: "เป็น",
+                  tr: "→",
+                  uk: "у",
+                  vi: "sang",
+                  "zh-CN": "转",
+                  "zh-TW": "轉"
+                };
+
+                const toPrep = PREPOSITIONS[activeLocale] || PREPOSITIONS[shortLocale] || dict?.to || "to";
+
+                if (NOUN_MAP[source]?.[activeLocale] || NOUN_MAP[source]?.[shortLocale]) {
+                  source = NOUN_MAP[source][activeLocale] || NOUN_MAP[source][shortLocale];
+                }
+                if (NOUN_MAP[target]?.[activeLocale] || NOUN_MAP[target]?.[shortLocale]) {
+                  target = NOUN_MAP[target][activeLocale] || NOUN_MAP[target][shortLocale];
+                }
+
                 return `${source} ${toPrep} ${target}`;
               }
-            }
-
-            if (label.startsWith("Compress ")) {
-              const item = label.replace("Compress ", "");
-              if (isChinese) return `${item} 壓縮`;
-              if (isKorean) return `${item} 압축`;
-              if (isJapanese) return `${item} を圧縮`;
-              if (isFilipino) return `I-compress ang ${item}`;
-              if (activeLocale === "vi") return `Nén ${item}`;
-              if (activeLocale === "th") return `บีบอัด ${item}`;
-              if (isMalay) return `Mampatkan ${item}`;
-              if (isSwedish) return `Komprimera ${item}`;
-              if (isArabic) return `ضغط ${item}`;
-              if (isSpanish) return `Comprimir ${item}`;
-              if (isTurkish) return `${item} Sıkıştır`;
-              if (isFrench) return `Compresser ${item}`;
-              if (isGerman) return `${item} komprimieren`;
-            }
-            if (label.startsWith("Convert ")) {
-              const item = label.replace("Convert ", "");
-              if (isChinese) return `${item} 轉換`;
-              if (isKorean) return `${item} 변환`;
-              if (isJapanese) return `${item} を変換`;
-              if (isFilipino) return `I-convert ang ${item}`;
-              if (activeLocale === "vi") return `Chuyển đổi ${item}`;
-              if (activeLocale === "th") return `แปลง ${item}`;
-              if (isMalay) return `Tukar ${item}`;
-              if (isSwedish) return `Konvertera ${item}`;
-              if (isArabic) return `تحويل ${item}`;
-              if (isSpanish) return `Convertir ${item}`;
-              if (isTurkish) return `${item} Dönüştür`;
-              if (isFrench) return `Convertir ${item}`;
-              if (isGerman) return `${item} konvertieren`;
-            }
-            if (label.startsWith("Extract ")) {
-              const item = label.replace("Extract ", "");
-              if (isChinese) return isTaiwan ? `${item} 擷取` : `${item} 提取`;
-              if (isKorean) return `${item} 추출`;
-              if (isJapanese) return `${item} を抽出`;
-              if (isFilipino) return `I-extract ang ${item}`;
-              if (activeLocale === "vi") return `Trích xuất ${item}`;
-              if (activeLocale === "th") return `แยก ${item}`;
-              if (isMalay) return `Ekstrak ${item}`;
-              if (isSwedish) return `Extrahera ${item}`;
-              if (isArabic) return `استخراج ${item}`;
-              if (isSpanish) return `Extraer ${item}`;
-              if (isTurkish) return `${item} Ayıkla`;
-              if (isFrench) return `Extraire ${item}`;
-              if (isGerman) return `${item} extrahieren`;
-            }
-            if (label.startsWith("Rotate ")) {
-              const item = label.replace("Rotate ", "");
-              if (isChinese) return `${item} 旋轉`;
-              if (isKorean) return `${item} 회전`;
-              if (isJapanese) return `${item} を回転`;
-              if (isFilipino) return `Paikutin ang ${item}`;
-              if (activeLocale === "vi") return `Xoay ${item}`;
-              if (activeLocale === "th") return `หมุน ${item}`;
-              if (isMalay) return `Putar ${item}`;
-              if (isSwedish) return `Rotera ${item}`;
-              if (isArabic) return `تدوير ${item}`;
-              if (isSpanish) return `Rotar ${item}`;
-              if (isTurkish) return `${item} Döndür`;
-              if (isFrench) return `Faire pivoter ${item}`;
-              if (isGerman) return `${item} drehen`;
-            }
-            if (label.startsWith("Trim ")) {
-              const item = label.replace("Trim ", "");
-              if (isChinese) return isTaiwan ? `${item} 剪裁與修剪` : `${item} 裁剪与修剪`;
-              if (isKorean) return `${item} 자르기 및 트리밍`;
-              if (isJapanese) return `${item} をカット・トリミング`;
-              if (isFilipino) return `Gupitin ang ${item}`;
-              if (activeLocale === "vi") return `Cắt ${item}`;
-              if (activeLocale === "th") return `ตัด ${item}`;
-              if (isMalay) return `Potong ${item}`;
-              if (isSwedish) return `Klipp ${item}`;
-              if (isArabic) return `قص ${item}`;
-              if (isSpanish) return `Recortar ${item}`;
-              if (isTurkish) return `${item} Kırp`;
-              if (isFrench) return `Couper ${item}`;
-              if (isGerman) return `${item} schneiden`;
             }
 
             return label;

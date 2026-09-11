@@ -3,6 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import { PageOperationItem } from "@/utils/pdf-editor/types";
+import { PDF_EDITOR_STRINGS } from "@/config/i18n/pdfEditorTranslations";
+import { SupportedLocale } from "@/config/i18n/locales";
 
 // Configure pdfjs-dist worker location
 if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
@@ -15,6 +17,7 @@ interface PdfPageThumbnailProps {
   pdfDocProxy?: pdfjsLib.PDFDocumentProxy | null;
   displayIndex: number;
   totalDisplayPages: number;
+  language?: string;
   onRotate: (id: string, direction: "cw" | "ccw") => void;
   onToggleDelete: (id: string) => void;
   onToggleSelect: (id: string) => void;
@@ -27,11 +30,16 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
   pdfDocProxy,
   displayIndex,
   totalDisplayPages,
+  language = "en",
   onRotate,
   onToggleDelete,
   onToggleSelect,
   onMovePage,
 }) => {
+  const rawLang = (language || "en") as SupportedLocale;
+  const shortLang = (language || "en").split("-")[0] as SupportedLocale;
+  const tr = PDF_EDITOR_STRINGS[rawLang] || PDF_EDITOR_STRINGS[shortLang] || PDF_EDITOR_STRINGS.en;
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const renderTaskRef = useRef<pdfjsLib.RenderTask | null>(null);
 
@@ -182,7 +190,7 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
             className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-blue-600 focus:ring-blue-500"
           />
           <span className="text-xs font-semibold text-slate-300">
-            Page {displayIndex + 1}
+            {tr.pagePrefix} {displayIndex + 1}
           </span>
         </label>
 
@@ -209,7 +217,7 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
 
         {renderError ? (
           <div className="p-2 text-center text-xs text-slate-400">
-            Page {item.originalPageIndex + 1}
+            {tr.pagePrefix} {item.originalPageIndex + 1}
           </div>
         ) : (
           <canvas ref={canvasRef} className="max-h-[150px] max-w-full object-contain" />
@@ -218,7 +226,7 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
         {/* Deleted Overlay Banner */}
         {item.isDeleted && (
           <div className="absolute inset-0 bg-red-950/75 backdrop-blur-[1px] flex flex-col items-center justify-center p-2 text-red-300">
-            <span className="text-xs font-bold uppercase tracking-wider mb-1">Deleted</span>
+            <span className="text-xs font-bold uppercase tracking-wider mb-1">{tr.deleted}</span>
             <button
               type="button"
               onClick={(e) => {
@@ -227,7 +235,7 @@ export const PdfPageThumbnail: React.FC<PdfPageThumbnailProps> = ({
               }}
               className="text-[11px] px-2 py-1 rounded bg-red-800/80 hover:bg-red-700 text-white font-medium transition"
             >
-              Undo
+              {tr.undo}
             </button>
           </div>
         )}

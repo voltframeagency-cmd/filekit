@@ -4,6 +4,9 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AudioEngine, WaveformPeaks } from "./AudioEngine";
 import UploadDropzone from "@/components/upload/UploadDropzone";
 import { fileManager } from "@/utils/fileManager";
+import { useLanguage } from "@/components/layout/LanguageContext";
+import { MEDIA_WORKSPACE_TRANSLATIONS } from "@/config/i18n/mediaWorkspaceTranslations";
+import { SupportedLocale } from "@/config/i18n/locales";
 
 export interface AudioWorkspaceProps {
   mode: "convert" | "compress" | "trim" | "merge" | "video-to-mp3" | "boost";
@@ -18,8 +21,12 @@ export default function AudioWorkspace({
   title,
   subtitle,
   allowedAccept = "audio/*,video/*",
-  language
+  language: propLang
 }: AudioWorkspaceProps) {
+  const { language: ctxLang } = useLanguage();
+  const rawLang = propLang || ctxLang || "en";
+  const tr = MEDIA_WORKSPACE_TRANSLATIONS[rawLang as SupportedLocale] || MEDIA_WORKSPACE_TRANSLATIONS[rawLang.split("-")[0] as SupportedLocale] || MEDIA_WORKSPACE_TRANSLATIONS.en;
+
   const [files, setFiles] = useState<File[]>([]);
   const [audioBuffers, setAudioBuffers] = useState<AudioBuffer[]>([]);
   const [waveformPeaks, setWaveformPeaks] = useState<WaveformPeaks | null>(null);
@@ -111,7 +118,7 @@ export default function AudioWorkspace({
       setCurrentTime(0);
     } catch (err) {
       console.error("Audio decoding failed:", err);
-      setErrorMessage("Could not decode audio. Please ensure the file is a valid audio/video container.");
+      setErrorMessage(tr.decodeErrorAudio);
     } finally {
       setLoading(false);
     }
@@ -136,7 +143,7 @@ export default function AudioWorkspace({
       setAudioBuffers((prev) => [...prev, decodedBuffer]);
     } catch (err) {
       console.error("Merge file decode failed:", err);
-      setErrorMessage("Failed to decode audio track for merge.");
+      setErrorMessage(tr.decodeErrorAudio);
     }
   };
 
@@ -298,7 +305,7 @@ export default function AudioWorkspace({
       setOutputFileName(outName);
     } catch (err) {
       console.error("Audio processing failed:", err);
-      setErrorMessage("Failed to process audio file.");
+      setErrorMessage(tr.decodeErrorAudio);
     } finally {
       setProcessing(false);
     }
@@ -320,7 +327,7 @@ export default function AudioWorkspace({
             onFileSelect={handleFileSelected}
             accept={allowedAccept}
             isGeneric={false}
-            language={language}
+            language={rawLang}
           />
         ) : (
           <div className="flex flex-col gap-6">
@@ -328,7 +335,7 @@ export default function AudioWorkspace({
             {loading ? (
               <div className="h-40 flex items-center justify-center bg-slate-50 rounded-fk-lg border border-slate-200">
                 <span className="text-sm font-medium text-slate-600 animate-pulse">
-                  Decoding audio stream in browser...
+                  {tr.processingAudio}
                 </span>
               </div>
             ) : (
@@ -359,14 +366,14 @@ export default function AudioWorkspace({
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                           </svg>
-                          Pause
+                          {tr.pause}
                         </>
                       ) : (
                         <>
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M8 5v14l11-7z" />
                           </svg>
-                          Play
+                          {tr.play}
                         </>
                       )}
                     </button>
@@ -376,7 +383,7 @@ export default function AudioWorkspace({
                   </div>
 
                   <span className="text-xs font-semibold px-2.5 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                    Browser-First · Zero Cloud Upload
+                    {tr.browserPrivacyBadge}
                   </span>
                 </div>
               </div>
@@ -387,7 +394,7 @@ export default function AudioWorkspace({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 border border-slate-200 rounded-fk-lg">
                 <div>
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">
-                    Start Time (seconds)
+                    {tr.startTimeSeconds}
                   </label>
                   <input
                     type="number"
@@ -401,7 +408,7 @@ export default function AudioWorkspace({
                 </div>
                 <div>
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">
-                    End Time (seconds)
+                    {tr.endTimeSeconds}
                   </label>
                   <input
                     type="number"
@@ -419,7 +426,7 @@ export default function AudioWorkspace({
             {mode === "compress" && (
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-fk-lg flex flex-col gap-3">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Target Audio Bitrate
+                  {tr.targetAudioBitrate}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[64, 128, 192, 320].map((rate) => (
@@ -433,7 +440,7 @@ export default function AudioWorkspace({
                           : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
                       }`}
                     >
-                      {rate} kbps {rate === 128 ? "(Recommended)" : ""}
+                      {rate} kbps {rate === 128 ? tr.recommended : ""}
                     </button>
                   ))}
                 </div>
@@ -443,7 +450,7 @@ export default function AudioWorkspace({
             {mode === "boost" && (
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-fk-lg flex flex-col gap-3">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Volume Boost Level
+                  {tr.volumeBoostLevel}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
@@ -472,7 +479,7 @@ export default function AudioWorkspace({
             {mode === "merge" && (
               <div className="flex flex-col gap-3 p-4 bg-slate-50 border border-slate-200 rounded-fk-lg">
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Tracks to Merge ({files.length})
+                  {tr.tracksToMerge(files.length)}
                 </span>
                 <div className="flex flex-col gap-2">
                   {files.map((f, idx) => (
@@ -483,7 +490,7 @@ export default function AudioWorkspace({
                   ))}
                 </div>
                 <label className="cursor-pointer text-center py-2 px-4 border border-dashed border-blue-300 rounded-md text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-all">
-                  + Add another audio file
+                  {tr.addAnotherAudioFile}
                   <input
                     type="file"
                     accept={allowedAccept}
@@ -518,7 +525,7 @@ export default function AudioWorkspace({
                 }}
                 className="text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors"
               >
-                Choose different file
+                {tr.chooseDifferentFile}
               </button>
 
               <button
@@ -526,7 +533,7 @@ export default function AudioWorkspace({
                 disabled={processing || loading}
                 className="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-base rounded-fk-lg shadow-sm hover:shadow transition-all disabled:opacity-50"
               >
-                {processing ? "Processing Audio..." : `Export ${title.split(" ")[0]} Output`}
+                {processing ? tr.processingAudio : tr.exportOutput(title.split(" ")[0])}
               </button>
             </div>
 
@@ -538,7 +545,7 @@ export default function AudioWorkspace({
                     <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    Ready for Download (Result Verified)
+                    {tr.readyForDownload}
                   </span>
                   <span className="text-xs text-emerald-700 mt-0.5 font-mono">
                     {outputFileName} · {(outputBlob.size / 1024).toFixed(1)} KB · 100% In-Browser
@@ -549,7 +556,7 @@ export default function AudioWorkspace({
                   download={outputFileName}
                   className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm rounded-fk-md shadow-sm transition-all"
                 >
-                  Download Output
+                  {tr.downloadOutput}
                 </a>
               </div>
             )}

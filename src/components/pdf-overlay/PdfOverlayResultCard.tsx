@@ -2,6 +2,7 @@
 
 import React from "react";
 import { PdfOverlayOutputArtifact } from "@/utils/pdf-overlay/types";
+import { PDF_OVERLAY_I18N } from "./pdfOverlayTranslations";
 
 interface PdfOverlayResultCardProps {
   artifact: PdfOverlayOutputArtifact;
@@ -16,8 +17,9 @@ export const PdfOverlayResultCard: React.FC<PdfOverlayResultCardProps> = ({
   onAdjustWatermark,
   onResetWorkspace,
 }) => {
-  const isTaiwan = language === "zh-TW" || (language as string).toLowerCase() === "zh-tw";
-  const isChinese = language.startsWith("zh");
+  const rawLang = (language || "en").toLowerCase();
+  const shortLang = rawLang.split("-")[0];
+  const tr = PDF_OVERLAY_I18N[language] || PDF_OVERLAY_I18N[rawLang] || PDF_OVERLAY_I18N[shortLang] || PDF_OVERLAY_I18N.en;
 
   const formatBytes = (bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`;
@@ -49,9 +51,9 @@ export const PdfOverlayResultCard: React.FC<PdfOverlayResultCardProps> = ({
           </svg>
           <div>
             <strong className="block font-bold">
-              {isTaiwan ? "數位簽章注意" : isChinese ? "数字签名提示" : "Digital Signature Notice"}
+              {tr.digitalSignatureNotice}
             </strong>
-            <span>{artifact.verification.signatureWarning || (isTaiwan ? "文件包含數位簽章，修改頁面將導致簽章失效。" : isChinese ? "文档包含数字签名，修改页面将导致签名失效。" : "Potential digital signature detected which will be invalidated by page modifications.")}</span>
+            <span>{artifact.verification.signatureWarning || tr.signatureWarning}</span>
           </div>
         </div>
       )}
@@ -64,7 +66,7 @@ export const PdfOverlayResultCard: React.FC<PdfOverlayResultCardProps> = ({
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              {isTaiwan ? "完整性已驗證" : isChinese ? "完整性已验证" : "Dual-Reload Verified"}
+              {tr.verifiedBadge}
             </span>
 
             <span className="px-2.5 py-0.5 rounded-full bg-blue-950 text-blue-300 text-xs font-mono font-semibold border border-blue-800/60">
@@ -81,13 +83,7 @@ export const PdfOverlayResultCard: React.FC<PdfOverlayResultCardProps> = ({
           </h3>
 
           <p className="text-xs text-slate-400">
-            {isTaiwan ? (
-              <>已在 <span className="text-slate-200 font-semibold">{artifact.pageCount}</span> 個頁面套用浮水印 • 100% 透過 Web Worker 於背景執行緒安全運算</>
-            ) : isChinese ? (
-              <>已在 <span className="text-slate-200 font-semibold">{artifact.pageCount}</span> 个页面应用水印 • 100% 通过 Web Worker 在后台线程安全处理</>
-            ) : (
-              <>Watermarked <span className="text-slate-200 font-semibold">{artifact.pageCount}</span> page{artifact.pageCount !== 1 ? "s" : ""} • Processed 100% off-thread via Web Worker</>
-            )}
+            {tr.watermarkSuccessSummary(artifact.pageCount)}
           </p>
         </div>
 
@@ -101,7 +97,7 @@ export const PdfOverlayResultCard: React.FC<PdfOverlayResultCardProps> = ({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            {isTaiwan ? "下載浮水印 PDF" : isChinese ? "下载水印 PDF" : "Download Watermarked PDF"}
+            {tr.downloadWatermarkedPdf}
           </button>
 
           <button
@@ -109,7 +105,7 @@ export const PdfOverlayResultCard: React.FC<PdfOverlayResultCardProps> = ({
             onClick={onAdjustWatermark}
             className="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition"
           >
-            {isTaiwan ? "調整浮水印" : isChinese ? "调整水印" : "Adjust Watermark"}
+            {tr.adjustWatermark}
           </button>
 
           <button
@@ -117,7 +113,7 @@ export const PdfOverlayResultCard: React.FC<PdfOverlayResultCardProps> = ({
             onClick={onResetWorkspace}
             className="px-4 py-3 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-slate-200 font-semibold text-xs border border-slate-800 transition"
           >
-            {isTaiwan ? "重新開始" : isChinese ? "重新开始" : "Start Over"}
+            {tr.startOver}
           </button>
         </div>
       </div>

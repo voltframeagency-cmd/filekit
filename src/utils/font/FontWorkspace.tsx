@@ -47,6 +47,8 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
   const isFilipino = language === "fil";
   const isJapanese = language === "ja";
   const isKorean = language === "ko";
+  const isArabic = language === "ar";
+  const isHebrew = language === "he";
   const isTaiwan = language === "zh-TW" || (language as string).toLowerCase() === "zh-tw";
   const isSimplifiedChinese = !isTaiwan && (language === "zh-CN" || (language as string).toLowerCase() === "zh-cn" || language.startsWith("zh"));
   const isChinese = isTaiwan || isSimplifiedChinese;
@@ -118,6 +120,10 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
       ? "เป็นมนุษย์สุดประเสริฐเลิศคุณค่า กว่าบรรดาฝูงสัตว์เดรัจฉาน ๑๒๓๔๕๖๗๘๙๐"
       : isFilipino
       ? "Ang mabilis na kayumangging usa ay tumatalon sa ibabaw ng tamad na aso 1234567890"
+      : isArabic
+      ? "نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومطرز بالحروف 1234567890"
+      : isHebrew
+      ? "דג סקרן שט לו בים זך אך לפתע פגש חבורה נחמדה 1234567890"
       : "The quick brown fox jumps over the lazy dog 1234567890"
   );
   const [fontSize, setFontSize] = useState<number>(28);
@@ -210,6 +216,10 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
           ? "ไม่สามารถแปลงฟอนต์ได้ โปรดตรวจสอบว่าเป็นไฟล์ TTF, OTF หรือ WOFF ที่ถูกต้อง"
           : isFilipino
           ? "Nabigong i-convert ang font. Pakitiyak na ito ay wastong TTF, OTF, o WOFF file."
+          : isArabic
+          ? "فشل في تحويل الخط. يُرجى التأكد من أنه ملف TTF أو OTF أو WOFF صالح."
+          : isHebrew
+          ? "המרת הגופן נכשלה. נא לוודא שמדובר בקובץ TTF, OTF או WOFF תקין."
           : "Failed to convert font. Please ensure it is a valid TTF, OTF, or WOFF file."
       );
     } finally {
@@ -222,10 +232,10 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
       {!embedded && (
         <div className="text-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            {title || (mode === "ttf-to-woff2" ? (isJapanese ? "TTF を WOFF2 / WOFF に変換" : isLatvian ? "Konvertēt TTF uz WOFF2 / WOFF" : isLithuanian ? "Konvertuoti TTF į WOFF2 / WOFF" : isHindi ? "TTF को WOFF2 / WOFF में कनवर्ट करें" : isIndonesian ? "Konversi TTF ke WOFF2 / WOFF" : isMalay ? "Tukar TTF ke WOFF2 / WOFF" : isVietnamese ? "Chuyển đổi TTF sang WOFF2 / WOFF" : isThai ? "แปลง TTF เป็น WOFF2 / WOFF" : isFilipino ? "I-convert ang TTF sa WOFF2 / WOFF" : "Convert TTF to WOFF2 / WOFF") : (isJapanese ? "WOFF2 を TTF に変換" : isLatvian ? "Konvertēt WOFF2 uz TTF" : isLithuanian ? "Konvertuoti WOFF2 į TTF" : isHindi ? "WOFF2 को TTF में कनवर्ट करें" : isIndonesian ? "Konversi WOFF2 ke TTF" : isMalay ? "Tukar WOFF2 ke TTF" : isVietnamese ? "Chuyển đổi WOFF2 sang TTF" : isThai ? "แปลง WOFF2 เป็น TTF" : isFilipino ? "I-convert ang WOFF2 sa TTF" : "Convert WOFF2 to TTF"))}
+            {title || (mode === "ttf-to-woff2" ? (isArabic ? "تحويل TTF إلى WOFF2 / WOFF" : isHebrew ? "המרת TTF ל-WOFF2 / WOFF" : isJapanese ? "TTF を WOFF2 / WOFF に変換" : isLatvian ? "Konvertēt TTF uz WOFF2 / WOFF" : isLithuanian ? "Konvertuoti TTF į WOFF2 / WOFF" : isHindi ? "TTF को WOFF2 / WOFF में कनवर्ट करें" : isIndonesian ? "Konversi TTF ke WOFF2 / WOFF" : isMalay ? "Tukar TTF ke WOFF2 / WOFF" : isVietnamese ? "Chuyển đổi TTF sang WOFF2 / WOFF" : isThai ? "แปลง TTF เป็น WOFF2 / WOFF" : isFilipino ? "I-convert ang TTF sa WOFF2 / WOFF" : "Convert TTF to WOFF2 / WOFF") : (isArabic ? "تحويل WOFF2 إلى TTF" : isHebrew ? "המרת WOFF2 ל-TTF" : isJapanese ? "WOFF2 を TTF に変換" : isLatvian ? "Konvertēt WOFF2 uz TTF" : isLithuanian ? "Konvertuoti WOFF2 į TTF" : isHindi ? "WOFF2 को TTF में कनवर्ट करें" : isIndonesian ? "Konversi WOFF2 ke TTF" : isMalay ? "Tukar WOFF2 ke TTF" : isVietnamese ? "Chuyển đổi WOFF2 sang TTF" : isThai ? "แปลง WOFF2 เป็น TTF" : isFilipino ? "I-convert ang WOFF2 sa TTF" : "Convert WOFF2 to TTF"))}
           </h2>
           <p className="text-slate-500 text-sm mt-1">
-            {description || (isJapanese ? "高性能 Web フォント圧縮ツール · 100% ブラウザ内処理" : isVietnamese ? "Công cụ nén phông chữ web hiệu năng cao · 100% trong trình duyệt" : isThai ? "เครื่องมือบีบอัดฟอนต์เว็บประสิทธิภาพสูง · ทำงานในเบราว์เซอร์ 100%" : isFilipino ? "Mataas na Pagganap na Web Font Compressor · 100% Sa Loob ng Browser" : "High-Performance Web Font Compressor · 100% In-Browser")}
+            {description || (isArabic ? "أداة ضغط خطوط الويب عالية الأداء · معالجة 100% في المتصفح" : isHebrew ? "דוחס גופני רשת בעל ביצועים גבוהים · 100% בדפדפן" : isJapanese ? "高性能 Web フォント圧縮ツール · 100% ブラウザ内処理" : isVietnamese ? "Công cụ nén phông chữ web hiệu năng cao · 100% trong trình duyệt" : isThai ? "เครื่องมือบีบอัดฟอนต์เว็บประสิทธิภาพสูง · ทำงานในเบราว์เซอร์ 100%" : isFilipino ? "Mataas na Pagganap na Web Font Compressor · 100% Sa Loob ng Browser" : "High-Performance Web Font Compressor · 100% In-Browser")}
           </p>
         </div>
       )}
@@ -318,6 +328,10 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
               ? "Pumili ng Font File (TTF, OTF, WOFF)"
               : isChinese
               ? "选择字体文件 (TTF, OTF, WOFF)"
+              : isArabic
+              ? `اختر ملف الخط (${mode === "woff2-to-ttf" ? "WOFF2, WOFF" : "TTF, OTF, WOFF"})`
+              : isHebrew
+              ? `בחר קובץ גופן (${mode === "woff2-to-ttf" ? "WOFF2, WOFF" : "TTF, OTF, WOFF"})`
               : "Select Font File (TTF, OTF, WOFF)"}
           </span>
           <span className="text-xs text-slate-400 mt-1 block">
@@ -387,6 +401,10 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
               ? "Na-optimize para sa mabilis na paghahatid sa web (Walang server tracking)"
               : isChinese
               ? "为快速网络加载优化（100%本地处理，零服务器追踪）"
+              : isArabic
+              ? "محسّن لتسليم الويب السريع (معالجة محلية 100% بدون تتبع)"
+              : isHebrew
+              ? "מותאם לטעינה מהירה ברשת (100% עיבוד מקומי בדפדפן)"
               : "Optimized for fast web delivery (Zero server tracking)"}
           </span>
         </div>
@@ -449,6 +467,10 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
                   ? `รูปแบบ: ${fontMeta?.format.toUpperCase()} · ตาราง: ${fontMeta?.numTables} · ขนาด: ${(file.size / 1024).toFixed(1)} KB`
                   : isFilipino
                   ? `Format: ${fontMeta?.format.toUpperCase()} · Mga Talahanayan: ${fontMeta?.numTables} · Laki: ${(file.size / 1024).toFixed(1)} KB`
+                  : isArabic
+                  ? `الصيغة: ${fontMeta?.format.toUpperCase()} · الجداول: ${fontMeta?.numTables} · الحجم: ${(file.size / 1024).toFixed(1)} ك.ب`
+                  : isHebrew
+                  ? `פורמט: ${fontMeta?.format.toUpperCase()} · טבלאות: ${fontMeta?.numTables} · גודל: ${(file.size / 1024).toFixed(1)} KB`
                   : `Format: ${fontMeta?.format.toUpperCase()} · Tables: ${fontMeta?.numTables} · Size: ${(file.size / 1024).toFixed(1)} KB`}
               </span>
             </div>
@@ -460,7 +482,7 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
               }}
               className="text-xs text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 rounded hover:bg-red-50"
             >
-              {isKorean ? "폰트 변경" : isJapanese ? "フォントを変更" : isNorwegian ? "Endre skrifttype" : isPolish ? "Zmień czcionkę" : isCzech ? "Změnit písmo" : isHungarian ? "Betűtípus módosítása" : isRomanian ? "Schimbă fontul" : isGreek ? "Αλλαγή γραμματοσειράς" : isTurkish ? "Yazı Tipini Değiştir" : isSwedish ? "Byt typsnitt" : isDanish ? "Skift skrifttype" : isFinnish ? "Vaihda fontti" : isCatalan ? "Canviar tipus de lletra" : isDutch ? "Lettertype wijzigen" : isItalian ? "Cambia font" : isPortuguese ? "Alterar fonte" : isFrench ? "Changer de police" : isGerman ? "Schriftart ändern" : isSpanish ? "Cambiar fuente" : isLatvian ? "Mainīt fontu" : isLithuanian ? "Pakeisti šriftą" : isHindi ? "फ़ॉन्ट बदलें" : isIndonesian ? "Ganti Font" : isMalay ? "Tukar Fon" : isVietnamese ? "Đổi phông chữ" : isThai ? "เปลี่ยนฟอนต์" : isFilipino ? "Palitan ang Font" : isTaiwan ? "更換字型" : isSimplifiedChinese ? "更换字体" : "Change Font"}
+              {isArabic ? "تغيير الخط" : isHebrew ? "החלף גופן" : isKorean ? "폰트 변경" : isJapanese ? "フォントを変更" : isNorwegian ? "Endre skrifttype" : isPolish ? "Zmień czcionkę" : isCzech ? "Změnit písmo" : isHungarian ? "Betűtípus módosítása" : isRomanian ? "Schimbă fontul" : isGreek ? "Αλλαγή γραμματοσειράς" : isTurkish ? "Yazı Tipini Değiştir" : isSwedish ? "Byt typsnitt" : isDanish ? "Skift skrifttype" : isFinnish ? "Vaihda fontti" : isCatalan ? "Canviar tipus de lletra" : isDutch ? "Lettertype wijzigen" : isItalian ? "Cambia font" : isPortuguese ? "Alterar fonte" : isFrench ? "Changer de police" : isGerman ? "Schriftart ändern" : isSpanish ? "Cambiar fuente" : isLatvian ? "Mainīt fontu" : isLithuanian ? "Pakeisti šriftą" : isHindi ? "फ़ॉन्ट बदलें" : isIndonesian ? "Ganti Font" : isMalay ? "Tukar Fon" : isVietnamese ? "Đổi phông chữ" : isThai ? "เปลี่ยนฟอนต์" : isFilipino ? "Palitan ang Font" : isTaiwan ? "更換字型" : isSimplifiedChinese ? "更换字体" : "Change Font"}
             </button>
           </div>
 
@@ -468,11 +490,11 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                {isKorean ? "실시간 폰트 미리보기" : isJapanese ? "ライブプレビュー" : isNorwegian ? "Interaktiv forhåndsvisning" : isPolish ? "Interaktywny podgląd" : isCzech ? "Interaktivní náhled" : isHungarian ? "Interaktív előnézet" : isRomanian ? "Previzualizare interactivă" : isGreek ? "Διαδραστική προεπισκόπηση" : isTurkish ? "Canlı Yazı Tipi Önizlemesi" : isSwedish ? "Interaktiv förhandsvisning" : isDanish ? "Interaktiv forhåndsvisning" : isFinnish ? "Interaktiivinen esikatselu" : isCatalan ? "Vista prèvia interactiva" : isDutch ? "Live lettertypevoorbeeld" : isItalian ? "Anteprima del font" : isPortuguese ? "Pré-visualização da fonte" : isFrench ? "Aperçu de la police" : isGerman ? "Interaktive Vorschau" : isSpanish ? "Vista previa interactiva" : isLatvian ? "Fontu priekšskatījums" : isLithuanian ? "Šrifto peržiūra" : isHindi ? "लाइव फ़ॉन्ट पूर्वावलोकन" : isIndonesian ? "Pratinjau Font Langsung" : isMalay ? "Pratonton Fon Langsung" : isVietnamese ? "Xem trước phông chữ trực tiếp" : isThai ? "ตัวอย่างฟอนต์สด" : isFilipino ? "Live na Preview ng Font" : isTaiwan ? "即時字型預覽" : isSimplifiedChinese ? "实时字体预览" : "Live Font Preview"}
+                {isArabic ? "معاينة الخط المباشرة" : isHebrew ? "תצוגה מקדימה חיה של הגופן" : isKorean ? "실시간 폰트 미리보기" : isJapanese ? "ライブプレビュー" : isNorwegian ? "Interaktiv forhåndsvisning" : isPolish ? "Interaktywny podgląd" : isCzech ? "Interaktivní náhled" : isHungarian ? "Interaktív előnézet" : isRomanian ? "Previzualizare interactivă" : isGreek ? "Διαδραστική προεπισκόπηση" : isTurkish ? "Canlı Yazı Tipi Önizlemesi" : isSwedish ? "Interaktiv förhandsvisning" : isDanish ? "Interaktiv forhåndsvisning" : isFinnish ? "Interaktiivinen esikatselu" : isCatalan ? "Vista prèvia interactiva" : isDutch ? "Live lettertypevoorbeeld" : isItalian ? "Anteprima del font" : isPortuguese ? "Pré-visualização da fonte" : isFrench ? "Aperçu de la police" : isGerman ? "Interaktive Vorschau" : isSpanish ? "Vista previa interactiva" : isLatvian ? "Fontu priekšskatījums" : isLithuanian ? "Šrifto peržiūra" : isHindi ? "लाइव फ़ॉन्ट पूर्वावलोकन" : isIndonesian ? "Pratinjau Font Langsung" : isMalay ? "Pratonton Fon Langsung" : isVietnamese ? "Xem trước phông chữ trực tiếp" : isThai ? "ตัวอย่างฟอนต์สด" : isFilipino ? "Live na Preview ng Font" : isTaiwan ? "即時字型預覽" : isSimplifiedChinese ? "实时字体预览" : "Live Font Preview"}
               </label>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-400">
-                  {isKorean ? "글자 크기:" : isJapanese ? "サイズ:" : isNorwegian ? "Størrelse:" : isPolish ? "Rozmiar:" : isCzech ? "Velikost:" : isHungarian ? "Méret:" : isRomanian ? "Dimensiune:" : isGreek ? "Μέγεθος:" : isTurkish ? "Boyut:" : isSwedish ? "Storlek:" : isDanish ? "Størrelse:" : isFinnish ? "Koko:" : isCatalan ? "Mida:" : isDutch ? "Grootte:" : isItalian ? "Dimensione:" : isPortuguese ? "Tamanho:" : isFrench ? "Taille :" : isGerman ? "Größe:" : isSpanish ? "Tamaño:" : isLatvian ? "Izmērs:" : isLithuanian ? "Dydis:" : isHindi ? "आकार:" : isIndonesian ? "Ukuran:" : isMalay ? "Saiz:" : isVietnamese ? "Cỡ chữ:" : isThai ? "ขนาด:" : isFilipino ? "Laki:" : "Size:"} {fontSize}px
+                  {isArabic ? "حجم الخط:" : isHebrew ? "גודל גופן:" : isKorean ? "글자 크기:" : isJapanese ? "サイズ:" : isNorwegian ? "Størrelse:" : isPolish ? "Rozmiar:" : isCzech ? "Velikost:" : isHungarian ? "Méret:" : isRomanian ? "Dimensiune:" : isGreek ? "Μέγεθος:" : isTurkish ? "Boyut:" : isSwedish ? "Storlek:" : isDanish ? "Størrelse:" : isFinnish ? "Koko:" : isCatalan ? "Mida:" : isDutch ? "Grootte:" : isItalian ? "Dimensione:" : isPortuguese ? "Tamanho:" : isFrench ? "Taille :" : isGerman ? "Größe:" : isSpanish ? "Tamaño:" : isLatvian ? "Izmērs:" : isLithuanian ? "Dydis:" : isHindi ? "आकार:" : isIndonesian ? "Ukuran:" : isMalay ? "Saiz:" : isVietnamese ? "Cỡ chữ:" : isThai ? "ขนาด:" : isFilipino ? "Laki:" : "Size:"} {fontSize}px
                 </span>
                 <input
                   type="range"
@@ -555,6 +577,10 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
                     ? `✓ แปลงฟอนต์สำเร็จ: ${outputFileName}`
                     : isFilipino
                     ? `✓ Na-convert ang Font: ${outputFileName}`
+                    : isArabic
+                    ? `✓ تم تحويل الخط: ${outputFileName}`
+                    : isHebrew
+                    ? `✓ הגופן הומר בהצלחה: ${outputFileName}`
                     : `✓ Font Converted: ${outputFileName}`}
                 </span>
                 <span className="text-xs text-purple-700">
@@ -616,6 +642,10 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
                     ? `ขนาด: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · ในเบราว์เซอร์ 100%`
                     : isFilipino
                     ? `Laki: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% Sa Loob ng Browser`
+                    : isArabic
+                    ? `الحجم: ${((outputBlob?.size || 0) / 1024).toFixed(1)} ك.ب · معالجة 100% في المتصفح`
+                    : isHebrew
+                    ? `גודל: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% בדפדפן`
                     : `Size: ${((outputBlob?.size || 0) / 1024).toFixed(1)} KB · 100% In-Browser`}
                 </span>
               </div>
@@ -624,7 +654,7 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
                 download={outputFileName}
                 className="w-full sm:w-auto px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-fk-md shadow-sm text-center"
               >
-                {isKorean ? "폰트 다운로드" : isJapanese ? "フォントを変更" : isNorwegian ? "Last ned skrifttype" : isPolish ? "Pobierz czcionkę" : isCzech ? "Stáhnout písmo" : isHungarian ? "Betűtípus letöltése" : isRomanian ? "Descarcă fontul" : isBulgarian ? "Изтегляне на шрифт" : isGreek ? "Λήψη γραμματοσειράς" : isSlovak ? "Stiahnuť písmo" : isSlovenian ? "Prenesi pisavo" : isRussian ? "Скачать шрифт" : isUkrainian ? "Завантажити шрифт" : isTurkish ? "Yazı Tipini İndir" : isSwedish ? "Ladda ner typsnitt" : isDanish ? "Download skrifttype" : isFinnish ? "Lataa fontti" : isCatalan ? "Descarregar tipus de lletra" : isDutch ? "Lettertype downloaden" : isItalian ? "Scarica font" : isPortuguese ? "Descarregar fonte" : isFrench ? "Télécharger la police" : isGerman ? "Schriftart herunterladen" : isSpanish ? "Descargar fuente" : isLatvian ? "Lejupielādēt fontu" : isLithuanian ? "Atsisiųsti šriftą" : isHindi ? "फ़ॉन्ट डाउनलोड करें" : isIndonesian ? "Unduh Font" : isMalay ? "Muat Turun Fon" : isVietnamese ? "Tải xuống phông chữ" : isThai ? "ดาวน์โหลดฟอนต์" : isFilipino ? "I-download ang Font" : isTaiwan ? "下載字型" : isSimplifiedChinese ? "下载字体" : "Download Font"}
+                {isArabic ? "تحميل الخط" : isHebrew ? "הורד גופן" : isKorean ? "폰트 다운로드" : isJapanese ? "フォントを変更" : isNorwegian ? "Last ned skrifttype" : isPolish ? "Pobierz czcionkę" : isCzech ? "Stáhnout písmo" : isHungarian ? "Betűtípus letöltése" : isRomanian ? "Descarcă fontul" : isBulgarian ? "Изтегляне на шрифт" : isGreek ? "Λήψη γραμματοσειράς" : isSlovak ? "Stiahnuť písmo" : isSlovenian ? "Prenesi pisavo" : isRussian ? "Скачать шрифт" : isUkrainian ? "Завантажити шрифт" : isTurkish ? "Yazı Tipini İndir" : isSwedish ? "Ladda ner typsnitt" : isDanish ? "Download skrifttype" : isFinnish ? "Lataa fontti" : isCatalan ? "Descarregar tipus de lletra" : isDutch ? "Lettertype downloaden" : isItalian ? "Scarica font" : isPortuguese ? "Descarregar fonte" : isFrench ? "Télécharger la police" : isGerman ? "Schriftart herunterladen" : isSpanish ? "Descargar fuente" : isLatvian ? "Lejupielādēt fontu" : isLithuanian ? "Atsisiųsti šriftą" : isHindi ? "फ़ॉन्ट डाउनलोड करें" : isIndonesian ? "Unduh Font" : isMalay ? "Muat Turun Fon" : isVietnamese ? "Tải xuống phông chữ" : isThai ? "ดาวน์โหลดฟอนต์" : isFilipino ? "I-download ang Font" : isTaiwan ? "下載字型" : isSimplifiedChinese ? "下载字体" : "Download Font"}
               </a>
             </div>
           )}

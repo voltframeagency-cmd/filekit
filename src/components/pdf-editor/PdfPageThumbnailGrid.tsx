@@ -9,6 +9,7 @@ interface PdfPageThumbnailGridProps {
   items: PageOperationItem[];
   documentBuffers: Uint8Array[];
   pdfDocProxies?: Record<number, pdfjsLib.PDFDocumentProxy>;
+  language?: string;
   onRotate: (id: string, direction: "cw" | "ccw") => void;
   onToggleDelete: (id: string) => void;
   onToggleSelect: (id: string) => void;
@@ -19,6 +20,7 @@ export const PdfPageThumbnailGrid: React.FC<PdfPageThumbnailGridProps> = ({
   items,
   documentBuffers,
   pdfDocProxies = {},
+  language = "en",
   onRotate,
   onToggleDelete,
   onToggleSelect,
@@ -63,6 +65,7 @@ export const PdfPageThumbnailGrid: React.FC<PdfPageThumbnailGridProps> = ({
               pdfDocProxy={pdfProxy}
               displayIndex={idx}
               totalDisplayPages={items.length}
+              language={language}
               onRotate={onRotate}
               onToggleDelete={onToggleDelete}
               onToggleSelect={onToggleSelect}

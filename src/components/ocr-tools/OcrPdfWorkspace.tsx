@@ -5,6 +5,7 @@ import ProcessingModeBadge from "@/components/common/ProcessingModeBadge";
 import { OcrEngine } from "@/utils/ocr-engine/OcrEngine";
 import { OcrExecutionResult } from "@/utils/ocr-engine/types";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { OCR_I18N } from "./ocrTranslations";
 
 export interface OcrPdfWorkspaceProps {
   toolTitle: string;
@@ -20,19 +21,9 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
   language: propLanguage,
 }) => {
   const { language: contextLang } = useLanguage();
-  const language = propLanguage || contextLang || "en";
-  const isChinese = language.startsWith("zh");
-  const isTaiwan = language === "zh-TW";
-  const isSpanish = language === "es" || language === "es-419";
-  const isGerman = language === "de";
-  const isFrench = language === "fr";
-  const isPortuguese = language === "pt" || language === "pt-BR";
-  const isItalian = language === "it";
-  const isDutch = language === "nl";
-  const isCatalan = language === "ca";
-  const isSwedish = language === "sv";
-  const isDanish = language === "da";
-  const isFinnish = language === "fi";
+  const rawLang = (propLanguage || contextLang || "en").toLowerCase();
+  const shortLang = rawLang.split("-")[0];
+  const tr = OCR_I18N[rawLang] || OCR_I18N[shortLang] || OCR_I18N.en;
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -57,31 +48,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
     setIsProcessing(true);
     setErrorMessage(null);
     setProgressPercent(10);
-    setProgressStage(
-      isSwedish
-        ? "Läser in fildata till minnet..."
-        : isDanish
-        ? "Indlæser fildata i hukommelsen..."
-        : isFinnish
-        ? "Ladataan tiedoston tietoja muistiin..."
-        : isCatalan
-        ? "Llegint dades del fitxer a la memòria..."
-        : isDutch
-        ? "Bestandsgegevens laden in geheugen..."
-        : isItalian
-        ? "Lettura dei dati del file in memoria..."
-        : isPortuguese
-        ? "A ler ficheiro para a memória..."
-        : isFrench
-        ? "Lecture du fichier en mémoire..."
-        : isGerman
-        ? "Datei wird in den Arbeitsspeicher geladen..."
-        : isSpanish
-        ? "Leyendo archivo en memoria..."
-        : isChinese
-        ? (isTaiwan ? "正在將檔案資料載入至記憶體..." : "正在将文件数据载入至内存...")
-        : "Reading file data into memory..."
-    );
+    setProgressStage(tr.initialReading);
 
     try {
       const buffer = await sourceFile.arrayBuffer();
@@ -95,32 +62,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
       );
       setResult(ocrResult);
     } catch (err: any) {
-      setErrorMessage(
-        err?.message ||
-          (isSwedish
-            ? "Kunde inte känna igen text i dokumentet."
-            : isDanish
-            ? "Kunne ikke genkende tekst i dokumentet."
-            : isFinnish
-            ? "Tekstin tunnistaminen asiakirjasta epäonnistui."
-            : isCatalan
-            ? "Error en reconèixer el text del document."
-            : isDutch
-            ? "Kan tekst in document niet herkennen."
-            : isItalian
-            ? "Impossibile riconoscere il testo nel documento."
-            : isPortuguese
-            ? "Falha ao reconhecer o texto no documento."
-            : isFrench
-            ? "Échec de la reconnaissance de texte dans le document."
-            : isGerman
-            ? "Fehler bei der Texterkennung im Dokument."
-            : isSpanish
-            ? "Error al reconocer texto en el documento."
-            : isChinese
-            ? (isTaiwan ? "無法辨識文件中的文字。" : "无法识别文档中的文本。")
-            : "Failed to recognize text in document.")
-      );
+      setErrorMessage(err?.message || tr.errorOcrFailed);
     } finally {
       setIsProcessing(false);
     }
@@ -169,80 +111,14 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-lg font-bold text-white">
-              {isChinese
-                ? (isTaiwan ? "選取掃描文件或圖片" : "选择扫描文档或图片")
-                : isSwedish
-                ? "Välj skannat dokument eller bild"
-                : isDanish
-                ? "Vælg scannet dokument eller billede"
-                : isFinnish
-                ? "Valitse skannattu asiakirja tai kuva"
-                : isCatalan
-                ? "Selecciona document escanejat o imatge"
-                : isDutch
-                ? "Selecteer gescand document of afbeelding"
-                : isItalian
-                ? "Seleziona documento scansionato o immagine"
-                : isPortuguese
-                ? "Selecionar documento digitalizado ou imagem"
-                : isFrench
-                ? "Sélectionnez un document numérisé ou une image"
-                : isGerman
-                ? "Gescanntes Dokument oder Bild auswählen"
-                : isSpanish
-                ? "Selecciona documento escaneado o imagen"
-                : "Select Scanned Document or Image"}
+              {tr.dropzoneTitle}
             </h2>
             <p className="text-sm text-slate-400">
-              {isChinese
-                ? (isTaiwan ? "100% 瀏覽器本機私密 OCR。檔案絕不離開您的裝置。" : "100% 浏览器内私密 OCR。文件永不离开您的设备。")
-                : isSwedish
-                ? "100% privat OCR i webbläsaren. Filer lämnar aldrig din enhet."
-                : isDanish
-                ? "100% privat OCR i browseren. Filer forlader aldrig din enhet."
-                : isFinnish
-                ? "100% yksityinen OCR selaimessa. Tiedostot eivät koskaan poistu laitteeltasi."
-                : isCatalan
-                ? "OCR 100% privat al navegador. Els fitxers mai no surten del teu dispositiu."
-                : isDutch
-                ? "100% privé in-browser OCR. Bestanden verlaten nooit uw browser."
-                : isItalian
-                ? "OCR 100% privato nel browser. I file non lasciano mai il tuo dispositivo."
-                : isPortuguese
-                ? "OCR 100% privado no navegador. Os ficheiros nunca saem do seu dispositivo."
-                : isFrench
-                ? "OCR 100% privé dans le navigateur. Les fichiers ne quittent jamais votre appareil."
-                : isGerman
-                ? "100% private OCR im Browser. Dateien verlassen niemals Ihr Gerät."
-                : isSpanish
-                ? "OCR 100% privado en el navegador. Los archivos nunca salen de tu dispositivo."
-                : "100% private in-browser OCR. Files never leave your browser."}
+              {tr.dropzonePrivacy}
             </p>
           </div>
           <label className="cursor-pointer bg-fk-primary hover:bg-fk-primary/90 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-fk-primary/20">
-            {isChinese
-              ? (isTaiwan ? "選擇 PDF 或圖片" : "选择 PDF 或图片")
-              : isSwedish
-              ? "Välj PDF eller bild"
-              : isDanish
-              ? "Vælg PDF eller billede"
-              : isFinnish
-              ? "Valitse PDF tai kuva"
-              : isCatalan
-              ? "Tria PDF o imatge"
-              : isDutch
-              ? "Kies PDF of afbeelding"
-              : isItalian
-              ? "Scegli PDF o immagine"
-              : isPortuguese
-              ? "Escolher PDF ou imagem"
-              : isFrench
-              ? "Choisir un PDF ou une image"
-              : isGerman
-              ? "PDF oder Bild wählen"
-              : isSpanish
-              ? "Elegir PDF o imagen"
-              : "Choose PDF or Image"}
+            {tr.chooseButton}
             <input
               type="file"
               accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/*"
@@ -276,7 +152,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 }}
                 className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 transition"
               >
-                {isChinese ? (isTaiwan ? "更換檔案" : "更换文件") : isSwedish ? "Byt fil" : isDanish ? "Skift fil" : isFinnish ? "Vaihda tiedosto" : isCatalan ? "Canviar fitxer" : isDutch ? "Bestand wijzigen" : isItalian ? "Cambia file" : isPortuguese ? "Alterar ficheiro" : isFrench ? "Changer de fichier" : isGerman ? "Datei ändern" : isSpanish ? "Cambiar archivo" : "Change File"}
+                {tr.changeFile}
               </button>
             </div>
           </div>
@@ -311,53 +187,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 onClick={handleProcessOcr}
                 className="w-full bg-fk-primary hover:bg-fk-primary/90 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-fk-primary/25 disabled:opacity-50"
               >
-                {isProcessing
-                  ? isChinese
-                    ? (isTaiwan ? "正在進行 OCR 辨識..." : "正在进行 OCR 识别...")
-                    : isSwedish
-                    ? "Utför OCR-igenkänning..."
-                    : isDanish
-                    ? "Udfører OCR-genkendelse..."
-                    : isFinnish
-                    ? "Suoritetaan OCR-tunnistusta..."
-                    : isCatalan
-                    ? "Reconeixent text OCR..."
-                    : isDutch
-                    ? "OCR-tekstherkenning wordt uitgevoerd..."
-                    : isItalian
-                    ? "Riconoscimento OCR in corso..."
-                    : isPortuguese
-                    ? "A realizar reconhecimento OCR..."
-                    : isFrench
-                    ? "Reconnaissance OCR en cours..."
-                    : isGerman
-                    ? "OCR-Erkennung läuft..."
-                    : isSpanish
-                    ? "Realizando reconocimiento OCR..."
-                    : "Performing OCR Recognition..."
-                  : isChinese
-                  ? (isTaiwan ? "辨識並擷取文字" : "识别并提取文本")
-                  : isSwedish
-                  ? "Känn igen & extrahera text"
-                  : isDanish
-                  ? "Genkend og udtræk tekst"
-                  : isFinnish
-                  ? "Tunnista ja pura teksti"
-                  : isCatalan
-                  ? "Reconèixer i extreure text"
-                  : isDutch
-                  ? "Tekst herkennen & extraheren"
-                  : isItalian
-                  ? "Riconosci ed estrai testo"
-                  : isPortuguese
-                  ? "Reconhecer e extrair texto"
-                  : isFrench
-                  ? "Reconnaître et extraire le texte"
-                  : isGerman
-                  ? "Text erkennen und extrahieren"
-                  : isSpanish
-                  ? "Reconocer y extraer texto"
-                  : "Recognize & Extract Text"}
+                {isProcessing ? tr.recognizing : tr.recognizeBtn}
               </button>
             </div>
           )}
@@ -369,29 +199,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                 <div className="flex items-center gap-2 text-xs text-slate-300">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
                   <span>
-                    {isSwedish
-                      ? `OCR slutförd (${result.totalPages} sid${result.totalPages !== 1 ? "or" : "a"} på ${result.durationMs}ms)`
-                      : isDanish
-                      ? `OCR fuldført (${result.totalPages} side${result.totalPages !== 1 ? "r" : ""} på ${result.durationMs}ms)`
-                      : isFinnish
-                      ? `OCR valmis (${result.totalPages} sivu${result.totalPages !== 1 ? "a" : ""} ajassa ${result.durationMs}ms)`
-                      : isCatalan
-                      ? `OCR completat (${result.totalPages} pàgin${result.totalPages !== 1 ? "es" : "a"} en ${result.durationMs}ms)`
-                      : isDutch
-                      ? `OCR voltooid (${result.totalPages} pagina${result.totalPages !== 1 ? "'s" : ""} in ${result.durationMs}ms)`
-                      : isItalian
-                      ? `OCR completato (${result.totalPages} pagin${result.totalPages !== 1 ? "e" : "a"} in ${result.durationMs}ms)`
-                      : isPortuguese
-                      ? `OCR concluído (${result.totalPages} página${result.totalPages !== 1 ? "s" : ""} em ${result.durationMs}ms)`
-                      : isFrench
-                      ? `OCR terminé (${result.totalPages} page${result.totalPages !== 1 ? "s" : ""} en ${result.durationMs}ms)`
-                      : isGerman
-                      ? `OCR abgeschlossen (${result.totalPages} Seite${result.totalPages !== 1 ? "n" : ""} in ${result.durationMs}ms)`
-                      : isChinese
-                      ? (isTaiwan ? `OCR 已完成 (${result.totalPages} 頁，耗時 ${result.durationMs} 毫秒)` : `OCR 已完成 (${result.totalPages} 页，耗时 ${result.durationMs} 毫秒)`)
-                      : isSpanish
-                      ? `OCR completado (${result.totalPages} página${result.totalPages !== 1 ? "s" : ""} en ${result.durationMs}ms)`
-                      : `OCR Completed (${result.totalPages} page${result.totalPages !== 1 ? "s" : ""} in ${result.durationMs}ms)`}
+                    {tr.completedSummary(result.totalPages, result.durationMs)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -400,60 +208,14 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                     onClick={handleCopyText}
                     className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg transition"
                   >
-                    {copiedText
-                      ? isChinese
-                        ? (isTaiwan ? "✓ 已複製！" : "✓ 已复制！")
-                        : isSwedish
-                        ? "✓ Kopierad!"
-                        : isDanish
-                        ? "✓ Kopieret!"
-                        : isFinnish
-                        ? "✓ Kopioitu!"
-                        : isCatalan
-                        ? "✓ Copiat!"
-                        : isDutch
-                        ? "✓ Gekopieerd!"
-                        : isItalian
-                        ? "✓ Copiato!"
-                        : isPortuguese
-                        ? "✓ Copiado!"
-                        : isFrench
-                        ? "✓ Copié !"
-                        : isGerman
-                        ? "✓ Kopiert!"
-                        : isSpanish
-                        ? "✓ ¡Copiado!"
-                        : "✓ Copied!"
-                      : isChinese
-                      ? (isTaiwan ? "複製文字" : "复制文本")
-                      : isSwedish
-                      ? "Kopiera text"
-                      : isDanish
-                      ? "Kopier tekst"
-                      : isFinnish
-                      ? "Kopioi teksti"
-                      : isCatalan
-                      ? "Copiar text"
-                      : isDutch
-                      ? "Tekst kopiëren"
-                      : isItalian
-                      ? "Copia testo"
-                      : isPortuguese
-                      ? "Copiar texto"
-                      : isFrench
-                      ? "Copier le texte"
-                      : isGerman
-                      ? "Text kopieren"
-                      : isSpanish
-                      ? "Copiar texto"
-                      : "Copy Text"}
+                    {copiedText ? tr.copied : tr.copyText}
                   </button>
                   <button
                     type="button"
                     onClick={handleDownloadTxt}
                     className="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg transition"
                   >
-                    {isChinese ? (isTaiwan ? "下載 .TXT" : "下载 .TXT") : isSwedish ? "Ladda ner .TXT" : isDanish ? "Download .TXT" : isFinnish ? "Lataa .TXT" : isCatalan ? "Descarregar .TXT" : isDutch ? ".TXT downloaden" : isItalian ? "Scarica .TXT" : isPortuguese ? "Descarregar .TXT" : isFrench ? "Télécharger .TXT" : isGerman ? ".TXT herunterladen" : isSpanish ? "Descargar .TXT" : "Download .TXT"}
+                    {tr.downloadTxt}
                   </button>
                   {result.searchablePdfBuffer && (
                     <button
@@ -461,29 +223,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
                       onClick={handleDownloadSearchablePdf}
                       className="text-xs bg-fk-primary hover:bg-fk-primary/90 text-white font-bold px-3 py-1.5 rounded-lg transition shadow-md"
                     >
-                      {isChinese
-                        ? (isTaiwan ? "下載可搜尋 PDF" : "下载可搜索 PDF")
-                        : isSwedish
-                        ? "Ladda ner sökbar PDF"
-                        : isDanish
-                        ? "Download søgbar PDF"
-                        : isFinnish
-                        ? "Lataa haettava PDF"
-                        : isCatalan
-                        ? "Descarregar PDF cercable"
-                        : isDutch
-                        ? "Doorzoekbare PDF downloaden"
-                        : isItalian
-                        ? "Scarica PDF ricercabile"
-                        : isPortuguese
-                        ? "Descarregar PDF pesquisável"
-                        : isFrench
-                        ? "Télécharger le PDF indexable"
-                        : isGerman
-                        ? "Durchsuchbares PDF herunterladen"
-                        : isSpanish
-                        ? "Descargar PDF con búsqueda"
-                        : "Download Searchable PDF"}
+                      {tr.downloadSearchablePdf}
                     </button>
                   )}
                 </div>
@@ -492,7 +232,7 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
               {/* Extracted Text Preview Box */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  {isChinese ? (isTaiwan ? "擷取的文字" : "提取的文本") : isSwedish ? "Extraherad text" : isDanish ? "Udtrukket tekst" : isFinnish ? "Puraistut tekstit" : isCatalan ? "Text extret" : isDutch ? "Geëxtraheerde tekst" : isItalian ? "Testo estratto" : isPortuguese ? "Texto extraído" : isFrench ? "Texte extrait" : isGerman ? "Extrahierter Text" : isSpanish ? "Texto extraído" : "Extracted Text"}
+                  {tr.extractedTextLabel}
                 </label>
                 <textarea
                   readOnly
