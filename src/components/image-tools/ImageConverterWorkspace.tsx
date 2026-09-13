@@ -11,6 +11,7 @@ import { ImageConversionResult, ImageConversionPreflightReport, SupportedImageFo
 import { ImageConversionRouteConfig } from "@/config/imageConversionRoutes";
 import { FileKitAsset } from "@/components/visuals/FileKitAsset";
 import { FileKitAssetName, fileKitAssets } from "@/components/visuals/assetRegistry";
+import { resolveDictionaryEntry } from "@/config/i18n/locales";
 import { IMAGE_CONVERTER_I18N } from "./imageConverterTranslations";
 
 export interface ImageConverterWorkspaceProps {
@@ -22,9 +23,7 @@ export default function ImageConverterWorkspace({ routeConfig, language: propLan
   const pathname = usePathname();
   const { t, language: contextLanguage } = useLanguage();
   const language = propLanguage || contextLanguage || "en";
-  const rawLang = language.toLowerCase();
-  const shortLang = rawLang.split("-")[0];
-  const tr = IMAGE_CONVERTER_I18N[language] || IMAGE_CONVERTER_I18N[rawLang] || IMAGE_CONVERTER_I18N[shortLang] || IMAGE_CONVERTER_I18N.en;
+  const tr = resolveDictionaryEntry(IMAGE_CONVERTER_I18N, language);
 
   // Target format state
   const [targetFormat, setTargetFormat] = useState<SupportedImageFormat>(

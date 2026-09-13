@@ -2,6 +2,7 @@
 
 import React from "react";
 import { PdfOverlayOutputArtifact } from "@/utils/pdf-overlay/types";
+import { resolveDictionaryEntry } from "@/config/i18n/locales";
 import { PDF_OVERLAY_I18N } from "./pdfOverlayTranslations";
 
 interface PdfOverlayResultCardProps {
@@ -17,9 +18,7 @@ export const PdfOverlayResultCard: React.FC<PdfOverlayResultCardProps> = ({
   onAdjustWatermark,
   onResetWorkspace,
 }) => {
-  const rawLang = (language || "en").toLowerCase();
-  const shortLang = rawLang.split("-")[0];
-  const tr = PDF_OVERLAY_I18N[language] || PDF_OVERLAY_I18N[rawLang] || PDF_OVERLAY_I18N[shortLang] || PDF_OVERLAY_I18N.en;
+  const tr = resolveDictionaryEntry(PDF_OVERLAY_I18N, language);
 
   const formatBytes = (bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`;

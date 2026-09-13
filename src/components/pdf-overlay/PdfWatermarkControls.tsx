@@ -7,6 +7,7 @@ import {
   WatermarkTargetPages,
 } from "@/utils/pdf-overlay/types";
 import { isWinAnsiSupported } from "@/utils/pdf-overlay/watermarkOperations";
+import { resolveDictionaryEntry } from "@/config/i18n/locales";
 import { PDF_OVERLAY_I18N } from "./pdfOverlayTranslations";
 
 interface PdfWatermarkControlsProps {
@@ -30,9 +31,7 @@ export const PdfWatermarkControls: React.FC<PdfWatermarkControlsProps> = ({
   isProcessing = false,
   validationError,
 }) => {
-  const rawLang = (language || "en").toLowerCase();
-  const shortLang = rawLang.split("-")[0];
-  const tr = PDF_OVERLAY_I18N[language] || PDF_OVERLAY_I18N[rawLang] || PDF_OVERLAY_I18N[shortLang] || PDF_OVERLAY_I18N.en;
+  const tr = resolveDictionaryEntry(PDF_OVERLAY_I18N, language);
 
   const isWinAnsiValid = config.type === "text" ? isWinAnsiSupported(config.text || "") : true;
   const isApplyDisabled = isProcessing || !!validationError;

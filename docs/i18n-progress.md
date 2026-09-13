@@ -227,19 +227,84 @@ Target initial test locales to reproduce and eliminate leaks:
 
 ---
 
-## 4. Unresolved Issues & Backlog
-1. **Remaining Workspace Components Batch**:
-   - `AudioWorkspace`, `VideoWorkspace`, `ImageWorkspace`, `ArchiveWorkspace`, `FontWorkspace`, `EbookWorkspace`.
-2. **Generated Headings and Metadata Batch**:
-   - Address noun translation and capitalization (`parts[0].toUpperCase()` -> `IMAGE`) in `i18nHelper.ts`.
-   - Separate file-format nouns (`PDF`, `PNG`, `MP3` remain invariant) from language nouns (`Text`, `Image` requiring localized forms).
-3. **Trust Panel & Shared Surfaces Batch**:
-   - Audit `TrustPanel.tsx`, `TRUST_TRANSLATIONS`, and `PrivacyAssuranceRow.tsx`.
+### Batch: PDF Overlay & Watermark Workspace (`PdfOverlayWorkspace.tsx`)
+- **Scope**:
+  - Full end-to-end audit and verification of `/watermark-pdf` across multiple languages including Lithuanian (`lt`), Bulgarian (`bg`), Hindi (`hi`), Arabic (`ar`), Portuguese (Brazil) (`pt-BR`), and Traditional Chinese (`zh-TW`).
+  - Audited `src/components/pdf-overlay/pdfOverlayTranslations.ts` across all 39 canonical FileKit locales (47 keys/template functions per locale).
+  - Detected and resolved critical worker execution failure:
+    - In `src/components/pdf-overlay/PdfPagePreview.tsx`: `pdfjsLib.getDocument` was directly receiving `sourceBuffer`, which modern PDF.js workers detached, causing `Cannot perform %TypedArray%.prototype.set on a detached or out-of-bounds ArrayBuffer` when stamping the watermark. Fixed by passing a cloned Uint8Array (`new Uint8Array(sourceBuffer)`).
+  - Detected and resolved hardcoded English leak:
+    - In `src/components/pdf-overlay/PdfOverlayWorkspace.tsx`: error banner button was hardcoded as `"Dismiss"`. Added `dismiss` key across all 39 locales in `pdfOverlayTranslations.ts` and wired `tr.dismiss || "Dismiss"`.
+- **Files Modified**:
+  - `src/components/pdf-overlay/PdfOverlayWorkspace.tsx` (MODIFIED - localized dismiss CTA)
+  - `src/components/pdf-overlay/PdfPagePreview.tsx` (MODIFIED - cloned buffer to prevent detachment)
+  - `src/components/pdf-overlay/pdfOverlayTranslations.ts` (MODIFIED - added `dismiss` across all 39 locales)
+- **Validation**:
+  - Tested via `scripts/audit_pdf_overlay_i18n.ts`:
+    - 39/39 canonical locales checked: 100% dictionary completeness (47/47 keys per locale), 0 missing or empty keys, all dynamic placeholder/template functions (`fontSize`, `opacity`, `rotation`, `watermarkSuccessSummary`) verified.
+  - Tested via `scripts/verify_all_39_languages.mjs`:
+    - 2613/2613 global platform checks passed (100%).
+  - Full automated headless browser workflow testing across 6 test locales (`lt`, `bg`, `hi`, `ar`, `pt-BR`, `zh-TW`):
+    - Tested file upload, empty text validation trigger, custom watermark text configuration, off-thread Web Worker execution, result summary card rendering, and client-side binary PDF download.
+    - Verified page count preservation (3 original pages -> 3 output pages).
+    - Verified output watermark text stream presence (stream 3 includes `BT /Helvetica-Bold <46494C454B49545F4C54> Tj ET Q`).
+    - Verified RTL layout adherence on Arabic (`document.documentElement.dir === 'rtl'`, direction verified `true`).
+    - Verified responsive mobile layout on Traditional Chinese (`zh-TW` viewport: 390x844).
+    - Verified 0 English leaks across all 6 workflows:
+      - `lt`: CLEAN (0 leaks)
+      - `bg`: CLEAN (0 leaks)
+      - `hi`: CLEAN (0 leaks)
+      - `ar`: CLEAN (0 leaks)
+      - `pt-BR`: CLEAN (0 leaks)
+      - `zh-TW`: CLEAN (0 leaks)
 
 ---
 
-## 5. Exact Next Batch
-- **Next Batch**: Remaining Workspace Components (`AudioWorkspace.tsx` and `VideoWorkspace.tsx`).
+## 4. Current Verification Statuses
+
+### A. Build Verification
+- **Status**: PASSED (GREEN)
+- **Production Build Commit**: `e535849` + latest working tree changes (`PdfOverlayWorkspace`, `PdfPagePreview`, `pdfOverlayTranslations`).
+- **Production Server**: Active and running on `http://localhost:3000`. Clean production compilation with Next.js Turbopack, 0 TypeScript errors, 148/148 static pages generated, PDF.js worker asset v4.10.38 verified.
+
+### B. Dictionary Coverage
+- **Status**: 100% (GREEN) across 39 Locales
+- **Global Platform Checks**: 2,613 / 2,613 checks passed via `scripts/verify_all_39_languages.mjs`.
+- **PDF Overlay Dictionary (`PDF_OVERLAY_I18N`)**: 39/39 locales with 47/47 keys verified. All placeholder functions (`fontSize`, `opacity`, `rotation`, `watermarkSuccessSummary`) return formatted localized strings with correct interpolated parameters.
+
+### C. Rendered Localization Coverage
+- **Status**: VERIFIED for Tested Routes (Lithuanian, Bulgarian, Hindi, Arabic RTL, Brazilian Portuguese, Traditional Chinese Mobile).
+- **Surface Coverage**:
+  - Dropzone titles & notices: 100% localized.
+  - Watermark controls (Type selector, Text input, Color picker, Font size, Opacity, Rotation, Position presets, Target page modes): 100% localized.
+  - Inline validation errors (e.g., empty watermark text): 100% localized.
+  - Progress spinner & stage notices: 100% localized.
+  - Result card (Dual-reload badge, page summary, download CTA, adjust watermark, start over): 100% localized.
+  - Error banner Dismiss button: 100% localized.
+- **Status**: VERIFIED for SSR Fleet & Tested Interactive Routes (Lithuanian, Bulgarian, Hindi, Arabic RTL, Brazilian Portuguese, Traditional Chinese Mobile).
+- **Fleet Audit**: 39 locales × 32 routes = 1,248 clean server-rendered responses with 0 HTTP errors and 0 detected dropzone leaks.
+
+### D. Functional Output Verification
+- **Status**: VERIFIED (GREEN)
+- **PDF Overlay/Watermark Engine**: Verified page count preservation and watermark stream embedding on 6 locales.
+
+### E. Untested Routes and States
+- Dynamic interactive states for font tools (`ttf-to-woff2`, `woff2-to-ttf`) and ebook controls post-upload.
+
+---
+
+## 5. Unresolved Issues & Backlog
+1. **Priority 3: Interactive Translations**:
+   - Font & ebook controls post-upload and processing.
+2. **Priority 4: Functional File Workflows**:
+   - Upload → process → download → reopen output verification on font and remaining tool families.
+3. **Priority 5: Repeatable Release Gate**:
+   - Bundled automated CI/pre-commit gate checking build, locale resolution, and browser workflows against release commits.
+
+---
+
+## 6. Exact Next Batch
+- **Next Batch**: Audio & Video Workspace Components (`AudioWorkspace.tsx` and `VideoWorkspace.tsx`).
 
 
 

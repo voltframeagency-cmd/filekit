@@ -6,6 +6,7 @@ import { LocalPdfEngineAdapter } from "@/utils/engine/LocalPdfEngineAdapter";
 import { VerificationResult, ProcessingJob, ProcessingProgressEvent, ProcessingFailure } from "@/utils/engine/types";
 import { PdfCompressionMode, PdfRouteConfig } from "@/config/pdfCompressionRoutes";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { resolveDictionaryEntry } from "@/config/i18n/locales";
 import { PDF_COMPRESSION_I18N } from "./pdfCompressionTranslations";
 
 export type QualityPriority = "BETTER_QUALITY" | "BALANCED" | "SMALLER_FILE";
@@ -28,9 +29,7 @@ export default function PdfCompressionWorkspace({
 }: PdfCompressionWorkspaceProps) {
   const { language: ctxLang } = useLanguage();
   const language = propLang || ctxLang || "en";
-  const fullKey = (language || 'en').toLowerCase();
-  const shortKey = fullKey.slice(0, 2);
-  const wt = PDF_COMPRESSION_I18N[fullKey] || PDF_COMPRESSION_I18N[shortKey] || PDF_COMPRESSION_I18N.en;
+  const wt = resolveDictionaryEntry(PDF_COMPRESSION_I18N, language);
 
   // Mode selection & controls
   const [qualityPriority, setQualityPriority] = useState<QualityPriority>("BALANCED");

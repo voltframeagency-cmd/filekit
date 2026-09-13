@@ -67,6 +67,7 @@ export interface PdfOverlayI18nEntry {
   downloadWatermarkedPdf: string;
   adjustWatermark: string;
   startOver: string;
+  dismiss: string;
 }
 
 export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
@@ -125,7 +126,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Watermarked ${pages} page${pages !== 1 ? "s" : ""} • Processed 100% off-thread via Web Worker`,
     downloadWatermarkedPdf: "Download Watermarked PDF",
     adjustWatermark: "Adjust Watermark",
-    startOver: "Start Over"
+    startOver: "Start Over",
+    dismiss: "Dismiss"
   },
   es: {
     dropHere: "Suelta tu PDF aquí",
@@ -182,7 +184,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Marca de agua aplicada en ${pages} página${pages !== 1 ? "s" : ""} • Procesado 100% en Web Worker`,
     downloadWatermarkedPdf: "Descargar PDF con marca de agua",
     adjustWatermark: "Ajustar marca de agua",
-    startOver: "Reiniciar"
+    startOver: "Reiniciar",
+    dismiss: "Descartar"
   },
   "es-419": {
     dropHere: "Suelta tu archivo PDF aquí",
@@ -239,7 +242,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Marca de agua aplicada en ${pages} página${pages !== 1 ? "s" : ""} • 100% en Web Worker`,
     downloadWatermarkedPdf: "Descargar PDF con marca",
     adjustWatermark: "Ajustar marca",
-    startOver: "Comenzar de nuevo"
+    startOver: "Comenzar de nuevo",
+    dismiss: "Descartar"
   },
   de: {
     dropHere: "PDF-Datei hier ablegen",
@@ -296,7 +300,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Wasserzeichen auf ${pages} Seite${pages !== 1 ? "n" : ""} angewendet • 100% im Web Worker verarbeitet`,
     downloadWatermarkedPdf: "PDF mit Wasserzeichen herunterladen",
     adjustWatermark: "Wasserzeichen anpassen",
-    startOver: "Neu starten"
+    startOver: "Neu starten",
+    dismiss: "Schließen"
   },
   fr: {
     dropHere: "Déposez votre fichier PDF ici",
@@ -353,7 +358,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Filigrane appliqué sur ${pages} page${pages !== 1 ? "s" : ""} • Traitement 100% via Web Worker`,
     downloadWatermarkedPdf: "Télécharger le PDF avec filigrane",
     adjustWatermark: "Ajuster le filigrane",
-    startOver: "Recommencer"
+    startOver: "Recommencer",
+    dismiss: "Ignorer"
   },
   pt: {
     dropHere: "Arraste o seu PDF para aqui",
@@ -410,7 +416,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Marca de água aplicada em ${pages} página${pages !== 1 ? "s" : ""} • Processado 100% no Web Worker`,
     downloadWatermarkedPdf: "Descarregar PDF com marca de água",
     adjustWatermark: "Ajustar marca de água",
-    startOver: "Começar de novo"
+    startOver: "Começar de novo",
+    dismiss: "Dispensar"
   },
   "pt-BR": {
     dropHere: "Arraste seu PDF para cá",
@@ -467,7 +474,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Marca d'água aplicada em ${pages} página${pages !== 1 ? "s" : ""} • 100% via Web Worker`,
     downloadWatermarkedPdf: "Baixar PDF com marca d'água",
     adjustWatermark: "Ajustar marca d'água",
-    startOver: "Começar de novo"
+    startOver: "Começar de novo",
+    dismiss: "Dispensar"
   },
   it: {
     dropHere: "Trascina qui il tuo PDF",
@@ -524,7 +532,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Filigrana applicata su ${pages} pagin${pages !== 1 ? "e" : "a"} • 100% elaborato via Web Worker`,
     downloadWatermarkedPdf: "Scarica PDF con filigrana",
     adjustWatermark: "Regola filigrana",
-    startOver: "Ricomincia"
+    startOver: "Ricomincia",
+    dismiss: "Ignora"
   },
   nl: {
     dropHere: "Sleep je PDF hierheen",
@@ -581,7 +590,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Watermerk toegepast op ${pages} pagina('s) • 100% via Web Worker`,
     downloadWatermarkedPdf: "Download PDF met watermerk",
     adjustWatermark: "Watermerk aanpassen",
-    startOver: "Opnieuw beginnen"
+    startOver: "Opnieuw beginnen",
+    dismiss: "Sluiten"
   },
   ca: {
     dropHere: "Arrossega el teu PDF aquí",
@@ -638,7 +648,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Marca d'aigua aplicada a ${pages} pàgina${pages !== 1 ? "s" : ""} • 100% amb Web Worker`,
     downloadWatermarkedPdf: "Descarrega el PDF amb marca d'aigua",
     adjustWatermark: "Ajusta la marca d'aigua",
-    startOver: "Torna a començar"
+    startOver: "Torna a començar",
+    dismiss: "Descarta"
   },
   sv: {
     dropHere: "Släpp din PDF här",
@@ -695,7 +706,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Vattenmärke tillagt på ${pages} sid${pages !== 1 ? "or" : "a"} • Bearbetat 100% via Web Worker`,
     downloadWatermarkedPdf: "Ladda ner vattenmärkt PDF",
     adjustWatermark: "Justera vattenmärke",
-    startOver: "Börja om"
+    startOver: "Börja om",
+    dismiss: "Avvisa"
   },
   da: {
     dropHere: "Slip din PDF her",
@@ -752,7 +764,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Vandmærke tilføjet til ${pages} side${pages !== 1 ? "r" : ""} • 100% via Web Worker`,
     downloadWatermarkedPdf: "Download PDF med vandmærke",
     adjustWatermark: "Juster vandmærke",
-    startOver: "Start forfra"
+    startOver: "Start forfra",
+    dismiss: "Afvis"
   },
   fi: {
     dropHere: "Pudota PDF-tiedostosi tähän",
@@ -809,7 +822,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Vesileima lisätty ${pages} sivulle • Käsitelty 100% Web Workerissa`,
     downloadWatermarkedPdf: "Lataa vesileimattu PDF",
     adjustWatermark: "Säädä vesileimaa",
-    startOver: "Aloita alusta"
+    startOver: "Aloita alusta",
+    dismiss: "Hylkää"
   },
   no: {
     dropHere: "Slipp PDF-filen her",
@@ -866,7 +880,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Vannmerke lagt til på ${pages} sid${pages !== 1 ? "er" : "e"} • Behandlet 100% via Web Worker`,
     downloadWatermarkedPdf: "Last ned vannmerket PDF",
     adjustWatermark: "Juster vannmerke",
-    startOver: "Start på nytt"
+    startOver: "Start på nytt",
+    dismiss: "Avvis"
   },
   pl: {
     dropHere: "Upuść plik PDF tutaj",
@@ -923,7 +938,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Znak wodny dodany do ${pages} stron • 100% lokalnie w Web Worker`,
     downloadWatermarkedPdf: "Pobierz PDF ze znakiem wodnym",
     adjustWatermark: "Dostosuj znak wodny",
-    startOver: "Zacznij od nowa"
+    startOver: "Zacznij od nowa",
+    dismiss: "Odrzuć"
   },
   cs: {
     dropHere: "Sem přetáhněte svůj PDF soubor",
@@ -980,7 +996,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Vodoznak přidán na ${pages} stránek • Zpracováno 100% přes Web Worker`,
     downloadWatermarkedPdf: "Stáhnout PDF s vodoznakem",
     adjustWatermark: "Upravit vodoznak",
-    startOver: "Začít znovu"
+    startOver: "Začít znovu",
+    dismiss: "Zavřít"
   },
   hu: {
     dropHere: "Húzza ide a PDF fájlt",
@@ -1037,7 +1054,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Vízjel alkalmazva ${pages} oldalon • 100% Web Worker háttérfolyamatban`,
     downloadWatermarkedPdf: "Vízjeles PDF letöltése",
     adjustWatermark: "Vízjel módosítása",
-    startOver: "Újrakezdés"
+    startOver: "Újrakezdés",
+    dismiss: "Elvetés"
   },
   ro: {
     dropHere: "Trage fișierul PDF aici",
@@ -1094,7 +1112,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Filigran aplicat pe ${pages} pagin${pages !== 1 ? "i" : "ă"} • Procesat 100% în Web Worker`,
     downloadWatermarkedPdf: "Descarcă PDF cu filigran",
     adjustWatermark: "Ajustează filigranul",
-    startOver: "Începe din nou"
+    startOver: "Începe din nou",
+    dismiss: "Închide"
   },
   bg: {
     dropHere: "Пуснете вашия PDF тук",
@@ -1151,7 +1170,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Водният знак е добавен на ${pages} страниц${pages !== 1 ? "и" : "а"} • 100% във Web Worker`,
     downloadWatermarkedPdf: "Изтегляне на PDF с воден знак",
     adjustWatermark: "Коригиране на воден знак",
-    startOver: "Започнете отначало"
+    startOver: "Започнете отначало",
+    dismiss: "Затвори"
   },
   el: {
     dropHere: "Σύρετε το PDF σας εδώ",
@@ -1208,7 +1228,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Υδατογράφημα σε ${pages} σελίδ${pages !== 1 ? "ες" : "α"} • 100% μέσω Web Worker`,
     downloadWatermarkedPdf: "Λήψη υδατογραφημένου PDF",
     adjustWatermark: "Προσαρμογή υδατογραφήματος",
-    startOver: "Έναρξη από την αρχή"
+    startOver: "Έναρξη από την αρχή",
+    dismiss: "Απόρριψη"
   },
   sk: {
     dropHere: "Presuňte PDF sem",
@@ -1265,7 +1286,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Vodoznak aplikovaný na ${pages} stránk${pages !== 1 ? "ach" : "e"} • 100% cez Web Worker`,
     downloadWatermarkedPdf: "Stiahnuť PDF s vodoznakom",
     adjustWatermark: "Upraviť vodoznak",
-    startOver: "Začať odznova"
+    startOver: "Začať odznova",
+    dismiss: "Zavrieť"
   },
   sl: {
     dropHere: "Povlecite PDF sem",
@@ -1322,7 +1344,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Vodni žig dodan na ${pages} stran${pages !== 1 ? "i" : ""} • 100% v Web Workerju`,
     downloadWatermarkedPdf: "Prenesi PDF z vodnim žigom",
     adjustWatermark: "Prilagodi vodni žig",
-    startOver: "Začni znova"
+    startOver: "Začni znova",
+    dismiss: "Opusti"
   },
   ru: {
     dropHere: "Перетащите PDF сюда",
@@ -1379,7 +1402,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Водяной знак добавлен на ${pages} стр. • 100% локально в Web Worker`,
     downloadWatermarkedPdf: "Скачать PDF с водяным знаком",
     adjustWatermark: "Настроить водяной знак",
-    startOver: "Начать сначала"
+    startOver: "Начать сначала",
+    dismiss: "Закрыть"
   },
   uk: {
     dropHere: "Перетягніть PDF сюди",
@@ -1436,7 +1460,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Водяний знак застосовано на ${pages} стор. • 100% локально у Web Worker`,
     downloadWatermarkedPdf: "Завантажити PDF з водяним знаком",
     adjustWatermark: "Налаштувати водяний знак",
-    startOver: "Почати спочатку"
+    startOver: "Почати спочатку",
+    dismiss: "Закрити"
   },
   tr: {
     dropHere: "PDF dosyanızı buraya bırakın",
@@ -1493,7 +1518,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `${pages} sayfaya filigran eklendi • %100 Web Worker üzerinde işlendi`,
     downloadWatermarkedPdf: "Filigranlı PDF'yi İndir",
     adjustWatermark: "Filigranı Ayarla",
-    startOver: "Yeniden Başla"
+    startOver: "Yeniden Başla",
+    dismiss: "Kapat"
   },
   ar: {
     dropHere: "أسقط ملف PDF هنا",
@@ -1550,7 +1576,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `تمت إضافة العلامة المائية إلى ${pages} صفحة • معالجة 100% عبر Web Worker`,
     downloadWatermarkedPdf: "تحميل PDF بعلامة مائية",
     adjustWatermark: "تعديل العلامة المائية",
-    startOver: "البدء من جديد"
+    startOver: "البدء من جديد",
+    dismiss: "إغلاق"
   },
   he: {
     dropHere: "גרור את קובץ ה-PDF לכאן",
@@ -1607,7 +1634,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `סימן מים הוחל על ${pages} עמודים • 100% עיבוד ב-Web Worker`,
     downloadWatermarkedPdf: "הורד PDF עם סימן מים",
     adjustWatermark: "התאם סימן מים",
-    startOver: "התחל מחדש"
+    startOver: "התחל מחדש",
+    dismiss: "סגור"
   },
   hi: {
     dropHere: "अपनी PDF फ़ाइल यहाँ छोड़ें",
@@ -1664,7 +1692,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `${pages} पृष्ठों पर वॉटरमार्क लागू किया गया • Web Worker द्वारा 100% स्थानीय प्रोसेस`,
     downloadWatermarkedPdf: "वॉटरमार्क युक्त PDF डाउनलोड करें",
     adjustWatermark: "वॉटरमार्क समायोजित करें",
-    startOver: "पुनः प्रारंभ करें"
+    startOver: "पुनः प्रारंभ करें",
+    dismiss: "खारिज करें"
   },
   id: {
     dropHere: "Tarik file PDF Anda ke sini",
@@ -1721,7 +1750,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Tanda air diterapkan pada ${pages} halaman • 100% diproses via Web Worker`,
     downloadWatermarkedPdf: "Unduh PDF dengan Tanda Air",
     adjustWatermark: "Sesuaikan Tanda Air",
-    startOver: "Mulai Ulang"
+    startOver: "Mulai Ulang",
+    dismiss: "Tutup"
   },
   ms: {
     dropHere: "Lepaskan dokumen PDF di sini",
@@ -1778,7 +1808,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Tera air ditambah pada ${pages} halaman • 100% diproses melalui Web Worker`,
     downloadWatermarkedPdf: "Muat Turun PDF Bertera Air",
     adjustWatermark: "Laraskan Tera Air",
-    startOver: "Mula Semula"
+    startOver: "Mula Semula",
+    dismiss: "Tutup"
   },
   th: {
     dropHere: "ลากไฟล์ PDF มาวางที่นี่",
@@ -1835,7 +1866,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `ใส่ลายน้ำลงใน ${pages} หน้า • ประมวลผลผ่าน Web Worker 100% ในเครื่อง`,
     downloadWatermarkedPdf: "ดาวน์โหลด PDF พร้อมลายน้ำ",
     adjustWatermark: "ปรับแต่งลายน้ำ",
-    startOver: "เริ่มต้นใหม่"
+    startOver: "เริ่มต้นใหม่",
+    dismiss: "ปิด"
   },
   vi: {
     dropHere: "Kéo thả tệp PDF vào đây",
@@ -1892,7 +1924,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Đã đóng dấu hình mờ trên ${pages} trang • 100% qua Web Worker`,
     downloadWatermarkedPdf: "Tải xuống PDF có hình mờ",
     adjustWatermark: "Điều chỉnh hình mờ",
-    startOver: "Bắt đầu lại"
+    startOver: "Bắt đầu lại",
+    dismiss: "Bỏ qua"
   },
   fil: {
     dropHere: "I-drop ang dokumentong PDF dito",
@@ -1949,7 +1982,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Nalagyan ng watermark ang ${pages} pahina • 100% naproseso sa Web Worker`,
     downloadWatermarkedPdf: "I-download ang Watermarked PDF",
     adjustWatermark: "Ayusin ang Watermark",
-    startOver: "Magsimula Muli"
+    startOver: "Magsimula Muli",
+    dismiss: "I-dismiss"
   },
   ja: {
     dropHere: "ここにPDFファイルをドロップ",
@@ -2006,7 +2040,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `${pages} ページに透かしを適用 • Web Workerによる100%ローカル処理`,
     downloadWatermarkedPdf: "透かし入りPDFをダウンロード",
     adjustWatermark: "透かしを調整",
-    startOver: "最初からやり直す"
+    startOver: "最初からやり直す",
+    dismiss: "閉じる"
   },
   ko: {
     dropHere: "여기에 PDF 파일을 드롭하세요",
@@ -2063,7 +2098,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `${pages}개 페이지에 워터마크 적용 • Web Worker로 100% 로컬 처리`,
     downloadWatermarkedPdf: "워터마크 PDF 다운로드",
     adjustWatermark: "워터마크 조정",
-    startOver: "다시 시작"
+    startOver: "다시 시작",
+    dismiss: "닫기"
   },
   "zh-CN": {
     dropHere: "将 PDF 文件拖放到此处",
@@ -2120,7 +2156,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `已在 ${pages} 个页面应用水印 • 100% 通过 Web Worker 在后台线程安全处理`,
     downloadWatermarkedPdf: "下载水印 PDF",
     adjustWatermark: "调整水印",
-    startOver: "重新开始"
+    startOver: "重新开始",
+    dismiss: "关闭"
   },
   "zh-TW": {
     dropHere: "將 PDF 檔案拖放到此處",
@@ -2177,7 +2214,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `已在 ${pages} 個頁面套用浮水印 • 100% 透過 Web Worker 於背景執行緒安全運算`,
     downloadWatermarkedPdf: "下載浮水印 PDF",
     adjustWatermark: "調整浮水印",
-    startOver: "重新開始"
+    startOver: "重新開始",
+    dismiss: "關閉"
   },
   lv: {
     dropHere: "Nometiet savu PDF failu šeit",
@@ -2234,7 +2272,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Ūdenszīme pievienota ${pages} lapā${pages !== 1 ? "s" : ""} • 100% apstrādāts Web Workerī`,
     downloadWatermarkedPdf: "Lejupielādēt PDF ar ūdenszīmi",
     adjustWatermark: "Pielāgot ūdenszīmi",
-    startOver: "Sākt no jauna"
+    startOver: "Sākt no jauna",
+    dismiss: "Aizvērt"
   },
   lt: {
     dropHere: "Nutempkite savo PDF failą čia",
@@ -2291,6 +2330,7 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     watermarkSuccessSummary: (pages) => `Vandens ženklas pritaikytas ${pages} puslapi${pages !== 1 ? "uose" : "je"} • 100% per Web Worker`,
     downloadWatermarkedPdf: "Atsisiųsti PDF su vandens ženklu",
     adjustWatermark: "Koreguoti vandens ženklą",
-    startOver: "Pradėti iš naujo"
+    startOver: "Pradėti iš naujo",
+    dismiss: "Atmesti"
   }
 };

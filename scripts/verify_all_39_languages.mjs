@@ -1,12 +1,8 @@
 import { getToolSeoContent } from '../src/config/seo/toolFaqs.ts';
 import { MEGA_MENU_CATEGORIES, EXACT_TOOL_LABELS, PRIMARY_DESCRIPTIONS } from '../src/components/navigation/megaMenuTranslations.ts';
+import { ALL_LOCALES } from '../src/config/i18n/locales.ts';
 
-const ALL_39_LOCALES = [
-  'en', 'es', 'es-419', 'de', 'fr', 'pt', 'pt-BR', 'it', 'nl', 'ca',
-  'sv', 'da', 'fi', 'no', 'pl', 'cs', 'hu', 'ro', 'bg', 'el',
-  'sk', 'sl', 'ru', 'uk', 'lv', 'lt', 'tr', 'ar', 'he', 'hi',
-  'id', 'ms', 'th', 'vi', 'fil', 'ja', 'ko', 'zh-CN', 'zh-TW'
-];
+const ALL_39_LOCALES = ALL_LOCALES;
 
 console.log('=== VERIFYING ALL 39 LANGUAGES ACROSS THE ENTIRE PLATFORM ===');
 
@@ -58,3 +54,9 @@ for (const loc of ALL_39_LOCALES) {
 console.log(`\n======================================================`);
 console.log(`GLOBAL TOTAL: ${passedChecks}/${totalChecks} PASSED (${Math.round(passedChecks/totalChecks*100)}%)`);
 console.log(`======================================================`);
+
+if (passedChecks !== totalChecks) {
+  console.error(`❌ Audit failed: ${totalChecks - passedChecks} checks did not pass.`);
+  process.exit(1);
+}
+

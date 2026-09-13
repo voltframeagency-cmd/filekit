@@ -92,7 +92,7 @@ export const PdfPagePreview: React.FC<PdfPagePreviewProps> = ({
         }
 
         const loadingTask = pdfjsLib.getDocument({
-          data: sourceBuffer,
+          data: new Uint8Array(sourceBuffer),
           cMapPacked: true,
         });
         loadingTaskRef.current = loadingTask;

@@ -5,6 +5,7 @@ import ProcessingModeBadge from "@/components/common/ProcessingModeBadge";
 import { OcrEngine } from "@/utils/ocr-engine/OcrEngine";
 import { OcrExecutionResult } from "@/utils/ocr-engine/types";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { resolveDictionaryEntry } from "@/config/i18n/locales";
 import { OCR_I18N } from "./ocrTranslations";
 
 export interface OcrPdfWorkspaceProps {
@@ -21,9 +22,8 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
   language: propLanguage,
 }) => {
   const { language: contextLang } = useLanguage();
-  const rawLang = (propLanguage || contextLang || "en").toLowerCase();
-  const shortLang = rawLang.split("-")[0];
-  const tr = OCR_I18N[rawLang] || OCR_I18N[shortLang] || OCR_I18N.en;
+  const language = propLanguage || contextLang || "en";
+  const tr = resolveDictionaryEntry(OCR_I18N, language);
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);

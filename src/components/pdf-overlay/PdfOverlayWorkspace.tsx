@@ -13,6 +13,7 @@ import { PdfWatermarkControls } from "./PdfWatermarkControls";
 import { PdfPagePreview } from "./PdfPagePreview";
 import { PdfOverlayResultCard } from "./PdfOverlayResultCard";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { resolveDictionaryEntry } from "@/config/i18n/locales";
 import { PDF_OVERLAY_I18N } from "./pdfOverlayTranslations";
 
 interface PdfOverlayWorkspaceProps {
@@ -22,9 +23,7 @@ interface PdfOverlayWorkspaceProps {
 export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ language: propLang }) => {
   const { t, language: ctxLang } = useLanguage();
   const language = propLang || ctxLang || "en";
-  const rawLang = (language || "en").toLowerCase();
-  const shortLang = rawLang.split("-")[0];
-  const tr = PDF_OVERLAY_I18N[language] || PDF_OVERLAY_I18N[rawLang] || PDF_OVERLAY_I18N[shortLang] || PDF_OVERLAY_I18N.en;
+  const tr = resolveDictionaryEntry(PDF_OVERLAY_I18N, language);
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceBuffer, setSourceBuffer] = useState<Uint8Array | null>(null);
@@ -274,7 +273,7 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
             onClick={() => setErrorMessage(null)}
             className="text-red-400 hover:text-white text-xs font-bold"
           >
-            Dismiss
+            {tr.dismiss || "Dismiss"}
           </button>
         </div>
       )}

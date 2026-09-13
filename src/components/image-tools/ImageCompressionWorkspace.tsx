@@ -8,6 +8,7 @@ import { ImagePreflightInspector } from "@/utils/image-engine/ImagePreflightInsp
 import { ImageCapabilityRouter } from "@/utils/image-engine/ImageCapabilityRouter";
 import { ImageVerificationResult, ImagePreflightReport } from "@/utils/image-engine/types";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { resolveDictionaryEntry } from "@/config/i18n/locales";
 import { IMAGE_COMPRESSION_I18N } from "./imageCompressionTranslations";
 
 export type CompressionGoalMode = "BALANCED" | "TARGET_SIZE" | "MANUAL";
@@ -16,6 +17,7 @@ export type DimensionPreset = "ORIGINAL" | "1920" | "1024" | "640" | "CUSTOM";
 
 export interface ImageCompressionWorkspaceProps {
   initialMode?: CompressionGoalMode;
+  initialQuality?: QualityPriority;
   initialTargetValue?: string;
   initialTargetUnit?: "kb" | "mb";
   language?: string;
@@ -24,22 +26,22 @@ export interface ImageCompressionWorkspaceProps {
 const MIN_BYTES = 20 * 1024; // 20 KB
 const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 
-export default function ImageCompressionWorkspace({
+export const ImageCompressionWorkspace: React.FC<ImageCompressionWorkspaceProps> = ({
   initialMode = "BALANCED",
+  initialQuality = "BALANCED",
   initialTargetValue = "200",
   initialTargetUnit = "kb",
   language: propLanguage
-}: ImageCompressionWorkspaceProps) {
+}) => {
   const { language: contextLang } = useLanguage();
   const language = propLanguage || contextLang || "en";
-  const rawLang = language.toLowerCase();
-  const shortLang = rawLang.split("-")[0];
-  const tr = IMAGE_COMPRESSION_I18N[language] || IMAGE_COMPRESSION_I18N[rawLang] || IMAGE_COMPRESSION_I18N[shortLang] || IMAGE_COMPRESSION_I18N.en;
+  const tr = resolveDictionaryEntry(IMAGE_COMPRESSION_I18N, language);
+
   // Mode selection
   const [mode, setMode] = useState<CompressionGoalMode>(initialMode);
 
   // Balanced mode controls
-  const [qualityPriority, setQualityPriority] = useState<QualityPriority>("BALANCED");
+  const [qualityPriority, setQualityPriority] = useState<QualityPriority>(initialQuality);
 
   // Target Size mode controls
   const [targetValue, setTargetValue] = useState<string>(initialTargetValue);

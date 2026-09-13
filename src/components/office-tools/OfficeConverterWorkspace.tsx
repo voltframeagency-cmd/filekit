@@ -3,11 +3,11 @@
 import React, { useState } from "react";
 import ProcessingModeBadge from "@/components/common/ProcessingModeBadge";
 import { useLanguage } from "@/components/layout/LanguageContext";
+import { resolveDictionaryEntry } from "@/config/i18n/locales";
 import { OFFICE_I18N } from "./officeTranslations";
 
 export interface OfficeConverterWorkspaceProps {
   toolTitle: string;
-  toolSlug: string;
   apiEndpoint: string;
   acceptedExtensions: string;
   documentTypeLabel: string; // e.g. "Word Document", "PowerPoint Presentation", "Excel Spreadsheet"
@@ -16,16 +16,14 @@ export interface OfficeConverterWorkspaceProps {
 
 export const OfficeConverterWorkspace: React.FC<OfficeConverterWorkspaceProps> = ({
   toolTitle,
-  toolSlug,
   apiEndpoint,
   acceptedExtensions,
   documentTypeLabel,
   language: propLang,
 }) => {
   const { language: ctxLang } = useLanguage();
-  const rawLang = (propLang || ctxLang || "en").toLowerCase();
-  const shortLang = rawLang.split("-")[0];
-  const tr = OFFICE_I18N[rawLang] || OFFICE_I18N[shortLang] || OFFICE_I18N.en;
+  const language = propLang || ctxLang || "en";
+  const tr = resolveDictionaryEntry(OFFICE_I18N, language);
 
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);

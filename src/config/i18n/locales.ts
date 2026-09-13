@@ -127,9 +127,9 @@ export function normalizeLocale(raw: string | undefined | null): SupportedLocale
   if (lower === "kr") return "ko";
   if (lower === "pt-br" || lower === "pt_br") return "pt-BR";
   if (lower === "es-419" || lower === "es_419") return "es-419";
-  
-  if (isValidLocale(raw)) return raw;
-  
+
+  if (raw in SUPPORTED_LOCALES) return raw as SupportedLocale;
+
   const matched = ALL_LOCALES.find((loc) => loc.toLowerCase() === lower);
   if (matched) return matched;
 
@@ -145,6 +145,46 @@ export function isValidLocale(locale: string): locale is SupportedLocale {
     lower === "zh-tw" ||
     lower === "kr" ||
     lower === "pt-br" ||
-    lower === "es-419"
+    lower === "es-419" ||
+    ALL_LOCALES.some((loc) => loc.toLowerCase() === lower)
   );
 }
+
+/**
+ * Universal dictionary resolver for FileKit components.
+ * Safely resolves localized dictionary entries across canonical locales (including mixed-case zh-CN, zh-TW, pt-BR, es-419).
+ * Fallback priority:
+ * 1. Exact normalized canonical locale match (e.g. dict['zh-CN'])
+ * 2. Exact raw locale match
+ * 3. Case-insensitive match across dictionary keys (e.g. dict['zh-cn'])
+ * 4. Language prefix match (e.g. 'zh' -> 'zh-CN' or 'pt-BR' -> 'pt')
+ * 5. Fallback locale ('en')
+ */
+export function resolveDictionaryEntry<T>(
+  dict: Record<string, T>,
+  language?: string | null,
+  fallbackLocale: SupportedLocale = DEFAULT_LOCALE
+): T {
+  const norm = normalizeLocale(language);
+
+  if (dict[norm]) return dict[norm];
+
+  if (language && dict[language]) return dict[language];
+
+  if (language) {
+    const lower = language.toLowerCase().trim();
+    for (const key of Object.keys(dict)) {
+      if (key.toLowerCase() === lower) return dict[key];
+    }
+    const short = lower.split(/[-_]/)[0];
+    for (const key of Object.keys(dict)) {
+      if (key.toLowerCase() === short) return dict[key];
+    }
+  }
+
+  const shortNorm = norm.split("-")[0];
+  if (dict[shortNorm]) return dict[shortNorm];
+
+  return dict[fallbackLocale] || dict[DEFAULT_LOCALE];
+}
+
