@@ -880,4 +880,6 @@ export const ImageCompressionWorkspace: React.FC<ImageCompressionWorkspaceProps>
       <TrustPanel />
     </div>
   );
-}
+};
+
+export default ImageCompressionWorkspace;
