@@ -236,36 +236,37 @@ Target initial test locales to reproduce and eliminate leaks:
   - Detected and resolved hardcoded English leak:
     - In `src/components/pdf-overlay/PdfOverlayWorkspace.tsx`: error banner button was hardcoded as `"Dismiss"`. Added `dismiss` key across all 39 locales in `pdfOverlayTranslations.ts` and wired `tr.dismiss || "Dismiss"`.
 - **Files Modified**:
-  - `src/components/pdf-overlay/PdfOverlayWorkspace.tsx` (MODIFIED - localized dismiss CTA)
+  - `src/components/pdf-overlay/PdfOverlayWorkspace.tsx` (MODIFIED - localized dismiss CTA, localized signatureWarning banner to `tr.signatureWarning`)
   - `src/components/pdf-overlay/PdfPagePreview.tsx` (MODIFIED - cloned buffer to prevent detachment)
   - `src/components/pdf-overlay/pdfOverlayTranslations.ts` (MODIFIED - added `dismiss` across all 39 locales)
+  - `src/components/office-tools/officeTranslations.ts` (MODIFIED - registered canonical locale aliases for `zh-CN`, `zh-TW`, `pt-BR`, `es-419`)
+  - `scripts/test_shared_locale_resolution.ts` (MODIFIED - strengthened canonical assertions checking both `dict[loc] !== undefined` and `entry === dict[loc]`)
+  - `scripts/test_negative_audit_gate.ts` (NEW - repeatable negative audit & resolver failure gate suite)
+  - `scripts/run_watermark_full_workflow.ts` (NEW - repeatable multi-locale Playwright browser watermark workflow)
 - **Validation**:
-  - Tested via `scripts/audit_pdf_overlay_i18n.ts`:
-    - 39/39 canonical locales checked: 100% dictionary completeness (47/47 keys per locale), 0 missing or empty keys, all dynamic placeholder/template functions (`fontSize`, `opacity`, `rotation`, `watermarkSuccessSummary`) verified.
-  - Tested via `scripts/verify_all_39_languages.mjs`:
-    - 2613/2613 global platform checks passed (100%).
-  - Full automated headless browser workflow testing across 6 test locales (`lt`, `bg`, `hi`, `ar`, `pt-BR`, `zh-TW`):
-    - Tested file upload, empty text validation trigger, custom watermark text configuration, off-thread Web Worker execution, result summary card rendering, and client-side binary PDF download.
-    - Verified page count preservation (3 original pages -> 3 output pages).
-    - Verified output watermark text stream presence (stream 3 includes `BT /Helvetica-Bold <46494C454B49545F4C54> Tj ET Q`).
-    - Verified RTL layout adherence on Arabic (`document.documentElement.dir === 'rtl'`, direction verified `true`).
-    - Verified responsive mobile layout on Traditional Chinese (`zh-TW` viewport: 390x844).
-    - Verified 0 English leaks across all 6 workflows:
-      - `lt`: CLEAN (0 leaks)
-      - `bg`: CLEAN (0 leaks)
-      - `hi`: CLEAN (0 leaks)
-      - `ar`: CLEAN (0 leaks)
-      - `pt-BR`: CLEAN (0 leaks)
-      - `zh-TW`: CLEAN (0 leaks)
+  - **Shared Locale Resolution Gate** (`scripts/test_shared_locale_resolution.ts`):
+    - Exit Code: **0** (PASSED)
+    - Asserted both `dict[loc] !== undefined` AND `entry === dict[loc]` for all 39 canonical locales across 6 tool suites (`OCR_I18N`, `PDF_COMPRESSION_I18N`, `PDF_OVERLAY_I18N`, `IMAGE_COMPRESSION_I18N`, `IMAGE_CONVERTER_I18N`, `OFFICE_I18N`).
+  - **Negative Failure Gate Suite** (`scripts/test_negative_audit_gate.ts`):
+    - Exit Code: **0** (3/3 PASSED)
+    - Verified HTTP 404 triggers exit code 1.
+    - Verified monitored English leak detection triggers exit code 1.
+    - Verified dictionary resolution mismatches trigger exit code 1.
+  - **Watermark Interactive Browser Workflow** (`scripts/run_watermark_full_workflow.ts`):
+    - Exit Code: **0** (6/6 locales PASSED)
+    - Tested Lithuanian (`lt`), Bulgarian (`bg`), Hindi (`hi`), Arabic RTL (`ar`), Brazilian Portuguese (`pt-BR`), and Traditional Chinese Mobile (`zh-TW`).
+    - Verified dropzone upload, input validation errors, custom watermark configuration, off-thread worker processing, result summary, and binary PDF download.
+    - 0 English leaks detected across all 6 workflows.
 
 ---
 
 ## 4. Current Verification Statuses
 
-### A. Build Verification
+### A. Build & Gate Verification
 - **Status**: PASSED (GREEN)
-- **Production Build Commit**: `e535849` + latest working tree changes (`PdfOverlayWorkspace`, `PdfPagePreview`, `pdfOverlayTranslations`).
-- **Production Server**: Active and running on `http://localhost:3000`. Clean production compilation with Next.js Turbopack, 0 TypeScript errors, 148/148 static pages generated, PDF.js worker asset v4.10.38 verified.
+- **Shared Locale Resolution Gate**: Exit code 0 (100% canonical verification).
+- **Negative Gate Test**: Exit code 0 (3/3 failure gates verified).
+- **Multi-locale Browser Workflow**: Exit code 0 (6/6 interactive browser workflows clean).
 
 ### B. Dictionary Coverage
 - **Status**: 100% (GREEN) across 39 Locales
@@ -281,7 +282,7 @@ Target initial test locales to reproduce and eliminate leaks:
   - Progress spinner & stage notices: 100% localized.
   - Result card (Dual-reload badge, page summary, download CTA, adjust watermark, start over): 100% localized.
   - Error banner Dismiss button: 100% localized.
-- **Status**: VERIFIED for SSR Fleet & Tested Interactive Routes (Lithuanian, Bulgarian, Hindi, Arabic RTL, Brazilian Portuguese, Traditional Chinese Mobile).
+  - Signature warning banner in workspace: 100% localized via `tr.signatureWarning`.
 - **Fleet Audit**: 39 locales × 32 routes = 1,248 clean server-rendered responses with 0 HTTP errors and 0 detected dropzone leaks.
 
 ### D. Functional Output Verification

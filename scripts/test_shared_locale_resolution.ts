@@ -76,8 +76,11 @@ const dicts = [
 for (const { name, dict } of dicts) {
   for (const loc of ALL_LOCALES) {
     const entry = resolveDictionaryEntry(dict, loc);
-    if (!entry) {
-      console.error(`❌ ${name} failed to resolve for canonical locale '${loc}'`);
+    if (!dict[loc]) {
+      console.error(`❌ ${name} has no dictionary entry defined for canonical locale '${loc}'`);
+      failures++;
+    } else if (entry !== dict[loc]) {
+      console.error(`❌ ${name} resolved entry does not match dict[loc] for canonical locale '${loc}'`);
       failures++;
     }
   }

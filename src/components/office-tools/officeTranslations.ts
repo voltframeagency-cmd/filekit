@@ -862,3 +862,9 @@ export const OFFICE_I18N: Record<string, OfficeI18nEntry> = {
   }
 };
 
+// Canonical locale aliases to ensure complete coverage for all 39 canonical locales
+OFFICE_I18N["zh-CN"] = OFFICE_I18N["zh-cn"];
+OFFICE_I18N["zh-TW"] = OFFICE_I18N["zh-tw"];
+OFFICE_I18N["pt-BR"] = OFFICE_I18N["pt"];
+OFFICE_I18N["es-419"] = OFFICE_I18N["es"];
+
