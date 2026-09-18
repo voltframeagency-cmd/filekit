@@ -87,13 +87,14 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
 
     // Enforce 100 MB max size
     if (file.size > MAX_PDF_FILE_BYTES) {
-      setErrorMessage(`File "${file.name}" exceeds maximum supported size of 100 MB.`);
+      setErrorMessage(tr.errorFileTooLarge(file.name));
       return;
     }
 
     setProgress({
       stage: "inspecting",
-      message: tr.readingPdf,
+      subStage: "inspecting",
+      message: tr.progressInspecting,
       processedItems: 0,
       totalItems: 1,
       percentage: 10,
@@ -125,20 +126,28 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
       const preflight = await preflightOverlayPdf(buffer, file.name);
 
       if (!preflight.isValid) {
-        setErrorMessage(preflight.error || "Invalid PDF document");
+        let localizedPreflightError = tr.errorInvalidPdf;
+        if (preflight.errorCode === "FILE_TOO_LARGE") {
+          localizedPreflightError = tr.errorFileTooLarge(file.name);
+        } else if (preflight.errorCode === "PASSWORD_REQUIRED") {
+          localizedPreflightError = tr.errorPasswordRequired;
+        } else if (preflight.errorCode === "ZERO_PAGES") {
+          localizedPreflightError = tr.errorZeroPages;
+        }
+        setErrorMessage(localizedPreflightError);
         setProgress(null);
         return;
       }
 
       if (preflight.signatureWarning) {
-        setSignatureWarning(preflight.signatureWarning);
+        setSignatureWarning(tr.signatureWarning);
       }
 
       setSourceFile(file);
       setSourceBuffer(buffer);
       setProgress(null);
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to load PDF file.");
+      setErrorMessage(tr.errorGenericLoad);
       setProgress(null);
     }
   };
@@ -161,7 +170,7 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
         imageFileName: file.name,
       }));
     } catch (err: any) {
-      setErrorMessage("Could not read uploaded logo image.");
+      setErrorMessage(tr.errorLogoRead);
     }
   };
 
@@ -172,7 +181,8 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
     setErrorMessage(null);
     setProgress({
       stage: "applying-overlay",
-      message: tr.applyingWatermark,
+      subStage: "embedding",
+      message: tr.progressPreparing,
       processedItems: 0,
       totalItems: 100,
       percentage: 20,
@@ -198,7 +208,7 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
           worker.terminate();
           workerRef.current = null;
         } else if (msg.type === "ERROR") {
-          setErrorMessage(`WORKER_EXECUTION_FAILED: ${msg.payload.error}`);
+          setErrorMessage(tr.errorWorkerFailed);
           setArtifact(null);
           setIsProcessing(false);
           setProgress(null);
@@ -208,7 +218,7 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
       };
 
       worker.onerror = () => {
-        setErrorMessage("WORKER_EXECUTION_FAILED: Off-thread Web Worker encountered a fatal error during watermark processing.");
+        setErrorMessage(tr.errorWorkerFailed);
         setArtifact(null);
         setIsProcessing(false);
         setProgress(null);
@@ -233,7 +243,7 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
         [bufferCopy]
       );
     } catch (err: any) {
-      setErrorMessage(`WORKER_EXECUTION_FAILED: ${err.message || "Failed to launch Web Worker."}`);
+      setErrorMessage(tr.errorWorkerFailed);
       setArtifact(null);
       setIsProcessing(false);
       setProgress(null);
@@ -334,7 +344,17 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  {progress.message}
+                  {progress.subStage === "stamping" && progress.currentPage && progress.totalPages
+                    ? tr.progressStamping(progress.currentPage, progress.totalPages)
+                    : progress.subStage === "embedding"
+                    ? tr.progressPreparing
+                    : progress.subStage === "inspecting" || progress.stage === "inspecting"
+                    ? tr.progressInspecting
+                    : progress.subStage === "verifying" || progress.stage === "verifying-output"
+                    ? tr.progressVerifying
+                    : progress.subStage === "ready" || progress.stage === "ready"
+                    ? tr.progressReady
+                    : progress.message}
                 </span>
                 <span className="text-xs font-mono font-semibold text-blue-400">
                   {progress.percentage}%

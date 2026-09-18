@@ -45,6 +45,9 @@ export interface PdfOverlayProgress {
   processedItems: number;
   totalItems: number;
   percentage: number;
+  currentPage?: number;
+  totalPages?: number;
+  subStage?: "inspecting" | "embedding" | "stamping" | "verifying" | "ready";
 }
 
 export type PreflightErrorCode =

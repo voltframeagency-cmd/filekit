@@ -37,12 +37,24 @@ export async function executePdfWatermark(
     stage: PdfOverlayProgress["stage"],
     message: string,
     processedItems: number,
-    totalItems: number
+    totalItems: number,
+    currentPage?: number,
+    totalPages?: number,
+    subStage?: PdfOverlayProgress["subStage"]
   ) => {
     if (onProgress) {
       const percentage =
         totalItems > 0 ? Math.round((processedItems / totalItems) * 100) : 0;
-      onProgress({ stage, message, processedItems, totalItems, percentage });
+      onProgress({
+        stage,
+        message,
+        processedItems,
+        totalItems,
+        percentage,
+        currentPage,
+        totalPages,
+        subStage,
+      });
     }
   };
 
@@ -65,7 +77,7 @@ export async function executePdfWatermark(
   }
 
   // Stage 1: Inspecting PDF
-  reportProgress("inspecting", "Inspecting PDF document...", 0, 100);
+  reportProgress("inspecting", "Inspecting PDF document...", 0, 100, undefined, undefined, "inspecting");
   const preflight = await preflightOverlayPdf(sourceBuffer, fileName);
   if (!preflight.isValid) {
     throw new Error(`Preflight failed: ${preflight.error}`);
@@ -87,7 +99,7 @@ export async function executePdfWatermark(
   }
 
   // Stage 2: Preparing watermark layer assets
-  reportProgress("applying-overlay", "Embedding watermark assets...", 15, 100);
+  reportProgress("applying-overlay", "Embedding watermark assets...", 15, 100, undefined, targetPageIndices.length, "embedding");
 
   let embeddedFont: any = null;
   let embeddedImage: any = null;
@@ -180,7 +192,10 @@ export async function executePdfWatermark(
       "applying-overlay",
       `Stamping page ${i + 1} of ${targetPageIndices.length}...`,
       pct,
-      100
+      100,
+      i + 1,
+      targetPageIndices.length,
+      "stamping"
     );
   }
 
@@ -188,7 +203,7 @@ export async function executePdfWatermark(
   const outputBytes = await pdfDoc.save();
 
   // Stage 4: Verifying PDF output
-  reportProgress("verifying-output", "Verifying watermarked PDF artifact...", 90, 100);
+  reportProgress("verifying-output", "Verifying watermarked PDF artifact...", 90, 100, undefined, totalPages, "verifying");
   const verification = await verifyPdfOverlayOutput(
     outputBytes,
     totalPages,
@@ -202,7 +217,7 @@ export async function executePdfWatermark(
   }
 
   // Stage 5: Ready
-  reportProgress("ready", "Watermark applied successfully.", 100, 100);
+  reportProgress("ready", "Watermark applied successfully.", 100, 100, undefined, totalPages, "ready");
 
   return {
     fileName,

@@ -68,6 +68,20 @@ export interface PdfOverlayI18nEntry {
   adjustWatermark: string;
   startOver: string;
   dismiss: string;
+
+  // Progress & Error States
+  progressInspecting: string;
+  progressPreparing: string;
+  progressStamping: (current: number, total: number) => string;
+  progressVerifying: string;
+  progressReady: string;
+  errorFileTooLarge: (fileName: string) => string;
+  errorInvalidPdf: string;
+  errorPasswordRequired: string;
+  errorZeroPages: string;
+  errorLogoRead: string;
+  errorWorkerFailed: string;
+  errorGenericLoad: string;
 }
 
 export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
@@ -127,7 +141,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Download Watermarked PDF",
     adjustWatermark: "Adjust Watermark",
     startOver: "Start Over",
-    dismiss: "Dismiss"
+    dismiss: "Dismiss",
+
+    progressInspecting: "Reading PDF document...",
+    progressPreparing: "Preparing watermark assets...",
+    progressStamping: (c,t)=>`Stamping page ${c} of ${t}...`,
+    progressVerifying: "Verifying watermarked PDF artifact...",
+    progressReady: "Watermark applied successfully.",
+    errorFileTooLarge: name=>`File "${name}" exceeds maximum supported size of 100 MB.`,
+    errorInvalidPdf: "Document is not a valid PDF.",
+    errorPasswordRequired: "Password-protected PDFs cannot be watermarked.",
+    errorZeroPages: "Document contains 0 pages.",
+    errorLogoRead: "Could not read uploaded logo image.",
+    errorWorkerFailed: "Watermark processing encountered an error.",
+    errorGenericLoad: "Failed to load PDF file."
   },
   es: {
     dropHere: "Suelta tu PDF aquí",
@@ -185,7 +212,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Descargar PDF con marca de agua",
     adjustWatermark: "Ajustar marca de agua",
     startOver: "Reiniciar",
-    dismiss: "Descartar"
+    dismiss: "Descartar",
+
+    progressInspecting: "Leyendo documento PDF...",
+    progressPreparing: "Preparando elementos de marca de agua...",
+    progressStamping: (c,t)=>`Estampando p\xE1gina ${c} de ${t}...`,
+    progressVerifying: "Verificando archivo PDF resultante...",
+    progressReady: "Marca de agua aplicada exitosamente.",
+    errorFileTooLarge: name=>`El archivo "${name}" supera el tama\xF1o m\xE1ximo permitido de 100 MB.`,
+    errorInvalidPdf: "El documento no es un PDF válido.",
+    errorPasswordRequired: "Los documentos protegidos con contraseña no se pueden marcar.",
+    errorZeroPages: "El documento contiene 0 páginas.",
+    errorLogoRead: "No se pudo leer la imagen del logotipo cargada.",
+    errorWorkerFailed: "El procesamiento de la marca de agua encontró un error.",
+    errorGenericLoad: "Error al cargar el archivo PDF."
   },
   "es-419": {
     dropHere: "Suelta tu archivo PDF aquí",
@@ -243,7 +283,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Descargar PDF con marca",
     adjustWatermark: "Ajustar marca",
     startOver: "Comenzar de nuevo",
-    dismiss: "Descartar"
+    dismiss: "Descartar",
+
+    progressInspecting: "Leyendo documento PDF...",
+    progressPreparing: "Preparando elementos de marca de agua...",
+    progressStamping: (c,t)=>`Estampando p\xE1gina ${c} de ${t}...`,
+    progressVerifying: "Verificando archivo PDF resultante...",
+    progressReady: "Marca de agua aplicada exitosamente.",
+    errorFileTooLarge: name=>`El archivo "${name}" supera el tama\xF1o m\xE1ximo de 100 MB.`,
+    errorInvalidPdf: "El documento no es un PDF válido.",
+    errorPasswordRequired: "Los archivos PDF protegidos con contraseña no se pueden marcar.",
+    errorZeroPages: "El documento contiene 0 páginas.",
+    errorLogoRead: "No se pudo leer la imagen del logo cargada.",
+    errorWorkerFailed: "El procesamiento de la marca de agua encontró un error.",
+    errorGenericLoad: "Error al cargar el archivo PDF."
   },
   de: {
     dropHere: "PDF-Datei hier ablegen",
@@ -301,7 +354,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "PDF mit Wasserzeichen herunterladen",
     adjustWatermark: "Wasserzeichen anpassen",
     startOver: "Neu starten",
-    dismiss: "Schließen"
+    dismiss: "Schließen",
+
+    progressInspecting: "PDF-Dokument wird gelesen...",
+    progressPreparing: "Wasserzeichen-Elemente werden vorbereitet...",
+    progressStamping: (c,t)=>`Stempeln von Seite ${c} von ${t}...`,
+    progressVerifying: "PDF-Ausgabedatei wird überprüft...",
+    progressReady: "Wasserzeichen erfolgreich angewendet.",
+    errorFileTooLarge: name=>`Datei "${name}" \xFCberschreitet die maximale Gr\xF6\xDFe von 100 MB.`,
+    errorInvalidPdf: "Das Dokument ist keine gültige PDF-Datei.",
+    errorPasswordRequired: "Passwortgeschützte PDFs können nicht mit einem Wasserzeichen versehen werden.",
+    errorZeroPages: "Dokument enthält 0 Seiten.",
+    errorLogoRead: "Hochgeladenes Logo-Bild konnte nicht gelesen werden.",
+    errorWorkerFailed: "Bei der Wasserzeichenverarbeitung ist ein Fehler aufgetreten.",
+    errorGenericLoad: "PDF-Datei konnte nicht geladen werden."
   },
   fr: {
     dropHere: "Déposez votre fichier PDF ici",
@@ -359,7 +425,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Télécharger le PDF avec filigrane",
     adjustWatermark: "Ajuster le filigrane",
     startOver: "Recommencer",
-    dismiss: "Ignorer"
+    dismiss: "Ignorer",
+
+    progressInspecting: "Lecture du document PDF...",
+    progressPreparing: "Préparation des éléments du filigrane...",
+    progressStamping: (c,t)=>`Marquage de la page ${c} sur ${t}...`,
+    progressVerifying: "Vérification du document PDF généré...",
+    progressReady: "Filigrane appliqué avec succès.",
+    errorFileTooLarge: name=>`Le fichier "${name}" d\xE9passe la taille maximale autoris\xE9e de 100 Mo.`,
+    errorInvalidPdf: "Le document n'est pas un PDF valide.",
+    errorPasswordRequired: "Les fichiers PDF protégés par mot de passe ne peuvent pas être filigranés.",
+    errorZeroPages: "Le document contient 0 page.",
+    errorLogoRead: "Impossible de lire le logo téléchargé.",
+    errorWorkerFailed: "Le traitement du filigrane a rencontré une erreur.",
+    errorGenericLoad: "Échec du chargement du fichier PDF."
   },
   pt: {
     dropHere: "Arraste o seu PDF para aqui",
@@ -417,7 +496,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Descarregar PDF com marca de água",
     adjustWatermark: "Ajustar marca de água",
     startOver: "Começar de novo",
-    dismiss: "Dispensar"
+    dismiss: "Dispensar",
+
+    progressInspecting: "A ler documento PDF...",
+    progressPreparing: "A preparar elementos da marca de água...",
+    progressStamping: (c,t)=>`A aplicar na p\xE1gina ${c} de ${t}...`,
+    progressVerifying: "A verificar ficheiro PDF resultante...",
+    progressReady: "Marca de água aplicada com sucesso.",
+    errorFileTooLarge: name=>`O ficheiro "${name}" excede o tamanho m\xE1ximo de 100 MB.`,
+    errorInvalidPdf: "O documento não é um ficheiro PDF válido.",
+    errorPasswordRequired: "PDFs protegidos com palavra-passe não podem receber marca de água.",
+    errorZeroPages: "O documento contém 0 páginas.",
+    errorLogoRead: "Não foi possível ler a imagem de logótipo enviada.",
+    errorWorkerFailed: "Ocorreu um erro no processamento da marca de água.",
+    errorGenericLoad: "Falha ao carregar o ficheiro PDF."
   },
   "pt-BR": {
     dropHere: "Arraste seu PDF para cá",
@@ -475,7 +567,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Baixar PDF com marca d'água",
     adjustWatermark: "Ajustar marca d'água",
     startOver: "Começar de novo",
-    dismiss: "Dispensar"
+    dismiss: "Dispensar",
+
+    progressInspecting: "Lendo documento PDF...",
+    progressPreparing: "Preparando elementos da marca d'água...",
+    progressStamping: (c,t)=>`Estampando p\xE1gina ${c} de ${t}...`,
+    progressVerifying: "Verificando arquivo PDF gerado...",
+    progressReady: "Marca d'água aplicada com sucesso.",
+    errorFileTooLarge: name=>`O arquivo "${name}" excede o limite m\xE1ximo de 100 MB.`,
+    errorInvalidPdf: "O documento não é um PDF válido.",
+    errorPasswordRequired: "PDFs protegidos por senha não podem receber marca d'água.",
+    errorZeroPages: "O documento contém 0 páginas.",
+    errorLogoRead: "Não foi possível ler a imagem do logo enviada.",
+    errorWorkerFailed: "O processamento da marca d'água encontrou um erro.",
+    errorGenericLoad: "Falha ao carregar o arquivo PDF."
   },
   it: {
     dropHere: "Trascina qui il tuo PDF",
@@ -533,7 +638,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Scarica PDF con filigrana",
     adjustWatermark: "Regola filigrana",
     startOver: "Ricomincia",
-    dismiss: "Ignora"
+    dismiss: "Ignora",
+
+    progressInspecting: "Lettura documento PDF...",
+    progressPreparing: "Preparazione elementi filigrana...",
+    progressStamping: (c,t)=>`Applicazione su pagina ${c} di ${t}...`,
+    progressVerifying: "Verifica del file PDF risultante...",
+    progressReady: "Filigrana applicata con successo.",
+    errorFileTooLarge: name=>`Il file "${name}" supera la dimensione massima consentita di 100 MB.`,
+    errorInvalidPdf: "Il documento non è un file PDF valido.",
+    errorPasswordRequired: "I PDF protetti da password non possono essere filigranati.",
+    errorZeroPages: "Il documento contiene 0 pagine.",
+    errorLogoRead: "Impossibile leggere l'immagine del logo caricata.",
+    errorWorkerFailed: "Si è verificato un errore durante l'applicazione della filigrana.",
+    errorGenericLoad: "Caricamento del file PDF non riuscito."
   },
   nl: {
     dropHere: "Sleep je PDF hierheen",
@@ -591,7 +709,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Download PDF met watermerk",
     adjustWatermark: "Watermerk aanpassen",
     startOver: "Opnieuw beginnen",
-    dismiss: "Sluiten"
+    dismiss: "Sluiten",
+
+    progressInspecting: "PDF-document lezen...",
+    progressPreparing: "Watermerk-elementen voorbereiden...",
+    progressStamping: (c,t)=>`Pagina ${c} van ${t} stempelen...`,
+    progressVerifying: "Resultaat PDF verifiëren...",
+    progressReady: "Watermerk succesvol toegepast.",
+    errorFileTooLarge: name=>`Bestand "${name}" overschrijdt maximale grootte van 100 MB.`,
+    errorInvalidPdf: "Het document is geen geldig PDF-bestand.",
+    errorPasswordRequired: "PDFs met wachtwoordbeveiliging kunnen niet van watermerk worden voorzien.",
+    errorZeroPages: "Document bevat 0 pagina's.",
+    errorLogoRead: "Kon geüploade logo-afbeelding niet lezen.",
+    errorWorkerFailed: "Er is een fout opgetreden bij de watermerkverwerking.",
+    errorGenericLoad: "PDF-bestand laden mislukt."
   },
   ca: {
     dropHere: "Arrossega el teu PDF aquí",
@@ -649,7 +780,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Descarrega el PDF amb marca d'aigua",
     adjustWatermark: "Ajusta la marca d'aigua",
     startOver: "Torna a començar",
-    dismiss: "Descarta"
+    dismiss: "Descarta",
+
+    progressInspecting: "Llegint document PDF...",
+    progressPreparing: "Preparant elements de marca d'aigua...",
+    progressStamping: (c,t)=>`Estampant p\xE0gina ${c} de ${t}...`,
+    progressVerifying: "Verificant fitxer PDF resultant...",
+    progressReady: "Marca d'aigua aplicada amb èxit.",
+    errorFileTooLarge: name=>`El fitxer "${name}" supera la mida m\xE0xima de 100 MB.`,
+    errorInvalidPdf: "El document no és un fitxer PDF vàlid.",
+    errorPasswordRequired: "Els PDF protegits amb contrasenya no es poden marcar.",
+    errorZeroPages: "El document conté 0 pàgines.",
+    errorLogoRead: "No s'ha pogut llegir el logotip carregat.",
+    errorWorkerFailed: "El processament de la marca d'aigua ha trobat un error.",
+    errorGenericLoad: "Error en carregar el fitxer PDF."
   },
   sv: {
     dropHere: "Släpp din PDF här",
@@ -707,7 +851,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Ladda ner vattenmärkt PDF",
     adjustWatermark: "Justera vattenmärke",
     startOver: "Börja om",
-    dismiss: "Avvisa"
+    dismiss: "Avvisa",
+
+    progressInspecting: "Läser PDF-dokument...",
+    progressPreparing: "Förbereder vattenstämpelelement...",
+    progressStamping: (c,t)=>`St\xE4mplar sida ${c} av ${t}...`,
+    progressVerifying: "Verifierar PDF-fil...",
+    progressReady: "Vattenstämpel applicerad.",
+    errorFileTooLarge: name=>`Filen "${name}" \xF6verskrider maxstorleken 100 MB.`,
+    errorInvalidPdf: "Dokumentet är inte en giltig PDF-fil.",
+    errorPasswordRequired: "Lösenordsskyddade PDF-filer kan inte förses med vattenstämpel.",
+    errorZeroPages: "Dokumentet innehåller 0 sidor.",
+    errorLogoRead: "Kunde inte läsa den uppladdade logotypen.",
+    errorWorkerFailed: "Ett fel uppstod vid applicering av vattenstämpel.",
+    errorGenericLoad: "Kunde inte läsa in PDF-filen."
   },
   da: {
     dropHere: "Slip din PDF her",
@@ -765,7 +922,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Download PDF med vandmærke",
     adjustWatermark: "Juster vandmærke",
     startOver: "Start forfra",
-    dismiss: "Afvis"
+    dismiss: "Afvis",
+
+    progressInspecting: "Læser PDF-dokument...",
+    progressPreparing: "Forbereder vandmærkeelementer...",
+    progressStamping: (c,t)=>`Stempler side ${c} af ${t}...`,
+    progressVerifying: "Bekræfter PDF-output...",
+    progressReady: "Vandmærke tilføjet.",
+    errorFileTooLarge: name=>`Filen "${name}" overskrider maksst\xF8rrelsen p\xE5 100 MB.`,
+    errorInvalidPdf: "Dokumentet er ikke en gyldig PDF-fil.",
+    errorPasswordRequired: "Adgangskodebeskyttede PDF-filer kan ikke vandmærkes.",
+    errorZeroPages: "Dokumentet indeholder 0 sider.",
+    errorLogoRead: "Kunne ikke indlæse det uploadede logo.",
+    errorWorkerFailed: "Vandmærkebehandling stødte på en fejl.",
+    errorGenericLoad: "Kunne ikke indlæse PDF-fil."
   },
   fi: {
     dropHere: "Pudota PDF-tiedostosi tähän",
@@ -823,7 +993,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Lataa vesileimattu PDF",
     adjustWatermark: "Säädä vesileimaa",
     startOver: "Aloita alusta",
-    dismiss: "Hylkää"
+    dismiss: "Hylkää",
+
+    progressInspecting: "Luetaan PDF-dokumenttia...",
+    progressPreparing: "Valmistellaan vesileimaa...",
+    progressStamping: (c,t)=>`Leimataan sivua ${c} / ${t}...`,
+    progressVerifying: "Tarkistetaan PDF-tulosta...",
+    progressReady: "Vesileima lisätty onnistuneesti.",
+    errorFileTooLarge: name=>`Tiedosto "${name}" ylitt\xE4\xE4 100 Mt:n enimm\xE4iskoon.`,
+    errorInvalidPdf: "Tiedosto ei ole kelvollinen PDF-dokumentti.",
+    errorPasswordRequired: "Salasanasuojattuun PDF-tiedostoon ei voi lisätä vesileimaa.",
+    errorZeroPages: "Dokumentti sisältää 0 sivua.",
+    errorLogoRead: "Ladattua logokuvaa ei voitu lukea.",
+    errorWorkerFailed: "Vesileiman käsittelyssä tapahtui virhe.",
+    errorGenericLoad: "PDF-tiedoston lataaminen epäonnistui."
   },
   no: {
     dropHere: "Slipp PDF-filen her",
@@ -881,7 +1064,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Last ned vannmerket PDF",
     adjustWatermark: "Juster vannmerke",
     startOver: "Start på nytt",
-    dismiss: "Avvis"
+    dismiss: "Avvis",
+
+    progressInspecting: "Leser PDF-dokument...",
+    progressPreparing: "Klargjør vannmerke-elementer...",
+    progressStamping: (c,t)=>`Stempler side ${c} av ${t}...`,
+    progressVerifying: "Verifiserer PDF-fil...",
+    progressReady: "Vannmerke lagt til.",
+    errorFileTooLarge: name=>`Filen "${name}" overskrider maksimal st\xF8rrelse p\xE5 100 MB.`,
+    errorInvalidPdf: "Dokumentet er ikke en gyldig PDF-fil.",
+    errorPasswordRequired: "Passordbeskyttede PDF-filer kan ikke merkes.",
+    errorZeroPages: "Dokumentet inneholder 0 sider.",
+    errorLogoRead: "Kunne ikke lese opplastet logobilde.",
+    errorWorkerFailed: "Vannmerkebehandling støtte på en feil.",
+    errorGenericLoad: "Kunne ikke laste inn PDF-filen."
   },
   pl: {
     dropHere: "Upuść plik PDF tutaj",
@@ -939,7 +1135,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Pobierz PDF ze znakiem wodnym",
     adjustWatermark: "Dostosuj znak wodny",
     startOver: "Zacznij od nowa",
-    dismiss: "Odrzuć"
+    dismiss: "Odrzuć",
+
+    progressInspecting: "Odczytywanie dokumentu PDF...",
+    progressPreparing: "Przygotowywanie znaku wodnego...",
+    progressStamping: (c,t)=>`Znakowanie strony ${c} z ${t}...`,
+    progressVerifying: "Weryfikacja pliku PDF...",
+    progressReady: "Znak wodny został pomyślnie dodany.",
+    errorFileTooLarge: name=>`Plik "${name}" przekracza maksymalny rozmiar 100 MB.`,
+    errorInvalidPdf: "Dokument nie jest prawidłowym plikiem PDF.",
+    errorPasswordRequired: "Pliki PDF chronione hasłem nie mogą być znakowane.",
+    errorZeroPages: "Dokument zawiera 0 stron.",
+    errorLogoRead: "Nie udało się odczytać przesłanego logo.",
+    errorWorkerFailed: "Wystąpił błąd podczas dodawania znaku wodnego.",
+    errorGenericLoad: "Nie udało się wczytać pliku PDF."
   },
   cs: {
     dropHere: "Sem přetáhněte svůj PDF soubor",
@@ -997,7 +1206,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Stáhnout PDF s vodoznakem",
     adjustWatermark: "Upravit vodoznak",
     startOver: "Začít znovu",
-    dismiss: "Zavřít"
+    dismiss: "Zavřít",
+
+    progressInspecting: "Načítání dokumentu PDF...",
+    progressPreparing: "Příprava vodoznaku...",
+    progressStamping: (c,t)=>`Ozna\u010Dov\xE1n\xED str\xE1nky ${c} z ${t}...`,
+    progressVerifying: "Ověřování výsledného PDF...",
+    progressReady: "Vodoznak byl úspěšně přidán.",
+    errorFileTooLarge: name=>`Soubor "${name}" p\u0159ekra\u010Duje maxim\xE1ln\xED povolenou velikost 100 MB.`,
+    errorInvalidPdf: "Dokument není platný soubor PDF.",
+    errorPasswordRequired: "PDF chráněné heslem nelze opatřit vodoznakem.",
+    errorZeroPages: "Dokument obsahuje 0 stránek.",
+    errorLogoRead: "Nepodařilo se načíst nahrané logo.",
+    errorWorkerFailed: "Při zpracování vodoznaku došlo k chybě.",
+    errorGenericLoad: "Načtení souboru PDF se nezdařilo."
   },
   hu: {
     dropHere: "Húzza ide a PDF fájlt",
@@ -1055,7 +1277,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Vízjeles PDF letöltése",
     adjustWatermark: "Vízjel módosítása",
     startOver: "Újrakezdés",
-    dismiss: "Elvetés"
+    dismiss: "Elvetés",
+
+    progressInspecting: "PDF dokumentum olvasása...",
+    progressPreparing: "Vízjel elemek előkészítése...",
+    progressStamping: (c,t)=>`Oldal b\xE9lyegz\xE9se: ${c} / ${t}...`,
+    progressVerifying: "Kész PDF ellenőrzése...",
+    progressReady: "Vízjel sikeresen elhelyezve.",
+    errorFileTooLarge: name=>`A(z) "${name}" f\xE1jl meghaladja a 100 MB m\xE9retkorl\xE1tot.`,
+    errorInvalidPdf: "A dokumentum nem érvényes PDF fájl.",
+    errorPasswordRequired: "A jelszóval védett PDF fájlok nem vízjelezhetők.",
+    errorZeroPages: "A dokumentum 0 oldalt tartalmaz.",
+    errorLogoRead: "Nem sikerült beolvasni a feltöltött logót.",
+    errorWorkerFailed: "Hiba történt a vízjel feldolgozása közben.",
+    errorGenericLoad: "Nem sikerült betölteni a PDF fájlt."
   },
   ro: {
     dropHere: "Trage fișierul PDF aici",
@@ -1113,7 +1348,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Descarcă PDF cu filigran",
     adjustWatermark: "Ajustează filigranul",
     startOver: "Începe din nou",
-    dismiss: "Închide"
+    dismiss: "Închide",
+
+    progressInspecting: "Se citește documentul PDF...",
+    progressPreparing: "Se pregătește filigranul...",
+    progressStamping: (c,t)=>`Se aplic\u0103 pe pagina ${c} din ${t}...`,
+    progressVerifying: "Se verifică documentul PDF final...",
+    progressReady: "Filigran aplicat cu succes.",
+    errorFileTooLarge: name=>`Fi\u0219ierul "${name}" dep\u0103\u0219e\u0219te dimensiunea maxim\u0103 de 100 MB.`,
+    errorInvalidPdf: "Documentul nu este un fișier PDF valid.",
+    errorPasswordRequired: "Fișierele PDF protejate cu parolă nu pot fi filigranate.",
+    errorZeroPages: "Documentul conține 0 pagini.",
+    errorLogoRead: "Nu s-a putut citi imaginea siglei încărcate.",
+    errorWorkerFailed: "A apărut o eroare la procesarea filigranului.",
+    errorGenericLoad: "Încărcarea fișierului PDF a eșuat."
   },
   bg: {
     dropHere: "Пуснете вашия PDF тук",
@@ -1171,7 +1419,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Изтегляне на PDF с воден знак",
     adjustWatermark: "Коригиране на воден знак",
     startOver: "Започнете отначало",
-    dismiss: "Затвори"
+    dismiss: "Затвори",
+
+    progressInspecting: "Четене на PDF документа...",
+    progressPreparing: "Подготовка на водния знак...",
+    progressStamping: (c,t)=>`\u041C\u0430\u0440\u043A\u0438\u0440\u0430\u043D\u0435 \u043D\u0430 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0430 ${c} \u043E\u0442 ${t}...`,
+    progressVerifying: "Проверка на готовия PDF...",
+    progressReady: "Водният знак е приложен успешно.",
+    errorFileTooLarge: name=>`\u0424\u0430\u0439\u043B\u044A\u0442 "${name}" \u043D\u0430\u0434\u0432\u0438\u0448\u0430\u0432\u0430 \u043C\u0430\u043A\u0441\u0438\u043C\u0430\u043B\u043D\u0438\u044F \u0440\u0430\u0437\u043C\u0435\u0440 \u043E\u0442 100 MB.`,
+    errorInvalidPdf: "Документът не е валиден PDF файл.",
+    errorPasswordRequired: "Защитени с парола PDF файлове не могат да бъдат маркирани.",
+    errorZeroPages: "Документът съдържа 0 страници.",
+    errorLogoRead: "Каченото изображение на лого не можа да бъде прочетено.",
+    errorWorkerFailed: "Възникна грешка при обработката на водния знак.",
+    errorGenericLoad: "Неуспешно зареждане на PDF файла."
   },
   el: {
     dropHere: "Σύρετε το PDF σας εδώ",
@@ -1229,7 +1490,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Λήψη υδατογραφημένου PDF",
     adjustWatermark: "Προσαρμογή υδατογραφήματος",
     startOver: "Έναρξη από την αρχή",
-    dismiss: "Απόρριψη"
+    dismiss: "Απόρριψη",
+
+    progressInspecting: "Ανάγνωση εγγράφου PDF...",
+    progressPreparing: "Προετοιμασία στοιχείων υδατογραφήματος...",
+    progressStamping: (c,t)=>`\u03A5\u03B4\u03B1\u03C4\u03BF\u03B3\u03C1\u03AC\u03C6\u03B7\u03C3\u03B7 \u03C3\u03B5\u03BB\u03AF\u03B4\u03B1\u03C2 ${c} \u03B1\u03C0\u03CC ${t}...`,
+    progressVerifying: "Επαλήθευση αρχείου PDF...",
+    progressReady: "Το υδατογράφημα εφαρμόστηκε επιτυχώς.",
+    errorFileTooLarge: name=>`\u03A4\u03BF \u03B1\u03C1\u03C7\u03B5\u03AF\u03BF "${name}" \u03C5\u03C0\u03B5\u03C1\u03B2\u03B1\u03AF\u03BD\u03B5\u03B9 \u03C4\u03BF \u03BC\u03AD\u03B3\u03B9\u03C3\u03C4\u03BF \u03CC\u03C1\u03B9\u03BF \u03C4\u03C9\u03BD 100 MB.`,
+    errorInvalidPdf: "Το έγγραφο δεν είναι έγκυρο αρχείο PDF.",
+    errorPasswordRequired: "Τα αρχεία PDF με κωδικό πρόσβασης δεν υποστηρίζονται.",
+    errorZeroPages: "Το έγγραφο περιέχει 0 σελίδες.",
+    errorLogoRead: "Δεν ήταν δυνατή η ανάγνωση της εικόνας λογοτύπου.",
+    errorWorkerFailed: "Παρουσιάστηκε σφάλμα κατά την επεξεργασία του υδατογραφήματος.",
+    errorGenericLoad: "Αποτυχία φόρτωσης του αρχείου PDF."
   },
   sk: {
     dropHere: "Presuňte PDF sem",
@@ -1287,7 +1561,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Stiahnuť PDF s vodoznakom",
     adjustWatermark: "Upraviť vodoznak",
     startOver: "Začať odznova",
-    dismiss: "Zavrieť"
+    dismiss: "Zavrieť",
+
+    progressInspecting: "Čítanie dokumentu PDF...",
+    progressPreparing: "Príprava vodoznaku...",
+    progressStamping: (c,t)=>`Ozna\u010Dovanie strany ${c} z ${t}...`,
+    progressVerifying: "Overovanie výsledného PDF...",
+    progressReady: "Vodoznak bol úspešne aplikovaný.",
+    errorFileTooLarge: name=>`S\xFAbor "${name}" prekra\u010Duje maxim\xE1lnu ve\u013Ekos\u0165 100 MB.`,
+    errorInvalidPdf: "Dokument nie je platný súbor PDF.",
+    errorPasswordRequired: "PDF chránené heslom nie je možné opatriť vodoznakom.",
+    errorZeroPages: "Dokument obsahuje 0 strán.",
+    errorLogoRead: "Nepodarilo sa načítať nahrané logo.",
+    errorWorkerFailed: "Pri spracovaní vodoznaku sa vyskytla chyba.",
+    errorGenericLoad: "Načítanie súboru PDF zlyhalo."
   },
   sl: {
     dropHere: "Povlecite PDF sem",
@@ -1345,7 +1632,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Prenesi PDF z vodnim žigom",
     adjustWatermark: "Prilagodi vodni žig",
     startOver: "Začni znova",
-    dismiss: "Opusti"
+    dismiss: "Opusti",
+
+    progressInspecting: "Branje dokumenta PDF...",
+    progressPreparing: "Priprava vodnega znaka...",
+    progressStamping: (c,t)=>`Ozna\u010Devanje strani ${c} od ${t}...`,
+    progressVerifying: "Preverjanje izhodnega PDF...",
+    progressReady: "Vodni znak je bil uspešno uveljavljen.",
+    errorFileTooLarge: name=>`Datoteka "${name}" presega najve\u010Djo velikost 100 MB.`,
+    errorInvalidPdf: "Dokument ni veljavna datoteka PDF.",
+    errorPasswordRequired: "Datotek PDF, zaščitenih z geslom, ni mogoče opremiti z vodnim znakom.",
+    errorZeroPages: "Dokument vsebuje 0 strani.",
+    errorLogoRead: "Naložene slike logotipa ni bilo mogoče prebrati.",
+    errorWorkerFailed: "Pri obdelavi vodnega znaka je prišlo do napake.",
+    errorGenericLoad: "Nalaganje datoteke PDF ni uspelo."
   },
   ru: {
     dropHere: "Перетащите PDF сюда",
@@ -1403,7 +1703,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Скачать PDF с водяным знаком",
     adjustWatermark: "Настроить водяной знак",
     startOver: "Начать сначала",
-    dismiss: "Закрыть"
+    dismiss: "Закрыть",
+
+    progressInspecting: "Чтение документа PDF...",
+    progressPreparing: "Подготовка водяного знака...",
+    progressStamping: (c,t)=>`\u041D\u0430\u043D\u0435\u0441\u0435\u043D\u0438\u0435 \u043D\u0430 \u0441\u0442\u0440\u0430\u043D\u0438\u0446\u0443 ${c} \u0438\u0437 ${t}...`,
+    progressVerifying: "Проверка готового PDF-файла...",
+    progressReady: "Водяной знак успешно добавлен.",
+    errorFileTooLarge: name=>`\u0424\u0430\u0439\u043B "${name}" \u043F\u0440\u0435\u0432\u044B\u0448\u0430\u0435\u0442 \u043B\u0438\u043C\u0438\u0442 \u0432 100 \u041C\u0411.`,
+    errorInvalidPdf: "Документ не является корректным PDF-файлом.",
+    errorPasswordRequired: "PDF-файлы, защищенные паролем, не поддерживаются.",
+    errorZeroPages: "Документ содержит 0 страниц.",
+    errorLogoRead: "Не удалось прочитать загруженное изображение логотипа.",
+    errorWorkerFailed: "Произошла ошибка при обработке водяного знака.",
+    errorGenericLoad: "Не удалось загрузить PDF-файл."
   },
   uk: {
     dropHere: "Перетягніть PDF сюди",
@@ -1461,7 +1774,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Завантажити PDF з водяним знаком",
     adjustWatermark: "Налаштувати водяний знак",
     startOver: "Почати спочатку",
-    dismiss: "Закрити"
+    dismiss: "Закрити",
+
+    progressInspecting: "Зчитування документа PDF...",
+    progressPreparing: "Підготовка водяного знака...",
+    progressStamping: (c,t)=>`\u041D\u0430\u043D\u0435\u0441\u0435\u043D\u043D\u044F \u043D\u0430 \u0441\u0442\u043E\u0440\u0456\u043D\u043A\u0443 ${c} \u0437 ${t}...`,
+    progressVerifying: "Перевірка готового PDF-файлу...",
+    progressReady: "Водяний знак успішно застосовано.",
+    errorFileTooLarge: name=>`\u0424\u0430\u0439\u043B "${name}" \u043F\u0435\u0440\u0435\u0432\u0438\u0449\u0443\u0454 \u043B\u0456\u043C\u0456\u0442 \u0443 100 \u041C\u0411.`,
+    errorInvalidPdf: "Документ не є дійсним файлом PDF.",
+    errorPasswordRequired: "PDF-файли, захищені паролем, не підтримуються.",
+    errorZeroPages: "Документ містить 0 сторінок.",
+    errorLogoRead: "Не вдалося прочитати завантажене зображення логотипу.",
+    errorWorkerFailed: "Виникла помилка під час обробки водяного знака.",
+    errorGenericLoad: "Не вдалося завантажити файл PDF."
   },
   tr: {
     dropHere: "PDF dosyanızı buraya bırakın",
@@ -1519,7 +1845,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Filigranlı PDF'yi İndir",
     adjustWatermark: "Filigranı Ayarla",
     startOver: "Yeniden Başla",
-    dismiss: "Kapat"
+    dismiss: "Kapat",
+
+    progressInspecting: "PDF belgesi okunuyor...",
+    progressPreparing: "Filigran varlıkları hazırlanıyor...",
+    progressStamping: (c,t)=>`Sayfa ${c} / ${t} damgalan\u0131yor...`,
+    progressVerifying: "PDF çıktısı doğrulanıyor...",
+    progressReady: "Filigran başarıyla uygulandı.",
+    errorFileTooLarge: name=>`"${name}" dosyas\u0131 izin verilen 100 MB boyutunu a\u015F\u0131yor.`,
+    errorInvalidPdf: "Belge geçerli bir PDF dosyası değil.",
+    errorPasswordRequired: "Parola korumalı PDF dosyalarına filigran eklenemez.",
+    errorZeroPages: "Belge 0 sayfa içeriyor.",
+    errorLogoRead: "Yüklenen logo görseli okunamadı.",
+    errorWorkerFailed: "Filigran işlemi sırasında bir hata oluştu.",
+    errorGenericLoad: "PDF dosyası yüklenemedi."
   },
   ar: {
     dropHere: "أسقط ملف PDF هنا",
@@ -1577,7 +1916,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "تحميل PDF بعلامة مائية",
     adjustWatermark: "تعديل العلامة المائية",
     startOver: "البدء من جديد",
-    dismiss: "إغلاق"
+    dismiss: "إغلاق",
+
+    progressInspecting: "جارٍ قراءة مستند PDF...",
+    progressPreparing: "جارٍ تجهيز العلامة المائية...",
+    progressStamping: (c,t)=>`\u062C\u0627\u0631\u064D \u062A\u0637\u0628\u064A\u0642 \u0627\u0644\u0639\u0644\u0627\u0645\u0629 \u0639\u0644\u0649 \u0627\u0644\u0635\u0641\u062D\u0629 ${c} \u0645\u0646 ${t}...`,
+    progressVerifying: "جارٍ التحقق من ملف PDF الناتج...",
+    progressReady: "تم تطبيق العلامة المائية بنجاح.",
+    errorFileTooLarge: name=>`\u064A\u062A\u062C\u0627\u0648\u0632 \u0627\u0644\u0645\u0644\u0641 "${name}" \u0627\u0644\u062D\u062F \u0627\u0644\u0623\u0642\u0635\u0649 \u0627\u0644\u0645\u0633\u0645\u0648\u062D \u0628\u0647 \u0648\u0647\u0648 100 \u0645\u064A\u063A\u0627\u0628\u0627\u064A\u062A.`,
+    errorInvalidPdf: "المستند ليس ملف PDF صالحاً.",
+    errorPasswordRequired: "لا يمكن تطبيق علامة مائية على ملفات PDF المحمية بكلمة مرور.",
+    errorZeroPages: "المستند يحتوي على 0 صفحات.",
+    errorLogoRead: "تعذر قراءة صورة الشعار التي تم تحميلها.",
+    errorWorkerFailed: "حدث خطأ أثناء معالجة العلامة المائية.",
+    errorGenericLoad: "فشل تحميل ملف PDF."
   },
   he: {
     dropHere: "גרור את קובץ ה-PDF לכאן",
@@ -1635,7 +1987,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "הורד PDF עם סימן מים",
     adjustWatermark: "התאם סימן מים",
     startOver: "התחל מחדש",
-    dismiss: "סגור"
+    dismiss: "סגור",
+
+    progressInspecting: "קורא מסמך PDF...",
+    progressPreparing: "מכין רכיבי סימן מים...",
+    progressStamping: (c,t)=>`\u05DE\u05D7\u05D9\u05DC \u05E2\u05DC \u05E2\u05DE\u05D5\u05D3 ${c} \u05DE\u05EA\u05D5\u05DA ${t}...`,
+    progressVerifying: "מאמת קובץ PDF שנוצר...",
+    progressReady: "סימן המים הוחל בהצלחה.",
+    errorFileTooLarge: name=>`\u05D4\u05E7\u05D5\u05D1\u05E5 "${name}" \u05D7\u05D5\u05E8\u05D2 \u05DE\u05D4\u05D2\u05D5\u05D3\u05DC \u05D4\u05DE\u05E8\u05D1\u05D9 \u05E9\u05DC 100 MB.`,
+    errorInvalidPdf: "המסמך אינו קובץ PDF תקין.",
+    errorPasswordRequired: "לא ניתן להוסיף סימן מים לקובצי PDF המוגנים בסיסמה.",
+    errorZeroPages: "המסמך מכיל 0 עמודים.",
+    errorLogoRead: "לא ניתן לקרוא את תמונת הלוגו שהועלתה.",
+    errorWorkerFailed: "אירעה שגיאה במהלך עיבוד סימן המים.",
+    errorGenericLoad: "טעינת קובץ ה-PDF נכשלה."
   },
   hi: {
     dropHere: "अपनी PDF फ़ाइल यहाँ छोड़ें",
@@ -1693,7 +2058,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "वॉटरमार्क युक्त PDF डाउनलोड करें",
     adjustWatermark: "वॉटरमार्क समायोजित करें",
     startOver: "पुनः प्रारंभ करें",
-    dismiss: "खारिज करें"
+    dismiss: "खारिज करें",
+
+    progressInspecting: "PDF दस्तावेज़ पढ़ा जा रहा है...",
+    progressPreparing: "वॉटरमार्क घटक तैयार किए जा रहे हैं...",
+    progressStamping: (c,t)=>`\u092A\u0943\u0937\u094D\u0920 ${c} / ${t} \u092A\u0930 \u0935\u0949\u091F\u0930\u092E\u093E\u0930\u094D\u0915 \u0932\u0917\u093E\u092F\u093E \u091C\u093E \u0930\u0939\u093E \u0939\u0948...`,
+    progressVerifying: "तैयार PDF की पुष्टि की जा रही है...",
+    progressReady: "वॉटरमार्क सफलतापूर्वक लागू किया गया।",
+    errorFileTooLarge: name=>`\u092B\u093C\u093E\u0907\u0932 "${name}" 100 MB \u0915\u0940 \u0905\u0927\u093F\u0915\u0924\u092E \u0938\u0940\u092E\u093E \u0938\u0947 \u0905\u0927\u093F\u0915 \u0939\u0948\u0964`,
+    errorInvalidPdf: "दस्तावेज़ एक मान्य PDF फ़ाइल नहीं है।",
+    errorPasswordRequired: "पासवर्ड-संरक्षित PDF पर वॉटरमार्क नहीं लगाया जा सकता।",
+    errorZeroPages: "दस्तावेज़ में 0 पृष्ठ हैं।",
+    errorLogoRead: "अपलोड की गई लोगो छवि को पढ़ा नहीं जा सका।",
+    errorWorkerFailed: "वॉटरमार्क प्रसंस्करण में त्रुटि आई।",
+    errorGenericLoad: "PDF फ़ाइल लोड करने में विफल।"
   },
   id: {
     dropHere: "Tarik file PDF Anda ke sini",
@@ -1751,7 +2129,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Unduh PDF dengan Tanda Air",
     adjustWatermark: "Sesuaikan Tanda Air",
     startOver: "Mulai Ulang",
-    dismiss: "Tutup"
+    dismiss: "Tutup",
+
+    progressInspecting: "Membaca dokumen PDF...",
+    progressPreparing: "Menyiapkan aset watermark...",
+    progressStamping: (c,t)=>`Menstempel halaman ${c} dari ${t}...`,
+    progressVerifying: "Memverifikasi file PDF hasil...",
+    progressReady: "Watermark berhasil diterapkan.",
+    errorFileTooLarge: name=>`File "${name}" melebihi ukuran maksimum 100 MB.`,
+    errorInvalidPdf: "Dokumen bukan file PDF yang valid.",
+    errorPasswordRequired: "PDF yang dilindungi kata sandi tidak dapat diberi watermark.",
+    errorZeroPages: "Dokumen berisi 0 halaman.",
+    errorLogoRead: "Gagal membaca gambar logo yang diunggah.",
+    errorWorkerFailed: "Pemrosesan watermark mengalami kesalahan.",
+    errorGenericLoad: "Gagal memuat file PDF."
   },
   ms: {
     dropHere: "Lepaskan dokumen PDF di sini",
@@ -1809,7 +2200,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Muat Turun PDF Bertera Air",
     adjustWatermark: "Laraskan Tera Air",
     startOver: "Mula Semula",
-    dismiss: "Tutup"
+    dismiss: "Tutup",
+
+    progressInspecting: "Membaca dokumen PDF...",
+    progressPreparing: "Menyediakan elemen tera air...",
+    progressStamping: (c,t)=>`Menyeterika halaman ${c} daripada ${t}...`,
+    progressVerifying: "Mengesahkan fail PDF hasil...",
+    progressReady: "Tera air berjaya digunakan.",
+    errorFileTooLarge: name=>`Fail "${name}" melebihi saiz maksimum 100 MB.`,
+    errorInvalidPdf: "Dokumen bukan fail PDF yang sah.",
+    errorPasswordRequired: "Fail PDF yang dilindungi kata laluan tidak boleh diberi tera air.",
+    errorZeroPages: "Dokumen mengandungi 0 halaman.",
+    errorLogoRead: "Tidak dapat membaca imej logo yang dimuat naik.",
+    errorWorkerFailed: "Pemprosesan tera air menghadapi ralat.",
+    errorGenericLoad: "Gagal memuatkan fail PDF."
   },
   th: {
     dropHere: "ลากไฟล์ PDF มาวางที่นี่",
@@ -1867,7 +2271,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "ดาวน์โหลด PDF พร้อมลายน้ำ",
     adjustWatermark: "ปรับแต่งลายน้ำ",
     startOver: "เริ่มต้นใหม่",
-    dismiss: "ปิด"
+    dismiss: "ปิด",
+
+    progressInspecting: "กำลังอ่านเอกสาร PDF...",
+    progressPreparing: "กำลังเตรียมองค์ประกอบลายน้ำ...",
+    progressStamping: (c,t)=>`\u0E01\u0E33\u0E25\u0E31\u0E07\u0E43\u0E2A\u0E48\u0E25\u0E32\u0E22\u0E19\u0E49\u0E33\u0E2B\u0E19\u0E49\u0E32 ${c} \u0E08\u0E32\u0E01 ${t}...`,
+    progressVerifying: "กำลังตรวจสอบไฟล์ PDF ผลลัพธ์...",
+    progressReady: "ใส่ลายน้ำสำเร็จแล้ว",
+    errorFileTooLarge: name=>`\u0E44\u0E1F\u0E25\u0E4C "${name}" \u0E21\u0E35\u0E02\u0E19\u0E32\u0E14\u0E40\u0E01\u0E34\u0E19\u0E02\u0E35\u0E14\u0E08\u0E33\u0E01\u0E31\u0E14\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 100 MB`,
+    errorInvalidPdf: "เอกสารไม่ใช่ไฟล์ PDF ที่ถูกต้อง",
+    errorPasswordRequired: "ไม่สามารถใส่ลายน้ำในไฟล์ PDF ที่ป้องกันด้วยรหัสผ่านได้",
+    errorZeroPages: "เอกสารมี 0 หน้า",
+    errorLogoRead: "ไม่สามารถอ่านรูปภาพโลโก้ที่อัปโหลดได้",
+    errorWorkerFailed: "เกิดข้อผิดพลาดระหว่างการประมวลผลลายน้ำ",
+    errorGenericLoad: "โหลดไฟล์ PDF ไม่สำเร็จ"
   },
   vi: {
     dropHere: "Kéo thả tệp PDF vào đây",
@@ -1925,7 +2342,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Tải xuống PDF có hình mờ",
     adjustWatermark: "Điều chỉnh hình mờ",
     startOver: "Bắt đầu lại",
-    dismiss: "Bỏ qua"
+    dismiss: "Bỏ qua",
+
+    progressInspecting: "Đang đọc tài liệu PDF...",
+    progressPreparing: "Đang chuẩn bị các thành phần hình mờ...",
+    progressStamping: (c,t)=>`\u0110ang \u0111\xF3ng d\u1EA5u trang ${c} tr\xEAn ${t}...`,
+    progressVerifying: "Đang xác minh tệp PDF kết quả...",
+    progressReady: "Đã áp dụng hình mờ thành công.",
+    errorFileTooLarge: name=>`T\u1EC7p "${name}" v\u01B0\u1EE3t qu\xE1 k\xEDch th\u01B0\u1EDBc t\u1ED1i \u0111a 100 MB.`,
+    errorInvalidPdf: "Tài liệu không phải là tệp PDF hợp lệ.",
+    errorPasswordRequired: "Không thể thêm hình mờ vào tệp PDF có mật khẩu bảo vệ.",
+    errorZeroPages: "Tài liệu chứa 0 trang.",
+    errorLogoRead: "Không thể đọc hình ảnh biểu trưng đã tải lên.",
+    errorWorkerFailed: "Quá trình xử lý hình mờ gặp lỗi.",
+    errorGenericLoad: "Không thể tải tệp PDF."
   },
   fil: {
     dropHere: "I-drop ang dokumentong PDF dito",
@@ -1983,7 +2413,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "I-download ang Watermarked PDF",
     adjustWatermark: "Ayusin ang Watermark",
     startOver: "Magsimula Muli",
-    dismiss: "I-dismiss"
+    dismiss: "I-dismiss",
+
+    progressInspecting: "Binabasa ang dokumentong PDF...",
+    progressPreparing: "Inihahanda ang mga watermark element...",
+    progressStamping: (c,t)=>`Tinatatakan ang pahina ${c} ng ${t}...`,
+    progressVerifying: "Sinusuri ang nabuong PDF...",
+    progressReady: "Matagumpay na nailapat ang watermark.",
+    errorFileTooLarge: name=>`Ang file na "${name}" ay lumampas sa 100 MB.`,
+    errorInvalidPdf: "Ang dokumento ay hindi wastong PDF file.",
+    errorPasswordRequired: "Ang mga PDF na may password ay hindi maaaring lagyan ng watermark.",
+    errorZeroPages: "Naglalaman ng 0 pahina ang dokumento.",
+    errorLogoRead: "Hindi mabasa ang na-upload na larawan ng logo.",
+    errorWorkerFailed: "Nagka-error sa pagpoproseso ng watermark.",
+    errorGenericLoad: "Nabigong i-load ang PDF file."
   },
   ja: {
     dropHere: "ここにPDFファイルをドロップ",
@@ -2041,7 +2484,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "透かし入りPDFをダウンロード",
     adjustWatermark: "透かしを調整",
     startOver: "最初からやり直す",
-    dismiss: "閉じる"
+    dismiss: "閉じる",
+
+    progressInspecting: "PDFドキュメントを読み込み中...",
+    progressPreparing: "透かし要素を準備中...",
+    progressStamping: (c,t)=>`\u30DA\u30FC\u30B8 ${c} / ${t} \u306B\u900F\u304B\u3057\u3092\u9069\u7528\u4E2D...`,
+    progressVerifying: "出力PDFファイルを検証中...",
+    progressReady: "透かしが正常に適用されました。",
+    errorFileTooLarge: name=>`\u30D5\u30A1\u30A4\u30EB\u300C${name}\u300D\u306F\u6700\u5927\u5236\u9650\u306E100 MB\u3092\u8D85\u3048\u3066\u3044\u307E\u3059\u3002`,
+    errorInvalidPdf: "ドキュメントは有効なPDFファイルではありません。",
+    errorPasswordRequired: "パスワードで保護されたPDFには透かしを追加できません。",
+    errorZeroPages: "ドキュメントのページ数が0です。",
+    errorLogoRead: "アップロードされたロゴ画像を読み込めませんでした。",
+    errorWorkerFailed: "透かし処理中にエラーが発生しました。",
+    errorGenericLoad: "PDFファイルの読み込みに失敗しました。"
   },
   ko: {
     dropHere: "여기에 PDF 파일을 드롭하세요",
@@ -2099,7 +2555,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "워터마크 PDF 다운로드",
     adjustWatermark: "워터마크 조정",
     startOver: "다시 시작",
-    dismiss: "닫기"
+    dismiss: "닫기",
+
+    progressInspecting: "PDF 문서 읽는 중...",
+    progressPreparing: "워터마크 요소 준비 중...",
+    progressStamping: (c,t)=>`\uD398\uC774\uC9C0 ${c} / ${t} \uC6CC\uD130\uB9C8\uD06C \uC801\uC6A9 \uC911...`,
+    progressVerifying: "결과 PDF 파일 검증 중...",
+    progressReady: "워터마크가 성공적으로 적용되었습니다.",
+    errorFileTooLarge: name=>`\uD30C\uC77C "${name}"\uC774(\uAC00) \uCD5C\uB300 100MB \uD06C\uAE30\uB97C \uCD08\uACFC\uD569\uB2C8\uB2E4.`,
+    errorInvalidPdf: "문서가 유효한 PDF 파일이 아닙니다.",
+    errorPasswordRequired: "비밀번호로 보호된 PDF에는 워터마크를 추가할 수 없습니다.",
+    errorZeroPages: "문서에 페이지가 0개 포함되어 있습니다.",
+    errorLogoRead: "업로드된 로고 이미지를 읽을 수 없습니다.",
+    errorWorkerFailed: "워터마크 처리 중 오류가 발생했습니다.",
+    errorGenericLoad: "PDF 파일을 불러오지 못했습니다."
   },
   "zh-CN": {
     dropHere: "将 PDF 文件拖放到此处",
@@ -2157,7 +2626,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "下载水印 PDF",
     adjustWatermark: "调整水印",
     startOver: "重新开始",
-    dismiss: "关闭"
+    dismiss: "关闭",
+
+    progressInspecting: "正在读取 PDF 文档...",
+    progressPreparing: "正在准备水印素材...",
+    progressStamping: (c,t)=>`\u6B63\u5728\u52A0\u76D6\u7B2C ${c} / ${t} \u9875\u6C34\u5370...`,
+    progressVerifying: "正在验证生成的 PDF 文件...",
+    progressReady: "水印已成功添加。",
+    errorFileTooLarge: name=>`\u6587\u4EF6 "${name}" \u8D85\u8FC7 100 MB \u7684\u6700\u5927\u652F\u6301\u5927\u5C0F\u3002`,
+    errorInvalidPdf: "文档不是有效的 PDF 文件。",
+    errorPasswordRequired: "无法为设置了密码保护的 PDF 添加水印。",
+    errorZeroPages: "文档包含 0 个页面。",
+    errorLogoRead: "无法读取上传的标志图片。",
+    errorWorkerFailed: "水印处理遇到错误。",
+    errorGenericLoad: "加载 PDF 文件失败。"
   },
   "zh-TW": {
     dropHere: "將 PDF 檔案拖放到此處",
@@ -2215,7 +2697,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "下載浮水印 PDF",
     adjustWatermark: "調整浮水印",
     startOver: "重新開始",
-    dismiss: "關閉"
+    dismiss: "關閉",
+
+    progressInspecting: "正在讀取 PDF 文件...",
+    progressPreparing: "正在準備浮水印素材...",
+    progressStamping: (c,t)=>`\u6B63\u5728\u5957\u7528\u7B2C ${c} / ${t} \u9801\u6D6E\u6C34\u5370...`,
+    progressVerifying: "正在驗證產生的 PDF 檔案...",
+    progressReady: "浮水印已成功套用。",
+    errorFileTooLarge: name=>`\u6A94\u6848\u300C${name}\u300D\u8D85\u904E 100 MB \u7684\u6700\u5927\u652F\u63F4\u5927\u5C0F\u3002`,
+    errorInvalidPdf: "文件不是有效的 PDF 檔案。",
+    errorPasswordRequired: "無法為受密碼保護的 PDF 套用浮水印。",
+    errorZeroPages: "文件包含 0 個頁面。",
+    errorLogoRead: "無法讀取上傳的標誌圖片。",
+    errorWorkerFailed: "浮水印處理遇到錯誤。",
+    errorGenericLoad: "載入 PDF 檔案失敗。"
   },
   lv: {
     dropHere: "Nometiet savu PDF failu šeit",
@@ -2273,7 +2768,20 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Lejupielādēt PDF ar ūdenszīmi",
     adjustWatermark: "Pielāgot ūdenszīmi",
     startOver: "Sākt no jauna",
-    dismiss: "Aizvērt"
+    dismiss: "Aizvērt",
+
+    progressInspecting: "Lasa PDF dokumentu...",
+    progressPreparing: "Sagatavo ūdenszīmes elementus...",
+    progressStamping: (c,t)=>`Z\u012Bmogo lapu ${c} no ${t}...`,
+    progressVerifying: "Pārbauda ģenerēto PDF failu...",
+    progressReady: "Ūdenszīme veiksmīgi pievienota.",
+    errorFileTooLarge: name=>`Fails "${name}" p\u0101rsniedz 100 MB maksim\u0101lo izm\u0113ru.`,
+    errorInvalidPdf: "Dokuments nav derīgs PDF fails.",
+    errorPasswordRequired: "Ar paroli aizsargātiem PDF failiem nevar pievienot ūdenszīmi.",
+    errorZeroPages: "Dokumentā ir 0 lapas.",
+    errorLogoRead: "Neizdevās nolasīt augšupielādēto logotipa attēlu.",
+    errorWorkerFailed: "Ūdenszīmes apstrādes laikā radās kļūda.",
+    errorGenericLoad: "Neizdevās ielādēt PDF failu."
   },
   lt: {
     dropHere: "Nutempkite savo PDF failą čia",
@@ -2331,6 +2839,19 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     downloadWatermarkedPdf: "Atsisiųsti PDF su vandens ženklu",
     adjustWatermark: "Koreguoti vandens ženklą",
     startOver: "Pradėti iš naujo",
-    dismiss: "Atmesti"
+    dismiss: "Atmesti",
+
+    progressInspecting: "Skaitomas PDF dokumentas...",
+    progressPreparing: "Ruošiami vandens ženklo elementai...",
+    progressStamping: (c,t)=>`\u017Dymimas puslapis ${c} i\u0161 ${t}...`,
+    progressVerifying: "Tikrinamas gautas PDF failas...",
+    progressReady: "Vandens ženklas sėkmingai pritaikytas.",
+    errorFileTooLarge: name=>`Failas "${name}" vir\u0161ija maksimal\u0173 100 MB dyd\u012F.`,
+    errorInvalidPdf: "Dokumentas nėra tinkamas PDF failas.",
+    errorPasswordRequired: "Slaptažodžiu apsaugotiems PDF failams negalima pridėti vandens ženklo.",
+    errorZeroPages: "Dokumente yra 0 puslapių.",
+    errorLogoRead: "Nepavyko perskaityti įkelto logotipo paveikslėlio.",
+    errorWorkerFailed: "Apdorojant vandens ženklą įvyko klaida.",
+    errorGenericLoad: "Nepavyko įkelti PDF failo."
   }
 };
