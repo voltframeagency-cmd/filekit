@@ -1,6 +1,6 @@
 // Comprehensive multi-locale leak detector across representative languages
 
-const routes = [
+export const routes = [
   '/',
   '/all-tools',
   '/compress-pdf',
@@ -35,7 +35,7 @@ const routes = [
   '/create-zip'
 ];
 
-const LEAK_PATTERNS = [
+export const LEAK_PATTERNS = [
   'Drop your PDF here',
   'Drop your image here',
   'Select PowerPoint Presentation',
