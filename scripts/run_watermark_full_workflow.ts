@@ -2,9 +2,44 @@ import { chromium } from 'playwright';
 import { PDFDocument } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
+import { resolveDictionaryEntry } from '../src/config/i18n/locales';
+import { PDF_OVERLAY_I18N } from '../src/components/pdf-overlay/pdfOverlayTranslations';
 
 const ARTIFACTS_DIR = 'C:/Users/mahdi/.gemini/antigravity-ide/brain/6599593d-7532-451f-9343-f8a5f66e8c66';
 const TEST_PDF = path.resolve('test_sample.pdf');
+
+const FORBIDDEN_ENGLISH = [
+  'Drop your PDF here',
+  'Watermark Type',
+  'Text Watermark',
+  'Image Logo',
+  'Watermark Text',
+  'Font Color',
+  'Font Size',
+  'Opacity',
+  'Rotation',
+  'Position Preset',
+  'Apply To Pages',
+  'All Pages',
+  'Odd Pages Only',
+  'Even Pages Only',
+  'Custom Range',
+  'Apply Watermark',
+  'Applying Watermark',
+  'Reading PDF document...',
+  'Preparing watermark assets...',
+  'Verifying watermarked PDF artifact...',
+  'Reset',
+  'Download Watermarked PDF',
+  'Adjust Watermark',
+  'Start Over',
+  'Live Placement Preview',
+  'Cancel Processing',
+  'Document is not a valid PDF.',
+  'Could not read uploaded logo image.',
+  'Watermark processing encountered an error.'
+];
 
 interface WorkflowResult {
   locale: string;
@@ -12,15 +47,44 @@ interface WorkflowResult {
   isMobile: boolean;
   isRtl: boolean;
   dropzoneTitle: string;
-  controlsLabels: string[];
   validationErrorText: string;
   progressMessage: string;
   resultSuccessText: string;
   downloadButtonText: string;
   downloadedBytes: number;
   outputPageCount: number;
-  hasExpectedWatermarkText: boolean;
-  englishLeaks: string[];
+  exactWatermarkExtracted: boolean;
+  extractedPageTexts: string[];
+  cancellationVerified: boolean;
+  leaksPerState: Record<string, string[]>;
+  passed: boolean;
+  failureReasons: string[];
+}
+
+async function extractPdfPageTexts(pdfBytes: Uint8Array): Promise<string[]> {
+  const pdfjsPath = path.resolve('node_modules/pdfjs-dist/legacy/build/pdf.mjs');
+  const pdfjs = await import(pathToFileURL(pdfjsPath).href);
+  const doc = await pdfjs.getDocument({ data: pdfBytes, disableFontFace: true }).promise;
+  const pageTexts: string[] = [];
+
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
+    const text = content.items.map((it: any) => it.str).join(' ');
+    pageTexts.push(text);
+  }
+  return pageTexts;
+}
+
+async function checkStateLeaks(page: any, stateName: string): Promise<string[]> {
+  const visibleText = await page.evaluate(() => document.body.innerText);
+  const detected: string[] = [];
+  for (const phrase of FORBIDDEN_ENGLISH) {
+    if (visibleText.includes(phrase)) {
+      detected.push(phrase);
+    }
+  }
+  return detected;
 }
 
 async function runLocaleWorkflow(
@@ -29,6 +93,10 @@ async function runLocaleWorkflow(
   options: { isMobile?: boolean } = {}
 ): Promise<WorkflowResult> {
   const isMobile = !!options.isMobile;
+  const tr = resolveDictionaryEntry(PDF_OVERLAY_I18N, locale);
+  const failureReasons: string[] = [];
+  const leaksPerState: Record<string, string[]> = {};
+
   const context = await browser.newContext({
     viewport: isMobile ? { width: 390, height: 844 } : { width: 1440, height: 900 },
     isMobile: isMobile,
@@ -49,11 +117,17 @@ async function runLocaleWorkflow(
     return document.documentElement.dir === 'rtl' || getComputedStyle(document.body).direction === 'rtl';
   });
 
-  // 2. Check Dropzone Text
+  // 2. Assert Initial Dropzone state & leaks
   const dropzoneH3 = await page.locator('h3').first().innerText();
-  console.log(`Dropzone title: "${dropzoneH3}"`);
+  console.log(`State [Dropzone] - Title: "${dropzoneH3}"`);
+  if (!dropzoneH3.includes(tr.dropHere)) {
+    failureReasons.push(`Dropzone title "${dropzoneH3}" does not match localized translation "${tr.dropHere}"`);
+  }
+  leaksPerState['dropzone'] = await checkStateLeaks(page, 'dropzone');
+  if (leaksPerState['dropzone'].length > 0) {
+    failureReasons.push(`Dropzone state leaked English phrases: ${leaksPerState['dropzone'].join(', ')}`);
+  }
 
-  // Initial dropzone screenshot
   const initialScreenshot = path.join(ARTIFACTS_DIR, `watermark_${locale.replace('-', '_')}_initial.png`);
   await page.screenshot({ path: initialScreenshot, fullPage: false });
 
@@ -61,64 +135,77 @@ async function runLocaleWorkflow(
   const fileInput = page.locator('input[type="file"]').first();
   await fileInput.setInputFiles(TEST_PDF);
 
-  // Wait for editor controls: query inside div.space-y-3 input[type="text"]
   const watermarkTextInput = page.locator('div.space-y-3 input[type="text"]').first();
   await watermarkTextInput.waitFor({ state: 'visible', timeout: 15000 });
-  await page.waitForTimeout(1000); // Wait for canvas live preview render
+  await page.waitForTimeout(1000);
 
-  // 4. Extract visible labels in controls
-  const controlsCard = page.locator('div.space-y-5').first();
-  const allLabels = await controlsCard.locator('label, button, p, span').allInnerTexts();
-  const cleanLabels = Array.from(new Set(allLabels.map((s: string) => s.trim()).filter((s: string) => s.length > 0)));
-  console.log(`Extracted ${cleanLabels.length} control labels/buttons.`);
+  // 4. Assert Configured Controls state & leaks
+  leaksPerState['configured'] = await checkStateLeaks(page, 'configured');
+  if (leaksPerState['configured'].length > 0) {
+    failureReasons.push(`Configured controls state leaked English phrases: ${leaksPerState['configured'].join(', ')}`);
+  }
 
-  // 5. Test validation error: Clear text input
+  // 5. Test Validation Error state
   await watermarkTextInput.fill('');
   await page.waitForTimeout(500);
 
-  // Validation alert should appear
   const validationAlert = page.locator('.bg-amber-950\\/80, .text-amber-200').first();
   await validationAlert.waitFor({ state: 'visible', timeout: 5000 });
   const validationErrorText = (await validationAlert.innerText()).trim();
-  console.log(`Validation Error Text (empty text): "${validationErrorText}"`);
+  console.log(`State [Validation Error] - Alert: "${validationErrorText}"`);
+  if (!validationErrorText.includes(tr.enterWatermarkText)) {
+    failureReasons.push(`Validation alert "${validationErrorText}" does not contain expected localized error "${tr.enterWatermarkText}"`);
+  }
 
-  // Validation error screenshot
-  const valScreenshot = path.join(ARTIFACTS_DIR, `watermark_${locale.replace('-', '_')}_val_error.png`);
-  await page.screenshot({ path: valScreenshot, fullPage: false });
+  // 6. Test Cancellation State
+  const cancelTestWatermark = `FILEKIT_CANCEL_${locale.replace('-', '_').toUpperCase()}`;
+  await watermarkTextInput.fill(cancelTestWatermark);
+  await page.waitForTimeout(300);
 
-  // 6. Restore text with customized test watermark
+  const applyBtn = page.locator('button.bg-gradient-to-r').first();
+  await applyBtn.click();
+
+  let cancellationVerified = false;
+  try {
+    const cancelBtn = page.locator('button:has-text("' + tr.cancelProcessing + '")').first();
+    await cancelBtn.waitFor({ state: 'visible', timeout: 2000 });
+    await cancelBtn.click();
+    console.log(`State [Cancellation] - Clicked localized cancel button.`);
+    await page.waitForTimeout(500);
+    const isStillSpinning = await page.locator('.animate-spin').isVisible();
+    if (!isStillSpinning) {
+      cancellationVerified = true;
+      console.log(`State [Cancellation] - Verified off-thread worker terminated successfully.`);
+    }
+  } catch (err: any) {
+    console.log(`Cancellation check skipped or finished before click: ${err.message}`);
+  }
+
+  // 7. Configure actual test watermark
   const watermarkTextValue = `FILEKIT_${locale.replace('-', '_').toUpperCase()}`;
   await watermarkTextInput.fill(watermarkTextValue);
   await page.waitForTimeout(500);
 
-  // Controls configured screenshot
-  const controlsScreenshot = path.join(ARTIFACTS_DIR, `watermark_${locale.replace('-', '_')}_configured.png`);
-  await page.screenshot({ path: controlsScreenshot, fullPage: false });
-
-  // 7. Click Apply Watermark CTA
-  const applyBtn = page.locator('button.bg-gradient-to-r').first();
-  const applyBtnInitialText = (await applyBtn.innerText()).trim();
-  console.log(`Apply Button label: "${applyBtnInitialText}"`);
-
-  // Start listening for download event
-  const downloadPromise = page.waitForEvent('download', { timeout: 25000 }).catch(() => null);
-
-  console.log(`Clicking Apply button...`);
+  // 8. Click Apply Watermark CTA
+  console.log(`Clicking Apply button for full execution...`);
   await applyBtn.click();
 
-  // 8. Capture progress message if visible
+  // Capture progress message and verify it matches localized templates
   let progressMessage = '';
   try {
     const progressSpan = page.locator('.animate-spin').locator('..');
-    if (await progressSpan.isVisible()) {
-      progressMessage = (await progressSpan.innerText()).trim();
-      console.log(`Observed Progress Message: "${progressMessage}"`);
+    await progressSpan.waitFor({ state: 'visible', timeout: 3000 });
+    progressMessage = (await progressSpan.innerText()).trim();
+    console.log(`State [Progress] - Observed: "${progressMessage}"`);
+    leaksPerState['progress'] = await checkStateLeaks(page, 'progress');
+    if (leaksPerState['progress'].length > 0) {
+      failureReasons.push(`Progress state leaked English phrases: ${leaksPerState['progress'].join(', ')}`);
     }
   } catch (_) {}
 
   // 9. Wait for Result Card
   const resultCardH3 = page.locator('.bg-slate-900.border.border-slate-800.rounded-2xl.p-6 h3').first();
-  await resultCardH3.waitFor({ state: 'visible', timeout: 20000 });
+  await resultCardH3.waitFor({ state: 'visible', timeout: 25000 });
   await page.waitForTimeout(1000);
 
   const resultCard = page.locator('.bg-slate-900.border.border-slate-800.rounded-2xl.p-6').first();
@@ -126,21 +213,30 @@ async function runLocaleWorkflow(
   const downloadBtn = resultCard.locator('button.bg-gradient-to-r').first();
   const downloadButtonText = (await downloadBtn.innerText()).trim();
 
-  console.log(`Result Summary: "${resultSuccessText}"`);
-  console.log(`Download CTA: "${downloadButtonText}"`);
+  console.log(`State [Result Card] - Summary: "${resultSuccessText}"`);
+  console.log(`State [Result Card] - CTA: "${downloadButtonText}"`);
 
-  // Result card screenshot
+  if (!downloadButtonText.includes(tr.downloadWatermarkedPdf)) {
+    failureReasons.push(`Download CTA text "${downloadButtonText}" does not contain expected localized string "${tr.downloadWatermarkedPdf}"`);
+  }
+
+  leaksPerState['result'] = await checkStateLeaks(page, 'result');
+  if (leaksPerState['result'].length > 0) {
+    failureReasons.push(`Result state leaked English phrases: ${leaksPerState['result'].join(', ')}`);
+  }
+
   const resultScreenshot = path.join(ARTIFACTS_DIR, `watermark_${locale.replace('-', '_')}_result.png`);
   await page.screenshot({ path: resultScreenshot, fullPage: false });
 
-  // 10. Trigger and capture download
+  // 10. Trigger download & extract exact watermark from PDF
   const downloadPromiseResult = page.waitForEvent('download', { timeout: 15000 }).catch(() => null);
   await downloadBtn.click();
   const download = await downloadPromiseResult;
 
   let downloadedBytes = 0;
   let outputPageCount = 0;
-  let hasExpectedWatermarkText = false;
+  let exactWatermarkExtracted = false;
+  let extractedPageTexts: string[] = [];
 
   if (download) {
     const downloadPath = path.join(ARTIFACTS_DIR, `output_${locale.replace('-', '_')}.pdf`);
@@ -148,59 +244,38 @@ async function runLocaleWorkflow(
     const downloadedBuf = fs.readFileSync(downloadPath);
     downloadedBytes = downloadedBuf.length;
 
-    // Verify PDF structure and page count preservation with pdf-lib
+    // Verify PDF page count preservation
     const parsedPdf = await PDFDocument.load(downloadedBuf);
     outputPageCount = parsedPdf.getPageCount();
-
-    // Check raw stream for watermark text value
-    const pdfRaw = downloadedBuf.toString('binary');
-    hasExpectedWatermarkText = pdfRaw.includes(watermarkTextValue) || pdfRaw.includes('FILEKIT');
-
-    console.log(`Downloaded PDF: ${downloadPath}`);
-    console.log(`Bytes: ${downloadedBytes} | Page Count: ${outputPageCount} (Original: 3)`);
-    console.log(`Expected Watermark Text in stream: ${hasExpectedWatermarkText}`);
-  } else {
-    console.error(`❌ Download did not trigger within timeout for ${locale}.`);
-  }
-
-  // 11. Scan for English leaks on visible text
-  const FORBIDDEN_ENGLISH = [
-    'Drop your PDF here',
-    'Watermark Type',
-    'Text Watermark',
-    'Image Logo',
-    'Watermark Text',
-    'Font Color',
-    'Font Size',
-    'Opacity',
-    'Rotation',
-    'Position Preset',
-    'Apply To Pages',
-    'All Pages',
-    'Odd Pages Only',
-    'Even Pages Only',
-    'Custom Range',
-    'Apply Watermark',
-    'Applying Watermark',
-    'Reset',
-    'Download Watermarked PDF',
-    'Adjust Watermark',
-    'Start Over',
-    'Live Placement Preview',
-    'Cancel Processing'
-  ];
-
-  const fullVisibleText = await page.evaluate(() => document.body.innerText);
-  const englishLeaks: string[] = [];
-  for (const phrase of FORBIDDEN_ENGLISH) {
-    if (fullVisibleText.includes(phrase)) {
-      englishLeaks.push(phrase);
+    if (outputPageCount !== 3) {
+      failureReasons.push(`Output PDF page count is ${outputPageCount}, expected 3`);
     }
-  }
 
-  console.log(`English Leaks check:`, englishLeaks.length > 0 ? `LEAKS: ${englishLeaks.join(', ')}` : 'CLEAN (0 leaks)');
+    // Extract exact text using pdfjs
+    extractedPageTexts = await extractPdfPageTexts(new Uint8Array(downloadedBuf));
+    console.log(`Extracted page texts:`, extractedPageTexts);
+
+    // Assert exact watermark text on every target page (all 3 pages)
+    const pagesMissingWatermark: number[] = [];
+    for (let i = 0; i < extractedPageTexts.length; i++) {
+      if (!extractedPageTexts[i].includes(watermarkTextValue)) {
+        pagesMissingWatermark.push(i + 1);
+      }
+    }
+
+    if (pagesMissingWatermark.length === 0) {
+      exactWatermarkExtracted = true;
+      console.log(`✅ Exact watermark text "${watermarkTextValue}" verified on all ${extractedPageTexts.length} pages.`);
+    } else {
+      failureReasons.push(`Watermark "${watermarkTextValue}" missing on pages: ${pagesMissingWatermark.join(', ')}`);
+    }
+  } else {
+    failureReasons.push(`Download event did not fire within 15s`);
+  }
 
   await context.close();
+
+  const passed = failureReasons.length === 0;
 
   return {
     locale,
@@ -208,15 +283,18 @@ async function runLocaleWorkflow(
     isMobile,
     isRtl,
     dropzoneTitle: dropzoneH3,
-    controlsLabels: cleanLabels,
     validationErrorText,
     progressMessage,
     resultSuccessText,
     downloadButtonText,
     downloadedBytes,
     outputPageCount,
-    hasExpectedWatermarkText,
-    englishLeaks,
+    exactWatermarkExtracted,
+    extractedPageTexts,
+    cancellationVerified,
+    leaksPerState,
+    passed,
+    failureReasons,
   };
 }
 
@@ -233,13 +311,21 @@ async function runLocaleWorkflow(
   ];
 
   const results: WorkflowResult[] = [];
+  let allPassed = true;
 
   for (const item of localesToTest) {
     try {
       const res = await runLocaleWorkflow(browser, item.locale, { isMobile: item.isMobile });
       results.push(res);
+      if (!res.passed) {
+        allPassed = false;
+        console.error(`❌ Locale ${item.locale} FAILED:`, res.failureReasons);
+      } else {
+        console.log(`✅ Locale ${item.locale} PASSED all workflow, leak, and text extraction checks.`);
+      }
     } catch (err: any) {
-      console.error(`Error testing ${item.locale}:`, err.message);
+      allPassed = false;
+      console.error(`❌ Uncaught exception testing ${item.locale}:`, err.message);
     }
   }
 
@@ -247,7 +333,15 @@ async function runLocaleWorkflow(
 
   console.log(`\n==============================================`);
   console.log(`ALL WORKFLOW CHECKS COMPLETED (${results.length}/${localesToTest.length})`);
+  console.log(`Overall Result: ${allPassed ? 'ALL PASSED (100%)' : 'FAILURES DETECTED'}`);
   console.log(`==============================================`);
   fs.writeFileSync('workflow_verification_results.json', JSON.stringify(results, null, 2));
   console.log('Saved workflow_verification_results.json');
+
+  if (!allPassed || results.length !== localesToTest.length) {
+    console.error('❌ One or more locales failed verification assertions.');
+    process.exit(1);
+  } else {
+    console.log('✅ ALL TESTED LOCALES PASSED VERIFICATION SUITE.');
+  }
 })();
