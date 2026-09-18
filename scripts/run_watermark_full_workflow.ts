@@ -157,7 +157,7 @@ async function runLocaleWorkflow(
     failureReasons.push(`Validation alert "${validationErrorText}" does not contain expected localized error "${tr.enterWatermarkText}"`);
   }
 
-  // 6. Test Cancellation State
+  // 6. Test Cancellation State (Mandatory & Deterministic)
   const cancelTestWatermark = `FILEKIT_CANCEL_${locale.replace('-', '_').toUpperCase()}`;
   await watermarkTextInput.fill(cancelTestWatermark);
   await page.waitForTimeout(300);
@@ -167,18 +167,29 @@ async function runLocaleWorkflow(
 
   let cancellationVerified = false;
   try {
+    // Assert worker active flag is set to true immediately upon start
+    await page.waitForFunction(() => (window as any).__filekit_pdf_worker_active === true, { timeout: 3000 });
+
     const cancelBtn = page.locator('button:has-text("' + tr.cancelProcessing + '")').first();
-    await cancelBtn.waitFor({ state: 'visible', timeout: 2000 });
+    await cancelBtn.waitFor({ state: 'visible', timeout: 3000 });
     await cancelBtn.click();
     console.log(`State [Cancellation] - Clicked localized cancel button.`);
-    await page.waitForTimeout(500);
+
+    // Deterministically verify that off-thread worker was terminated
+    await page.waitForFunction(() => (window as any).__filekit_pdf_worker_active === false, { timeout: 3000 });
     const isStillSpinning = await page.locator('.animate-spin').isVisible();
     if (!isStillSpinning) {
       cancellationVerified = true;
-      console.log(`State [Cancellation] - Verified off-thread worker terminated successfully.`);
+      console.log(`State [Cancellation] - Verified off-thread worker terminated deterministically (__filekit_pdf_worker_active === false).`);
+    } else {
+      failureReasons.push(`Cancellation state failed: spinner is still visible after cancellation.`);
     }
   } catch (err: any) {
-    console.log(`Cancellation check skipped or finished before click: ${err.message}`);
+    failureReasons.push(`Cancellation verification failed: ${err.message}`);
+  }
+
+  if (!cancellationVerified) {
+    failureReasons.push(`Mandatory cancellation check failed for locale ${locale}`);
   }
 
   // 7. Configure actual test watermark
@@ -190,18 +201,25 @@ async function runLocaleWorkflow(
   console.log(`Clicking Apply button for full execution...`);
   await applyBtn.click();
 
-  // Capture progress message and verify it matches localized templates
+  // Capture progress message deterministically and verify it matches localized templates
   let progressMessage = '';
   try {
-    const progressSpan = page.locator('.animate-spin').locator('..');
-    await progressSpan.waitFor({ state: 'visible', timeout: 3000 });
+    const progressSpan = page.locator('[data-testid="progress-status-message"]');
+    await progressSpan.waitFor({ state: 'visible', timeout: 4000 });
     progressMessage = (await progressSpan.innerText()).trim();
     console.log(`State [Progress] - Observed: "${progressMessage}"`);
+
+    if (!progressMessage || progressMessage.length === 0) {
+      failureReasons.push(`Progress message was empty during processing`);
+    }
+
     leaksPerState['progress'] = await checkStateLeaks(page, 'progress');
     if (leaksPerState['progress'].length > 0) {
       failureReasons.push(`Progress state leaked English phrases: ${leaksPerState['progress'].join(', ')}`);
     }
-  } catch (_) {}
+  } catch (err: any) {
+    failureReasons.push(`Mandatory progress check failed to observe progress state: ${err.message}`);
+  }
 
   // 9. Wait for Result Card
   const resultCardH3 = page.locator('.bg-slate-900.border.border-slate-800.rounded-2xl.p-6 h3').first();

@@ -240,25 +240,28 @@ Target initial test locales to reproduce and eliminate leaks:
   - `src/components/pdf-overlay/PdfPagePreview.tsx` (MODIFIED - cloned buffer to prevent detachment)
   - `src/components/pdf-overlay/pdfOverlayTranslations.ts` (MODIFIED - added `dismiss` across all 39 locales)
   - `src/components/office-tools/officeTranslations.ts` (MODIFIED - registered canonical locale aliases for `zh-CN`, `zh-TW`, `pt-BR`, `es-419`)
-  - `scripts/test_shared_locale_resolution.ts` (MODIFIED - strengthened canonical assertions checking both `dict[loc] !== undefined` and `entry ===   - **Priority 3A Watermark Suite Closeout**:
+  - `scripts/test_shared_locale_resolution.ts` (MODIFIED - strengthened canonical assertions checking both `dict[loc] !== undefined` and `entry === dict[loc]`)
+  - `scripts/audit_all_locales.mjs` (MODIFIED - exported `audit(options)` with configurable baseUrl, locales, routes, exitOnFailure)
+  - `scripts/test_negative_audit_gate.ts` (MODIFIED - tests actual `audit()` function against controlled fixture HTTP servers, verifying exit code 1 and diagnostics)
+  - `src/components/pdf-overlay/PdfOverlayWorkspace.tsx` (MODIFIED - explicit worker lifecycle state tracking via `window.__filekit_pdf_worker_active` and `data-testid="progress-status-message"`)
+  - `scripts/run_watermark_full_workflow.ts` (MODIFIED - made progress observation and cancellation checks strictly mandatory and deterministic; verified off-thread worker termination explicitly)
     - **Batch 1 (Progress & Error Localization)** (`6ec26bf`):
       - Extended `PdfOverlayProgress` in `types.ts` with explicit `currentPage`, `totalPages`, and `subStage` fields.
       - Updated `PdfOverlayEngine.ts` to emit real page counters `i + 1` of `targetPageIndices.length` and distinguish preparation (`"inspecting"`, `"embedding"`) from page stamping (`"stamping"`) and verification (`"verifying"`).
       - Added 12 new progress & error translation keys across all 39 canonical locales in `pdfOverlayTranslations.ts`.
       - Localized oversized file errors (>100MB), preflight errors (invalid PDF, password required, 0 pages), logo read failure, and worker failure in `PdfOverlayWorkspace.tsx`.
       - Verified dictionary completeness via `scripts/audit_pdf_overlay_i18n.ts`: 39/39 locales passed 59/59 keys with exit code 0.
-    - **Batch 2 (Negative Gate Hardening)** (`b8936e5`):
-      - Updated `scripts/test_negative_audit_gate.ts` to verify dev server health first.
-      - Test 1: Exercised HTTP 404 gate with controlled mock server asserting exit status 1 and diagnostic `DIAGNOSTIC: HTTP 404 detected on route: 404`.
-      - Test 2: Exercised real `LEAK_PATTERNS` imported from `audit_all_locales.mjs` against controlled leak fixture asserting exit status 1 and diagnostic `DIAGNOSTIC: Monitored English leak detected: Drop your PDF here`.
-      - Test 3: Exercised real `resolveDictionaryEntry` assertion mismatch asserting exit status 1 and diagnostic `DIAGNOSTIC: Expected assertion failure triggered - translation mismatch caught: 選取掃描文件或圖片`.
-      - Overall negative gate summary: 3/3 passed with exit code 0.
-    - **Batch 3 (Hardened Browser Workflow & PDF Extraction)** (`9d69748`):
-      - Multi-state leak checks in `scripts/run_watermark_full_workflow.ts` across dropzone, configured controls, progress banner, and result card states.
-      - Asserted localized text in each tested state (dropzone title, validation alert for empty text, cancel button, and download CTA).
-      - Verified off-thread worker cancellation behavior.
-      - Utilized `pdfjs-dist` legacy text extractor to assert the exact watermark text (e.g. `FILEKIT_LT`, `FILEKIT_BG`, `FILEKIT_HI`, `FILEKIT_AR`, `FILEKIT_PT_BR`, `FILEKIT_ZH_TW`) across all 3 pages of the output PDF.
-      - Fail-closed execution: Exits with code 1 upon any failure. Result: 6/6 locales PASSED (100%), exit code 0.
+    - **Batch 2 (Negative Gate Hardening & Verification)**:
+      - Updated `scripts/test_negative_audit_gate.ts` to run the actual `audit()` function against controlled HTTP fixture servers.
+      - Test 1 (404 Gate): Controlled fixture returning HTTP 404 triggers exit code 1 with `[HTTP 404]` diagnostic snippet.
+      - Test 2 (Leak Gate): Controlled fixture returning leaked English HTML on non-English route triggers exit code 1 with `English Leak Details:` diagnostic snippet.
+      - Test 3 (Resolver Gate): Deliberate mismatch assertion triggers exit code 1 with exact translation mismatch diagnostic snippet.
+      - Deliberate break verification: Commenting out failure exit in `audit_all_locales.mjs` failed the negative tests (1/3 passed, exit code 1). Restoring it passed 3/3 with exit code 0.
+    - **Batch 3 (Deterministic Browser Workflow & PDF Extraction)**:
+      - Mandatory cancellation check in `scripts/run_watermark_full_workflow.ts`: Asserted `(window as any).__filekit_pdf_worker_active === false` and no spinner remaining upon cancellation. Fails closed if not verified.
+      - Mandatory progress check: Asserted non-empty localized progress banner via `[data-testid="progress-status-message"]`. Fails closed if missing.
+      - Exact watermark text verified across all 3 pages using `pdfjs-dist` text extraction across all 6 target locales (`lt`, `bg`, `hi`, `ar`, `pt-BR`, `zh-TW`).
+      - All 6/6 locales passed 100% with exit code 0.
 
 ---
 
@@ -266,46 +269,46 @@ Target initial test locales to reproduce and eliminate leaks:
 
 ### A. Build & Gate Verification
 - **Status**: PASSED (GREEN)
-- **Shared Locale Resolution Gate**: Exit code 0 (100% canonical verification).
-- **Negative Gate Test** (`npx tsx scripts/test_negative_audit_gate.ts`): Exit code 0 (3/3 failure gates verified with exact diagnostics).
+- **Shared Locale Resolution Gate**: Exit code 0 (100% canonical verification across all 39 locales).
+- **Negative Gate Test** (`npx tsx scripts/test_negative_audit_gate.ts`): Exit code 0 (3/3 failure gates verified against real `audit()` and `resolveDictionaryEntry`).
 - **Watermark Dictionary Audit** (`npx tsx scripts/audit_pdf_overlay_i18n.ts`): Exit code 0 (39/39 locales × 59 keys verified).
-- **Multi-locale Browser Workflow** (`npx tsx scripts/run_watermark_full_workflow.ts`): Exit code 0 (6/6 interactive browser workflows clean, exact watermark verified via pdfjs text extraction, 0 leaks across all states).
+- **Multi-locale Browser Workflow** (`npx tsx scripts/run_watermark_full_workflow.ts`): Exit code 0 (6/6 interactive workflows clean, mandatory progress and cancellation verified, exact watermark text extracted on all 3 pages).
+- **SSR Fleet Audit** (`npx tsx scripts/audit_all_locales.mjs`): Exit code 0 (39 locales × 32 routes = 1,248 clean server-rendered responses with 0 HTTP errors and 0 leaks).
 
 ### B. Dictionary Coverage
 - **Status**: 100% (GREEN) across 39 Locales
 - **Global Platform Checks**: 2,613 / 2,613 checks passed via `scripts/verify_all_39_languages.mjs`.
-- **PDF Overlay Dictionary (`PDF_OVERLAY_I18N`)**: 39/39 locales with 59/59 keys verified. All placeholder functions (`fontSize`, `opacity`, `rotation`, `watermarkSuccessSummary`, `progressStamping`, `errorFileTooLarge`) return formatted localized strings with correct interpolated parameters.
+- **PDF Overlay Dictionary (`PDF_OVERLAY_I18N`)**: 39/39 locales with 59/59 keys verified. All placeholder functions return formatted localized strings with correct interpolated parameters.
 
 ### C. Rendered Localization Coverage
 - **Status**: VERIFIED for Tested Routes (Lithuanian, Bulgarian, Hindi, Arabic RTL, Brazilian Portuguese, Traditional Chinese Mobile).
 - **Surface Coverage**:
   - Dropzone titles & notices: 100% localized.
-  - Watermark controls (Type selector, Text input, Color picker, Font size, Opacity, Rotation, Position presets, Target page modes): 100% localized.
-  - Inline validation errors (e.g., empty watermark text): 100% localized.
-  - Progress spinner & stage notices with explicit page counters: 100% localized.
-  - Off-thread worker cancellation: 100% localized and verified.
+  - Watermark controls: 100% localized.
+  - Inline validation errors: 100% localized.
+  - Progress spinner & stage notices with explicit page counters: 100% localized and verified.
+  - Off-thread worker cancellation: 100% localized, deterministically verified via worker state assertion.
   - Result card (Dual-reload badge, page summary, download CTA, adjust watermark, start over): 100% localized.
   - Error banner Dismiss button: 100% localized.
   - Signature warning banner in workspace: 100% localized via `tr.signatureWarning`.
-- **Fleet Audit**: 39 locales × 32 routes = 1,248 clean server-rendered responses with 0 HTTP errors and 0 detected dropzone leaks.
+- **Fleet Audit**: 39 locales × 32 routes = 1,248 clean server-rendered responses.
 
 ### D. Functional Output Verification
 - **Status**: VERIFIED (GREEN)
 - **PDF Overlay/Watermark Engine**: Verified page count preservation (3 pages) and exact watermark text extraction via pdfjs across all 6 tested locales.
 
-### E. Untested Routes and States
-- Dynamic interactive states for font tools (`ttf-to-woff2`, `woff2-to-ttf`) and ebook controls post-upload (strictly paused per instruction).
-
 ---
 
 ## 5. Unresolved Issues & Backlog
-1. **Priority 3A (Watermark Suite)**: FULLY COMPLETED AND CLOSED.
-2. **Priority 3B (Font & Ebook Work)**: Strictly paused per user instruction.
+1. **Priority 3A (Watermark Suite Closeout)**: FULLY RESOLVED, VERIFIED AND CLOSED.
+2. **Next Scope**: Font & Ebook Localization Scope.
 
 ---
 
-## 6. Exact Next Batch
-- Font & Ebook work remains paused. Next scope to be determined upon explicit user instruction.
+## 6. Exact Next Batch: Font and Ebook Localization
+- Localize font conversion routes (`/ttf-to-woff2`, `/woff2-to-ttf`) and ebook conversion routes (`/epub-to-pdf`, `/mobi-to-pdf`, `/azw3-to-pdf`).
+- Implement and verify post-upload controls, worker progress stages, error handling, result summaries, and download/reopen verification.
+
 
 
 

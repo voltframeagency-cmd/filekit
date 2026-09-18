@@ -202,12 +202,18 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
         if (msg.type === "PROGRESS") {
           setProgress(msg.payload);
         } else if (msg.type === "SUCCESS") {
+          if (typeof window !== "undefined") {
+            (window as any).__filekit_pdf_worker_active = false;
+          }
           setArtifact(msg.payload.artifact);
           setIsProcessing(false);
           setProgress(null);
           worker.terminate();
           workerRef.current = null;
         } else if (msg.type === "ERROR") {
+          if (typeof window !== "undefined") {
+            (window as any).__filekit_pdf_worker_active = false;
+          }
           setErrorMessage(tr.errorWorkerFailed);
           setArtifact(null);
           setIsProcessing(false);
@@ -218,6 +224,9 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
       };
 
       worker.onerror = () => {
+        if (typeof window !== "undefined") {
+          (window as any).__filekit_pdf_worker_active = false;
+        }
         setErrorMessage(tr.errorWorkerFailed);
         setArtifact(null);
         setIsProcessing(false);
@@ -227,6 +236,10 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
           workerRef.current = null;
         }
       };
+
+      if (typeof window !== "undefined") {
+        (window as any).__filekit_pdf_worker_active = true;
+      }
 
       const freshCopy = new Uint8Array(sourceBuffer.length);
       freshCopy.set(sourceBuffer);
@@ -243,6 +256,9 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
         [bufferCopy]
       );
     } catch (err: any) {
+      if (typeof window !== "undefined") {
+        (window as any).__filekit_pdf_worker_active = false;
+      }
       setErrorMessage(tr.errorWorkerFailed);
       setArtifact(null);
       setIsProcessing(false);
@@ -255,6 +271,9 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
       try { workerRef.current.terminate(); } catch (_) {}
       workerRef.current = null;
     }
+    if (typeof window !== "undefined") {
+      (window as any).__filekit_pdf_worker_active = false;
+    }
     setIsProcessing(false);
     setProgress(null);
   };
@@ -263,6 +282,9 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
     if (workerRef.current) {
       try { workerRef.current.terminate(); } catch (_) {}
       workerRef.current = null;
+    }
+    if (typeof window !== "undefined") {
+      (window as any).__filekit_pdf_worker_active = false;
     }
     setSourceFile(null);
     setSourceBuffer(null);
@@ -339,7 +361,7 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
           {progress && (
             <div className="mb-8 p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-bold text-slate-200 flex items-center gap-2">
+                <span data-testid="progress-status-message" className="text-sm font-bold text-slate-200 flex items-center gap-2">
                   <svg className="w-4 h-4 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />

@@ -62,20 +62,25 @@ import { ALL_LOCALES, NON_DEFAULT_LOCALES } from '../src/config/i18n/locales.ts'
 const TEST_LOCALES = ALL_LOCALES;
 const NON_EN_LOCALES = NON_DEFAULT_LOCALES;
 
-async function audit() {
-  console.log(`Starting SSR Uploader & Sandbox Leak Audit across ${TEST_LOCALES.length} locales and ${routes.length} routes (${TEST_LOCALES.length * routes.length} total checks)...`);
+export async function audit(options = {}) {
+  const baseUrl = options.baseUrl || 'http://localhost:3000';
+  const targetLocales = options.locales || TEST_LOCALES;
+  const targetRoutes = options.routes || routes;
+  const exitOnFailure = options.exitOnFailure !== undefined ? options.exitOnFailure : true;
+
+  console.log(`Starting SSR Uploader & Sandbox Leak Audit across ${targetLocales.length} locales and ${targetRoutes.length} routes (${targetLocales.length * targetRoutes.length} total checks)...`);
 
   let totalLeaks = 0;
   let totalHttpErrors = 0;
   const leakReports = [];
   const httpErrorReports = [];
 
-  for (const locale of TEST_LOCALES) {
+  for (const locale of targetLocales) {
     let localeLeaks = 0;
     let localeHttpErrors = 0;
 
-    for (const r of routes) {
-      const url = `http://localhost:3000/${locale}` + (r === '/' ? '' : r);
+    for (const r of targetRoutes) {
+      const url = `${baseUrl}/${locale}` + (r === '/' ? '' : r);
       try {
         const res = await fetch(url);
         if (!res.ok) {
@@ -107,14 +112,14 @@ async function audit() {
       }
     }
     if (localeLeaks === 0 && localeHttpErrors === 0) {
-      console.log(`✅ [${locale.padEnd(8)}] ${routes.length}/${routes.length} SSR routes clean & reachable`);
+      console.log(`✅ [${locale.padEnd(8)}] ${targetRoutes.length}/${targetRoutes.length} SSR routes clean & reachable`);
     } else {
       console.warn(`⚠️ [${locale.padEnd(8)}] ${localeLeaks} leaks, ${localeHttpErrors} HTTP/network failures`);
     }
   }
 
   console.log('\n======================================================');
-  console.log(`SUMMARY: ${TEST_LOCALES.length} locales checked across ${routes.length} routes (${TEST_LOCALES.length * routes.length} total requests).`);
+  console.log(`SUMMARY: ${targetLocales.length} locales checked across ${targetRoutes.length} routes (${targetLocales.length * targetRoutes.length} total requests).`);
   console.log(`HTTP/Network Failures: ${totalHttpErrors}`);
   console.log(`English Leak Instances: ${totalLeaks}`);
   console.log('======================================================');
@@ -127,12 +132,26 @@ async function audit() {
       console.error(`❌ English Leak Details:`, leakReports);
     }
     console.error(`\n❌ AUDIT FAILED: Requirements not met (total failures: ${totalHttpErrors + totalLeaks}).`);
-    process.exit(1);
+    if (exitOnFailure) {
+      process.exit(1);
+    }
+  } else {
+    console.log(`✅ SSR STATIC LEAK AUDIT COMPLETE: 100% PASS with 0 HTTP errors and 0 monitored English leaks across all tested locales.`);
+    console.log(`(Scope: Validates server-rendered dropzone and sandbox notice patterns; dynamic client interactive states are verified in dedicated component tests.)`);
   }
 
-  console.log(`✅ SSR STATIC LEAK AUDIT COMPLETE: 100% PASS with 0 HTTP errors and 0 monitored English leaks across all 39 canonical locales.`);
-  console.log(`(Scope: Validates server-rendered dropzone and sandbox notice patterns; dynamic client interactive states are verified in dedicated component tests.)`);
+  return { totalLeaks, totalHttpErrors, leakReports, httpErrorReports };
 }
 
-audit();
+// If run directly from CLI (e.g. npx tsx scripts/audit_all_locales.mjs)
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+if (process.argv[1]) {
+  const scriptPath = path.resolve(process.argv[1]);
+  const currentPath = path.resolve(fileURLToPath(import.meta.url));
+  if (scriptPath === currentPath) {
+    audit();
+  }
+}
 

@@ -22,24 +22,32 @@ try {
   process.exit(1);
 }
 
-// Test 1: Intentionally request a route that returns HTTP 404 in an audit-like harness
+// Test 1: Run the actual audit() function against a controlled HTTP fixture server returning 404
 totalNegativeTests++;
-console.log('Test 1: Verifying that HTTP 404 triggers exit code 1 and reports diagnostic...');
-const mockServerScript = `
+console.log('Test 1: Verifying that actual audit() triggers exit code 1 and reports [HTTP 404] on failure...');
+const test1AuditRunnerScript = `
 import http from 'http';
+import path from 'path';
+import { pathToFileURL } from 'url';
 
 const server = http.createServer((req, res) => {
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('Not Found');
 });
 
-server.listen(3099, async () => {
+server.listen(3098, async () => {
   try {
-    const res = await fetch('http://localhost:3099/nonexistent-test-route');
-    if (!res.ok) {
-      console.error('DIAGNOSTIC: HTTP 404 detected on route: ' + res.status);
-      process.exit(1);
-    }
+    const auditPath = path.resolve('scripts/audit_all_locales.mjs');
+    const { audit } = await import(pathToFileURL(auditPath).href);
+    // Execute actual audit function pointing to controlled 404 server
+    await audit({
+      baseUrl: 'http://localhost:3098',
+      locales: ['en'],
+      routes: ['/nonexistent-fixture'],
+      exitOnFailure: true,
+    });
+  } catch (err) {
+    process.exit(1);
   } finally {
     server.close();
   }
@@ -47,13 +55,14 @@ server.listen(3099, async () => {
 `;
 
 try {
-  fs.writeFileSync('scripts/temp_404_gate.ts', mockServerScript);
+  fs.writeFileSync('scripts/temp_404_gate.ts', test1AuditRunnerScript);
   execSync('npx tsx scripts/temp_404_gate.ts', { stdio: 'pipe' });
-  console.error('❌ Expected exit code 1 for 404 route, but command succeeded.');
+  console.error('❌ Expected exit code 1 for 404 route in audit, but command succeeded.');
 } catch (err: any) {
   const stderrOutput = err.stderr ? err.stderr.toString() : '';
-  if (err.status === 1 && stderrOutput.includes('DIAGNOSTIC: HTTP 404 detected on route: 404')) {
-    console.log('✅ Correctly exited with code 1 and emitted expected diagnostic:', stderrOutput.trim());
+  if (err.status === 1 && stderrOutput.includes('[HTTP 404]')) {
+    console.log('✅ Actual audit correctly exited with code 1 and emitted expected diagnostic:');
+    console.log('   Diagnostic snippet:', stderrOutput.split('\n').filter((l: string) => l.includes('404'))[0]);
     passedNegativeTests++;
   } else {
     console.error(`❌ Unexpected status ${err.status} or missing diagnostic. Stderr: ${stderrOutput}`);
@@ -62,43 +71,48 @@ try {
   try { fs.unlinkSync('scripts/temp_404_gate.ts'); } catch (_) {}
 }
 
-// Test 2: Monitored English leak detection against controlled fixture produces exit code 1 and expected diagnostic
+// Test 2: Run the actual audit() function against a controlled fixture server returning leaked English HTML
 totalNegativeTests++;
-console.log('\nTest 2: Verifying that monitored English leak triggers exit code 1 and reports diagnostic in audit logic...');
-const realLeakAuditScript = `
+console.log('\nTest 2: Verifying that actual audit() triggers exit code 1 and reports English Leak Details...');
+const test2AuditRunnerScript = `
+import http from 'http';
 import path from 'path';
 import { pathToFileURL } from 'url';
 
-async function run() {
-  const auditPath = path.resolve('scripts/audit_all_locales.mjs');
-  const { LEAK_PATTERNS } = await import(pathToFileURL(auditPath).href);
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  // Return HTML containing monitored English phrase for a non-English route
+  res.end('<!DOCTYPE html><html><body><main><h3>Drop your PDF here</h3></main></body></html>');
+});
 
-  const controlledLeakedHtml = '<main><h3>Drop your PDF here</h3><p>Select a file to begin</p></main>';
-  const detected = [];
-  for (const pattern of LEAK_PATTERNS) {
-    if (controlledLeakedHtml.includes(pattern)) {
-      detected.push(pattern);
-    }
-  }
-
-  if (detected.length > 0) {
-    console.error('DIAGNOSTIC: Monitored English leak detected: ' + detected.join(', '));
+server.listen(3097, async () => {
+  try {
+    const auditPath = path.resolve('scripts/audit_all_locales.mjs');
+    const { audit } = await import(pathToFileURL(auditPath).href);
+    // Execute actual audit function on non-en locale pointing to controlled fixture
+    await audit({
+      baseUrl: 'http://localhost:3097',
+      locales: ['bg'],
+      routes: ['/watermark-pdf'],
+      exitOnFailure: true,
+    });
+  } catch (err) {
     process.exit(1);
+  } finally {
+    server.close();
   }
-}
-
-run();
+});
 `;
 
 try {
-  fs.writeFileSync('scripts/temp_leak_gate.ts', realLeakAuditScript);
+  fs.writeFileSync('scripts/temp_leak_gate.ts', test2AuditRunnerScript);
   execSync('npx tsx scripts/temp_leak_gate.ts', { stdio: 'pipe' });
-  console.error('❌ Expected exit code 1 for leaked fixture, but command succeeded.');
+  console.error('❌ Expected exit code 1 for leaked fixture in audit, but command succeeded.');
 } catch (err: any) {
   const stderrOutput = err.stderr ? err.stderr.toString() : '';
-  if (err.status === 1 && stderrOutput.includes('DIAGNOSTIC: Monitored English leak detected: Drop your PDF here')) {
-    console.log('✅ Correctly exited with code 1 upon detecting monitored English leak.');
-    console.log('   Diagnostic emitted:', stderrOutput.trim());
+  if (err.status === 1 && stderrOutput.includes('English Leak Details:')) {
+    console.log('✅ Actual audit correctly exited with code 1 upon detecting monitored English leak.');
+    console.log('   Diagnostic snippet:', stderrOutput.split('\n').filter((l: string) => l.includes('Drop your PDF here') || l.includes('English Leak Details'))[0]);
     passedNegativeTests++;
   } else {
     console.error(`❌ Unexpected status ${err.status} or missing diagnostic. Stderr: ${stderrOutput}`);
