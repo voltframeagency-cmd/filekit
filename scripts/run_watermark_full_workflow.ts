@@ -157,17 +157,22 @@ async function runLocaleWorkflow(
     failureReasons.push(`Validation alert "${validationErrorText}" does not contain expected localized error "${tr.enterWatermarkText}"`);
   }
 
-  // 6. Test Cancellation State (Mandatory & Deterministic)
+  // 6. Test Cancellation State (Mandatory, Controlled Timing & Deterministic Worker Termination)
   const cancelTestWatermark = `FILEKIT_CANCEL_${locale.replace('-', '_').toUpperCase()}`;
   await watermarkTextInput.fill(cancelTestWatermark);
   await page.waitForTimeout(300);
+
+  // Inject controlled timing delay so worker execution is paused during cancellation check
+  await page.evaluate(() => {
+    (window as any).__FILEKIT_TEST_DELAY_MS = 2500;
+  });
 
   const applyBtn = page.locator('button.bg-gradient-to-r').first();
   await applyBtn.click();
 
   let cancellationVerified = false;
   try {
-    // Assert worker active flag is set to true immediately upon start
+    // Assert worker active flag is set to true immediately upon start and terminated is false
     await page.waitForFunction(() => (window as any).__filekit_pdf_worker_active === true, { timeout: 3000 });
 
     const cancelBtn = page.locator('button:has-text("' + tr.cancelProcessing + '")').first();
@@ -175,14 +180,17 @@ async function runLocaleWorkflow(
     await cancelBtn.click();
     console.log(`State [Cancellation] - Clicked localized cancel button.`);
 
-    // Deterministically verify that off-thread worker was terminated
-    await page.waitForFunction(() => (window as any).__filekit_pdf_worker_active === false, { timeout: 3000 });
-    const isStillSpinning = await page.locator('.animate-spin').isVisible();
-    if (!isStillSpinning) {
+    // Deterministically verify that actual worker.terminate() was invoked
+    await page.waitForFunction(
+      () => (window as any).__filekit_pdf_worker_terminated === true && (window as any).__filekit_pdf_worker_active === false,
+      { timeout: 3000 }
+    );
+    const isProgressBannerVisible = await page.locator('[data-testid="progress-banner"]').isVisible();
+    if (!isProgressBannerVisible) {
       cancellationVerified = true;
-      console.log(`State [Cancellation] - Verified off-thread worker terminated deterministically (__filekit_pdf_worker_active === false).`);
+      console.log(`State [Cancellation] - Verified off-thread worker.terminate() actually executed deterministically (__filekit_pdf_worker_terminated === true, banner dismissed).`);
     } else {
-      failureReasons.push(`Cancellation state failed: spinner is still visible after cancellation.`);
+      failureReasons.push(`Cancellation state failed: progress banner is still visible after cancellation.`);
     }
   } catch (err: any) {
     failureReasons.push(`Cancellation verification failed: ${err.message}`);
@@ -191,6 +199,11 @@ async function runLocaleWorkflow(
   if (!cancellationVerified) {
     failureReasons.push(`Mandatory cancellation check failed for locale ${locale}`);
   }
+
+  // Reset test delay so subsequent full job runs at normal speed
+  await page.evaluate(() => {
+    (window as any).__FILEKIT_TEST_DELAY_MS = 0;
+  });
 
   // 7. Configure actual test watermark
   const watermarkTextValue = `FILEKIT_${locale.replace('-', '_').toUpperCase()}`;
@@ -201,7 +214,7 @@ async function runLocaleWorkflow(
   console.log(`Clicking Apply button for full execution...`);
   await applyBtn.click();
 
-  // Capture progress message deterministically and verify it matches localized templates
+  // Capture progress message deterministically and verify it matches exact localized templates
   let progressMessage = '';
   try {
     const progressSpan = page.locator('[data-testid="progress-status-message"]');
@@ -209,8 +222,28 @@ async function runLocaleWorkflow(
     progressMessage = (await progressSpan.innerText()).trim();
     console.log(`State [Progress] - Observed: "${progressMessage}"`);
 
-    if (!progressMessage || progressMessage.length === 0) {
-      failureReasons.push(`Progress message was empty during processing`);
+    // Expected valid localized progress messages for this locale
+    const expectedPreparing = tr.progressPreparing;
+    const expectedInspecting = tr.progressInspecting;
+    const expectedStampingP1 = tr.progressStamping(1, 3);
+    const expectedStampingP2 = tr.progressStamping(2, 3);
+    const expectedStampingP3 = tr.progressStamping(3, 3);
+    const expectedVerifying = tr.progressVerifying;
+    const expectedReady = tr.progressReady;
+
+    const matchesLocalizedProgress =
+      progressMessage.includes(expectedPreparing) ||
+      progressMessage.includes(expectedInspecting) ||
+      progressMessage.includes(expectedStampingP1) ||
+      progressMessage.includes(expectedStampingP2) ||
+      progressMessage.includes(expectedStampingP3) ||
+      progressMessage.includes(expectedVerifying) ||
+      progressMessage.includes(expectedReady);
+
+    if (!matchesLocalizedProgress) {
+      failureReasons.push(
+        `Progress message "${progressMessage}" did not match any expected localized progress template (e.g. "${expectedPreparing}" or "${expectedStampingP1}")`
+      );
     }
 
     leaksPerState['progress'] = await checkStateLeaks(page, 'progress');

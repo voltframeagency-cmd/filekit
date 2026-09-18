@@ -56,9 +56,6 @@ export class FontEngine {
     const numTables = view.getUint16(4, false);
 
     // WOFF header is 44 bytes + 20 bytes per table directory
-    const headerSize = 44 + numTables * 20;
-    const totalWoffSize = headerSize + fontBytes.length - (12 + numTables * 16);
-
     const woff = new Uint8Array(Math.max(fontBytes.length + 44, 128));
     const wView = new DataView(woff.buffer);
 

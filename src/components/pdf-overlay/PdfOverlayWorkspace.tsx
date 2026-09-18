@@ -192,6 +192,19 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
       const worker = new Worker(
         new URL("../../utils/pdf-overlay/pdfOverlay.worker.ts", import.meta.url)
       );
+
+      // Instrument worker termination tracking to observe actual terminate() call
+      const originalTerminate = worker.terminate.bind(worker);
+      let isTerminated = false;
+      worker.terminate = () => {
+        isTerminated = true;
+        if (typeof window !== "undefined") {
+          (window as any).__filekit_pdf_worker_terminated = true;
+          (window as any).__filekit_pdf_worker_active = false;
+        }
+        return originalTerminate();
+      };
+
       workerRef.current = worker;
 
       const baseName = sourceFile.name.replace(/\.[^/.]+$/, "");
@@ -239,22 +252,47 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
 
       if (typeof window !== "undefined") {
         (window as any).__filekit_pdf_worker_active = true;
+        (window as any).__filekit_pdf_worker_terminated = false;
       }
+
+      // Check if test timing delay is configured
+      const testDelay = typeof window !== "undefined" && typeof (window as any).__FILEKIT_TEST_DELAY_MS === "number"
+        ? (window as any).__FILEKIT_TEST_DELAY_MS
+        : 0;
 
       const freshCopy = new Uint8Array(sourceBuffer.length);
       freshCopy.set(sourceBuffer);
       const bufferCopy = freshCopy.buffer;
-      worker.postMessage(
-        {
-          type: "START_OVERLAY",
-          payload: {
-            sourceBuffer: bufferCopy,
-            config: watermarkConfig,
-            fileName: outputName,
+
+      if (testDelay > 0) {
+        setTimeout(() => {
+          if (workerRef.current && !isTerminated) {
+            worker.postMessage(
+              {
+                type: "START_OVERLAY",
+                payload: {
+                  sourceBuffer: bufferCopy,
+                  config: watermarkConfig,
+                  fileName: outputName,
+                },
+              },
+              [bufferCopy]
+            );
+          }
+        }, testDelay);
+      } else {
+        worker.postMessage(
+          {
+            type: "START_OVERLAY",
+            payload: {
+              sourceBuffer: bufferCopy,
+              config: watermarkConfig,
+              fileName: outputName,
+            },
           },
-        },
-        [bufferCopy]
-      );
+          [bufferCopy]
+        );
+      }
     } catch (err: any) {
       if (typeof window !== "undefined") {
         (window as any).__filekit_pdf_worker_active = false;
@@ -359,7 +397,7 @@ export const PdfOverlayWorkspace: React.FC<PdfOverlayWorkspaceProps> = ({ langua
 
           {/* Progress Banner */}
           {progress && (
-            <div className="mb-8 p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
+            <div data-testid="progress-banner" className="mb-8 p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl">
               <div className="flex items-center justify-between mb-3">
                 <span data-testid="progress-status-message" className="text-sm font-bold text-slate-200 flex items-center gap-2">
                   <svg className="w-4 h-4 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">

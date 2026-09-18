@@ -31,7 +31,6 @@ export class EbookEngine {
    */
   static async epubToPdf(epubBytes: Uint8Array): Promise<Uint8Array> {
     const entries = ArchiveEngine.extractZip(epubBytes);
-    let title = "E-Book Document";
     let extractedText = "";
 
     // Find HTML/XHTML chapter files

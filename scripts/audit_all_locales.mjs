@@ -32,7 +32,13 @@ export const routes = [
   '/convert-audio',
   '/compress-video',
   '/extract-zip',
-  '/create-zip'
+  '/create-zip',
+  '/ttf-to-woff2',
+  '/woff2-to-ttf',
+  '/epub-to-pdf',
+  '/pdf-to-epub',
+  '/mobi-to-pdf',
+  '/azw3-to-pdf'
 ];
 
 export const LEAK_PATTERNS = [
@@ -45,7 +51,12 @@ export const LEAK_PATTERNS = [
   'Ephemeral MicroVM Sandbox',
   'Secure Server Conversion Notice',
   'Choose PDF',
-  'Processed locally in your browser. Your file is never uploaded.'
+  'Processed locally in your browser. Your file is never uploaded.',
+  'Select Font File',
+  'Live Font Preview',
+  'Select eBook File',
+  'Rendering eBook pages to PDF...',
+  'Converting PDF into responsive EPUB eBook...'
 ];
 
 // Test sample locales representing diverse language families and alphabets:
@@ -82,7 +93,12 @@ export async function audit(options = {}) {
     for (const r of targetRoutes) {
       const url = `${baseUrl}/${locale}` + (r === '/' ? '' : r);
       try {
-        const res = await fetch(url);
+        let res = await fetch(url);
+        if (!res.ok) {
+          // Retry once after brief pause if 500/busy
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          res = await fetch(url);
+        }
         if (!res.ok) {
           console.error(`❌ [HTTP ${res.status}] ${url}`);
           localeHttpErrors++;
