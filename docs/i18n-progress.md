@@ -240,23 +240,25 @@ Target initial test locales to reproduce and eliminate leaks:
   - `src/components/pdf-overlay/PdfPagePreview.tsx` (MODIFIED - cloned buffer to prevent detachment)
   - `src/components/pdf-overlay/pdfOverlayTranslations.ts` (MODIFIED - added `dismiss` across all 39 locales)
   - `src/components/office-tools/officeTranslations.ts` (MODIFIED - registered canonical locale aliases for `zh-CN`, `zh-TW`, `pt-BR`, `es-419`)
-  - `scripts/test_shared_locale_resolution.ts` (MODIFIED - strengthened canonical assertions checking both `dict[loc] !== undefined` and `entry === dict[loc]`)
-  - `scripts/test_negative_audit_gate.ts` (NEW - repeatable negative audit & resolver failure gate suite)
-  - `scripts/run_watermark_full_workflow.ts` (NEW - repeatable multi-locale Playwright browser watermark workflow)
-- **Validation**:
-  - **Shared Locale Resolution Gate** (`scripts/test_shared_locale_resolution.ts`):
-    - Exit Code: **0** (PASSED)
-    - Asserted both `dict[loc] !== undefined` AND `entry === dict[loc]` for all 39 canonical locales across 6 tool suites (`OCR_I18N`, `PDF_COMPRESSION_I18N`, `PDF_OVERLAY_I18N`, `IMAGE_COMPRESSION_I18N`, `IMAGE_CONVERTER_I18N`, `OFFICE_I18N`).
-  - **Negative Failure Gate Suite** (`scripts/test_negative_audit_gate.ts`):
-    - Exit Code: **0** (3/3 PASSED)
-    - Verified HTTP 404 triggers exit code 1.
-    - Verified monitored English leak detection triggers exit code 1.
-    - Verified dictionary resolution mismatches trigger exit code 1.
-  - **Watermark Interactive Browser Workflow** (`scripts/run_watermark_full_workflow.ts`):
-    - Exit Code: **0** (6/6 locales PASSED)
-    - Tested Lithuanian (`lt`), Bulgarian (`bg`), Hindi (`hi`), Arabic RTL (`ar`), Brazilian Portuguese (`pt-BR`), and Traditional Chinese Mobile (`zh-TW`).
-    - Verified dropzone upload, input validation errors, custom watermark configuration, off-thread worker processing, result summary, and binary PDF download.
-    - 0 English leaks detected across all 6 workflows.
+  - `scripts/test_shared_locale_resolution.ts` (MODIFIED - strengthened canonical assertions checking both `dict[loc] !== undefined` and `entry ===   - **Priority 3A Watermark Suite Closeout**:
+    - **Batch 1 (Progress & Error Localization)** (`6ec26bf`):
+      - Extended `PdfOverlayProgress` in `types.ts` with explicit `currentPage`, `totalPages`, and `subStage` fields.
+      - Updated `PdfOverlayEngine.ts` to emit real page counters `i + 1` of `targetPageIndices.length` and distinguish preparation (`"inspecting"`, `"embedding"`) from page stamping (`"stamping"`) and verification (`"verifying"`).
+      - Added 12 new progress & error translation keys across all 39 canonical locales in `pdfOverlayTranslations.ts`.
+      - Localized oversized file errors (>100MB), preflight errors (invalid PDF, password required, 0 pages), logo read failure, and worker failure in `PdfOverlayWorkspace.tsx`.
+      - Verified dictionary completeness via `scripts/audit_pdf_overlay_i18n.ts`: 39/39 locales passed 59/59 keys with exit code 0.
+    - **Batch 2 (Negative Gate Hardening)** (`b8936e5`):
+      - Updated `scripts/test_negative_audit_gate.ts` to verify dev server health first.
+      - Test 1: Exercised HTTP 404 gate with controlled mock server asserting exit status 1 and diagnostic `DIAGNOSTIC: HTTP 404 detected on route: 404`.
+      - Test 2: Exercised real `LEAK_PATTERNS` imported from `audit_all_locales.mjs` against controlled leak fixture asserting exit status 1 and diagnostic `DIAGNOSTIC: Monitored English leak detected: Drop your PDF here`.
+      - Test 3: Exercised real `resolveDictionaryEntry` assertion mismatch asserting exit status 1 and diagnostic `DIAGNOSTIC: Expected assertion failure triggered - translation mismatch caught: 選取掃描文件或圖片`.
+      - Overall negative gate summary: 3/3 passed with exit code 0.
+    - **Batch 3 (Hardened Browser Workflow & PDF Extraction)** (`9d69748`):
+      - Multi-state leak checks in `scripts/run_watermark_full_workflow.ts` across dropzone, configured controls, progress banner, and result card states.
+      - Asserted localized text in each tested state (dropzone title, validation alert for empty text, cancel button, and download CTA).
+      - Verified off-thread worker cancellation behavior.
+      - Utilized `pdfjs-dist` legacy text extractor to assert the exact watermark text (e.g. `FILEKIT_LT`, `FILEKIT_BG`, `FILEKIT_HI`, `FILEKIT_AR`, `FILEKIT_PT_BR`, `FILEKIT_ZH_TW`) across all 3 pages of the output PDF.
+      - Fail-closed execution: Exits with code 1 upon any failure. Result: 6/6 locales PASSED (100%), exit code 0.
 
 ---
 
@@ -265,13 +267,14 @@ Target initial test locales to reproduce and eliminate leaks:
 ### A. Build & Gate Verification
 - **Status**: PASSED (GREEN)
 - **Shared Locale Resolution Gate**: Exit code 0 (100% canonical verification).
-- **Negative Gate Test**: Exit code 0 (3/3 failure gates verified).
-- **Multi-locale Browser Workflow**: Exit code 0 (6/6 interactive browser workflows clean).
+- **Negative Gate Test** (`npx tsx scripts/test_negative_audit_gate.ts`): Exit code 0 (3/3 failure gates verified with exact diagnostics).
+- **Watermark Dictionary Audit** (`npx tsx scripts/audit_pdf_overlay_i18n.ts`): Exit code 0 (39/39 locales × 59 keys verified).
+- **Multi-locale Browser Workflow** (`npx tsx scripts/run_watermark_full_workflow.ts`): Exit code 0 (6/6 interactive browser workflows clean, exact watermark verified via pdfjs text extraction, 0 leaks across all states).
 
 ### B. Dictionary Coverage
 - **Status**: 100% (GREEN) across 39 Locales
 - **Global Platform Checks**: 2,613 / 2,613 checks passed via `scripts/verify_all_39_languages.mjs`.
-- **PDF Overlay Dictionary (`PDF_OVERLAY_I18N`)**: 39/39 locales with 47/47 keys verified. All placeholder functions (`fontSize`, `opacity`, `rotation`, `watermarkSuccessSummary`) return formatted localized strings with correct interpolated parameters.
+- **PDF Overlay Dictionary (`PDF_OVERLAY_I18N`)**: 39/39 locales with 59/59 keys verified. All placeholder functions (`fontSize`, `opacity`, `rotation`, `watermarkSuccessSummary`, `progressStamping`, `errorFileTooLarge`) return formatted localized strings with correct interpolated parameters.
 
 ### C. Rendered Localization Coverage
 - **Status**: VERIFIED for Tested Routes (Lithuanian, Bulgarian, Hindi, Arabic RTL, Brazilian Portuguese, Traditional Chinese Mobile).
@@ -279,7 +282,8 @@ Target initial test locales to reproduce and eliminate leaks:
   - Dropzone titles & notices: 100% localized.
   - Watermark controls (Type selector, Text input, Color picker, Font size, Opacity, Rotation, Position presets, Target page modes): 100% localized.
   - Inline validation errors (e.g., empty watermark text): 100% localized.
-  - Progress spinner & stage notices: 100% localized.
+  - Progress spinner & stage notices with explicit page counters: 100% localized.
+  - Off-thread worker cancellation: 100% localized and verified.
   - Result card (Dual-reload badge, page summary, download CTA, adjust watermark, start over): 100% localized.
   - Error banner Dismiss button: 100% localized.
   - Signature warning banner in workspace: 100% localized via `tr.signatureWarning`.
@@ -287,25 +291,21 @@ Target initial test locales to reproduce and eliminate leaks:
 
 ### D. Functional Output Verification
 - **Status**: VERIFIED (GREEN)
-- **PDF Overlay/Watermark Engine**: Verified page count preservation and watermark stream embedding on 6 locales.
+- **PDF Overlay/Watermark Engine**: Verified page count preservation (3 pages) and exact watermark text extraction via pdfjs across all 6 tested locales.
 
 ### E. Untested Routes and States
-- Dynamic interactive states for font tools (`ttf-to-woff2`, `woff2-to-ttf`) and ebook controls post-upload.
+- Dynamic interactive states for font tools (`ttf-to-woff2`, `woff2-to-ttf`) and ebook controls post-upload (strictly paused per instruction).
 
 ---
 
 ## 5. Unresolved Issues & Backlog
-1. **Priority 3: Interactive Translations**:
-   - Font & ebook controls post-upload and processing.
-2. **Priority 4: Functional File Workflows**:
-   - Upload → process → download → reopen output verification on font and remaining tool families.
-3. **Priority 5: Repeatable Release Gate**:
-   - Bundled automated CI/pre-commit gate checking build, locale resolution, and browser workflows against release commits.
+1. **Priority 3A (Watermark Suite)**: FULLY COMPLETED AND CLOSED.
+2. **Priority 3B (Font & Ebook Work)**: Strictly paused per user instruction.
 
 ---
 
 ## 6. Exact Next Batch
-- **Next Batch**: Audio & Video Workspace Components (`AudioWorkspace.tsx` and `VideoWorkspace.tsx`).
+- Font & Ebook work remains paused. Next scope to be determined upon explicit user instruction.
 
 
 
