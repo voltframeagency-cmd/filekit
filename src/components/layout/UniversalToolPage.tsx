@@ -247,20 +247,11 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
 
     // 6. Font Tools
     if (normSlug === "/ttf-to-woff2" || normSlug === "/woff2-to-ttf") {
-      if (normSlug === "/ttf-to-woff2") {
-        return (
-          <GatedToolNotice
-            reasonKey="woff2"
-            formatTitle="TTF to WOFF2"
-            language={locale}
-          />
-        );
-      }
+      const formatTitle = normSlug === "/ttf-to-woff2" ? "TTF to WOFF2" : "WOFF2 to TTF";
       return (
-        <FontWorkspace
-          mode="woff2-to-ttf"
-          title={meta.title}
-          description={meta.description}
+        <GatedToolNotice
+          reasonKey="woff2"
+          formatTitle={formatTitle}
           language={locale}
         />
       );

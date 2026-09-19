@@ -57,83 +57,15 @@ export class FontEngine {
    * - privOffset: 0
    * - privLength: 0
    */
-  static ttfToWoff2(fontBytes: Uint8Array): Uint8Array {
-    if (fontBytes.length < 12) throw new Error("Invalid TTF font payload");
-
-    const view = new DataView(fontBytes.buffer, fontBytes.byteOffset, fontBytes.byteLength);
-    const flavor = view.getUint32(0, false);
-    const numTables = view.getUint16(4, false);
-
-    // Standard 48-byte WOFF2 header
-    const headerSize = 48;
-    const woff2 = new Uint8Array(headerSize + fontBytes.length);
-    const wView = new DataView(woff2.buffer);
-
-    wView.setUint32(0, 0x774F4632, false); // 'wOF2'
-    wView.setUint32(4, flavor, false);     // Flavor
-    wView.setUint32(8, headerSize + fontBytes.length, false); // Length
-    wView.setUint16(12, numTables, false); // numTables
-    wView.setUint16(14, 0, false);         // reserved
-    wView.setUint32(16, fontBytes.length, false); // totalSfntSize
-    wView.setUint32(20, fontBytes.length, false); // totalCompressedSize
-    wView.setUint16(24, 1, false);         // majorVersion
-    wView.setUint16(26, 0, false);         // minorVersion
-    wView.setUint32(28, 0, false);         // metaOffset
-    wView.setUint32(32, 0, false);         // metaLength
-    wView.setUint32(36, 0, false);         // metaOrigLength
-    wView.setUint32(40, 0, false);         // privOffset
-    wView.setUint32(44, 0, false);         // privLength
-
-    woff2.set(fontBytes, headerSize);
-    return woff2;
+  static ttfToWoff2(_fontBytes: Uint8Array): Uint8Array {
+    throw new Error("WOFF2 encoding is temporarily gated until standard W3C Brotli compression is verified.");
   }
 
   /**
    * Unwraps a WOFF2 container to recover standard TTF / OTF font tables.
    */
-  static woff2ToTtf(woff2Bytes: Uint8Array): Uint8Array {
-    if (woff2Bytes.length < 48) throw new Error("Invalid WOFF2 payload");
-
-    const wView = new DataView(woff2Bytes.buffer, woff2Bytes.byteOffset, woff2Bytes.byteLength);
-    const sig = wView.getUint32(0, false);
-
-    if (sig === 0x00010000 || sig === 0x74727565 || sig === 0x4F54544F) {
-      // Already raw TTF/OTF
-      return woff2Bytes;
-    }
-
-    if (sig !== 0x774F4632) {
-      // Fall back to WOFF 1.0 unwrap if signature is WOFF
-      if (sig === 0x774F4646) {
-        return this.woffToTtf(woff2Bytes);
-      }
-      throw new Error("Invalid WOFF2 signature header (expected 'wOF2')");
-    }
-
-    const flavor = wView.getUint32(4, false);
-    const totalSfntSize = wView.getUint32(16, false);
-
-    if (woff2Bytes.length >= 48 + 12) {
-      const payloadCandidate = woff2Bytes.subarray(48);
-      const cView = new DataView(payloadCandidate.buffer, payloadCandidate.byteOffset, payloadCandidate.byteLength);
-      const cSig = cView.getUint32(0, false);
-      if (cSig === flavor || cSig === 0x00010000 || cSig === 0x74727565 || cSig === 0x4F54544F) {
-        // Return a clean copy with zero byteOffset
-        const out = new Uint8Array(totalSfntSize || payloadCandidate.length);
-        out.set(payloadCandidate.subarray(0, out.length));
-        return out;
-      }
-    }
-
-    // Default unwrap
-    const ttf = new Uint8Array(Math.max(totalSfntSize, 12));
-    const tView = new DataView(ttf.buffer);
-    tView.setUint32(0, flavor || 0x00010000, false);
-    tView.setUint16(4, wView.getUint16(12, false), false);
-    if (woff2Bytes.length > 48) {
-      ttf.set(woff2Bytes.subarray(48, Math.min(woff2Bytes.length, 48 + ttf.length - 12)), 12);
-    }
-    return ttf;
+  static woff2ToTtf(_woff2Bytes: Uint8Array): Uint8Array {
+    throw new Error("WOFF2 decoding is temporarily gated until standard W3C Brotli decompression is verified.");
   }
 
   /**

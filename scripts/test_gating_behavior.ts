@@ -1,51 +1,140 @@
 import { chromium } from 'playwright';
 
-async function testGating() {
-  console.log('Verifying localized gating notices in browser...');
+async function testGatingAndPricing() {
+  console.log('Verifying localized gating notices and pricing assertions in browser...');
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
 
-  // Test 1: English TTF to WOFF2
+  const errors: string[] = [];
+
+  function assert(condition: boolean, message: string) {
+    if (!condition) {
+      console.error(`❌ Assertion Failed: ${message}`);
+      errors.push(message);
+    } else {
+      console.log(`✅ Passed: ${message}`);
+    }
+  }
+
+  // 1. Forward WOFF2 route: /en/ttf-to-woff2
   await page.goto('http://localhost:3000/en/ttf-to-woff2');
-  const woff2Notice = await page.locator('[data-testid="gated-tool-notice"]').isVisible();
-  console.log('1. /en/ttf-to-woff2 gated notice visible:', woff2Notice);
-  const woff2Text = await page.locator('[data-testid="gated-tool-notice"]').textContent();
-  console.log('   Contains Brotli explanation:', woff2Text?.includes('Brotli'));
+  const ttfToWoff2Gated = await page.locator('[data-testid="gated-tool-notice"]').isVisible();
+  assert(ttfToWoff2Gated, '/en/ttf-to-woff2 must display gated-tool-notice');
+  const ttfToWoff2Text = (await page.locator('[data-testid="gated-tool-notice"]').textContent()) || '';
+  assert(
+    ttfToWoff2Text.includes('WOFF2 Conversion Temporarily Unavailable') &&
+    ttfToWoff2Text.includes('standard font compression') &&
+    !ttfToWoff2Text.includes('Brotli'), // Customer friendly, no raw codec jargon
+    '/en/ttf-to-woff2 must display concise customer-friendly explanation without codec internals'
+  );
 
-  // Test 2: Spanish MOBI to PDF
+  // 2. Reverse WOFF2 route: /en/woff2-to-ttf
+  await page.goto('http://localhost:3000/en/woff2-to-ttf');
+  const woff2ToTtfGated = await page.locator('[data-testid="gated-tool-notice"]').isVisible();
+  assert(woff2ToTtfGated, '/en/woff2-to-ttf must display gated-tool-notice');
+  const woff2ToTtfText = (await page.locator('[data-testid="gated-tool-notice"]').textContent()) || '';
+  assert(
+    woff2ToTtfText.includes('WOFF2 Conversion Temporarily Unavailable') &&
+    !woff2ToTtfText.includes('Brotli'),
+    '/en/woff2-to-ttf must display customer-friendly notice and not expose raw decoder/codec internals'
+  );
+
+  // 3. MOBI route: /es/mobi-to-pdf
   await page.goto('http://localhost:3000/es/mobi-to-pdf');
-  const mobiNotice = await page.locator('[data-testid="gated-tool-notice"]').isVisible();
-  console.log('2. /es/mobi-to-pdf gated notice visible:', mobiNotice);
-  const mobiText = await page.locator('[data-testid="gated-tool-notice"]').textContent();
-  console.log('   Contains PalmDOC explanation:', mobiText?.includes('PalmDOC'));
+  const mobiGated = await page.locator('[data-testid="gated-tool-notice"]').isVisible();
+  assert(mobiGated, '/es/mobi-to-pdf must display gated-tool-notice');
+  const mobiText = (await page.locator('[data-testid="gated-tool-notice"]').textContent()) || '';
+  assert(
+    mobiText.includes('Conversión MOBI no disponible') &&
+    !mobiText.includes('PalmDOC'), // No raw codec internals
+    '/es/mobi-to-pdf must display localized Spanish notice with working alternative'
+  );
 
-  // Test 3: German AZW3 to PDF
+  // 4. AZW3 route: /de/azw3-to-pdf
   await page.goto('http://localhost:3000/de/azw3-to-pdf');
-  const azw3Notice = await page.locator('[data-testid="gated-tool-notice"]').isVisible();
-  console.log('3. /de/azw3-to-pdf gated notice visible:', azw3Notice);
-  const azw3Text = await page.locator('[data-testid="gated-tool-notice"]').textContent();
-  console.log('   Contains KF8 explanation:', azw3Text?.includes('KF8'));
+  const azw3Gated = await page.locator('[data-testid="gated-tool-notice"]').isVisible();
+  assert(azw3Gated, '/de/azw3-to-pdf must display gated-tool-notice');
+  const azw3Text = (await page.locator('[data-testid="gated-tool-notice"]').textContent()) || '';
+  assert(
+    azw3Text.includes('AZW3-Konvertierung') &&
+    !azw3Text.includes('KF8'), // No raw codec internals
+    '/de/azw3-to-pdf must display localized German notice with working alternative'
+  );
 
-  // Test 4: Verified EPUB to PDF is NOT gated and operational
+  // 5. Operational route: /en/epub-to-pdf
   await page.goto('http://localhost:3000/en/epub-to-pdf');
   const epubDropzone = await page.locator('[data-testid="ebook-dropzone"]').isVisible();
   const epubGated = await page.locator('[data-testid="gated-tool-notice"]').isVisible();
-  console.log('4. /en/epub-to-pdf operational (dropzone visible, NOT gated):', epubDropzone && !epubGated);
+  assert(epubDropzone && !epubGated, '/en/epub-to-pdf must be operational and NOT gated');
 
-  // Test 5: Check homepage footer note has €4.90 Job Pass
-  await page.goto('http://localhost:3000/en');
-  const footerText = await page.locator('footer').textContent();
-  console.log('5. Homepage footer includes Job Pass €4.90 for 7 days:', footerText?.includes('Job Pass €4.90'));
+  // 6. Pricing & localized footer terms assertions across sample locales
+  const pricingChecks = [
+    {
+      locale: 'en',
+      path: '/en',
+      expectedSubstrings: ['Job Pass €4.90 for 7 days (never renews)'],
+      forbiddenSubstrings: ['€4.99', '4,99']
+    },
+    {
+      locale: 'es',
+      path: '/es',
+      expectedSubstrings: ['Job Pass 4,90 € por 7 días (sin renovación automática)'],
+      forbiddenSubstrings: ['4,99', '4.99', 'Free basic tools']
+    },
+    {
+      locale: 'de',
+      path: '/de',
+      expectedSubstrings: ['Job-Pass 4,90 € für 7 Tage (keine automatische Verlängerung)'],
+      forbiddenSubstrings: ['4,99', '4.99', 'Free basic tools']
+    },
+    {
+      locale: 'ar',
+      path: '/ar',
+      expectedSubstrings: ['تذكرة مهام €4.90 لمدة 7 أيام (لا تتجدد تلقائياً)'],
+      forbiddenSubstrings: ['4,99', '4.99', 'Free basic tools']
+    },
+    {
+      locale: 'ja',
+      path: '/ja',
+      expectedSubstrings: ['ジョブパス €4.90（7日間・自動更新なし）'],
+      forbiddenSubstrings: ['4,99', '4.99', 'Free basic tools']
+    },
+    {
+      locale: 'zh-CN',
+      path: '/zh-CN',
+      expectedSubstrings: ['任务通行证 €4.90 有效期 7 天（永不自动续费）'],
+      forbiddenSubstrings: ['4,99', '4.99', 'Free basic tools']
+    }
+  ];
+
+  for (const check of pricingChecks) {
+    await page.goto(`http://localhost:3000${check.path}`);
+    const footerText = (await page.locator('footer').textContent()) || '';
+
+    for (const exp of check.expectedSubstrings) {
+      assert(
+        footerText.includes(exp),
+        `Footer on ${check.path} must contain expected localized terms: "${exp}"`
+      );
+    }
+    for (const forb of check.forbiddenSubstrings) {
+      assert(
+        !footerText.includes(forb),
+        `Footer on ${check.path} must NOT contain forbidden substring: "${forb}"`
+      );
+    }
+  }
 
   await browser.close();
 
-  if (!woff2Notice || !mobiNotice || !azw3Notice || !epubDropzone || epubGated) {
-    throw new Error('Gating verification failed!');
+  if (errors.length > 0) {
+    throw new Error(`Gating and pricing verification failed with ${errors.length} error(s):\n${errors.join('\n')}`);
   }
-  console.log('\n✅ All gating and pricing browser assertions passed cleanly!');
+
+  console.log('\n🎉 ALL GATING AND PRICING ASSERTIONS PASSED DETERMINISTICALLY!');
 }
 
-testGating().catch(err => {
-  console.error('Test failed:', err);
+testGatingAndPricing().catch(err => {
+  console.error('\n💥 TEST RUNNER ABORTED WITH ERROR:\n', err);
   process.exit(1);
 });

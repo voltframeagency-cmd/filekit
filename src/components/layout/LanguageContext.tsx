@@ -54,7 +54,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "熱門推薦工具",
     "homepage.browseAll": "探索全部 100+ 工具 →",
     "homepage.viewAll": "探索全部 100+ 工具 →",
-    "homepage.footerNote": "Free basic tools. Job Pass €4.90 for 7 days (never renews). No hidden subscriptions.",
+    "homepage.footerNote": "免費基礎工具。任務通行證 €4.90 有效期 7 天（永不自動續費）。無任何隱藏訂閱。",
 
     "tool.compress.desc": "減少 PDF 檔案大小",
     "tool.merge.title": "合併 PDF",
@@ -182,7 +182,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "常用热门工具",
     "homepage.browseAll": "探索全部 100+ 工具 →",
     "homepage.viewAll": "探索全部 100+ 工具 →",
-    "homepage.footerNote": "Free basic tools. Job Pass €4.90 for 7 days (never renews). No hidden subscriptions.",
+    "homepage.footerNote": "免费基础工具。任务通行证 €4.90 有效期 7 天（永不自动续费）。无任何隐藏订阅。",
 
     "tool.compress.desc": "缩减 PDF 文件体积",
     "tool.merge.title": "合并 PDF",
@@ -437,7 +437,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Herramientas populares",
     "homepage.browseAll": "Ver todas las herramientas →",
     "homepage.viewAll": "Ver todas las herramientas →",
-    "homepage.footerNote": "Herramientas básicas gratuitas. Sin registros ni suscripciones ocultas.",
+    "homepage.footerNote": "Herramientas básicas gratuitas. Job Pass 4,90 € por 7 días (sin renovación automática). Sin suscripciones ocultas.",
     
     "tool.compress.desc": "Reduce el tamaño de tus PDFs",
     "tool.merge.title": "Unir PDF",
@@ -568,7 +568,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Herramientas populares",
     "homepage.browseAll": "Ver todas las herramientas →",
     "homepage.viewAll": "Ver todas las herramientas →",
-    "homepage.footerNote": "Herramientas básicas gratuitas. Sin tarifas ocultas ni suscripciones obligatorias.",
+    "homepage.footerNote": "Herramientas básicas gratis. Job Pass $4.90 por 7 días (sin renovación automática). Sin suscripciones ocultas.",
     
     "tool.compress.desc": "Reduce el tamaño de tus archivos PDF",
     "tool.merge.title": "Unir PDF",
@@ -700,7 +700,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Beliebte Tools",
     "homepage.browseAll": "Alle Tools ansehen →",
     "homepage.viewAll": "Alle Tools ansehen →",
-    "homepage.footerNote": "Kostenlose Basistools. Keine versteckten Abonnements oder Testphasen.",
+    "homepage.footerNote": "Kostenlose Basis-Tools. Job-Pass 4,90 € für 7 Tage (keine automatische Verlängerung). Keine versteckten Abos.",
     
     "tool.compress.desc": "PDF-Dateigröße reduzieren",
     "tool.merge.title": "PDF zusammenfügen",
@@ -833,7 +833,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Outils populaires",
     "homepage.browseAll": "Voir tous les outils →",
     "homepage.viewAll": "Voir tous les outils →",
-    "homepage.footerNote": "Outils de base gratuits. Sans abonnement caché ni période d'essai.",
+    "homepage.footerNote": "Outils de base gratuits. Job Pass 4,90 € pour 7 jours (sans renouvellement automatique). Sans abonnement caché.",
     
     "tool.compress.desc": "Réduire la taille des PDF",
     "tool.merge.title": "Fusionner PDF",
@@ -967,7 +967,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Ferramentas populares",
     "homepage.browseAll": "Ver todas as ferramentas →",
     "homepage.viewAll": "Ver todas as ferramentas →",
-    "homepage.footerNote": "Ferramentas básicas gratuitas. Sem subscrições ocultas ou períodos de teste.",
+    "homepage.footerNote": "Ferramentas básicas gratuitas. Job Pass 4,90 € por 7 dias (sem renovação automática). Sem subscrições ocultas.",
     
     "tool.compress.desc": "Reduzir o tamanho de PDFs",
     "tool.merge.title": "Juntar PDF",
@@ -1102,7 +1102,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Ferramentas populares",
     "homepage.browseAll": "Ver todas as ferramentas →",
     "homepage.viewAll": "Ver todas as ferramentas →",
-    "homepage.footerNote": "Ferramentas básicas gratuitas. Sem assinaturas ocultas ou períodos de teste.",
+    "homepage.footerNote": "Ferramentas básicas gratuitas. Job Pass R$ 4,90 por 7 dias (sem renovação automática). Sem assinaturas ocultas.",
     
     "tool.compress.desc": "Reduza o tamanho de PDFs",
     "tool.merge.title": "Juntar PDF",
@@ -1238,7 +1238,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Strumenti popolari",
     "homepage.browseAll": "Tutti gli strumenti →",
     "homepage.viewAll": "Tutti gli strumenti →",
-    "homepage.footerNote": "Strumenti di base gratuiti. Nessun abbonamento nascosto o periodo di prova.",
+    "homepage.footerNote": "Strumenti di base gratuiti. Job Pass 4,90 € per 7 giorni (senza rinnovo automatico). Nessun abbonamento nascosto.",
     
     "tool.compress.desc": "Riduci le dimensioni dei file PDF",
     "tool.merge.title": "Unisci PDF",
@@ -1375,7 +1375,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Populaire tools",
     "homepage.browseAll": "Alle tools bekijken →",
     "homepage.viewAll": "Alle tools bekijken →",
-    "homepage.footerNote": "Gratis basistools. Geen verborgen abonnementen of proefperiodes.",
+    "homepage.footerNote": "Gratis basistools. Job Pass € 4,90 voor 7 dagen (vernieuwt nooit). Geen verborgen abonnementen.",
     
     "tool.compress.desc": "Verklein PDF-bestandsgrootte",
     "tool.merge.title": "PDF Samenvoegen",
@@ -1513,7 +1513,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Eines populars",
     "homepage.browseAll": "Veure totes les eines →",
     "homepage.viewAll": "Veure totes les eines →",
-    "homepage.footerNote": "Eines bàsiques gratuïtes. Sense subscripcions ocultes ni períodes de prova.",
+    "homepage.footerNote": "Eines bàsiques gratuïtes. Job Pass 4,90 € per 7 dies (sense renovació automàtica). Sense subscripcions ocultes.",
     
     "tool.compress.desc": "Redueix la mida de fitxers PDF",
     "tool.merge.title": "Unir PDF",
@@ -1642,7 +1642,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.methodShown": "تظهر طريقة المعالجة قبل البدء في أي شيء.",
     "homepage.popularTools": "الأدوات الشائعة",
     "homepage.browseAll": "تصفح جميع الأدوات ←",
-    "homepage.footerNote": "Free basic tools. Job Pass €4.90 for 7 days (never renews). No hidden subscriptions.",
+    "homepage.footerNote": "أدوات أساسية مجانية. تذكرة مهام €4.90 لمدة 7 أيام (لا تتجدد تلقائياً). بدون أي اشتراكات خفية.",
     
     "tool.compress.desc": "تصغير حجم ملفات PDF",
     "tool.merge.title": "دمج PDF",
@@ -1754,7 +1754,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.methodShown": "İşleme yönteminiz başlamadan önce gösterilir.",
     "homepage.popularTools": "Popüler araçlar",
     "homepage.browseAll": "Tüm araçlara göz atın →",
-    "homepage.footerNote": "Ücretsiz temel araçlar. Premium dışa aktarmalar 4,99 €'dan başlar. Gizli denemeler yoktur.",
+    "homepage.footerNote": "Ücretsiz temel araçlar. 7 günlük Job Pass 4,90 € (asla otomatik yenilenmez). Gizli abonelik yok.",
     
     "tool.compress.desc": "PDF'leri küçültün",
     "tool.merge.title": "PDF Birleştir",
@@ -1873,7 +1873,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.methodShown": "Behandlingsmetoden visas innan något startar.",
     "homepage.popularTools": "Populära verktyg",
     "homepage.browseAll": "Se alla verktyg →",
-    "homepage.footerNote": "Gratis basverktyg. Inget konto krävs.",
+    "homepage.footerNote": "Gratis grundverktyg. Jobbpass 4,90 € för 7 dagar (förnyas aldrig). Inga dolda abonnemang.",
     
     "tool.compress.desc": "Gör PDF-filer mindre",
     "tool.merge.title": "Slå samman PDF",

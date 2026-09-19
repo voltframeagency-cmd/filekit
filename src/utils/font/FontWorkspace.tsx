@@ -68,9 +68,7 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
       if (mode === "ttf-to-woff2") {
         throw new Error("WOFF2 output is temporarily gated until standard Brotli W3C codec integration is verified.");
       } else {
-        outBytes = FontEngine.woff2ToTtf(buf);
-        outExt = "ttf";
-        outMime = "font/ttf";
+        throw new Error("WOFF2 decoding is temporarily gated until standard Brotli W3C decompression is verified.");
       }
 
       const blob = new Blob([outBytes as unknown as BlobPart], { type: outMime });
