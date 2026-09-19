@@ -63,12 +63,10 @@ export function FontWorkspace({ mode, title, description, embedded = true, langu
 
       // Convert
       let outBytes: Uint8Array;
-      let outExt = "woff2";
-      let outMime = "font/woff2";
+      let outExt = "ttf";
+      let outMime = "font/ttf";
       if (mode === "ttf-to-woff2") {
-        outBytes = FontEngine.ttfToWoff2(buf);
-        outExt = "woff2";
-        outMime = "font/woff2";
+        throw new Error("WOFF2 output is temporarily gated until standard Brotli W3C codec integration is verified.");
       } else {
         outBytes = FontEngine.woff2ToTtf(buf);
         outExt = "ttf";

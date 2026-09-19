@@ -68,9 +68,9 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
         outputMime = "application/epub+zip";
         extension = "epub";
       } else if (mode === "mobi-to-pdf") {
-        outputBytes = await EbookEngine.mobiToPdf(buf);
+        throw new Error("MOBI conversion is temporarily gated pending verified PalmDOC LZ77 parser integration.");
       } else if (mode === "azw3-to-pdf") {
-        outputBytes = await EbookEngine.azw3ToPdf(buf);
+        throw new Error("AZW3 conversion is temporarily gated pending verified KF8 container parser integration.");
       } else {
         outputBytes = await EbookEngine.epubToPdf(buf);
       }

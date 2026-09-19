@@ -20,6 +20,7 @@ import { ArchiveWorkspace } from "@/utils/archive/ArchiveWorkspace";
 import { PrivacyWorkspace } from "@/utils/privacy/PrivacyWorkspace";
 import { FontWorkspace } from "@/utils/font/FontWorkspace";
 import { EbookWorkspace } from "@/utils/ebook/EbookWorkspace";
+import GatedToolNotice from "@/components/gating/GatedToolNotice";
 import AudioWorkspace from "@/utils/audio/AudioWorkspace";
 import VideoWorkspace from "@/utils/video/VideoWorkspace";
 import SubtitleWorkspace from "@/utils/subtitles/SubtitleWorkspace";
@@ -246,10 +247,18 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
 
     // 6. Font Tools
     if (normSlug === "/ttf-to-woff2" || normSlug === "/woff2-to-ttf") {
-      const fontMode = normSlug === "/ttf-to-woff2" ? "ttf-to-woff2" : "woff2-to-ttf";
+      if (normSlug === "/ttf-to-woff2") {
+        return (
+          <GatedToolNotice
+            reasonKey="woff2"
+            formatTitle="TTF to WOFF2"
+            language={locale}
+          />
+        );
+      }
       return (
         <FontWorkspace
-          mode={fontMode}
+          mode="woff2-to-ttf"
           title={meta.title}
           description={meta.description}
           language={locale}
@@ -264,7 +273,25 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
       normSlug === "/mobi-to-pdf" ||
       normSlug === "/azw3-to-pdf"
     ) {
-      const ebookMode = normSlug.replace(/^\//, "") as "epub-to-pdf" | "pdf-to-epub" | "mobi-to-pdf" | "azw3-to-pdf";
+      if (normSlug === "/mobi-to-pdf") {
+        return (
+          <GatedToolNotice
+            reasonKey="mobi"
+            formatTitle="Kindle MOBI to PDF"
+            language={locale}
+          />
+        );
+      }
+      if (normSlug === "/azw3-to-pdf") {
+        return (
+          <GatedToolNotice
+            reasonKey="azw3"
+            formatTitle="Amazon AZW3 (KF8) to PDF"
+            language={locale}
+          />
+        );
+      }
+      const ebookMode = normSlug.replace(/^\//, "") as "epub-to-pdf" | "pdf-to-epub";
       return (
         <EbookWorkspace
           mode={ebookMode}

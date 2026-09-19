@@ -27,29 +27,29 @@ export default function ResultFirstPaywall({
 
   const plans: PurchasePlan[] = [
     {
-      id: "single-export",
-      name: t("paywall.single.title"),
-      price: "€4.99",
+      id: "job-pass",
+      name: t("paywall.pass.title"), // "Job Pass (7 Days)"
+      price: "€4.90",
       billingFrequency: "once",
-      renewalLanguage: t("paywall.single.billing"),
-      tagline: t("paywall.single.tagline"),
-    },
-    {
-      id: "pass-24h",
-      name: t("paywall.pass.title"),
-      price: "€7.99",
-      billingFrequency: "once",
-      renewalLanguage: t("paywall.pass.billing"),
+      renewalLanguage: t("paywall.pass.billing"), // "Never renews · One-time"
       tagline: t("paywall.pass.tagline"),
       badge: t("paywall.pass.badge"), // "Best value"
     },
     {
       id: "pro-monthly",
-      name: t("paywall.pro.title"),
-      price: "€9.99",
+      name: t("paywall.pro.title"), // "Pro"
+      price: "€9.00",
       billingFrequency: "monthly",
-      renewalLanguage: t("paywall.pro.billing"),
+      renewalLanguage: t("paywall.pro.billing"), // "Renews monthly · Cancel anytime"
       tagline: t("paywall.pro.tagline"),
+    },
+    {
+      id: "team-monthly",
+      name: t("paywall.single.title"), // "Team"
+      price: "€12.00",
+      billingFrequency: "monthly",
+      renewalLanguage: t("paywall.single.billing"),
+      tagline: t("paywall.single.tagline"),
     },
   ];
 
