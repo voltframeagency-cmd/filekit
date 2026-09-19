@@ -117,6 +117,77 @@ export class EbookEngine {
       lineCountOnPage++;
     }
 
+    return this.renderTextToPdf(extractedText);
+  }
+
+  /**
+   * Internal reusable helper to layout sanitized book text into a multipage vector PDF.
+   */
+  static async renderTextToPdf(text: string): Promise<Uint8Array> {
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontSize = 11;
+    const lineHeight = 16;
+    const margin = 50;
+    const pageWidth = 595.28;  // A4
+    const pageHeight = 841.89; // A4
+    const usableWidth = pageWidth - margin * 2;
+    const usableHeight = pageHeight - margin * 2;
+    const maxLinesPerPage = Math.floor(usableHeight / lineHeight);
+
+    // Sanitize text with smart typography transliteration
+    const sanitizedText = this.sanitizeTypographyToAscii(text);
+    const rawParagraphs = sanitizedText.split("\n");
+    const lines: string[] = [];
+
+    for (const paragraph of rawParagraphs) {
+      const words = paragraph.split(" ").filter(Boolean);
+      if (words.length === 0) {
+        lines.push("");
+        continue;
+      }
+      let currentLine = "";
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const width = font.widthOfTextAtSize(testLine, fontSize);
+        if (width < usableWidth) {
+          currentLine = testLine;
+        } else {
+          if (currentLine) lines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+    }
+
+    if (lines.length === 0) lines.push("Empty E-Book document.");
+
+    // Render pages
+    let page = pdfDoc.addPage([pageWidth, pageHeight]);
+    let currentY = pageHeight - margin;
+    let lineCountOnPage = 0;
+
+    for (const line of lines) {
+      if (lineCountOnPage >= maxLinesPerPage) {
+        page = pdfDoc.addPage([pageWidth, pageHeight]);
+        currentY = pageHeight - margin;
+        lineCountOnPage = 0;
+      }
+
+      if (line) {
+        page.drawText(line, {
+          x: margin,
+          y: currentY,
+          size: fontSize,
+          font,
+          color: rgb(0.1, 0.1, 0.1),
+        });
+      }
+
+      currentY -= lineHeight;
+      lineCountOnPage++;
+    }
+
     return await pdfDoc.save();
   }
 
@@ -171,42 +242,124 @@ export class EbookEngine {
   }
 
   /**
-   * Converts a Kindle MOBI file into a clean printable vector PDF.
+   * Converts a Kindle MOBI file (PalmDOC container / MOBI header) into a clean printable vector PDF.
    */
   static async mobiToPdf(mobiBytes: Uint8Array): Promise<Uint8Array> {
-    // PalmDOC / MOBI text stream extractor
-    const textDecoder = new TextDecoder("latin1");
-    const raw = textDecoder.decode(mobiBytes.subarray(0, Math.min(mobiBytes.length, 65536)));
-
-    let cleanText = "Kindle MOBI document converted to PDF.";
-    const textMatch = raw.match(/[A-Za-z0-9\s.,;:'"?!-]{50,}/g);
-    if (textMatch && textMatch.length > 0) {
-      cleanText = textMatch.join("\n\n");
+    if (mobiBytes.length < 68) {
+      throw new Error("Invalid MOBI file: payload is too small");
     }
 
-    const sanitized = cleanText
-      .replace(/[\r\n\t]+/g, " ")
-      .replace(/[^\x20-\x7E]/g, " ")
-      .substring(0, 3000);
+    const view = new DataView(mobiBytes.buffer, mobiBytes.byteOffset, mobiBytes.byteLength);
+    const numRecords = view.getUint16(76, false);
 
-    const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const page = pdfDoc.addPage([595.28, 841.89]);
-    page.drawText(sanitized, {
-      x: 50,
-      y: 841.89 - 60,
-      size: 11,
-      font,
-      color: rgb(0.1, 0.1, 0.1),
-    });
+    let extractedText = "";
 
-    return await pdfDoc.save();
+    // Parse Palm Database header and record offsets
+    if (numRecords > 0 && mobiBytes.length >= 78 + numRecords * 8) {
+      const recordOffsets: number[] = [];
+      for (let i = 0; i < numRecords; i++) {
+        recordOffsets.push(view.getUint32(78 + i * 8, false));
+      }
+
+      // Record 0 holds the PalmDOC / MOBI header
+      const record0Offset = recordOffsets[0];
+      if (record0Offset < mobiBytes.length) {
+        const r0View = new DataView(mobiBytes.buffer, mobiBytes.byteOffset + record0Offset, mobiBytes.byteLength - record0Offset);
+        const compression = r0View.getUint16(0, false); // 1 = none, 2 = PalmDOC LZ77
+        const textRecordCount = r0View.getUint16(8, false);
+
+        // Read text records (records 1 to textRecordCount)
+        const countToRead = Math.min(textRecordCount || 1, numRecords - 1);
+        for (let r = 1; r <= countToRead; r++) {
+          const start = recordOffsets[r];
+          const end = r < numRecords - 1 ? recordOffsets[r + 1] : mobiBytes.length;
+          if (start < mobiBytes.length && end > start) {
+            const recordBytes = mobiBytes.subarray(start, end);
+            if (compression === 1) {
+              extractedText += new TextDecoder("utf-8").decode(recordBytes);
+            } else {
+              // Uncompressed slice / latin1 fallback
+              extractedText += new TextDecoder("latin1").decode(recordBytes);
+            }
+          }
+        }
+      }
+    }
+
+    // Fallback stream scan if record table was missing or non-standard
+    if (!extractedText.trim()) {
+      const raw = new TextDecoder("latin1").decode(mobiBytes.subarray(0, Math.min(mobiBytes.length, 131072)));
+      const matches = raw.match(/[A-Za-z0-9\s.,;:'"?!-]{30,}/g);
+      if (matches && matches.length > 0) {
+        extractedText = matches.join("\n\n");
+      } else {
+        extractedText = "Kindle MOBI document converted to PDF.";
+      }
+    }
+
+    // Clean HTML tags if MOBI contained HTML formatted chapter text
+    const cleanText = extractedText
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return this.renderTextToPdf(cleanText || "Kindle MOBI document converted to PDF.");
   }
 
   /**
-   * Converts an Amazon AZW3 / KF8 e-book into a vector PDF.
+   * Converts an Amazon AZW3 / KF8 e-book container into a vector PDF.
+   * AZW3 (KF8) embeds an EPUB/XHTML-like flow inside PalmDOC records with 'BOOKMOBI' and KF8 boundary tables.
    */
   static async azw3ToPdf(azw3Bytes: Uint8Array): Promise<Uint8Array> {
-    return this.mobiToPdf(azw3Bytes);
+    if (azw3Bytes.length < 68) {
+      throw new Error("Invalid AZW3 file: payload is too small");
+    }
+
+    const view = new DataView(azw3Bytes.buffer, azw3Bytes.byteOffset, azw3Bytes.byteLength);
+    const numRecords = view.getUint16(76, false);
+
+    let extractedText = "";
+
+    // Parse KF8 Palm record table
+    if (numRecords > 0 && azw3Bytes.length >= 78 + numRecords * 8) {
+      const recordOffsets: number[] = [];
+      for (let i = 0; i < numRecords; i++) {
+        recordOffsets.push(view.getUint32(78 + i * 8, false));
+      }
+
+      // Scan records for KF8 / XHTML content
+      for (let r = 1; r < Math.min(numRecords, 30); r++) {
+        const start = recordOffsets[r];
+        const end = r < numRecords - 1 ? recordOffsets[r + 1] : azw3Bytes.length;
+        if (start < azw3Bytes.length && end > start) {
+          const slice = azw3Bytes.subarray(start, end);
+          const str = new TextDecoder("utf-8").decode(slice);
+          if (str.includes("<html") || str.includes("<body") || str.includes("<p") || str.includes("KF8")) {
+            extractedText += str + "\n";
+          }
+        }
+      }
+    }
+
+    if (!extractedText.trim()) {
+      const raw = new TextDecoder("utf-8").decode(azw3Bytes.subarray(0, Math.min(azw3Bytes.length, 131072)));
+      const matches = raw.match(/[A-Za-z0-9\s.,;:'"?!-]{30,}/g);
+      if (matches && matches.length > 0) {
+        extractedText = matches.join("\n\n");
+      } else {
+        extractedText = "Amazon Kindle AZW3 / KF8 document converted to PDF.";
+      }
+    }
+
+    const cleanText = extractedText
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return this.renderTextToPdf(cleanText || "Amazon Kindle AZW3 / KF8 document converted to PDF.");
   }
 }

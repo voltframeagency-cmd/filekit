@@ -81,15 +81,17 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
       setOutputBlob(blob);
       setOutputUrl(url);
       setOutputFileName(selectedFile.name.replace(/\.[^/.]+$/, "") + `.${extension}`);
-    } catch (err) {
-      console.error(err);
-      setError(tr.errorDrmOrCorrupt);
+    } catch (err: any) {
+      console.error("Ebook conversion error:", err?.message || err);
+      setError(err?.message ? `Failed: ${err.message}` : tr.errorDrmOrCorrupt);
     } finally {
       setLoading(false);
     }
   };
 
   const isEpubOutput = mode === "pdf-to-epub";
+
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white rounded-fk-xl shadow-fk-card border border-slate-100">
@@ -108,19 +110,21 @@ export function EbookWorkspace({ mode, title, description, embedded = true, lang
         <div
           data-testid="ebook-dropzone"
           className="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-fk-xl p-8 sm:p-12 text-center bg-slate-50 hover:bg-blue-50/40 transition-colors cursor-pointer"
-          onClick={() => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = getAcceptExtensions();
-            input.onchange = (e) => {
-              const fileList = (e.target as HTMLInputElement).files;
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <input
+            ref={fileInputRef}
+            data-testid="ebook-file-input"
+            type="file"
+            accept={getAcceptExtensions()}
+            className="hidden"
+            onChange={(e) => {
+              const fileList = e.target.files;
               if (fileList && fileList[0]) {
                 handleFileSelected(fileList[0]);
               }
-            };
-            input.click();
-          }}
-        >
+            }}
+          />
           <div className="w-14 h-14 mx-auto mb-3 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
