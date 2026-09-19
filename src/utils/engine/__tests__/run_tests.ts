@@ -434,6 +434,57 @@ async function runCancellationLifecycleTest() {
   console.log("✓ Cancellation lifecycle aborted loop and suppressed callbacks successfully.");
 }
 
+async function runWorkerBoundaryCancellationTest() {
+  console.log("Running Worker Boundary Cancellation Test...");
+  const { LocalPdfCompressionEngine } = await import("../LocalPdfCompressionEngine");
+  let workerTerminated = false;
+  let postMessageCalled = false;
+
+  class MockWorker {
+    onmessage: any = null;
+    onerror: any = null;
+    postMessage(_data: any) {
+      postMessageCalled = true;
+    }
+    terminate() {
+      workerTerminated = true;
+    }
+  }
+
+  const origWorker = (globalThis as any).Worker;
+  (globalThis as any).Worker = MockWorker;
+
+  try {
+    const controller = new AbortController();
+    const promise = (LocalPdfCompressionEngine as any).runWorkerPass(
+      new ArrayBuffer(100),
+      1.0,
+      0.8,
+      controller.signal
+    );
+
+    assert.strictEqual(postMessageCalled, true, "Worker must receive message");
+    assert.strictEqual(workerTerminated, false, "Worker must not be terminated prematurely");
+
+    // Fire cancellation
+    controller.abort();
+
+    let errorThrown = false;
+    try {
+      await promise;
+    } catch (err: any) {
+      errorThrown = true;
+      assert.strictEqual(err.name, "AbortError", "Must reject with AbortError");
+    }
+
+    assert.strictEqual(errorThrown, true, "Cancelled promise must reject");
+    assert.strictEqual(workerTerminated, true, "Web Worker terminate() must be called at the worker boundary on abort");
+    console.log("✓ Worker boundary cancellation verified: worker.terminate() invoked deterministically.");
+  } finally {
+    (globalThis as any).Worker = origWorker;
+  }
+}
+
 // ==========================================
 // PHASE 1C SPECIFIC TESTS
 // ==========================================
@@ -750,6 +801,7 @@ async function main() {
     runEntitlementTransitionTest();
     runConsentBeforeUploadTest();
     await runCancellationLifecycleTest();
+    await runWorkerBoundaryCancellationTest();
     
     // Run Phase 1C tests
     await runEntitlementResultMappingTest();

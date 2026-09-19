@@ -28,7 +28,8 @@ export class LocalPdfCompressionEngine {
   static async compress(
     arrayBuffer: ArrayBuffer,
     targetSize: number,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
+    abortSignal?: AbortSignal
   ): Promise<CompressionResult> {
     // 1. Run Preflight check (checks header signature, encryption, signatures)
     const report = await PdfPreflightInspector.inspect(arrayBuffer);
@@ -72,6 +73,9 @@ export class LocalPdfCompressionEngine {
     }> = [];
 
     for (let iteration = 0; iteration < maxIterations; iteration++) {
+      if (abortSignal?.aborted) {
+        throw new DOMException("Aborted", "AbortError");
+      }
       attemptsRun++;
       if (onProgress) {
         onProgress(Math.round((iteration / maxIterations) * 100));
@@ -82,7 +86,7 @@ export class LocalPdfCompressionEngine {
       try {
         // Slice to get a fresh array buffer for transfer, keeping original untouched
         const sliceToTransfer = originalUint8.slice(0).buffer;
-        const result = await this.runWorkerPass(sliceToTransfer, step.scale, step.quality);
+        const result = await this.runWorkerPass(sliceToTransfer, step.scale, step.quality, abortSignal);
         
         // Verify PDF structure
         await PDFDocument.load(result.buffer);
@@ -105,7 +109,10 @@ export class LocalPdfCompressionEngine {
             break;
           }
         }
-      } catch (err) {
+      } catch (err: any) {
+        if (err.name === "AbortError" || abortSignal?.aborted) {
+          throw err;
+        }
         console.warn(`Worker iteration ${iteration} failed:`, err);
       }
     }
@@ -131,7 +138,8 @@ export class LocalPdfCompressionEngine {
   private static runWorkerPass(
     buffer: ArrayBuffer,
     scale: number,
-    quality: number
+    quality: number,
+    abortSignal?: AbortSignal
   ): Promise<{
     buffer: ArrayBuffer;
     replacedCount: number;
@@ -143,6 +151,31 @@ export class LocalPdfCompressionEngine {
       // Instantiate worker using Next.js Turbopack standard syntax
       const worker = new Worker(new URL("./pdf.worker.ts", import.meta.url));
 
+      let cleanedUp = false;
+      const cleanup = () => {
+        if (cleanedUp) return;
+        cleanedUp = true;
+        if (abortSignal) {
+          abortSignal.removeEventListener("abort", onAbort);
+        }
+        try {
+          worker.terminate();
+        } catch {}
+      };
+
+      const onAbort = () => {
+        cleanup();
+        reject(new DOMException("Aborted", "AbortError"));
+      };
+
+      if (abortSignal) {
+        if (abortSignal.aborted) {
+          onAbort();
+          return;
+        }
+        abortSignal.addEventListener("abort", onAbort, { once: true });
+      }
+
       worker.onmessage = (e) => {
         const {
           status,
@@ -153,7 +186,7 @@ export class LocalPdfCompressionEngine {
           timingCompressMs,
           timingSaveMs
         } = e.data;
-        worker.terminate();
+        cleanup();
 
         if (status === "success") {
           resolve({
@@ -169,7 +202,7 @@ export class LocalPdfCompressionEngine {
       };
 
       worker.onerror = (err) => {
-        worker.terminate();
+        cleanup();
         reject(err);
       };
 

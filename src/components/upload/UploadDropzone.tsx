@@ -136,9 +136,12 @@ export default function UploadDropzone({
       <button
         type="button"
         onClick={onButtonClick}
-        className="h-[48px] px-8 bg-fk-primary hover:bg-fk-primary-hover text-white rounded-fk-md text-[14px] font-bold shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fk-primary focus-visible:ring-offset-2 mb-4"
+        className="h-[52px] px-9 bg-[#0977fd] hover:bg-[#0062d6] text-white rounded-2xl text-[16px] font-extrabold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 inline-flex items-center justify-center gap-2.5 mb-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fk-primary focus-visible:ring-offset-2"
       >
-        {translate("workspace.selectFile") || translate("homepage.chooseFile")}
+        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        <span>{translate("workspace.selectFile") || translate("homepage.chooseFile") || "Select File"}</span>
       </button>
 
       {/* Small Help Text */}

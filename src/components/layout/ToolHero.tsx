@@ -1,8 +1,44 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useLanguage } from "./LanguageContext";
 import { useRouter } from "next/navigation";
+import { SupportedLocale } from "@/config/i18n/locales";
+import { SEARCH_I18N } from "@/config/i18n/searchTranslations";
+import { getLocalizedToolMeta } from "@/utils/i18nHelper";
+
+// Supported operational tool routes in catalog
+const CATALOG_SEARCH_ROUTES = [
+  "/compress-pdf",
+  "/compress-pdf-to-size",
+  "/compress-pdf-to-2mb",
+  "/pdf-to-image",
+  "/pdf-to-jpg",
+  "/pdf-to-png",
+  "/epub-to-pdf",
+  "/compress-image",
+  "/merge-pdf",
+  "/split-pdf",
+  "/rotate-pdf-pages",
+  "/watermark-pdf",
+  "/pdf-to-word",
+  "/word-to-pdf",
+  "/excel-to-pdf",
+  "/powerpoint-to-pdf",
+  "/jpg-to-pdf",
+  "/png-to-pdf",
+  "/resize-image",
+  "/crop-image",
+  "/rotate-image",
+  "/convert-image",
+  "/compress-audio",
+  "/convert-audio",
+  "/compress-video",
+  "/convert-video",
+  "/extract-zip",
+  "/create-zip",
+  "/all-tools",
+];
 
 export default function ToolHero() {
   const { t, language } = useLanguage();
@@ -12,38 +48,56 @@ export default function ToolHero() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const rawLang = (language || "en") as SupportedLocale;
+  const shortLang = (language || "en").split("-")[0] as SupportedLocale;
+  const str = SEARCH_I18N[rawLang] || SEARCH_I18N[shortLang] || SEARCH_I18N.en;
+
   const basePrefix = language && language !== "en" ? `/${language}` : "";
 
-  // Verified operational tools list for instant search
-  const tools = [
-    { name: t("breadcrumb.compress") || "Compress PDF", desc: t("tool.compress.desc") || "Reduce PDF file size", route: "/compress-pdf" },
-    { name: "PDF to Image", desc: "Convert PDF pages to high-quality JPG or PNG images", route: "/pdf-to-image" },
-    { name: "EPUB to PDF", desc: "Convert EPUB ebooks to clean vector PDF documents", route: "/epub-to-pdf" },
-    { name: "Compress Image", desc: "Compress JPEG, PNG, and WebP images locally", route: "/compress-image" },
-    { name: t("tool.merge.title") || "Merge PDF", desc: t("tool.merge.desc") || "Combine multiple PDF files", route: "/merge-pdf" },
-    { name: t("tool.split.title") || "Split PDF", desc: t("tool.split.desc") || "Extract separate PDF pages", route: "/split-pdf" },
-    { name: t("tool.rotate.title") || "Rotate PDF", desc: t("tool.rotate.desc") || "Rotate PDF orientation", route: "/rotate-pdf" },
-    { name: t("tool.watermark.title") || "Watermark PDF", desc: t("tool.watermark.desc") || "Stamp custom watermark on PDF", route: "/watermark-pdf" },
-    { name: "Edit PDF", desc: "Add text, annotations, and shapes to PDF", route: "/edit-pdf" },
-    { name: t("homepage.viewAll") || "All Tools", desc: "Explore the complete directory of 100+ document tools", route: "/all-tools" },
-  ];
+  // Dynamic catalog built with full localized metadata per active locale
+  const tools = useMemo(() => {
+    return CATALOG_SEARCH_ROUTES.map((route) => {
+      if (route === "/all-tools") {
+        return {
+          name: t("homepage.viewAll") || "Explore all 100+ tools",
+          desc: t("homepage.popularTools") || "Directory of 100+ document tools",
+          route,
+        };
+      }
+      const meta = getLocalizedToolMeta(route, rawLang);
+      const cleanTitle = (meta.h1 || meta.title || "").replace(/ \| FileKit$/, "");
+      return {
+        name: cleanTitle,
+        desc: meta.description || "",
+        route,
+      };
+    });
+  }, [rawLang, t]);
 
-  const filteredTools = tools.filter(
-    (tool) =>
-      tool.name.toLowerCase().includes(query.toLowerCase()) ||
-      tool.desc.toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredTools = useMemo(() => {
+    if (!query.trim()) return [];
+    const q = query.toLowerCase();
+    return tools.filter(
+      (tool) =>
+        tool.name.toLowerCase().includes(q) ||
+        tool.desc.toLowerCase().includes(q)
+    );
+  }, [query, tools]);
 
-  // Keyboard shortcut: '/' focuses search input
+  // Keyboard shortcut: '/' focuses search input, preserving normal typing in editable content
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key === "/" &&
-        document.activeElement !== inputRef.current &&
-        !(document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement)
-      ) {
-        e.preventDefault();
-        inputRef.current?.focus();
+      if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const active = document.activeElement;
+        const isEditable =
+          active instanceof HTMLInputElement ||
+          active instanceof HTMLTextAreaElement ||
+          active?.getAttribute("contenteditable") === "true" ||
+          (active as HTMLElement)?.isContentEditable;
+        if (!isEditable) {
+          e.preventDefault();
+          inputRef.current?.focus();
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -70,12 +124,12 @@ export default function ToolHero() {
     }
   };
 
-  const quickChips = [
-    { label: t("breadcrumb.compress") || "Compress PDF", route: "/compress-pdf" },
-    { label: "PDF to Image", route: "/pdf-to-image" },
-    { label: "EPUB to PDF", route: "/epub-to-pdf" },
+  const quickChips = useMemo(() => [
+    { label: getLocalizedToolMeta("/compress-pdf", rawLang).h1 || "Compress PDF", route: "/compress-pdf" },
+    { label: getLocalizedToolMeta("/pdf-to-image", rawLang).h1 || "PDF to Image", route: "/pdf-to-image" },
+    { label: getLocalizedToolMeta("/epub-to-pdf", rawLang).h1 || "EPUB to PDF", route: "/epub-to-pdf" },
     { label: t("homepage.viewAll") || "All Tools →", route: "/all-tools" },
-  ];
+  ], [rawLang, t]);
 
   return (
     <div className="flex flex-col gap-6 max-w-[560px] w-full text-left ltr:text-left rtl:text-right">
@@ -93,7 +147,7 @@ export default function ToolHero() {
         {t("homepage.heroSubtitle") || `${t("hero.subtitle1")} ${t("hero.subtitle2")}`}
       </p>
 
-      {/* Main Large Search Box */}
+      {/* Main Large Search Box with Full WAI-ARIA Combobox Semantics */}
       <div className="relative w-full max-w-[530px]">
         <div className="relative flex items-center bg-white border border-white/20 hover:border-white/40 focus-within:border-white focus-within:ring-2 focus-within:ring-white/30 focus-within:ring-offset-2 focus-within:ring-offset-[#0977fd] rounded-fk-lg shadow-lg transition-all duration-150 h-[56px] px-4">
           <svg
@@ -113,6 +167,13 @@ export default function ToolHero() {
           <input
             ref={inputRef}
             type="text"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={isFocused && query.length > 0}
+            aria-haspopup="listbox"
+            aria-controls="tool-search-results"
+            aria-activedescendant={selectedIndex >= 0 ? `tool-option-${selectedIndex}` : undefined}
+            aria-label={str.searchAriaLabel}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -131,38 +192,46 @@ export default function ToolHero() {
           )}
         </div>
 
-        {/* Dropdown Results */}
+        {/* Dropdown Results Listbox */}
         {isFocused && query.length > 0 && (
-          <div className="absolute left-0 mt-2 w-full bg-white border border-slate-200 shadow-xl rounded-fk-lg overflow-hidden z-20">
+          <div
+            id="tool-search-results"
+            role="listbox"
+            aria-label={str.resultsAriaLabel}
+            className="absolute left-0 mt-2 w-full max-h-[340px] overflow-y-auto bg-white border border-slate-200 shadow-xl rounded-fk-lg overflow-hidden z-20"
+          >
             {filteredTools.length > 0 ? (
               <div className="py-1">
                 {filteredTools.map((tool, idx) => (
                   <button
                     key={idx}
+                    id={`tool-option-${idx}`}
+                    role="option"
+                    aria-selected={idx === selectedIndex}
                     onClick={() => {
                       setQuery("");
                       router.push(`${basePrefix}${tool.route}`);
                     }}
-                    className={`w-full flex flex-col px-4 py-2.5 text-left transition-colors duration-150 ${
+                    className={`w-full flex flex-col px-4 py-2.5 text-left ltr:text-left rtl:text-right transition-colors duration-150 ${
                       idx === selectedIndex ? "bg-blue-50 text-blue-900" : "hover:bg-slate-50"
                     }`}
                   >
                     <span className="text-[14px] font-bold text-slate-900">{tool.name}</span>
-                    <span className="text-[11px] text-slate-500">{tool.desc}</span>
+                    <span className="text-[11px] text-slate-500 line-clamp-1">{tool.desc}</span>
                   </button>
                 ))}
               </div>
             ) : (
               <div className="px-4 py-3 text-center text-[13px] text-slate-500">
-                No tools found matching &quot;{query}&quot;
+                {str.noToolsFound} &quot;{query}&quot;
               </div>
             )}
           </div>
         )}
 
-        {/* Quick Category Chips / Jump Links (Competitor benchmark: Smallpdf / iLovePDF instant shortcuts) */}
+        {/* Quick Category Chips / Jump Links with 39-locale label and translated tools */}
         <div className="flex flex-wrap items-center gap-2 mt-2.5">
-          <span className="text-[12px] font-semibold text-blue-100">Quick jump:</span>
+          <span className="text-[12px] font-semibold text-blue-100">{str.quickJump}</span>
           {quickChips.map((chip, idx) => (
             <button
               key={idx}

@@ -102,4 +102,44 @@ describe("Phase 2A0.3 Cancellation Matrix Unit Tests", () => {
       expect(res.noEntitlementEvents).toBe(true);
     });
   });
+
+  it("terminates Worker immediately at the worker boundary when abortSignal fires", async () => {
+    const { LocalPdfCompressionEngine } = await import("../LocalPdfCompressionEngine");
+    let terminated = false;
+    let posted = false;
+    class MockWorker {
+      onmessage: any = null;
+      onerror: any = null;
+      postMessage(_data: any) {
+        posted = true;
+      }
+      terminate() {
+        terminated = true;
+      }
+    }
+
+    const originalWorker = (globalThis as any).Worker;
+    (globalThis as any).Worker = MockWorker;
+
+    try {
+      const controller = new AbortController();
+      const promise = (LocalPdfCompressionEngine as any).runWorkerPass(
+        new ArrayBuffer(100),
+        1.0,
+        0.8,
+        controller.signal
+      );
+
+      expect(posted).toBe(true);
+      expect(terminated).toBe(false);
+
+      // Trigger abort at the worker boundary
+      controller.abort();
+
+      await expect(promise).rejects.toThrow("Aborted");
+      expect(terminated).toBe(true);
+    } finally {
+      (globalThis as any).Worker = originalWorker;
+    }
+  });
 });

@@ -98,7 +98,7 @@ export default function ToolGrid() {
             {...tool}
             iconPath={
               tool.assetName ? (
-                <FileKitAsset name={tool.assetName} decorative={true} className="w-full h-full object-contain" />
+                <FileKitAsset name={tool.assetName} decorative={true} priority={true} className="w-full h-full object-contain" />
               ) : undefined
             }
           />

@@ -33,14 +33,27 @@ export class LocalPdfEngineAdapter implements CompressionEngine {
 
     job.onProgress({ stage: "COMPRESSING_IMAGES", message: "Running local Web Worker compression pass...", timestamp: Date.now() });
 
-    const compResult = await LocalPdfCompressionEngine.compress(arrayBuffer, targetSizeBytes, (pct) => {
-      if (job.abortSignal.aborted) return;
-      job.onProgress({
-        stage: "COMPRESSING_IMAGES",
-        message: `Compressing image objects (${pct}%)...`,
-        timestamp: Date.now()
-      });
-    });
+    let compResult;
+    try {
+      compResult = await LocalPdfCompressionEngine.compress(
+        arrayBuffer,
+        targetSizeBytes,
+        (pct) => {
+          if (job.abortSignal.aborted) return;
+          job.onProgress({
+            stage: "COMPRESSING_IMAGES",
+            message: `Compressing image objects (${pct}%)...`,
+            timestamp: Date.now()
+          });
+        },
+        job.abortSignal
+      );
+    } catch (err: any) {
+      if (err.name === "AbortError" || job.abortSignal.aborted) {
+        return;
+      }
+      throw err;
+    }
 
     if (job.abortSignal.aborted) return;
 

@@ -70,6 +70,9 @@ export interface PdfCompressionI18nEntry {
   nextPdfToImage: string;
   nextBrowseTools: string;
   alreadyOptimized: string;
+  saved: string;
+  clientSideBadge: string;
+  selectPdfBtn: string;
 }
 
 export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
@@ -127,7 +130,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Suggested next actions",
     nextPdfToImage: "Convert PDF to JPG / PNG",
     nextBrowseTools: "Browse all tools",
-    alreadyOptimized: "Already optimized"
+    alreadyOptimized: "Already optimized",
+    saved: "Saved",
+    clientSideBadge: "Client-Side PDF Processing · Runs locally in your browser",
+    selectPdfBtn: "Select PDF File"
   },
   vi: {
     dropPdf: "Thả tài liệu PDF của bạn vào đây hoặc chọn tệp",
@@ -183,7 +189,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Các bước tiếp theo đề xuất",
     nextPdfToImage: "Chuyển đổi PDF sang JPG / PNG",
     nextBrowseTools: "Xem tất cả công cụ",
-    alreadyOptimized: "Đã tối ưu hóa"
+    alreadyOptimized: "Đã tối ưu hóa",
+    saved: "Đã tiết kiệm",
+    clientSideBadge: "Xử lý PDF cục bộ · Chạy trực tiếp trên trình duyệt",
+    selectPdfBtn: "Chọn tệp PDF"
   },
   ms: {
     dropPdf: "Lepaskan dokumen PDF anda di sini atau semak imbas",
@@ -239,7 +248,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Tindakan seterusnya yang dicadangkan",
     nextPdfToImage: "Tukar PDF kepada JPG / PNG",
     nextBrowseTools: "Semak semua alat",
-    alreadyOptimized: "Sudah dioptimumkan"
+    alreadyOptimized: "Sudah dioptimumkan",
+    saved: "Dijimatkan",
+    clientSideBadge: "Pemprosesan PDF Tempatan · Berjalan dalam pelayar anda",
+    selectPdfBtn: "Pilih Fail PDF"
   },
   id: {
     dropPdf: "Tarik dan lepas dokumen PDF Anda ke sini atau telusuri",
@@ -295,7 +307,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Langkah berikutnya yang disarankan",
     nextPdfToImage: "Konversi PDF ke JPG / PNG",
     nextBrowseTools: "Jelajahi semua alat",
-    alreadyOptimized: "Sudah dioptimalkan"
+    alreadyOptimized: "Sudah dioptimalkan",
+    saved: "Hemat",
+    clientSideBadge: "Pemrosesan PDF Lokal · Berjalan di browser Anda",
+    selectPdfBtn: "Pilih File PDF"
   },
   fil: {
     dropPdf: "I-drop ang iyong PDF na dokumento dito o mag-browse",
@@ -351,7 +366,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Mga iminungkahing susunod na hakbang",
     nextPdfToImage: "I-convert ang PDF sa JPG / PNG",
     nextBrowseTools: "Tingnan ang lahat ng tools",
-    alreadyOptimized: "Na-optimize na"
+    alreadyOptimized: "Na-optimize na",
+    saved: "Nai-save",
+    clientSideBadge: "Lokal na Pagproseso ng PDF · Tumatakbo sa iyong browser",
+    selectPdfBtn: "Pumili ng PDF File"
   },
   hi: {
     dropPdf: "अपना PDF दस्तावेज़ यहाँ छोड़ें या ब्राउज़ करें",
@@ -407,7 +425,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "सुझाए गए अगले कदम",
     nextPdfToImage: "PDF को JPG / PNG में बदलें",
     nextBrowseTools: "सभी टूल्स देखें",
-    alreadyOptimized: "पहले से अनुकूलित"
+    alreadyOptimized: "पहले से अनुकूलित",
+    saved: "बचत हुई",
+    clientSideBadge: "स्थानीय PDF प्रोसेसिंग · सीधे आपके ब्राउज़र में चलता है",
+    selectPdfBtn: "PDF फ़ाइल चुनें"
   },
   th: {
     dropPdf: "วางเอกสาร PDF ของคุณที่นี่ หรือเลือกไฟล์",
@@ -463,7 +484,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "ขั้นตอนถัดไปที่แนะนำ",
     nextPdfToImage: "แปลง PDF เป็น JPG / PNG",
     nextBrowseTools: "ดูเครื่องมือทั้งหมด",
-    alreadyOptimized: "ได้รับการปรับให้เหมาะสมแล้ว"
+    alreadyOptimized: "ได้รับการปรับให้เหมาะสมแล้ว",
+    saved: "ประหยัดได้",
+    clientSideBadge: "ประมวลผล PDF ในเครื่อง · ทำงานบนเบราว์เซอร์ของคุณ",
+    selectPdfBtn: "เลือกไฟล์ PDF"
   },
   sk: {
     dropPdf: "Sem pretiahnite svoj PDF dokument alebo prehľadávajte",
@@ -519,7 +543,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Odporúčané ďalšie kroky",
     nextPdfToImage: "Konvertovať PDF do JPG / PNG",
     nextBrowseTools: "Prehliadať všetky nástroje",
-    alreadyOptimized: "Už optimalizované"
+    alreadyOptimized: "Už optimalizované",
+    saved: "Ušetrené",
+    clientSideBadge: "Lokálne spracovanie PDF · Beží v prehliadači",
+    selectPdfBtn: "Vyberte súbor PDF"
   },
   lt: {
     dropPdf: "Vilkite savo PDF dokumentą čia arba naršykite",
@@ -575,7 +602,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Rekomenduojami kiti veiksmai",
     nextPdfToImage: "Konvertuoti PDF į JPG / PNG",
     nextBrowseTools: "Visi įrankiai",
-    alreadyOptimized: "Jau optimizuota"
+    alreadyOptimized: "Jau optimizuota",
+    saved: "Sutaupyta",
+    clientSideBadge: "Vietinis PDF apdorojimas · Veikia jūsų naršyklėje",
+    selectPdfBtn: "Pasirinkite PDF failą"
   },
   lv: {
     dropPdf: "Velciet savu PDF dokumentu šeit vai pārlūkojiet",
@@ -631,7 +661,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Ieteicamie nākamie soļi",
     nextPdfToImage: "Konvertēt PDF uz JPG / PNG",
     nextBrowseTools: "Pārlūkot visus rīkus",
-    alreadyOptimized: "Jau optimizēts"
+    alreadyOptimized: "Jau optimizēts",
+    saved: "Ietaupīts",
+    clientSideBadge: "Lokāla PDF apstrāde · Darbojas jūsu pārlūkprogrammā",
+    selectPdfBtn: "Izvēlēties PDF failu"
   },
   ru: {
     dropPdf: "Перетащите PDF-документ сюда или выберите",
@@ -687,7 +720,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Рекомендуемые следующие действия",
     nextPdfToImage: "Конвертировать PDF в JPG / PNG",
     nextBrowseTools: "Все инструменты",
-    alreadyOptimized: "Уже оптимизирован"
+    alreadyOptimized: "Уже оптимизирован",
+    saved: "Сэкономлено",
+    clientSideBadge: "Локальная обработка PDF · Работает прямо в браузере",
+    selectPdfBtn: "Выбрать PDF-файл"
   },
   uk: {
     dropPdf: "Перетягніть PDF-документ сюди або виберіть файл",
@@ -743,7 +779,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Рекомендовані наступні кроки",
     nextPdfToImage: "Конвертувати PDF у JPG / PNG",
     nextBrowseTools: "Усі інструменти",
-    alreadyOptimized: "Вже оптимізовано"
+    alreadyOptimized: "Вже оптимізовано",
+    saved: "Заощаджено",
+    clientSideBadge: "Локальна обробка PDF · Працює прямо в браузері",
+    selectPdfBtn: "Вибрати PDF-файл"
   },
   pl: {
     dropPdf: "Przeciągnij dokument PDF tutaj lub wybierz z dysku",
@@ -799,7 +838,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Sugerowane kolejne kroki",
     nextPdfToImage: "Konwertuj PDF na JPG / PNG",
     nextBrowseTools: "Przeglądaj wszystkie narzędzia",
-    alreadyOptimized: "Już zoptymalizowany"
+    alreadyOptimized: "Już zoptymalizowany",
+    saved: "Zaoszczędzono",
+    clientSideBadge: "Lokalne przetwarzanie PDF · Działa w przeglądarce",
+    selectPdfBtn: "Wybierz plik PDF"
   },
   cs: {
     dropPdf: "Přetáhněte sem dokument PDF nebo procházejte",
@@ -855,7 +897,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Doporučené další kroky",
     nextPdfToImage: "Převést PDF do JPG / PNG",
     nextBrowseTools: "Procházet všechny nástroje",
-    alreadyOptimized: "Již optimalizováno"
+    alreadyOptimized: "Již optimalizováno",
+    saved: "Ušetřeno",
+    clientSideBadge: "Místní zpracování PDF · Běží v prohlížeči",
+    selectPdfBtn: "Vyberte soubor PDF"
   },
   sl: {
     dropPdf: "Povlecite dokument PDF sem ali prebrskajte",
@@ -911,7 +956,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Predlagani naslednji koraki",
     nextPdfToImage: "Pretvori PDF v JPG / PNG",
     nextBrowseTools: "Vsa orodja",
-    alreadyOptimized: "Že optimizirano"
+    alreadyOptimized: "Že optimizirano",
+    saved: "Prihranjeno",
+    clientSideBadge: "Lokalna obdelava PDF · Deluje v brskalniku",
+    selectPdfBtn: "Izberite datoteko PDF"
   },
   hu: {
     dropPdf: "Húzza ide a PDF dokumentumot, vagy tallózzon",
@@ -967,7 +1015,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Javasolt következő lépések",
     nextPdfToImage: "PDF konvertálása JPG / PNG formátumba",
     nextBrowseTools: "Összes eszköz megtekintése",
-    alreadyOptimized: "Már optimalizálva"
+    alreadyOptimized: "Már optimalizálva",
+    saved: "Megtakarítva",
+    clientSideBadge: "Helyi PDF-feldolgozás · A böngészőben fut",
+    selectPdfBtn: "PDF-fájl kiválasztása"
   },
   ro: {
     dropPdf: "Trageți documentul PDF aici sau navigați",
@@ -1023,7 +1074,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Pași următori sugerați",
     nextPdfToImage: "Convertește PDF în JPG / PNG",
     nextBrowseTools: "Vezi toate instrumentele",
-    alreadyOptimized: "Deja optimizat"
+    alreadyOptimized: "Deja optimizat",
+    saved: "Economisit",
+    clientSideBadge: "Procesare PDF locală · Rulează în browser",
+    selectPdfBtn: "Selectează fișierul PDF"
   },
   da: {
     dropPdf: "Træk dit PDF-dokument herover, eller vælg fil",
@@ -1079,7 +1133,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Foreslåede næste trin",
     nextPdfToImage: "Konverter PDF til JPG / PNG",
     nextBrowseTools: "Gennemse alle værktøjer",
-    alreadyOptimized: "Allerede optimeret"
+    alreadyOptimized: "Allerede optimeret",
+    saved: "Sparet",
+    clientSideBadge: "Lokal PDF-behandling · Kører i browseren",
+    selectPdfBtn: "Vælg PDF-fil"
   },
   fi: {
     dropPdf: "Pudota PDF-asiakirjasi tähän tai selaa",
@@ -1135,7 +1192,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Ehdotetut seuraavat vaiheet",
     nextPdfToImage: "Muunna PDF JPG / PNG -muotoon",
     nextBrowseTools: "Selaa kaikkia työkaluja",
-    alreadyOptimized: "Jo optimoitu"
+    alreadyOptimized: "Jo optimoitu",
+    saved: "Säästetty",
+    clientSideBadge: "Paikallinen PDF-käsittely · Toimii selaimessasi",
+    selectPdfBtn: "Valitse PDF-tiedosto"
   },
   el: {
     dropPdf: "Σύρετε το έγγραφο PDF εδώ ή περιηγηθείτε",
@@ -1191,7 +1251,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Προτεινόμενα επόμενα βήματα",
     nextPdfToImage: "Μετατροπή PDF σε JPG / PNG",
     nextBrowseTools: "Όλα τα εργαλεία",
-    alreadyOptimized: "Ήδη βελτιστοποιημένο"
+    alreadyOptimized: "Ήδη βελτιστοποιημένο",
+    saved: "Εξοικονομήθηκαν",
+    clientSideBadge: "Τοπική επεξεργασία PDF · Εκτελείται στο πρόγραμμα περιήγησης",
+    selectPdfBtn: "Επιλογή αρχείου PDF"
   },
   he: {
     dropPdf: "גרור לכאן את מסמך ה-PDF שלך או עיין",
@@ -1247,7 +1310,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "פעולות המשך מומלצות",
     nextPdfToImage: "המרת PDF ל-JPG / PNG",
     nextBrowseTools: "עיון בכל הכלים",
-    alreadyOptimized: "כבר מותאם"
+    alreadyOptimized: "כבר מותאם",
+    saved: "נחסך",
+    clientSideBadge: "עיבוד PDF מקומי · פועל ישירות בדפדפן",
+    selectPdfBtn: "בחר קובץ PDF"
   },
   "pt-BR": {
     dropPdf: "Arraste seu documento PDF aqui ou procure no computador",
@@ -1303,7 +1369,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Próximos passos sugeridos",
     nextPdfToImage: "Converter PDF para JPG / PNG",
     nextBrowseTools: "Ver todas as ferramentas",
-    alreadyOptimized: "Já otimizado"
+    alreadyOptimized: "Já otimizado",
+    saved: "Economizado",
+    clientSideBadge: "Processamento de PDF local · Executa no seu navegador",
+    selectPdfBtn: "Selecionar arquivo PDF"
   },
   "es-419": {
     dropPdf: "Arrastra tu documento PDF aquí o búscalo",
@@ -1359,7 +1428,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Siguientes pasos sugeridos",
     nextPdfToImage: "Convertir PDF a JPG / PNG",
     nextBrowseTools: "Ver todas las herramientas",
-    alreadyOptimized: "Ya optimizado"
+    alreadyOptimized: "Ya optimizado",
+    saved: "Guardado",
+    clientSideBadge: "Procesamiento de PDF local · Se ejecuta en tu navegador",
+    selectPdfBtn: "Seleccionar archivo PDF"
   },
   "zh-CN": {
     dropPdf: "将 PDF 文件拖放到此处或点击选择",
@@ -1415,7 +1487,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "推荐下一步操作",
     nextPdfToImage: "将 PDF 转换为 JPG / PNG 图片",
     nextBrowseTools: "浏览所有工具",
-    alreadyOptimized: "已处于最佳体积"
+    alreadyOptimized: "已处于最佳体积",
+    saved: "已节省",
+    clientSideBadge: "本地 PDF 处理 · 完全在您的浏览器中运行",
+    selectPdfBtn: "选择 PDF 文件"
   },
   "zh-TW": {
     dropPdf: "將 PDF 文件拖放到此處或點擊選擇",
@@ -1471,7 +1546,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "推薦下一步操作",
     nextPdfToImage: "將 PDF 轉換為 JPG / PNG 圖片",
     nextBrowseTools: "瀏覽所有工具",
-    alreadyOptimized: "已處於最佳體積"
+    alreadyOptimized: "已處於最佳體積",
+    saved: "已節省",
+    clientSideBadge: "本機 PDF 處理 · 完全在您的瀏覽器中執行",
+    selectPdfBtn: "選取 PDF 檔案"
   },
   // Preserving original 16 translations with new error keys filled in
   ar: {
@@ -1528,7 +1606,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "الخطوات التالية المقترحة",
     nextPdfToImage: "تحويل PDF إلى صور JPG / PNG",
     nextBrowseTools: "تصفح جميع الأدوات",
-    alreadyOptimized: "محسن مسبقاً"
+    alreadyOptimized: "محسن مسبقاً",
+    saved: "تم توفير",
+    clientSideBadge: "معالجة PDF محلية · تعمل مباشرة في متصفحك",
+    selectPdfBtn: "اختر ملف PDF"
   },
   tr: {
     dropPdf: "PDF belgenizi buraya bırakın veya seçin",
@@ -1584,7 +1665,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Önerilen sonraki adımlar",
     nextPdfToImage: "PDF'yi JPG / PNG'ye dönüştür",
     nextBrowseTools: "Tüm araçlara göz at",
-    alreadyOptimized: "Zaten optimize edilmiş"
+    alreadyOptimized: "Zaten optimize edilmiş",
+    saved: "Tasarruf edildi",
+    clientSideBadge: "Yerel PDF İşleme · Tarayıcınızda çalışır",
+    selectPdfBtn: "PDF Dosyası Seç"
   },
   sv: {
     dropPdf: "Dra och släpp ditt PDF-dokument här eller bläddra",
@@ -1640,7 +1724,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Föreslagna nästa steg",
     nextPdfToImage: "Konvertera PDF till JPG / PNG",
     nextBrowseTools: "Bläddra bland alla verktyg",
-    alreadyOptimized: "Redan optimerad"
+    alreadyOptimized: "Redan optimerad",
+    saved: "Sparat",
+    clientSideBadge: "Lokal PDF-bearbetning · Körs i webbläsaren",
+    selectPdfBtn: "Välj PDF-fil"
   },
   no: {
     dropPdf: "Slipp PDF-dokumentet ditt her eller bla gjennom",
@@ -1696,7 +1783,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Foreslåtte neste steg",
     nextPdfToImage: "Konverter PDF til JPG / PNG",
     nextBrowseTools: "Bla gjennom alle verktøy",
-    alreadyOptimized: "Allerede optimalisert"
+    alreadyOptimized: "Allerede optimalisert",
+    saved: "Spart",
+    clientSideBadge: "Lokal PDF-behandling · Kjører i nettleseren",
+    selectPdfBtn: "Velg PDF-fil"
   },
   bg: {
     dropPdf: "Пуснете вашия PDF документ тук или изберете",
@@ -1752,7 +1842,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Препоръчителни следващи стъпки",
     nextPdfToImage: "Конвертиране на PDF в JPG / PNG",
     nextBrowseTools: "Всички инструменти",
-    alreadyOptimized: "Вече оптимизиран"
+    alreadyOptimized: "Вече оптимизиран",
+    saved: "Спестени",
+    clientSideBadge: "Локална обработка на PDF · Изпълнява се в браузъра",
+    selectPdfBtn: "Изберете PDF файл"
   },
   es: {
     dropPdf: "Suelta tu documento PDF aquí o busca",
@@ -1808,7 +1901,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Siguientes pasos sugeridos",
     nextPdfToImage: "Convertir PDF a JPG / PNG",
     nextBrowseTools: "Ver todas las herramientas",
-    alreadyOptimized: "Ya optimizado"
+    alreadyOptimized: "Ya optimizado",
+    saved: "Guardado",
+    clientSideBadge: "Procesamiento de PDF local · Se ejecuta en tu navegador",
+    selectPdfBtn: "Seleccionar archivo PDF"
   },
   fr: {
     dropPdf: "Déposez votre document PDF ici ou parcourir",
@@ -1864,7 +1960,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Actions suivantes suggérées",
     nextPdfToImage: "Convertir PDF en JPG / PNG",
     nextBrowseTools: "Parcourir tous les outils",
-    alreadyOptimized: "Déjà optimisé"
+    alreadyOptimized: "Déjà optimisé",
+    saved: "Économisé",
+    clientSideBadge: "Traitement PDF local · S'exécute dans votre navigateur",
+    selectPdfBtn: "Sélectionner un fichier PDF"
   },
   de: {
     dropPdf: "PDF-Dokument hier ablegen oder durchsuchen",
@@ -1920,7 +2019,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Vorgeschlagene nächste Schritte",
     nextPdfToImage: "PDF in JPG / PNG umwandeln",
     nextBrowseTools: "Alle Werkzeuge anzeigen",
-    alreadyOptimized: "Bereits optimiert"
+    alreadyOptimized: "Bereits optimiert",
+    saved: "Gespart",
+    clientSideBadge: "Lokale PDF-Verarbeitung · Läuft direkt in Ihrem Browser",
+    selectPdfBtn: "PDF-Datei auswählen"
   },
   pt: {
     dropPdf: "Solte o seu documento PDF aqui ou procure",
@@ -1976,7 +2078,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Próximos passos sugeridos",
     nextPdfToImage: "Converter PDF para JPG / PNG",
     nextBrowseTools: "Ver todas as ferramentas",
-    alreadyOptimized: "Já otimizado"
+    alreadyOptimized: "Já otimizado",
+    saved: "Poupado",
+    clientSideBadge: "Processamento local de PDF · Executa no seu navegador",
+    selectPdfBtn: "Selecionar ficheiro PDF"
   },
   it: {
     dropPdf: "Trascina il tuo documento PDF qui o sfoglia",
@@ -2032,7 +2137,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Passaggi successivi consigliati",
     nextPdfToImage: "Converti PDF in JPG / PNG",
     nextBrowseTools: "Sfoglia tutti gli strumenti",
-    alreadyOptimized: "Già ottimizzato"
+    alreadyOptimized: "Già ottimizzato",
+    saved: "Risparmiato",
+    clientSideBadge: "Elaborazione PDF locale · Eseguita nel browser",
+    selectPdfBtn: "Seleziona file PDF"
   },
   ja: {
     dropPdf: "PDFドキュメントをここにドロップまたは参照",
@@ -2088,7 +2196,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "おすすめの次の操作",
     nextPdfToImage: "PDFをJPG / PNG画像に変換",
     nextBrowseTools: "すべてのツールを見る",
-    alreadyOptimized: "すでに最適化済み"
+    alreadyOptimized: "すでに最適化済み",
+    saved: "削減量",
+    clientSideBadge: "ローカルPDF処理 · ブラウザ内で安全に実行",
+    selectPdfBtn: "PDFファイルを選択"
   },
   ko: {
     dropPdf: "PDF 문서를 여기에 놓거나 찾아보기",
@@ -2144,7 +2255,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "추천 다음 작업",
     nextPdfToImage: "PDF를 JPG / PNG 이미지로 변환",
     nextBrowseTools: "모든 도구 보기",
-    alreadyOptimized: "이미 최적화됨"
+    alreadyOptimized: "이미 최적화됨",
+    saved: "절약됨",
+    clientSideBadge: "로컬 PDF 처리 · 브라우저 내에서 직접 실행",
+    selectPdfBtn: "PDF 파일 선택"
   },
   nl: {
     dropPdf: "Sleep je PDF-document hierheen of blader",
@@ -2200,7 +2314,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Voorgestelde vervolgstappen",
     nextPdfToImage: "PDF converteren naar JPG / PNG",
     nextBrowseTools: "Alle tools bekijken",
-    alreadyOptimized: "Al geoptimaliseerd"
+    alreadyOptimized: "Al geoptimaliseerd",
+    saved: "Bespaard",
+    clientSideBadge: "Lokale PDF-verwerking · Draait direct in uw browser",
+    selectPdfBtn: "Selecteer PDF-bestand"
   },
   ca: {
     dropPdf: "Arrossega el teu document PDF aquí o cerca",
@@ -2256,7 +2373,10 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     nextActionHeading: "Passos següents suggerits",
     nextPdfToImage: "Convertir PDF a JPG / PNG",
     nextBrowseTools: "Veure totes les eines",
-    alreadyOptimized: "Ja optimitzat"
+    alreadyOptimized: "Ja optimitzat",
+    saved: "Estalviat",
+    clientSideBadge: "Processament de PDF local · S'executa al navegador",
+    selectPdfBtn: "Selecciona el fitxer PDF"
   }
 };
 

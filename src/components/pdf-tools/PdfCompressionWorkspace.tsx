@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import TrustPanel from "@/components/layout/TrustPanel";
 import { LocalPdfEngineAdapter } from "@/utils/engine/LocalPdfEngineAdapter";
-import { VerificationResult, ProcessingJob, ProcessingProgressEvent, ProcessingFailure } from "@/utils/engine/types";
+import { VerificationResult, ProcessingJob, ProcessingProgressEvent, ProcessingFailure, ProcessingStage } from "@/utils/engine/types";
 import { PdfCompressionMode, PdfRouteConfig } from "@/config/pdfCompressionRoutes";
 import { useLanguage } from "@/components/layout/LanguageContext";
 import { resolveDictionaryEntry } from "@/config/i18n/locales";
@@ -41,11 +41,29 @@ export default function PdfCompressionWorkspace({
   const [file, setFile] = useState<File | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [progressMsg, setProgressMsg] = useState<string>("");
+  const [currentStage, setCurrentStage] = useState<ProcessingStage | null>(null);
+  const [progressPct, setProgressPct] = useState<number | null>(null);
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const basePrefix = language && language !== "en" ? `/${language}` : "";
+
+  const getLocalizedProgressLabel = (): string => {
+    if (!currentStage) return wt.compressing;
+    switch (currentStage) {
+      case "DISCOVERY":
+      case "READING_FILE":
+        return wt.stageReading;
+      case "COMPRESSING_IMAGES":
+        return progressPct !== null ? `${wt.stageCompressing} (${progressPct}%)` : wt.stageCompressing;
+      case "REBUILDING_PDF":
+        return wt.stageCompressing;
+      case "VERIFYING_OUTPUT":
+        return wt.stageVerifying;
+      default:
+        return wt.compressing;
+    }
+  };
 
   // Request versioning & cancellation refs
   const requestIdRef = useRef<number>(0);
@@ -146,8 +164,9 @@ export default function PdfCompressionWorkspace({
 
     const currentReqId = ++requestIdRef.current;
     setIsProcessing(true);
+    setCurrentStage("READING_FILE");
+    setProgressPct(null);
     setError(null);
-    setProgressMsg(wt.readingPdf);
 
     const targetSizeBytes = calculateTargetSizeBytes();
     trackEvent("compression_settings_submitted", {
@@ -164,7 +183,11 @@ export default function PdfCompressionWorkspace({
         abortSignal: controller.signal,
         onProgress: (update: ProcessingProgressEvent) => {
           if (requestIdRef.current === currentReqId) {
-            setProgressMsg(update.message);
+            setCurrentStage(update.stage);
+            const match = update.message?.match(/(\d+)%/);
+            if (match) {
+              setProgressPct(parseInt(match[1], 10));
+            }
           }
         },
         onSuccess: (ver: VerificationResult) => {
@@ -236,7 +259,8 @@ export default function PdfCompressionWorkspace({
     }
     requestIdRef.current++;
     setIsProcessing(false);
-    setProgressMsg("");
+    setCurrentStage(null);
+    setProgressPct(null);
     trackEvent("cancelled");
   };
 
@@ -249,6 +273,8 @@ export default function PdfCompressionWorkspace({
     setFile(null);
     setResult(null);
     setError(null);
+    setCurrentStage(null);
+    setProgressPct(null);
   };
 
   const formatBytes = (bytes: number): string => {
@@ -306,9 +332,18 @@ export default function PdfCompressionWorkspace({
             <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
               {wt.supportsPdf}
             </p>
-            <div className="flex items-center gap-1.5 mt-3 bg-blue-50 text-blue-800 text-[11.5px] font-semibold px-3 py-1 rounded-full border border-blue-200/60">
+
+            {/* Prominent High-Contrast Select PDF File Button */}
+            <div className="mt-4 px-8 py-3.5 bg-[#0977fd] hover:bg-[#0062d6] text-white text-[15px] font-extrabold rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 pointer-events-none">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span>{wt.selectPdfBtn}</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 mt-4 bg-blue-50 text-blue-800 text-[11.5px] font-semibold px-3.5 py-1 rounded-full border border-blue-200/60">
               <span>🔒</span>
-              <span>Client-Side PDF Processing · Runs locally in your browser</span>
+              <span>{wt.clientSideBadge}</span>
             </div>
           </div>
         </div>
@@ -344,7 +379,7 @@ export default function PdfCompressionWorkspace({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-[14px] font-bold text-blue-900">
                         <span className="inline-block animate-spin">⚙️</span>
-                        <span>{progressMsg || wt.compressing}</span>
+                        <span>{getLocalizedProgressLabel()}</span>
                       </div>
                       <button
                         type="button"
@@ -358,28 +393,32 @@ export default function PdfCompressionWorkspace({
                     {/* Deterministic 3-Stage Progress Timeline */}
                     <div className="grid grid-cols-3 gap-2 text-[11px] font-bold pt-1">
                       <div
-                        className={`p-1.5 rounded text-center border ${
-                          progressMsg.toLowerCase().includes("reading")
+                        className={`p-1.5 rounded text-center border transition-all ${
+                          currentStage === "DISCOVERY" || currentStage === "READING_FILE"
                             ? "bg-blue-600 text-white border-blue-600 animate-pulse"
-                            : "bg-blue-100/60 text-blue-900 border-blue-200"
+                            : currentStage === "COMPRESSING_IMAGES" || currentStage === "REBUILDING_PDF" || currentStage === "VERIFYING_OUTPUT"
+                            ? "bg-blue-100 text-blue-900 border-blue-300"
+                            : "bg-blue-50/60 text-blue-800 border-blue-200"
                         }`}
                       >
                         {wt.stageReading}
                       </div>
                       <div
-                        className={`p-1.5 rounded text-center border ${
-                          progressMsg.toLowerCase().includes("compressing") || progressMsg.toLowerCase().includes("saving")
+                        className={`p-1.5 rounded text-center border transition-all ${
+                          currentStage === "COMPRESSING_IMAGES" || currentStage === "REBUILDING_PDF"
                             ? "bg-blue-600 text-white border-blue-600 animate-pulse"
-                            : "bg-blue-100/60 text-blue-900 border-blue-200"
+                            : currentStage === "VERIFYING_OUTPUT"
+                            ? "bg-blue-100 text-blue-900 border-blue-300"
+                            : "bg-blue-50/60 text-blue-800 border-blue-200"
                         }`}
                       >
                         {wt.stageCompressing}
                       </div>
                       <div
-                        className={`p-1.5 rounded text-center border ${
-                          progressMsg.toLowerCase().includes("verifying")
+                        className={`p-1.5 rounded text-center border transition-all ${
+                          currentStage === "VERIFYING_OUTPUT"
                             ? "bg-blue-600 text-white border-blue-600 animate-pulse"
-                            : "bg-blue-100/60 text-blue-900 border-blue-200"
+                            : "bg-blue-50/60 text-blue-800 border-blue-200"
                         }`}
                       >
                         {wt.stageVerifying}
@@ -438,7 +477,7 @@ export default function PdfCompressionWorkspace({
                     <span>
                       📉 {wt.reduction}:{" "}
                       {result.outputSizeBytes < result.originalSizeBytes
-                        ? `-${result.reductionPercentage}% (Saved ${formatBytes(result.originalSizeBytes - result.outputSizeBytes)})`
+                        ? `-${result.reductionPercentage}% (${wt.saved} ${formatBytes(result.originalSizeBytes - result.outputSizeBytes)})`
                         : `${wt.alreadyOptimized} (0%)`}
                     </span>
                     <span>🔒 {wt.processingLocal}</span>
