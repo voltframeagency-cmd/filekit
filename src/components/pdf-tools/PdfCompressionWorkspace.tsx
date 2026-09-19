@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import TrustPanel from "@/components/layout/TrustPanel";
 import { LocalPdfEngineAdapter } from "@/utils/engine/LocalPdfEngineAdapter";
 import { VerificationResult, ProcessingJob, ProcessingProgressEvent, ProcessingFailure } from "@/utils/engine/types";
@@ -38,10 +39,13 @@ export default function PdfCompressionWorkspace({
 
   // File and result states
   const [file, setFile] = useState<File | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [progressMsg, setProgressMsg] = useState<string>("");
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const basePrefix = language && language !== "en" ? `/${language}` : "";
 
   // Request versioning & cancellation refs
   const requestIdRef = useRef<number>(0);
@@ -225,6 +229,17 @@ export default function PdfCompressionWorkspace({
     firstInput?.focus();
   };
 
+  const handleCancel = () => {
+    if (activeAbortControllerRef.current) {
+      activeAbortControllerRef.current.abort();
+      activeAbortControllerRef.current = null;
+    }
+    requestIdRef.current++;
+    setIsProcessing(false);
+    setProgressMsg("");
+    trackEvent("cancelled");
+  };
+
   const handleResetWorkspace = () => {
     if (activeAbortControllerRef.current) {
       activeAbortControllerRef.current.abort();
@@ -252,7 +267,32 @@ export default function PdfCompressionWorkspace({
       {/* File Upload Zone (when no file selected) */}
       {!file && (
         <div className="w-full max-w-[840px] mx-auto bg-white border border-fk-border rounded-fk-xl p-8 md:p-12 shadow-sm">
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-fk-border rounded-fk-lg p-10 text-center hover:border-fk-primary transition-colors cursor-pointer relative">
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDraggingOver(true);
+            }}
+            onDragLeave={() => setIsDraggingOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDraggingOver(false);
+              const dropped = e.dataTransfer.files?.[0];
+              if (dropped) {
+                if (dropped.type !== "application/pdf" && !dropped.name.toLowerCase().endsWith(".pdf")) {
+                  setError(wt.errInvalidPdf);
+                  return;
+                }
+                setError(null);
+                setResult(null);
+                setFile(dropped);
+              }
+            }}
+            className={`flex flex-col items-center justify-center border-2 border-dashed rounded-fk-lg p-10 text-center transition-all cursor-pointer relative ${
+              isDraggingOver
+                ? "border-fk-primary bg-blue-50/40 scale-[1.01]"
+                : "border-fk-border hover:border-fk-primary hover:bg-slate-50/50"
+            }`}
+          >
             <input
               type="file"
               accept="application/pdf"
@@ -266,9 +306,10 @@ export default function PdfCompressionWorkspace({
             <p className="text-[12px] font-medium text-fk-text-subtle mt-1">
               {wt.supportsPdf}
             </p>
-            <p className="text-[11px] font-medium text-fk-text-subtle mt-2 bg-fk-surface-muted px-3 py-1 rounded-full border border-fk-border">
-              {wt.privacyPdf}
-            </p>
+            <div className="flex items-center gap-1.5 mt-3 bg-blue-50 text-blue-800 text-[11.5px] font-semibold px-3 py-1 rounded-full border border-blue-200/60">
+              <span>🔒</span>
+              <span>Client-Side PDF Processing · Runs locally in your browser</span>
+            </div>
           </div>
         </div>
       )}
@@ -296,12 +337,54 @@ export default function PdfCompressionWorkspace({
                 </button>
               </div>
 
-              {/* Status Header Badge */}
-              <div className="flex flex-col gap-2">
+              {/* Status Header Badge & Multi-Stage Processing Indicator */}
+              <div className="flex flex-col gap-3">
                 {isProcessing ? (
-                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-full border text-[14px] font-bold bg-blue-50 border-blue-200 text-blue-800 w-fit animate-pulse">
-                    <span>⚙️</span>
-                    <span>{progressMsg || wt.compressing}</span>
+                  <div className="flex flex-col gap-3 p-4 bg-blue-50/80 border border-blue-200 rounded-fk-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-[14px] font-bold text-blue-900">
+                        <span className="inline-block animate-spin">⚙️</span>
+                        <span>{progressMsg || wt.compressing}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCancel}
+                        className="px-3 py-1 bg-white hover:bg-slate-100 border border-blue-200 text-blue-800 text-[12px] font-bold rounded-fk-md transition-colors"
+                      >
+                        ✕ {wt.cancelBtn}
+                      </button>
+                    </div>
+
+                    {/* Deterministic 3-Stage Progress Timeline */}
+                    <div className="grid grid-cols-3 gap-2 text-[11px] font-bold pt-1">
+                      <div
+                        className={`p-1.5 rounded text-center border ${
+                          progressMsg.toLowerCase().includes("reading")
+                            ? "bg-blue-600 text-white border-blue-600 animate-pulse"
+                            : "bg-blue-100/60 text-blue-900 border-blue-200"
+                        }`}
+                      >
+                        {wt.stageReading}
+                      </div>
+                      <div
+                        className={`p-1.5 rounded text-center border ${
+                          progressMsg.toLowerCase().includes("compressing") || progressMsg.toLowerCase().includes("saving")
+                            ? "bg-blue-600 text-white border-blue-600 animate-pulse"
+                            : "bg-blue-100/60 text-blue-900 border-blue-200"
+                        }`}
+                      >
+                        {wt.stageCompressing}
+                      </div>
+                      <div
+                        className={`p-1.5 rounded text-center border ${
+                          progressMsg.toLowerCase().includes("verifying")
+                            ? "bg-blue-600 text-white border-blue-600 animate-pulse"
+                            : "bg-blue-100/60 text-blue-900 border-blue-200"
+                        }`}
+                      >
+                        {wt.stageVerifying}
+                      </div>
+                    </div>
                   </div>
                 ) : result ? (
                   <div
@@ -352,7 +435,12 @@ export default function PdfCompressionWorkspace({
 
                   <div className="flex items-center justify-around p-3 bg-white border border-fk-border rounded-fk-md text-[12px] font-bold text-fk-text">
                     <span>📄 {wt.pages}: {result.pagesAfter || 1}</span>
-                    <span>📉 {wt.reduction}: {result.reductionPercentage}%</span>
+                    <span>
+                      📉 {wt.reduction}:{" "}
+                      {result.outputSizeBytes < result.originalSizeBytes
+                        ? `-${result.reductionPercentage}% (Saved ${formatBytes(result.originalSizeBytes - result.outputSizeBytes)})`
+                        : `${wt.alreadyOptimized} (0%)`}
+                    </span>
                     <span>🔒 {wt.processingLocal}</span>
                   </div>
 
@@ -378,6 +466,29 @@ export default function PdfCompressionWorkspace({
                     >
                       {wt.adjustSettings}
                     </button>
+                  </div>
+
+                  {/* Suggested Next Tools / Contextual Workflows (Competitor benchmark: Smallpdf / PDF24 task chaining) */}
+                  <div className="pt-4 mt-2 border-t border-fk-border flex flex-col gap-2.5 text-left ltr:text-left rtl:text-right">
+                    <span className="text-[11px] font-bold text-fk-text-subtle uppercase tracking-wider">
+                      {wt.nextActionHeading}
+                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`${basePrefix}/pdf-to-image`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-fk-surface-muted hover:bg-slate-200 border border-fk-border rounded-fk-md text-[12.5px] font-bold text-fk-text transition-colors"
+                      >
+                        <span>🖼️</span>
+                        <span>{wt.nextPdfToImage} →</span>
+                      </Link>
+                      <Link
+                        href={`${basePrefix}/all-tools`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-fk-surface-muted border border-fk-border rounded-fk-md text-[12.5px] font-bold text-fk-text-muted hover:text-fk-text transition-colors"
+                      >
+                        <span>📁</span>
+                        <span>{wt.nextBrowseTools} →</span>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               )}

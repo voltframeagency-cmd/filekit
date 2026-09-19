@@ -3,11 +3,11 @@ import fs from 'fs';
 export const LOCALIZED_FOOTER_NOTES = {
   "en": "Free basic tools. Job Pass €4.90 for 7 days (never renews). No hidden subscriptions.",
   "es": "Herramientas básicas gratuitas. Job Pass 4,90 € por 7 días (sin renovación automática). Sin suscripciones ocultas.",
-  "es-419": "Herramientas básicas gratis. Job Pass $4.90 por 7 días (sin renovación automática). Sin suscripciones ocultas.",
+  "es-419": "Herramientas básicas gratis. Job Pass 4,90 € por 7 días (sin renovación automática). Sin suscripciones ocultas.",
   "de": "Kostenlose Basis-Tools. Job-Pass 4,90 € für 7 Tage (keine automatische Verlängerung). Keine versteckten Abos.",
   "fr": "Outils de base gratuits. Job Pass 4,90 € pour 7 jours (sans renouvellement automatique). Sans abonnement caché.",
   "pt": "Ferramentas básicas gratuitas. Job Pass 4,90 € por 7 dias (sem renovação automática). Sem subscrições ocultas.",
-  "pt-BR": "Ferramentas básicas gratuitas. Job Pass R$ 4,90 por 7 dias (sem renovação automática). Sem assinaturas ocultas.",
+  "pt-BR": "Ferramentas básicas gratuitas. Job Pass 4,90 € por 7 dias (sem renovação automática). Sem assinaturas ocultas.",
   "it": "Strumenti di base gratuiti. Job Pass 4,90 € per 7 giorni (senza rinnovo automatico). Nessun abbonamento nascosto.",
   "nl": "Gratis basistools. Job Pass € 4,90 voor 7 dagen (vernieuwt nooit). Geen verborgen abonnementen.",
   "ca": "Eines bàsiques gratuïtes. Job Pass 4,90 € per 7 dies (sense renovació automàtica). Sense subscripcions ocultes.",

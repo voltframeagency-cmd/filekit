@@ -62,6 +62,14 @@ export interface PdfCompressionI18nEntry {
   errSigned: string;
   errMemory: string;
   errGeneric: string;
+  cancelBtn: string;
+  stageReading: string;
+  stageCompressing: string;
+  stageVerifying: string;
+  nextActionHeading: string;
+  nextPdfToImage: string;
+  nextBrowseTools: string;
+  alreadyOptimized: string;
 }
 
 export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
@@ -111,7 +119,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Encrypted or password-protected PDFs cannot be compressed locally.",
     errSigned: "Digitally signed PDFs cannot be re-compressed without invalidating signatures.",
     errMemory: "This PDF document is too large to process safely in browser memory.",
-    errGeneric: "An error occurred during PDF compression."
+    errGeneric: "An error occurred during PDF compression.",
+    cancelBtn: "Cancel",
+    stageReading: "1. Reading structure",
+    stageCompressing: "2. Compressing streams",
+    stageVerifying: "3. Verifying output",
+    nextActionHeading: "Suggested next actions",
+    nextPdfToImage: "Convert PDF to JPG / PNG",
+    nextBrowseTools: "Browse all tools",
+    alreadyOptimized: "Already optimized"
   },
   vi: {
     dropPdf: "Thả tài liệu PDF của bạn vào đây hoặc chọn tệp",
@@ -159,7 +175,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Không thể nén tệp PDF được mã hóa hoặc bảo vệ bằng mật khẩu cục bộ.",
     errSigned: "Tệp PDF có chữ ký số không thể nén lại mà không làm mất hiệu lực chữ ký.",
     errMemory: "Tài liệu PDF này quá lớn để xử lý an toàn trong bộ nhớ trình duyệt.",
-    errGeneric: "Đã xảy ra lỗi trong quá trình nén PDF."
+    errGeneric: "Đã xảy ra lỗi trong quá trình nén PDF.",
+    cancelBtn: "Hủy",
+    stageReading: "1. Đọc cấu trúc tệp",
+    stageCompressing: "2. Nén luồng dữ liệu",
+    stageVerifying: "3. Xác minh kết quả",
+    nextActionHeading: "Các bước tiếp theo đề xuất",
+    nextPdfToImage: "Chuyển đổi PDF sang JPG / PNG",
+    nextBrowseTools: "Xem tất cả công cụ",
+    alreadyOptimized: "Đã tối ưu hóa"
   },
   ms: {
     dropPdf: "Lepaskan dokumen PDF anda di sini atau semak imbas",
@@ -207,7 +231,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "PDF yang disulitkan atau dilindungi kata laluan tidak boleh dimampatkan secara setempat.",
     errSigned: "PDF yang ditandatangani secara digital tidak boleh dimampatkan semula tanpa membatalkan tandatangan.",
     errMemory: "Dokumen PDF ini terlalu besar untuk diproses dengan selamat dalam memori pelayar.",
-    errGeneric: "Ralat berlaku semasa pemampatan PDF."
+    errGeneric: "Ralat berlaku semasa pemampatan PDF.",
+    cancelBtn: "Batal",
+    stageReading: "1. Membaca struktur",
+    stageCompressing: "2. Memampatkan data",
+    stageVerifying: "3. Mengesahkan hasil",
+    nextActionHeading: "Tindakan seterusnya yang dicadangkan",
+    nextPdfToImage: "Tukar PDF kepada JPG / PNG",
+    nextBrowseTools: "Semak semua alat",
+    alreadyOptimized: "Sudah dioptimumkan"
   },
   id: {
     dropPdf: "Tarik dan lepas dokumen PDF Anda ke sini atau telusuri",
@@ -255,7 +287,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "PDF yang dienkripsi atau dilindungi kata sandi tidak dapat dikompresi secara lokal.",
     errSigned: "PDF yang bertanda tangan digital tidak dapat dikompresi ulang tanpa membatalkan tanda tangan.",
     errMemory: "Dokumen PDF ini terlalu besar untuk diproses dengan aman di memori browser.",
-    errGeneric: "Terjadi kesalahan saat mengompresi PDF."
+    errGeneric: "Terjadi kesalahan saat mengompresi PDF.",
+    cancelBtn: "Batal",
+    stageReading: "1. Membaca struktur",
+    stageCompressing: "2. Memampatkan aliran data",
+    stageVerifying: "3. Memverifikasi keluaran",
+    nextActionHeading: "Langkah berikutnya yang disarankan",
+    nextPdfToImage: "Konversi PDF ke JPG / PNG",
+    nextBrowseTools: "Jelajahi semua alat",
+    alreadyOptimized: "Sudah dioptimalkan"
   },
   fil: {
     dropPdf: "I-drop ang iyong PDF na dokumento dito o mag-browse",
@@ -303,7 +343,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Ang mga naka-encrypt o may password na PDF ay hindi maaaring i-compress nang lokal.",
     errSigned: "Ang mga digital na nalagdaang PDF ay hindi maaaring i-compress muli nang hindi nawawalan ng bisa ang mga lagda.",
     errMemory: "Napakalaki ng dokumentong PDF na ito upang maproseso nang ligtas sa memory ng browser.",
-    errGeneric: "Nagkaroon ng error habang kino-compress ang PDF."
+    errGeneric: "Nagkaroon ng error habang kino-compress ang PDF.",
+    cancelBtn: "Kanselahin",
+    stageReading: "1. Binabasa ang istruktura",
+    stageCompressing: "2. Kino-compress ang data",
+    stageVerifying: "3. Sinusuri ang resulta",
+    nextActionHeading: "Mga iminungkahing susunod na hakbang",
+    nextPdfToImage: "I-convert ang PDF sa JPG / PNG",
+    nextBrowseTools: "Tingnan ang lahat ng tools",
+    alreadyOptimized: "Na-optimize na"
   },
   hi: {
     dropPdf: "अपना PDF दस्तावेज़ यहाँ छोड़ें या ब्राउज़ करें",
@@ -351,7 +399,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "एन्क्रिप्टेड या पासवर्ड-संरक्षित PDF को स्थानीय रूप से कंप्रेस नहीं किया जा सकता।",
     errSigned: "डिजिटल रूप से हस्ताक्षरित PDF को हस्ताक्षर अमान्य किए बिना पुनः कंप्रेस नहीं किया जा सकता।",
     errMemory: "यह PDF दस्तावेज़ ब्राउज़र मेमोरी में सुरक्षित रूप से प्रोसेस करने के लिए बहुत बड़ा है।",
-    errGeneric: "PDF कंप्रेशन के दौरान एक त्रुटि उत्पन्न हुई।"
+    errGeneric: "PDF कंप्रेशन के दौरान एक त्रुटि उत्पन्न हुई।",
+    cancelBtn: "रद्द करें",
+    stageReading: "1. दस्तावेज़ संरचना पढ़ना",
+    stageCompressing: "2. डेटा स्ट्रीम संपीड़ित करना",
+    stageVerifying: "3. आउटपुट सत्यापित करना",
+    nextActionHeading: "सुझाए गए अगले कदम",
+    nextPdfToImage: "PDF को JPG / PNG में बदलें",
+    nextBrowseTools: "सभी टूल्स देखें",
+    alreadyOptimized: "पहले से अनुकूलित"
   },
   th: {
     dropPdf: "วางเอกสาร PDF ของคุณที่นี่ หรือเลือกไฟล์",
@@ -399,7 +455,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "ไม่สามารถบีบอัดไฟล์ PDF ที่เข้ารหัสหรือมีรหัสผ่านได้ในเครื่อง",
     errSigned: "ไม่สามารถบีบอัดไฟล์ PDF ที่มีลายเซ็นดิจิทัลได้โดยไม่ทำให้ลายเซ็นใช้การไม่ได้",
     errMemory: "เอกสาร PDF นี้มีขนาดใหญ่เกินกว่าจะประมวลผลในหน่วยความจำของเบราว์เซอร์ได้อย่างปลอดภัย",
-    errGeneric: "เกิดข้อผิดพลาดระหว่างการบีบอัด PDF"
+    errGeneric: "เกิดข้อผิดพลาดระหว่างการบีบอัด PDF",
+    cancelBtn: "ยกเลิก",
+    stageReading: "1. อ่านโครงสร้างไฟล์",
+    stageCompressing: "2. กำลังบีบอัดข้อมูล",
+    stageVerifying: "3. ตรวจสอบความถูกต้องของไฟล์",
+    nextActionHeading: "ขั้นตอนถัดไปที่แนะนำ",
+    nextPdfToImage: "แปลง PDF เป็น JPG / PNG",
+    nextBrowseTools: "ดูเครื่องมือทั้งหมด",
+    alreadyOptimized: "ได้รับการปรับให้เหมาะสมแล้ว"
   },
   sk: {
     dropPdf: "Sem pretiahnite svoj PDF dokument alebo prehľadávajte",
@@ -447,7 +511,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Šifrované alebo heslom chránené PDF nie je možné lokálne komprimovať.",
     errSigned: "Digitálne podpísané PDF nie je možné znova komprimovať bez zneplatnenia podpisov.",
     errMemory: "Tento PDF dokument je príliš veľký na bezpečné spracovanie v pamäti prehliadača.",
-    errGeneric: "Počas kompresie PDF sa vyskytla chyba."
+    errGeneric: "Počas kompresie PDF sa vyskytla chyba.",
+    cancelBtn: "Zrušiť",
+    stageReading: "1. Čítanie štruktúry",
+    stageCompressing: "2. Kompresia dátových tokov",
+    stageVerifying: "3. Overenie výstupu",
+    nextActionHeading: "Odporúčané ďalšie kroky",
+    nextPdfToImage: "Konvertovať PDF do JPG / PNG",
+    nextBrowseTools: "Prehliadať všetky nástroje",
+    alreadyOptimized: "Už optimalizované"
   },
   lt: {
     dropPdf: "Vilkite savo PDF dokumentą čia arba naršykite",
@@ -495,7 +567,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Užšifruotų ar slaptažodžiu apsaugotų PDF negalima glaudinti vietoje.",
     errSigned: "Skaitmeniniu parašu pasirašytų PDF negalima pakartotinai glaudinti neanuliuojant parašų.",
     errMemory: "Šis PDF dokumentas yra per didelis, kad jį būtų galima saugiai apdoroti naršyklės atmintyje.",
-    errGeneric: "Glaudinant PDF įvyko klaida."
+    errGeneric: "Glaudinant PDF įvyko klaida.",
+    cancelBtn: "Atšaukti",
+    stageReading: "1. Skaitoma struktūra",
+    stageCompressing: "2. Glaudinami srautai",
+    stageVerifying: "3. Tikrinamas rezultatas",
+    nextActionHeading: "Rekomenduojami kiti veiksmai",
+    nextPdfToImage: "Konvertuoti PDF į JPG / PNG",
+    nextBrowseTools: "Visi įrankiai",
+    alreadyOptimized: "Jau optimizuota"
   },
   lv: {
     dropPdf: "Velciet savu PDF dokumentu šeit vai pārlūkojiet",
@@ -543,7 +623,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Šifrētus vai ar paroli aizsargātus PDF nevar saspiest lokāli.",
     errSigned: "Digitāli parakstītus PDF nevar atkārtoti saspiest, neanulējot parakstus.",
     errMemory: "Šis PDF dokuments ir pārāk liels, lai to droši apstrādātu pārlūkprogrammas atmiņā.",
-    errGeneric: "PDF saspiešanas laikā radās kļūda."
+    errGeneric: "PDF saspiešanas laikā radās kļūda.",
+    cancelBtn: "Atcelt",
+    stageReading: "1. Struktūras nolasīšana",
+    stageCompressing: "2. Datu plūsmu saspiešana",
+    stageVerifying: "3. Rezultāta pārbaude",
+    nextActionHeading: "Ieteicamie nākamie soļi",
+    nextPdfToImage: "Konvertēt PDF uz JPG / PNG",
+    nextBrowseTools: "Pārlūkot visus rīkus",
+    alreadyOptimized: "Jau optimizēts"
   },
   ru: {
     dropPdf: "Перетащите PDF-документ сюда или выберите",
@@ -591,7 +679,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Зашифрованные или защищённые паролем PDF нельзя сжать локально.",
     errSigned: "Документы с цифровой подписью нельзя сжать повторно без повреждения подписи.",
     errMemory: "Этот PDF-документ слишком велик для безопасной обработки в памяти браузера.",
-    errGeneric: "Произошла ошибка при сжатии PDF."
+    errGeneric: "Произошла ошибка при сжатии PDF.",
+    cancelBtn: "Отмена",
+    stageReading: "1. Чтение структуры",
+    stageCompressing: "2. Сжатие потоков данных",
+    stageVerifying: "3. Проверка результата",
+    nextActionHeading: "Рекомендуемые следующие действия",
+    nextPdfToImage: "Конвертировать PDF в JPG / PNG",
+    nextBrowseTools: "Все инструменты",
+    alreadyOptimized: "Уже оптимизирован"
   },
   uk: {
     dropPdf: "Перетягніть PDF-документ сюди або виберіть файл",
@@ -639,7 +735,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Зашифровані або захищені паролем PDF не можна стиснути локально.",
     errSigned: "Документи з цифровим підписом не можна стиснути повторно без пошкодження підпису.",
     errMemory: "Цей PDF-документ занадто великий для безпечної обробки в пам'яті браузера.",
-    errGeneric: "Виникла помилка під час стиснення PDF."
+    errGeneric: "Виникла помилка під час стиснення PDF.",
+    cancelBtn: "Скасувати",
+    stageReading: "1. Зчитування структури",
+    stageCompressing: "2. Стиснення потоків",
+    stageVerifying: "3. Перевірка результату",
+    nextActionHeading: "Рекомендовані наступні кроки",
+    nextPdfToImage: "Конвертувати PDF у JPG / PNG",
+    nextBrowseTools: "Усі інструменти",
+    alreadyOptimized: "Вже оптимізовано"
   },
   pl: {
     dropPdf: "Przeciągnij dokument PDF tutaj lub wybierz z dysku",
@@ -687,7 +791,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Zaszyfrowane lub chronione hasłem pliki PDF nie mogą być kompresowane lokalnie.",
     errSigned: "Cyfrowo podpisane pliki PDF nie mogą być ponownie kompresowane bez unieważnienia podpisów.",
     errMemory: "Ten dokument PDF jest zbyt duży, aby bezpiecznie przetworzyć go w pamięci przeglądarki.",
-    errGeneric: "Wystąpił błąd podczas kompresji pliku PDF."
+    errGeneric: "Wystąpił błąd podczas kompresji pliku PDF.",
+    cancelBtn: "Anuluj",
+    stageReading: "1. Odczytywanie struktury",
+    stageCompressing: "2. Kompresja strumieni",
+    stageVerifying: "3. Weryfikacja wyniku",
+    nextActionHeading: "Sugerowane kolejne kroki",
+    nextPdfToImage: "Konwertuj PDF na JPG / PNG",
+    nextBrowseTools: "Przeglądaj wszystkie narzędzia",
+    alreadyOptimized: "Już zoptymalizowany"
   },
   cs: {
     dropPdf: "Přetáhněte sem dokument PDF nebo procházejte",
@@ -735,7 +847,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Šifrované nebo heslem chráněné PDF nelze komprimovat lokálně.",
     errSigned: "Digitálně podepsané PDF nelze znovu komprimovat bez zneplatnění podpisů.",
     errMemory: "Tento dokument PDF je příliš velký pro bezpečné zpracování v paměti prohlížeče.",
-    errGeneric: "Během komprese PDF došlo k chybě."
+    errGeneric: "Během komprese PDF došlo k chybě.",
+    cancelBtn: "Zrušit",
+    stageReading: "1. Čtení struktury",
+    stageCompressing: "2. Komprese datových proudů",
+    stageVerifying: "3. Ověření výstupu",
+    nextActionHeading: "Doporučené další kroky",
+    nextPdfToImage: "Převést PDF do JPG / PNG",
+    nextBrowseTools: "Procházet všechny nástroje",
+    alreadyOptimized: "Již optimalizováno"
   },
   sl: {
     dropPdf: "Povlecite dokument PDF sem ali prebrskajte",
@@ -783,7 +903,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Šifriranih ali z geslom zaščitenih datotek PDF ni mogoče stisniti lokalno.",
     errSigned: "Digitalno podpisanih datotek PDF ni mogoče ponovno stisniti brez razveljavitve podpisov.",
     errMemory: "Ta dokument PDF je prevelik za varno obdelavo v pomnilniku brskalnika.",
-    errGeneric: "Med stiskanjem PDF je prišlo do napake."
+    errGeneric: "Med stiskanjem PDF je prišlo do napake.",
+    cancelBtn: "Prekliči",
+    stageReading: "1. Branje strukture",
+    stageCompressing: "2. Stiskanje tokov",
+    stageVerifying: "3. Preverjanje izhoda",
+    nextActionHeading: "Predlagani naslednji koraki",
+    nextPdfToImage: "Pretvori PDF v JPG / PNG",
+    nextBrowseTools: "Vsa orodja",
+    alreadyOptimized: "Že optimizirano"
   },
   hu: {
     dropPdf: "Húzza ide a PDF dokumentumot, vagy tallózzon",
@@ -831,7 +959,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "A titkosított vagy jelszóval védett PDF-ek nem tömöríthetők helyben.",
     errSigned: "A digitálisan aláírt PDF-ek nem tömöríthetők újra az aláírás érvénytelenítése nélkül.",
     errMemory: "Ez a PDF dokumentum túl nagy a böngésző memóriájában történő biztonságos feldolgozáshoz.",
-    errGeneric: "Hiba történt a PDF tömörítése során."
+    errGeneric: "Hiba történt a PDF tömörítése során.",
+    cancelBtn: "Mégse",
+    stageReading: "1. Struktúra olvasása",
+    stageCompressing: "2. Adatfolyamok tömörítése",
+    stageVerifying: "3. Kimenet ellenőrzése",
+    nextActionHeading: "Javasolt következő lépések",
+    nextPdfToImage: "PDF konvertálása JPG / PNG formátumba",
+    nextBrowseTools: "Összes eszköz megtekintése",
+    alreadyOptimized: "Már optimalizálva"
   },
   ro: {
     dropPdf: "Trageți documentul PDF aici sau navigați",
@@ -879,7 +1015,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "PDF-urile criptate sau protejate prin parolă nu pot fi comprimate local.",
     errSigned: "PDF-urile semnate digital nu pot fi recomprimate fără invalidarea semnăturilor.",
     errMemory: "Acest document PDF este prea mare pentru a fi procesat în siguranță în memoria browserului.",
-    errGeneric: "A apărut o eroare în timpul comprimării fișierului PDF."
+    errGeneric: "A apărut o eroare în timpul comprimării fișierului PDF.",
+    cancelBtn: "Anulare",
+    stageReading: "1. Citire structură",
+    stageCompressing: "2. Comprimare fluxuri",
+    stageVerifying: "3. Verificare rezultat",
+    nextActionHeading: "Pași următori sugerați",
+    nextPdfToImage: "Convertește PDF în JPG / PNG",
+    nextBrowseTools: "Vezi toate instrumentele",
+    alreadyOptimized: "Deja optimizat"
   },
   da: {
     dropPdf: "Træk dit PDF-dokument herover, eller vælg fil",
@@ -927,7 +1071,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Krypterede eller adgangskodebeskyttede PDF'er kan ikke komprimeres lokalt.",
     errSigned: "Digitalt signerede PDF'er kan ikke genkomprimeres uden at ugyldiggøre signaturer.",
     errMemory: "Dette PDF-dokument er for stort til at behandle sikkert i browserens hukommelse.",
-    errGeneric: "Der opstod en fejl under PDF-komprimering."
+    errGeneric: "Der opstod en fejl under PDF-komprimering.",
+    cancelBtn: "Annuller",
+    stageReading: "1. Læser struktur",
+    stageCompressing: "2. Komprimerer datastrømme",
+    stageVerifying: "3. Bekræfter output",
+    nextActionHeading: "Foreslåede næste trin",
+    nextPdfToImage: "Konverter PDF til JPG / PNG",
+    nextBrowseTools: "Gennemse alle værktøjer",
+    alreadyOptimized: "Allerede optimeret"
   },
   fi: {
     dropPdf: "Pudota PDF-asiakirjasi tähän tai selaa",
@@ -975,7 +1127,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Salattuja tai salasanalla suojattuja PDF-tiedostoja ei voi pakata paikallisesti.",
     errSigned: "Digitaalisesti allekirjoitettuja PDF-tiedostoja ei voi pakata uudelleen rikkomatta allekirjoitusta.",
     errMemory: "Tämä PDF-asiakirja on liian suuri käsiteltäväksi turvallisesti selaimen muistissa.",
-    errGeneric: "PDF-tiedoston pakkauksen aikana tapahtui virhe."
+    errGeneric: "PDF-tiedoston pakkauksen aikana tapahtui virhe.",
+    cancelBtn: "Peruuta",
+    stageReading: "1. Luetaan rakennetta",
+    stageCompressing: "2. Pakataan virtoja",
+    stageVerifying: "3. Vahvistetaan tulos",
+    nextActionHeading: "Ehdotetut seuraavat vaiheet",
+    nextPdfToImage: "Muunna PDF JPG / PNG -muotoon",
+    nextBrowseTools: "Selaa kaikkia työkaluja",
+    alreadyOptimized: "Jo optimoitu"
   },
   el: {
     dropPdf: "Σύρετε το έγγραφο PDF εδώ ή περιηγηθείτε",
@@ -1023,7 +1183,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Τα κρυπτογραφημένα ή προστατευμένα με κωδικό πρόσβασης PDF δεν μπορούν να συμπιεστούν τοπικά.",
     errSigned: "Τα ψηφιακά υπογεγραμμένα PDF δεν μπορούν να επανασυμπιεστούν χωρίς να ακυρωθούν οι υπογραφές.",
     errMemory: "Αυτό το έγγραφο PDF είναι πολύ μεγάλο για ασφαλή επεξεργασία στη μνήμη του περιηγητή.",
-    errGeneric: "Παρουσιάστηκε σφάλμα κατά τη συμπίεση του PDF."
+    errGeneric: "Παρουσιάστηκε σφάλμα κατά τη συμπίεση του PDF.",
+    cancelBtn: "Ακύρωση",
+    stageReading: "1. Ανάγνωση δομής",
+    stageCompressing: "2. Συμπίεση ροών",
+    stageVerifying: "3. Επαλήθευση αποτελέσματος",
+    nextActionHeading: "Προτεινόμενα επόμενα βήματα",
+    nextPdfToImage: "Μετατροπή PDF σε JPG / PNG",
+    nextBrowseTools: "Όλα τα εργαλεία",
+    alreadyOptimized: "Ήδη βελτιστοποιημένο"
   },
   he: {
     dropPdf: "גרור לכאן את מסמך ה-PDF שלך או עיין",
@@ -1071,7 +1239,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "לא ניתן לדחוס מקומית קובצי PDF מוצפנים או מוגנים בסיסמה.",
     errSigned: "לא ניתן לדחוס מחדש קובצי PDF חתומים דיגיטלית מבלי לבטל את החתימות.",
     errMemory: "מסמך PDF זה גדול מדי לעיבוד בטוח בזיכרון הדפדפן.",
-    errGeneric: "אירעה שגיאה במהלך דחיסת ה-PDF."
+    errGeneric: "אירעה שגיאה במהלך דחיסת ה-PDF.",
+    cancelBtn: "ביטול",
+    stageReading: "1. קריאת מבנה המסמך",
+    stageCompressing: "2. דחיסת נתונים מקומית",
+    stageVerifying: "3. אימות קובץ הפלט",
+    nextActionHeading: "פעולות המשך מומלצות",
+    nextPdfToImage: "המרת PDF ל-JPG / PNG",
+    nextBrowseTools: "עיון בכל הכלים",
+    alreadyOptimized: "כבר מותאם"
   },
   "pt-BR": {
     dropPdf: "Arraste seu documento PDF aqui ou procure no computador",
@@ -1119,7 +1295,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "PDFs criptografados ou protegidos por senha não podem ser comprimidos localmente.",
     errSigned: "PDFs assinados digitalmente não podem ser recomprimidos sem invalidar as assinaturas.",
     errMemory: "Este documento PDF é grande demais para ser processado com segurança na memória do navegador.",
-    errGeneric: "Ocorreu um erro durante a compressão do PDF."
+    errGeneric: "Ocorreu um erro durante a compressão do PDF.",
+    cancelBtn: "Cancelar",
+    stageReading: "1. Leitura da estrutura",
+    stageCompressing: "2. Comprimindo fluxos",
+    stageVerifying: "3. Verificando resultado",
+    nextActionHeading: "Próximos passos sugeridos",
+    nextPdfToImage: "Converter PDF para JPG / PNG",
+    nextBrowseTools: "Ver todas as ferramentas",
+    alreadyOptimized: "Já otimizado"
   },
   "es-419": {
     dropPdf: "Arrastra tu documento PDF aquí o búscalo",
@@ -1167,7 +1351,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Los documentos PDF cifrados o protegidos con contraseña no se pueden comprimir localmente.",
     errSigned: "Los PDF firmados digitalmente no se pueden recomprimir sin invalidar las firmas.",
     errMemory: "Este documento PDF es demasiado grande para procesarlo con seguridad en la memoria del navegador.",
-    errGeneric: "Ocurrió un error durante la compresión del PDF."
+    errGeneric: "Ocurrió un error durante la compresión del PDF.",
+    cancelBtn: "Cancelar",
+    stageReading: "1. Leyendo estructura",
+    stageCompressing: "2. Comprimiendo flujos",
+    stageVerifying: "3. Verificando resultado",
+    nextActionHeading: "Siguientes pasos sugeridos",
+    nextPdfToImage: "Convertir PDF a JPG / PNG",
+    nextBrowseTools: "Ver todas las herramientas",
+    alreadyOptimized: "Ya optimizado"
   },
   "zh-CN": {
     dropPdf: "将 PDF 文件拖放到此处或点击选择",
@@ -1215,7 +1407,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "受密码保护或加密的 PDF 无法在本地进行压缩。",
     errSigned: "包含数字签名的 PDF 无法在不破坏签名的情况下重新压缩。",
     errMemory: "此 PDF 文档过大，无法在浏览器内存中安全处理。",
-    errGeneric: "压缩 PDF 时发生错误。"
+    errGeneric: "压缩 PDF 时发生错误。",
+    cancelBtn: "取消",
+    stageReading: "1. 读取文档结构",
+    stageCompressing: "2. 本地压缩数据流",
+    stageVerifying: "3. 验证输出完整性",
+    nextActionHeading: "推荐下一步操作",
+    nextPdfToImage: "将 PDF 转换为 JPG / PNG 图片",
+    nextBrowseTools: "浏览所有工具",
+    alreadyOptimized: "已处于最佳体积"
   },
   "zh-TW": {
     dropPdf: "將 PDF 文件拖放到此處或點擊選擇",
@@ -1263,7 +1463,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "受密碼保護或加密的 PDF 無法在本機進行壓縮。",
     errSigned: "包含數位簽章的 PDF 無法在不破壞簽章的情況下重新壓縮。",
     errMemory: "此 PDF 文件過大，無法在瀏覽器記憶體中安全處理。",
-    errGeneric: "壓縮 PDF 時發生錯誤。"
+    errGeneric: "壓縮 PDF 時發生錯誤。",
+    cancelBtn: "取消",
+    stageReading: "1. 讀取文件結構",
+    stageCompressing: "2. 本機壓縮資料流",
+    stageVerifying: "3. 驗證輸出完整性",
+    nextActionHeading: "推薦下一步操作",
+    nextPdfToImage: "將 PDF 轉換為 JPG / PNG 圖片",
+    nextBrowseTools: "瀏覽所有工具",
+    alreadyOptimized: "已處於最佳體積"
   },
   // Preserving original 16 translations with new error keys filled in
   ar: {
@@ -1312,7 +1520,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "لا يمكن ضغط ملفات PDF المشفرة أو المحمية بكلمة مرور محلياً.",
     errSigned: "لا يمكن إعادة ضغط ملفات PDF الموقعة رقمياً دون إبطال التواقيع.",
     errMemory: "مستند PDF هذا كبير جداً بحيث يتعذر معالجته بأمان في ذاكرة المتصفح.",
-    errGeneric: "حدث خطأ أثناء ضغط ملف PDF."
+    errGeneric: "حدث خطأ أثناء ضغط ملف PDF.",
+    cancelBtn: "إلغاء",
+    stageReading: "1. قراءة بنية المستند",
+    stageCompressing: "2. ضغط البيانات محلياً",
+    stageVerifying: "3. التحقق من النتيجة",
+    nextActionHeading: "الخطوات التالية المقترحة",
+    nextPdfToImage: "تحويل PDF إلى صور JPG / PNG",
+    nextBrowseTools: "تصفح جميع الأدوات",
+    alreadyOptimized: "محسن مسبقاً"
   },
   tr: {
     dropPdf: "PDF belgenizi buraya bırakın veya seçin",
@@ -1360,7 +1576,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Şifrelenmiş veya parola korumalı PDF'ler yerel olarak sıkıştırılamaz.",
     errSigned: "Dijital imzalı PDF'ler imzalar geçersiz kılınmadan yeniden sıkıştırılamaz.",
     errMemory: "Bu PDF belgesi tarayıcı belleğinde güvenle işlenemeyecek kadar büyük.",
-    errGeneric: "PDF sıkıştırma sırasında bir hata oluştu."
+    errGeneric: "PDF sıkıştırma sırasında bir hata oluştu.",
+    cancelBtn: "İptal",
+    stageReading: "1. Yapı okunuyor",
+    stageCompressing: "2. Akışlar sıkıştırılıyor",
+    stageVerifying: "3. Çıktı doğrulanıyor",
+    nextActionHeading: "Önerilen sonraki adımlar",
+    nextPdfToImage: "PDF'yi JPG / PNG'ye dönüştür",
+    nextBrowseTools: "Tüm araçlara göz at",
+    alreadyOptimized: "Zaten optimize edilmiş"
   },
   sv: {
     dropPdf: "Dra och släpp ditt PDF-dokument här eller bläddra",
@@ -1408,7 +1632,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Krypterade eller lösenordsskyddade PDF-filer kan inte komprimeras lokalt.",
     errSigned: "Digitalt signerade PDF-filer kan inte komprimeras igen utan att ogiltigförklara signaturer.",
     errMemory: "Detta PDF-dokument är för stort för att bearbetas säkert i webbläsarens minne.",
-    errGeneric: "Ett fel uppstod under PDF-komprimeringen."
+    errGeneric: "Ett fel uppstod under PDF-komprimeringen.",
+    cancelBtn: "Avbryt",
+    stageReading: "1. Läser struktur",
+    stageCompressing: "2. Komprimerar strömmar",
+    stageVerifying: "3. Verifierar resultat",
+    nextActionHeading: "Föreslagna nästa steg",
+    nextPdfToImage: "Konvertera PDF till JPG / PNG",
+    nextBrowseTools: "Bläddra bland alla verktyg",
+    alreadyOptimized: "Redan optimerad"
   },
   no: {
     dropPdf: "Slipp PDF-dokumentet ditt her eller bla gjennom",
@@ -1456,7 +1688,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Krypterte eller passordbeskyttede PDF-er kan ikke komprimeres lokalt.",
     errSigned: "Digitalt signerte PDF-er kan ikke rekomprimeres uten å ugyldiggjøre signaturer.",
     errMemory: "Dette PDF-dokumentet er for stort til å behandles trygt i nettleserens minne.",
-    errGeneric: "Det oppstod en feil under PDF-komprimeringen."
+    errGeneric: "Det oppstod en feil under PDF-komprimeringen.",
+    cancelBtn: "Avbryt",
+    stageReading: "1. Leser struktur",
+    stageCompressing: "2. Komprimerer datastrømmer",
+    stageVerifying: "3. Bekrefter resultat",
+    nextActionHeading: "Foreslåtte neste steg",
+    nextPdfToImage: "Konverter PDF til JPG / PNG",
+    nextBrowseTools: "Bla gjennom alle verktøy",
+    alreadyOptimized: "Allerede optimalisert"
   },
   bg: {
     dropPdf: "Пуснете вашия PDF документ тук или изберете",
@@ -1504,7 +1744,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Криптирани или защитени с парола PDF файлове не могат да се компресират локално.",
     errSigned: "Дигитално подписани PDF файлове не могат да се компресират повторно без анулиране на подписите.",
     errMemory: "Този PDF документ е твърде голям за безопасна обработка в паметта на браузъра.",
-    errGeneric: "Възникна грешка при компресирането на PDF."
+    errGeneric: "Възникна грешка при компресирането на PDF.",
+    cancelBtn: "Отказ",
+    stageReading: "1. Четене на структура",
+    stageCompressing: "2. Компресиране на потоци",
+    stageVerifying: "3. Проверка на резултата",
+    nextActionHeading: "Препоръчителни следващи стъпки",
+    nextPdfToImage: "Конвертиране на PDF в JPG / PNG",
+    nextBrowseTools: "Всички инструменти",
+    alreadyOptimized: "Вече оптимизиран"
   },
   es: {
     dropPdf: "Suelta tu documento PDF aquí o busca",
@@ -1552,7 +1800,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Los documentos PDF cifrados o protegidos con contraseña no se pueden comprimir localmente.",
     errSigned: "Los PDF firmados digitalmente no se pueden recomprimir sin invalidar las firmas.",
     errMemory: "Este documento PDF es demasiado grande para procesarlo con seguridad en la memoria del navegador.",
-    errGeneric: "Ocurrió un error durante la compresión del PDF."
+    errGeneric: "Ocurrió un error durante la compresión del PDF.",
+    cancelBtn: "Cancelar",
+    stageReading: "1. Leyendo estructura",
+    stageCompressing: "2. Comprimiendo flujos",
+    stageVerifying: "3. Verificando resultado",
+    nextActionHeading: "Siguientes pasos sugeridos",
+    nextPdfToImage: "Convertir PDF a JPG / PNG",
+    nextBrowseTools: "Ver todas las herramientas",
+    alreadyOptimized: "Ya optimizado"
   },
   fr: {
     dropPdf: "Déposez votre document PDF ici ou parcourir",
@@ -1600,7 +1856,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Les PDF chiffrés ou protégés par mot de passe ne peuvent pas être compressés localement.",
     errSigned: "Les PDF signés numériquement ne peuvent pas être recompressés sans invalider les signatures.",
     errMemory: "Ce document PDF est trop volumineux pour être traité en toute sécurité dans la mémoire du navigateur.",
-    errGeneric: "Une erreur est survenue lors de la compression du PDF."
+    errGeneric: "Une erreur est survenue lors de la compression du PDF.",
+    cancelBtn: "Annuler",
+    stageReading: "1. Lecture de la structure",
+    stageCompressing: "2. Compression des flux",
+    stageVerifying: "3. Vérification du résultat",
+    nextActionHeading: "Actions suivantes suggérées",
+    nextPdfToImage: "Convertir PDF en JPG / PNG",
+    nextBrowseTools: "Parcourir tous les outils",
+    alreadyOptimized: "Déjà optimisé"
   },
   de: {
     dropPdf: "PDF-Dokument hier ablegen oder durchsuchen",
@@ -1648,7 +1912,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Verschlüsselte oder passwortgeschützte PDFs können nicht lokal komprimiert werden.",
     errSigned: "Digital signierte PDFs können nicht erneut komprimiert werden, ohne die Signaturen zu entwerten.",
     errMemory: "Dieses PDF-Dokument ist zu groß, um sicher im Browser-Speicher verarbeitet zu werden.",
-    errGeneric: "Bei der PDF-Komprimierung ist ein Fehler aufgetreten."
+    errGeneric: "Bei der PDF-Komprimierung ist ein Fehler aufgetreten.",
+    cancelBtn: "Abbrechen",
+    stageReading: "1. Struktur einlesen",
+    stageCompressing: "2. Datenströme komprimieren",
+    stageVerifying: "3. Ausgabe verifizieren",
+    nextActionHeading: "Vorgeschlagene nächste Schritte",
+    nextPdfToImage: "PDF in JPG / PNG umwandeln",
+    nextBrowseTools: "Alle Werkzeuge anzeigen",
+    alreadyOptimized: "Bereits optimiert"
   },
   pt: {
     dropPdf: "Solte o seu documento PDF aqui ou procure",
@@ -1696,7 +1968,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "PDFs criptografados ou protegidos por senha não podem ser comprimidos localmente.",
     errSigned: "PDFs assinados digitalmente não podem ser recomprimidos sem invalidar as assinaturas.",
     errMemory: "Este documento PDF é grande demais para ser processado com segurança na memória do navegador.",
-    errGeneric: "Ocorreu um erro durante a compressão do PDF."
+    errGeneric: "Ocorreu um erro durante a compressão do PDF.",
+    cancelBtn: "Cancelar",
+    stageReading: "1. Leitura da estrutura",
+    stageCompressing: "2. A comprimir fluxos",
+    stageVerifying: "3. A verificar ficheiro",
+    nextActionHeading: "Próximos passos sugeridos",
+    nextPdfToImage: "Converter PDF para JPG / PNG",
+    nextBrowseTools: "Ver todas as ferramentas",
+    alreadyOptimized: "Já otimizado"
   },
   it: {
     dropPdf: "Trascina il tuo documento PDF qui o sfoglia",
@@ -1744,7 +2024,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "I PDF crittografati o protetti da password non possono essere compressi localmente.",
     errSigned: "I PDF firmati digitalmente non possono essere ricompressi senza invalidare le firme.",
     errMemory: "Questo documento PDF è troppo grande per essere elaborato in sicurezza nella memoria del browser.",
-    errGeneric: "Si è verificato un errore durante la compressione del PDF."
+    errGeneric: "Si è verificato un errore durante la compressione del PDF.",
+    cancelBtn: "Annulla",
+    stageReading: "1. Lettura struttura",
+    stageCompressing: "2. Compressione flussi",
+    stageVerifying: "3. Verifica output",
+    nextActionHeading: "Passaggi successivi consigliati",
+    nextPdfToImage: "Converti PDF in JPG / PNG",
+    nextBrowseTools: "Sfoglia tutti gli strumenti",
+    alreadyOptimized: "Già ottimizzato"
   },
   ja: {
     dropPdf: "PDFドキュメントをここにドロップまたは参照",
@@ -1792,7 +2080,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "暗号化またはパスワードで保護されたPDFはローカルで圧縮できません。",
     errSigned: "デジタル署名されたPDFは、署名を無効にすることなく再圧縮することはできません。",
     errMemory: "このPDFドキュメントは大きすぎるため、ブラウザのメモリで安全に処理できません。",
-    errGeneric: "PDF圧縮中にエラーが発生しました。"
+    errGeneric: "PDF圧縮中にエラーが発生しました。",
+    cancelBtn: "キャンセル",
+    stageReading: "1. 文書構造の読み込み",
+    stageCompressing: "2. ブラウザ内ストリーム圧縮",
+    stageVerifying: "3. 出力整合性の検証",
+    nextActionHeading: "おすすめの次の操作",
+    nextPdfToImage: "PDFをJPG / PNG画像に変換",
+    nextBrowseTools: "すべてのツールを見る",
+    alreadyOptimized: "すでに最適化済み"
   },
   ko: {
     dropPdf: "PDF 문서를 여기에 놓거나 찾아보기",
@@ -1840,7 +2136,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "암호화되거나 비밀번호로 보호된 PDF는 로컬에서 압축할 수 없습니다.",
     errSigned: "디지털 서명된 PDF는 서명을 무효화하지 않고 다시 압축할 수 없습니다.",
     errMemory: "이 PDF 문서는 브라우저 메모리에서 안전하게 처리하기에 너무 큽니다.",
-    errGeneric: "PDF 압축 중 오류가 발생했습니다."
+    errGeneric: "PDF 압축 중 오류가 발생했습니다.",
+    cancelBtn: "취소",
+    stageReading: "1. 문서 구조 분석",
+    stageCompressing: "2. 브라우저 로컬 압축",
+    stageVerifying: "3. 결과 무결성 검증",
+    nextActionHeading: "추천 다음 작업",
+    nextPdfToImage: "PDF를 JPG / PNG 이미지로 변환",
+    nextBrowseTools: "모든 도구 보기",
+    alreadyOptimized: "이미 최적화됨"
   },
   nl: {
     dropPdf: "Sleep je PDF-document hierheen of blader",
@@ -1888,7 +2192,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Versleutelde of met een wachtwoord beveiligde PDF's kunnen niet lokaal worden gecomprimeerd.",
     errSigned: "Digitaal ondertekende PDF's kunnen niet opnieuw worden gecomprimeerd zonder handtekeningen ongeldig te maken.",
     errMemory: "Dit PDF-document is te groot om veilig in het browsergeheugen te verwerken.",
-    errGeneric: "Er is een fout opgetreden tijdens PDF-compressie."
+    errGeneric: "Er is een fout opgetreden tijdens PDF-compressie.",
+    cancelBtn: "Annuleren",
+    stageReading: "1. Structuur lezen",
+    stageCompressing: "2. Streams comprimeren",
+    stageVerifying: "3. Uitvoer verifiëren",
+    nextActionHeading: "Voorgestelde vervolgstappen",
+    nextPdfToImage: "PDF converteren naar JPG / PNG",
+    nextBrowseTools: "Alle tools bekijken",
+    alreadyOptimized: "Al geoptimaliseerd"
   },
   ca: {
     dropPdf: "Arrossega el teu document PDF aquí o cerca",
@@ -1936,7 +2248,15 @@ export const PDF_COMPRESSION_I18N: Record<string, PdfCompressionI18nEntry> = {
     errEncrypted: "Els PDF xifrats o protegits amb contrasenya no es poden comprimir localment.",
     errSigned: "Els PDF signats digitalment no es poden recomprimir sense invalidar les signatures.",
     errMemory: "Aquest document PDF és massa gran per processar-lo de manera segura a la memòria del navegador.",
-    errGeneric: "S'ha produït un error durant la compressió del PDF."
+    errGeneric: "S'ha produït un error durant la compressió del PDF.",
+    cancelBtn: "Cancel·lar",
+    stageReading: "1. Llegint estructura",
+    stageCompressing: "2. Comprimint fluxos",
+    stageVerifying: "3. Verificant resultat",
+    nextActionHeading: "Passos següents suggerits",
+    nextPdfToImage: "Convertir PDF a JPG / PNG",
+    nextBrowseTools: "Veure totes les eines",
+    alreadyOptimized: "Ja optimitzat"
   }
 };
 

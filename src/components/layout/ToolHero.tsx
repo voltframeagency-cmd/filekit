@@ -5,19 +5,27 @@ import { useLanguage } from "./LanguageContext";
 import { useRouter } from "next/navigation";
 
 export default function ToolHero() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Tools list for search
+  const basePrefix = language && language !== "en" ? `/${language}` : "";
+
+  // Verified operational tools list for instant search
   const tools = [
-    { name: t("breadcrumb.compress"), desc: t("tool.compress.desc"), route: "/compress-pdf" },
-    { name: t("tool.merge.title"), desc: t("tool.merge.desc"), route: "#" },
-    { name: t("tool.resize.title"), desc: t("tool.resize.desc"), route: "#" },
-    { name: t("tool.convert.title"), desc: t("tool.convert.desc"), route: "#" },
-    { name: t("tool.pdfToWord.title"), desc: t("tool.pdfToWord.desc"), route: "#" },
+    { name: t("breadcrumb.compress") || "Compress PDF", desc: t("tool.compress.desc") || "Reduce PDF file size", route: "/compress-pdf" },
+    { name: "PDF to Image", desc: "Convert PDF pages to high-quality JPG or PNG images", route: "/pdf-to-image" },
+    { name: "EPUB to PDF", desc: "Convert EPUB ebooks to clean vector PDF documents", route: "/epub-to-pdf" },
+    { name: "Compress Image", desc: "Compress JPEG, PNG, and WebP images locally", route: "/compress-image" },
+    { name: t("tool.merge.title") || "Merge PDF", desc: t("tool.merge.desc") || "Combine multiple PDF files", route: "/merge-pdf" },
+    { name: t("tool.split.title") || "Split PDF", desc: t("tool.split.desc") || "Extract separate PDF pages", route: "/split-pdf" },
+    { name: t("tool.rotate.title") || "Rotate PDF", desc: t("tool.rotate.desc") || "Rotate PDF orientation", route: "/rotate-pdf" },
+    { name: t("tool.watermark.title") || "Watermark PDF", desc: t("tool.watermark.desc") || "Stamp custom watermark on PDF", route: "/watermark-pdf" },
+    { name: "Edit PDF", desc: "Add text, annotations, and shapes to PDF", route: "/edit-pdf" },
+    { name: t("homepage.viewAll") || "All Tools", desc: "Explore the complete directory of 100+ document tools", route: "/all-tools" },
   ];
 
   const filteredTools = tools.filter(
@@ -25,6 +33,49 @@ export default function ToolHero() {
       tool.name.toLowerCase().includes(query.toLowerCase()) ||
       tool.desc.toLowerCase().includes(query.toLowerCase())
   );
+
+  // Keyboard shortcut: '/' focuses search input
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === "/" &&
+        document.activeElement !== inputRef.current &&
+        !(document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement)
+      ) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleKeyDownInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isFocused || filteredTools.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % filteredTools.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev - 1 + filteredTools.length) % filteredTools.length);
+    } else if (e.key === "Enter" && selectedIndex >= 0 && selectedIndex < filteredTools.length) {
+      e.preventDefault();
+      const target = filteredTools[selectedIndex];
+      router.push(`${basePrefix}${target.route}`);
+      setQuery("");
+      setIsFocused(false);
+    } else if (e.key === "Escape") {
+      setIsFocused(false);
+    }
+  };
+
+  const quickChips = [
+    { label: t("breadcrumb.compress") || "Compress PDF", route: "/compress-pdf" },
+    { label: "PDF to Image", route: "/pdf-to-image" },
+    { label: "EPUB to PDF", route: "/epub-to-pdf" },
+    { label: t("homepage.viewAll") || "All Tools →", route: "/all-tools" },
+  ];
 
   return (
     <div className="flex flex-col gap-6 max-w-[560px] w-full text-left ltr:text-left rtl:text-right">
@@ -63,7 +114,11 @@ export default function ToolHero() {
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSelectedIndex(-1);
+            }}
+            onKeyDown={handleKeyDownInput}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             placeholder={t("homepage.searchPlaceholder")}
@@ -86,9 +141,11 @@ export default function ToolHero() {
                     key={idx}
                     onClick={() => {
                       setQuery("");
-                      if (tool.route !== "#") router.push(tool.route);
+                      router.push(`${basePrefix}${tool.route}`);
                     }}
-                    className="w-full flex flex-col px-4 py-2.5 text-left hover:bg-slate-50 transition-colors duration-150"
+                    className={`w-full flex flex-col px-4 py-2.5 text-left transition-colors duration-150 ${
+                      idx === selectedIndex ? "bg-blue-50 text-blue-900" : "hover:bg-slate-50"
+                    }`}
                   >
                     <span className="text-[14px] font-bold text-slate-900">{tool.name}</span>
                     <span className="text-[11px] text-slate-500">{tool.desc}</span>
@@ -102,6 +159,21 @@ export default function ToolHero() {
             )}
           </div>
         )}
+
+        {/* Quick Category Chips / Jump Links (Competitor benchmark: Smallpdf / iLovePDF instant shortcuts) */}
+        <div className="flex flex-wrap items-center gap-2 mt-2.5">
+          <span className="text-[12px] font-semibold text-blue-100">Quick jump:</span>
+          {quickChips.map((chip, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => router.push(`${basePrefix}${chip.route}`)}
+              className="px-2.5 py-1 bg-white/15 hover:bg-white/25 active:bg-white/30 text-white text-[11.5px] font-bold rounded-full backdrop-blur-xs transition-colors border border-white/20"
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Trust Mini Badges Grid — White cards on blue canvas */}

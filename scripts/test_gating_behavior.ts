@@ -24,8 +24,10 @@ async function testGatingAndPricing() {
   assert(
     ttfToWoff2Text.includes('WOFF2 Conversion Temporarily Unavailable') &&
     ttfToWoff2Text.includes('standard font compression') &&
-    !ttfToWoff2Text.includes('Brotli'), // Customer friendly, no raw codec jargon
-    '/en/ttf-to-woff2 must display concise customer-friendly explanation without codec internals'
+    !ttfToWoff2Text.includes('Brotli') &&
+    !ttfToWoff2Text.includes('WOFF 1.0') && // Do not recommend unverified WOFF 1.0
+    ttfToWoff2Text.includes('PDF compression'), // Recommend verified tool
+    '/en/ttf-to-woff2 must display concise customer-friendly explanation and recommend verified tools (no WOFF 1.0)'
   );
 
   // 2. Reverse WOFF2 route: /en/woff2-to-ttf
@@ -35,8 +37,10 @@ async function testGatingAndPricing() {
   const woff2ToTtfText = (await page.locator('[data-testid="gated-tool-notice"]').textContent()) || '';
   assert(
     woff2ToTtfText.includes('WOFF2 Conversion Temporarily Unavailable') &&
-    !woff2ToTtfText.includes('Brotli'),
-    '/en/woff2-to-ttf must display customer-friendly notice and not expose raw decoder/codec internals'
+    !woff2ToTtfText.includes('Brotli') &&
+    !woff2ToTtfText.includes('WOFF 1.0') &&
+    woff2ToTtfText.includes('PDF compression'),
+    '/en/woff2-to-ttf must display customer-friendly notice and recommend verified tools'
   );
 
   // 3. MOBI route: /es/mobi-to-pdf
@@ -80,6 +84,18 @@ async function testGatingAndPricing() {
       path: '/es',
       expectedSubstrings: ['Job Pass 4,90 € por 7 días (sin renovación automática)'],
       forbiddenSubstrings: ['4,99', '4.99', 'Free basic tools']
+    },
+    {
+      locale: 'es-419',
+      path: '/es-419',
+      expectedSubstrings: ['Job Pass 4,90 € por 7 días (sin renovación automática)'],
+      forbiddenSubstrings: ['4,99', '4.99', '$4.90', '$4.99', 'Free basic tools']
+    },
+    {
+      locale: 'pt-BR',
+      path: '/pt-BR',
+      expectedSubstrings: ['Job Pass 4,90 € por 7 dias (sem renovação automática)'],
+      forbiddenSubstrings: ['4,99', '4.99', 'R$', 'Free basic tools']
     },
     {
       locale: 'de',

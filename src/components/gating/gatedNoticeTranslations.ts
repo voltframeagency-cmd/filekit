@@ -16,7 +16,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "Quality Gate",
       reason: "WOFF2 conversion is temporarily disabled until standard font compression is verified.",
       alternativeHeading: "Available alternative",
-      alternative: "You can convert standard TTF to WOFF 1.0 or inspect font metadata in your browser.",
+      alternative: "Use verified PDF compression or convert EPUB to PDF directly in your browser.",
       backToTools: "Explore Verified Tools"
     },
     mobi: {
@@ -42,7 +42,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "Control de calidad",
       reason: "La conversión WOFF2 está pausada temporalmente hasta validar la compresión estándar.",
       alternativeHeading: "Alternativa disponible",
-      alternative: "Puedes convertir TTF a WOFF 1.0 o inspeccionar metadatos en tu navegador.",
+      alternative: "Usa la compresión verificada de PDF o convierte EPUB a PDF directamente en tu navegador.",
       backToTools: "Ver herramientas disponibles"
     },
     mobi: {
@@ -68,7 +68,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "Control de calidad",
       reason: "La conversión WOFF2 está pausada temporalmente hasta validar la compresión estándar.",
       alternativeHeading: "Alternativa disponible",
-      alternative: "Puedes convertir TTF a WOFF 1.0 o inspeccionar metadatos en tu navegador.",
+      alternative: "Usa la compresión verificada de PDF o convierte EPUB a PDF directamente en tu navegador.",
       backToTools: "Ver herramientas disponibles"
     },
     mobi: {
@@ -94,7 +94,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "Qualitätsprüfung",
       reason: "Die WOFF2-Konvertierung ist vorübergehend deaktiviert, bis die Standard-Komprimierung verifiziert ist.",
       alternativeHeading: "Verfügbare Alternative",
-      alternative: "Konvertieren Sie TTF zu WOFF 1.0 oder prüfen Sie Schrift-Metadaten direkt im Browser.",
+      alternative: "Nutzen Sie unsere verifizierte PDF-Komprimierung oder konvertieren Sie EPUB zu PDF direkt im Browser.",
       backToTools: "Verfügbare Werkzeuge entdecken"
     },
     mobi: {
@@ -120,7 +120,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "Contrôle qualité",
       reason: "La conversion WOFF2 est suspendue jusqu'à vérification de la compression standard.",
       alternativeHeading: "Alternative disponible",
-      alternative: "Convertissez vos polices TTF en WOFF 1.0 ou consultez leurs métadonnées dans votre navigateur.",
+      alternative: "Utilisez la compression PDF vérifiée ou convertissez EPUB en PDF directement dans votre navigateur.",
       backToTools: "Découvrir les outils disponibles"
     },
     mobi: {
@@ -146,7 +146,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "Controllo qualità",
       reason: "La conversione WOFF2 è sospesa fino alla verifica della compressione standard.",
       alternativeHeading: "Alternativa disponibile",
-      alternative: "Converti file TTF in WOFF 1.0 o esamina i metadati direttamente nel browser.",
+      alternative: "Usa la compressione PDF verificata o converti EPUB in PDF direttamente nel browser.",
       backToTools: "Esplora gli strumenti disponibili"
     },
     mobi: {
@@ -172,7 +172,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "Controlo de qualidade",
       reason: "A conversão WOFF2 está pausada até validação da compressão padrão.",
       alternativeHeading: "Alternativa disponível",
-      alternative: "Converta ficheiros TTF para WOFF 1.0 diretamente no seu navegador.",
+      alternative: "Utilize a compressão de PDF verificada ou converta EPUB para PDF diretamente no navegador.",
       backToTools: "Ver ferramentas disponíveis"
     },
     mobi: {
@@ -198,7 +198,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "Controle de qualidade",
       reason: "A conversão WOFF2 está pausada até validação da compressão padrão.",
       alternativeHeading: "Alternativa disponível",
-      alternative: "Converta arquivos TTF para WOFF 1.0 diretamente no seu navegador.",
+      alternative: "Utilize a compressão de PDF verificada ou converta EPUB para PDF diretamente no navegador.",
       backToTools: "Ver ferramentas disponíveis"
     },
     mobi: {
@@ -224,7 +224,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "Kwaliteitscontrole",
       reason: "WOFF2-conversie is tijdelijk uitgeschakeld totdat standaardcompressie is geverifieerd.",
       alternativeHeading: "Beschikbaar alternatief",
-      alternative: "Converteer TTF naar WOFF 1.0 rechtstreeks in uw browser.",
+      alternative: "Gebruik geverifieerde PDF-compressie of converteer EPUB naar PDF rechtstreeks in uw browser.",
       backToTools: "Bekijk beschikbare tools"
     },
     mobi: {
@@ -250,7 +250,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "مراقبة الجودة",
       reason: "تم إيقاف تحويل WOFF2 مؤقتاً حتى يتم التحقق من خوارزمية الضغط القياسية.",
       alternativeHeading: "البديل المتاح",
-      alternative: "يمكنك تحويل خطوط TTF إلى WOFF 1.0 مباشرة في المتصفح.",
+      alternative: "استخدم ضغط PDF المعتمد أو حوّل EPUB إلى PDF مباشرة في متصفحك.",
       backToTools: "استكشف الأدوات المتاحة"
     },
     mobi: {
@@ -276,7 +276,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "בקרת איכות",
       reason: "המרת WOFF2 מושבתת זמנית עד לאימות דחיסת הגופנים התקנית.",
       alternativeHeading: "חלופה זמינה",
-      alternative: "ניתן להמיר גופני TTF ל-WOFF 1.0 ישירות בדפדפן.",
+      alternative: "השתמש בדחיסת PDF מאומתת או המר EPUB ל-PDF ישירות בדפדפן שלך.",
       backToTools: "גלה כלים זמינים"
     },
     mobi: {
@@ -302,7 +302,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "गुणवत्ता जांच",
       reason: "मानक फ़ॉन्ट संपीड़न सत्यापित होने तक WOFF2 रूपांतरण अस्थायी रूप से अक्षम है।",
       alternativeHeading: "उपलब्ध विकल्प",
-      alternative: "आप अपने ब्राउज़र में TTF को WOFF 1.0 में बदल सकते हैं।",
+      alternative: "सत्यापित PDF कंप्रेशन का उपयोग करें या सीधे अपने ब्राउज़र में EPUB को PDF में बदलें।",
       backToTools: "उपलब्ध टूल्स देखें"
     },
     mobi: {
@@ -328,7 +328,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "品質管理",
       reason: "標準フォント圧縮の検証が完了するまで、WOFF2変換は一時的に停止しています。",
       alternativeHeading: "利用可能な代替ツール",
-      alternative: "ブラウザ上でTTFからWOFF 1.0への変換をご利用いただけます。",
+      alternative: "検証済みのPDF圧縮機能をご利用いただくか、ブラウザ上でEPUBをPDFに変換できます。",
       backToTools: "利用可能なツールを見る"
     },
     mobi: {
@@ -354,7 +354,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "품질 기준",
       reason: "표준 폰트 압축 규격 검증 완료 시까지 WOFF2 변환이 일시적으로 제한됩니다.",
       alternativeHeading: "사용 가능한 대안",
-      alternative: "브라우저에서 직접 TTF를 WOFF 1.0으로 변환할 수 있습니다.",
+      alternative: "검증된 PDF 압축을 사용하시거나 브라우저에서 직접 EPUB을 PDF로 변환해 보세요.",
       backToTools: "사용 가능한 도구 보기"
     },
     mobi: {
@@ -380,7 +380,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "质量保障",
       reason: "在标准字体压缩验证完成前，WOFF2 转换功能暂时下线。",
       alternativeHeading: "推荐替代方案",
-      alternative: "您可以在浏览器中直接将 TTF 转换为 WOFF 1.0。",
+      alternative: "使用经过验证的 PDF 压缩工具，或在浏览器中直接将 EPUB 转换为 PDF。",
       backToTools: "查看可用工具"
     },
     mobi: {
@@ -406,7 +406,7 @@ export const GATED_NOTICE_I18N: Record<SupportedLocale, Record<"woff2" | "mobi" 
       badge: "品質保障",
       reason: "在標準字型壓縮驗證完成前，WOFF2 轉換功能暫時下線。",
       alternativeHeading: "推薦替代方案",
-      alternative: "您可以在瀏覽器中直接將 TTF 轉換為 WOFF 1.0。",
+      alternative: "使用經過驗證的 PDF 壓縮工具，或在瀏覽器中直接將 EPUB 轉換為 PDF。",
       backToTools: "瀏覽可用工具"
     },
     mobi: {

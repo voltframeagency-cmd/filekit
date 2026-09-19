@@ -568,7 +568,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Herramientas populares",
     "homepage.browseAll": "Ver todas las herramientas →",
     "homepage.viewAll": "Ver todas las herramientas →",
-    "homepage.footerNote": "Herramientas básicas gratis. Job Pass $4.90 por 7 días (sin renovación automática). Sin suscripciones ocultas.",
+    "homepage.footerNote": "Herramientas básicas gratis. Job Pass 4,90 € por 7 días (sin renovación automática). Sin suscripciones ocultas.",
     
     "tool.compress.desc": "Reduce el tamaño de tus archivos PDF",
     "tool.merge.title": "Unir PDF",
@@ -1102,7 +1102,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     "homepage.popularTools": "Ferramentas populares",
     "homepage.browseAll": "Ver todas as ferramentas →",
     "homepage.viewAll": "Ver todas as ferramentas →",
-    "homepage.footerNote": "Ferramentas básicas gratuitas. Job Pass R$ 4,90 por 7 dias (sem renovação automática). Sem assinaturas ocultas.",
+    "homepage.footerNote": "Ferramentas básicas gratuitas. Job Pass 4,90 € por 7 dias (sem renovação automática). Sem assinaturas ocultas.",
     
     "tool.compress.desc": "Reduza o tamanho de PDFs",
     "tool.merge.title": "Juntar PDF",
