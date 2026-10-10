@@ -436,7 +436,7 @@ export const OFFICE_I18N: Record<string, OfficeI18nEntry> = {
     convertBtn: "Konverter til PDF",
     convertSuccess: "Konverteret til PDF med succes",
     renderedSummary: (ms, kb) => `Behandlet på ${ms}ms • ${kb} KB • Midlertidig container ryddet`,
-    downloadPdf: "Download PDF",
+    downloadPdf: "Hent PDF",
     noticeTitle: "Meddelande om sikker serverkonvertering",
     noticeBody: "Denne dokumentkonvertering kræver en isoleret cloud-microVM for at sikre fuldstændig typografi- og layoutnøjagtighed. Din fil behandles i hukommelsen og slettes umiddelbart bagefter.",
     cancel: "Annuller",

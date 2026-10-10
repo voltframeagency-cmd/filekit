@@ -2392,8 +2392,8 @@ export const PDF_OVERLAY_I18N: Record<string, PdfOverlayI18nEntry> = {
     posTileGrid: "Naka-tile na Grid",
     posBottomRight: "Ibaba Kanan",
     posCustom: "Custom na Coordinates",
-    customX: "Custom X (pt)",
-    customY: "Custom Y (pt)",
+    customX: "Pasadya X (pt)",
+    customY: "Pasadya Y (pt)",
 
     applyToPages: "Ilapat sa mga Pahina",
     allPages: "Lahat ng Pahina",

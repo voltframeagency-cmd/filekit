@@ -51,8 +51,8 @@ export default function PdfCompressionWorkspace({
   const getLocalizedProgressLabel = (): string => {
     if (!currentStage) return wt.compressing;
     switch (currentStage) {
-      case "DISCOVERY":
       case "READING_FILE":
+      case "ANALYZING_PAGES":
         return wt.stageReading;
       case "COMPRESSING_IMAGES":
         return progressPct !== null ? `${wt.stageCompressing} (${progressPct}%)` : wt.stageCompressing;
@@ -394,7 +394,7 @@ export default function PdfCompressionWorkspace({
                     <div className="grid grid-cols-3 gap-2 text-[11px] font-bold pt-1">
                       <div
                         className={`p-1.5 rounded text-center border transition-all ${
-                          currentStage === "DISCOVERY" || currentStage === "READING_FILE"
+                          currentStage === "ANALYZING_PAGES" || currentStage === "READING_FILE"
                             ? "bg-blue-600 text-white border-blue-600 animate-pulse"
                             : currentStage === "COMPRESSING_IMAGES" || currentStage === "REBUILDING_PDF" || currentStage === "VERIFYING_OUTPUT"
                             ? "bg-blue-100 text-blue-900 border-blue-300"

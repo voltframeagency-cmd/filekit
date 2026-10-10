@@ -8,6 +8,7 @@ import { OFFICE_I18N } from "./officeTranslations";
 
 export interface OfficeConverterWorkspaceProps {
   toolTitle: string;
+  toolSlug?: string;
   apiEndpoint: string;
   acceptedExtensions: string;
   documentTypeLabel: string; // e.g. "Word Document", "PowerPoint Presentation", "Excel Spreadsheet"

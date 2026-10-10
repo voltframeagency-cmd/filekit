@@ -59,8 +59,8 @@ export default function ToolHero() {
     return CATALOG_SEARCH_ROUTES.map((route) => {
       if (route === "/all-tools") {
         return {
-          name: t("homepage.viewAll") || "Explore all 100+ tools",
-          desc: t("homepage.popularTools") || "Directory of 100+ document tools",
+          name: t("homepage.viewAll") || t("nav.allTools") || "",
+          desc: t("homepage.popularTools") || "",
           route,
         };
       }
@@ -124,12 +124,17 @@ export default function ToolHero() {
     }
   };
 
-  const quickChips = useMemo(() => [
-    { label: getLocalizedToolMeta("/compress-pdf", rawLang).h1 || "Compress PDF", route: "/compress-pdf" },
-    { label: getLocalizedToolMeta("/pdf-to-image", rawLang).h1 || "PDF to Image", route: "/pdf-to-image" },
-    { label: getLocalizedToolMeta("/epub-to-pdf", rawLang).h1 || "EPUB to PDF", route: "/epub-to-pdf" },
-    { label: t("homepage.viewAll") || "All Tools →", route: "/all-tools" },
-  ], [rawLang, t]);
+  const quickChips = useMemo(() => {
+    const compressMeta = getLocalizedToolMeta("/compress-pdf", rawLang);
+    const pdfToImageMeta = getLocalizedToolMeta("/pdf-to-image", rawLang);
+    const epubMeta = getLocalizedToolMeta("/epub-to-pdf", rawLang);
+    return [
+      { label: compressMeta.h1 || compressMeta.title?.replace(/ \| FileKit$/, "") || "", route: "/compress-pdf" },
+      { label: pdfToImageMeta.h1 || pdfToImageMeta.title?.replace(/ \| FileKit$/, "") || "", route: "/pdf-to-image" },
+      { label: epubMeta.h1 || epubMeta.title?.replace(/ \| FileKit$/, "") || "", route: "/epub-to-pdf" },
+      { label: t("homepage.viewAll") || t("homepage.browseAll") || t("nav.allTools") || "", route: "/all-tools" },
+    ];
+  }, [rawLang, t]);
 
   return (
     <div className="flex flex-col gap-6 max-w-[560px] w-full text-left ltr:text-left rtl:text-right">

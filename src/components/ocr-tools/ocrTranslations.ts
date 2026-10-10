@@ -207,7 +207,7 @@ export const OCR_I18N: Record<string, OcrI18nEntry> = {
     completedSummary: (pages, ms) => `OCR fuldført (${pages} side${pages !== 1 ? "r" : ""} på ${ms}ms)`,
     copied: "✓ Kopieret!",
     copyText: "Kopier tekst",
-    downloadTxt: "Download .TXT",
+    downloadTxt: "Hent .TXT",
     downloadSearchablePdf: "Download søgbar PDF",
     extractedTextLabel: "Udtrukket tekst"
   },

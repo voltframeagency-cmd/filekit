@@ -75,7 +75,7 @@ export const UI_TRANSLATIONS: Record<SupportedLocale, UiTranslations> = {
 
   // 5. French
   fr: {
-    nav: { allTools: "Tous les outils", compress: "Compresser", convert: "Convertir", merge: "Fusionner", image: "Image", organize: "Organiser", searchPlaceholder: "Rechercher parmi plus de 100 outils..." },
+    nav: { allTools: "Tous les outils", compress: "Compresser", convert: "Convertir", merge: "Fusionner", image: "Images", organize: "Organiser", searchPlaceholder: "Rechercher parmi plus de 100 outils..." },
     trust: { badge1: "Traitement direct dans le navigateur", badge2: "Suppression automatique des serveurs", badge3: "Aucun compte requis", badge4: "100% Privé et Sécurisé" },
     homepage: { heroTitle: "Vos fichiers, selon vos règles. Privé, instantané, gratuit.", heroSubtitle: "Convertissez, compressez, modifiez et organisez vos PDF, images, fichiers Office, audio et vidéo dans votre navigateur.", dropzoneTitle: "Déposez un fichier ici pour commencer", dropzoneSubtitle: "ou cliquez pour parcourir vos fichiers", popularTools: "Outils populaires", viewAll: "Explorer les 100+ outils →" },
     workspace: { selectFile: "Sélectionner un fichier", processing: "Traitement local en cours...", download: "Télécharger le fichier", changeFile: "Changer de fichier", error: "Une erreur est survenue lors du traitement.", freeNotice: "100% Gratuit · Zéro transfert de fichier · Sans inscription" }
