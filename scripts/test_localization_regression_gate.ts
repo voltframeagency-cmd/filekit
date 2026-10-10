@@ -10,7 +10,7 @@ import { PDF_OVERLAY_I18N } from '../src/components/pdf-overlay/pdfOverlayTransl
 import { OFFICE_I18N } from '../src/components/office-tools/officeTranslations';
 import { getLocalizedToolMeta } from '../src/utils/i18nHelper';
 
-console.log('=== COMPREHENSIVE COMPONENT STATE & LOCALE AUDIT ===\n');
+console.log('=== STATIC COMPONENT DICTIONARY MULTI-STATE AUDIT ===\n');
 
 interface Leak {
   locale: string;
@@ -444,6 +444,8 @@ if (leaks.length > 0) {
     compMap[l.component] = (compMap[l.component] || 0) + 1;
   });
   console.table(compMap);
+  process.exitCode = 1;
+  process.exit(1);
 } else {
-  console.log('✅ ZERO ENGLISH LEAKAGE CONFIRMED ACROSS ALL TESTED COMPONENTS AND STATES!');
+  console.log('✅ ZERO ENGLISH LEAKAGE DETECTED IN TESTED STATIC COMPONENT DICTIONARIES!');
 }

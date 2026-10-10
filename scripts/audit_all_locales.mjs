@@ -1,4 +1,4 @@
-// Comprehensive multi-locale leak detector across representative languages and rendered DOM surfaces
+// Multi-locale SSR HTML String & Structural Pattern Audit across representative routes
 
 export const routes = [
   '/',
@@ -291,7 +291,7 @@ export async function audit(options = {}) {
       process.exit(1);
     }
   } else {
-    console.log(`✅ RENDERED-DOM & STATE LEAK AUDIT COMPLETE: 100% PASS with 0 HTTP errors and 0 monitored English leaks across all tested locales.`);
+    console.log(`✅ SSR HTML & STRUCTURAL PATTERN AUDIT COMPLETE: 100% PASS with 0 HTTP errors and 0 monitored English leaks across all tested locales.`);
   }
 
   return { totalLeaks, totalHttpErrors, leakReports, httpErrorReports };

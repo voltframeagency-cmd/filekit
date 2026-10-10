@@ -8,7 +8,7 @@ import DesktopMegaMenu from "./DesktopMegaMenu";
 import MobileNavigation from "./MobileNavigation";
 import { useLanguage } from "@/components/layout/LanguageContext";
 import { SUPPORTED_LOCALES, SupportedLocale, isValidLocale, normalizeLocale } from "@/config/i18n/locales";
-import { getLocalizedHref } from "@/utils/i18nHelper";
+import { getLocalizedHref, getLocalizedToolMeta } from "@/utils/i18nHelper";
 import FileKitLogo from "../common/FileKitLogo";
 import { NAV_ACCESSIBILITY_LABELS, SEARCH_HEADER_LABELS, formatFoundCount } from "./megaMenuTranslations";
 
@@ -215,6 +215,10 @@ export default function SiteHeader() {
                 <div className="max-h-64 overflow-y-auto space-y-1 py-1">
                   {filteredTools.map((tItem, idx) => {
                     const searchHref = getLocalizedHref(tItem.route, activeLocale);
+                    const cleanSlug = tItem.route.replace(/^\//, "");
+                    const meta = getLocalizedToolMeta(cleanSlug, activeLocale as SupportedLocale);
+                    const displayName = meta?.title || tItem.name;
+                    const displayDesc = meta?.description || tItem.desc;
                     return (
                       <Link
                         key={idx}
@@ -226,10 +230,10 @@ export default function SiteHeader() {
                         className="px-3 py-2 rounded-xl text-left block hover:bg-blue-50/80 transition-colors group"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[13px] font-bold text-slate-900 group-hover:text-blue-600">{tItem.name}</span>
+                          <span className="text-[13px] font-bold text-slate-900 group-hover:text-blue-600">{displayName}</span>
                           <span className="text-[9px] font-mono bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-bold">{tItem.tag}</span>
                         </div>
-                        <span className="text-[11px] text-slate-500 line-clamp-1 block mt-0.5 font-normal">{tItem.desc}</span>
+                        <span className="text-[11px] text-slate-500 line-clamp-1 block mt-0.5 font-normal">{displayDesc}</span>
                       </Link>
                     );
                   })}
