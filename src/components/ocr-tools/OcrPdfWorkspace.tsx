@@ -55,14 +55,14 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
       const ocrResult = await OcrEngine.processDocument(
         buffer,
         sourceFile.name,
-        (percent, stage) => {
+        (percent) => {
           setProgressPercent(percent);
-          setProgressStage(stage);
+          setProgressStage(tr.recognizing);
         }
       );
       setResult(ocrResult);
     } catch (err: any) {
-      setErrorMessage(err?.message || tr.errorOcrFailed);
+      setErrorMessage(tr.errorOcrFailed);
     } finally {
       setIsProcessing(false);
     }

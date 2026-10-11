@@ -39,11 +39,16 @@ jobs:
       - name: Run Unit & Localization Completeness Suite
         run: npm test
 
-      - name: Run SSR HTML Pattern Audit
-        run: npm run test:i18n:ssr
-
       - name: Run Production Turbopack Build
         run: npm run build
+
+      - name: Start Production Server & Wait for Readiness
+        run: |
+          npm start &
+          npx --yes wait-on -t 60000 http://localhost:3000
+
+      - name: Run SSR HTML Pattern Audit
+        run: npm run test:i18n:ssr
 
       - name: Run Playwright Real Browser Localization Regression Suite
         run: npm run test:e2e:i18n

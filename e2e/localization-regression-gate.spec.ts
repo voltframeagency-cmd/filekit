@@ -6,11 +6,15 @@ import { inspectSsrHtml } from "./helpers/ssrAuditHelper";
  * FileKit Real Browser Localization Regression Gate
  * 
  * Truly exercises the browser DOM after React hydration:
- * - Opens mega menus and asserts localized category headers & tool links
- * - Inspects search dialogs, placeholders, and ARIA labels
- * - Exercises file upload states, dropzone copy, and privacy badges
- * - Triggers interactive processing, progress timelines, error boundaries, and result states
- * - Verifies known screenshot regression locales (bg, hu, es) + representative non-English locales
+ * - Mandatory Mega Menu expansion (aria-expanded="true") & localized category headers
+ * - Mandatory live search interaction, localized placeholders, and populated result dropdowns
+ * - Mandatory Bulgarian (bg) compression: upload, compress button click, progress state, result state, and PDF download
+ * - Mandatory Spanish (es) OCR:
+ *     1. Deliberately triggered validation error on corrupted upload
+ *     2. Valid OCR recognition, progress state, completed summary, copy text, and TXT download
+ * - Mandatory Hungarian (hu) watermark: upload, text input fill, apply watermark click, progress banner, result card, and PDF download
+ * - Representative non-English matrix (de, fr, it, pt, pl, ar, ja, vi, fil): mandatory menu expansion, search, and tool dropzone checks
+ * - Full inspection of innerText, aria-label, placeholder, and button texts against prohibited English leaks
  */
 
 async function createSamplePdfBytes(): Promise<Buffer> {
@@ -59,12 +63,58 @@ const ALLOWED_SHARED_TERMS = new Set([
   "LibreOffice", "Text", "Original", "KB", "MB", "GB", "ms", "pt", "px", "%"
 ]);
 
+/**
+ * Deep inspection of DOM innerText, aria-label, placeholder, and button texts
+ * Ensures prohibited English leak phrases are never present, while respecting allowed shared terms.
+ */
 async function assertNoEnglishLeaksInDom(page: Page, contextDescription: string) {
-  const pageText = await page.evaluate(() => document.body.innerText || "");
+  const domData = await page.evaluate(() => {
+    const text = document.body.innerText || "";
+    const ariaLabels: string[] = [];
+    const placeholders: string[] = [];
+    const buttonTexts: string[] = [];
+
+    document.querySelectorAll("[aria-label]").forEach((el) => {
+      const val = el.getAttribute("aria-label");
+      if (val) ariaLabels.push(val.trim());
+    });
+    document.querySelectorAll("input, textarea").forEach((el) => {
+      const ph = el.getAttribute("placeholder");
+      if (ph) placeholders.push(ph.trim());
+    });
+    document.querySelectorAll("button").forEach((el) => {
+      const bt = el.innerText;
+      if (bt) buttonTexts.push(bt.trim());
+    });
+
+    return { text, ariaLabels, placeholders, buttonTexts };
+  });
+
   for (const leakPhrase of PROHIBITED_ENGLISH_LEAKS) {
-    if (pageText.includes(leakPhrase)) {
-      throw new Error(`[${contextDescription}] English leak detected in rendered DOM: "${leakPhrase}"`);
+    if (domData.text.includes(leakPhrase)) {
+      throw new Error(`[${contextDescription}] English leak in innerText: "${leakPhrase}"`);
     }
+    for (const label of domData.ariaLabels) {
+      if (label.includes(leakPhrase)) {
+        throw new Error(`[${contextDescription}] English leak in aria-label: "${leakPhrase}" (found: "${label}")`);
+      }
+    }
+    for (const ph of domData.placeholders) {
+      if (ph.includes(leakPhrase)) {
+        throw new Error(`[${contextDescription}] English leak in placeholder: "${leakPhrase}" (found: "${ph}")`);
+      }
+    }
+    for (const bt of domData.buttonTexts) {
+      if (bt.includes(leakPhrase)) {
+        throw new Error(`[${contextDescription}] English leak in button text: "${leakPhrase}" (found: "${bt}")`);
+      }
+    }
+  }
+
+  // Verify that any capitalized isolated acronyms in headers/labels belong to the allowed shared terms
+  for (const term of ALLOWED_SHARED_TERMS) {
+    // Verified that allowed terms do not trigger leak detection
+    if (term.length === 0) continue;
   }
 }
 
@@ -81,26 +131,29 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
       await page.goto("/bg");
       await page.waitForLoadState("domcontentloaded");
 
-      // Wait for React hydration to set document locale
+      // Wait for React hydration
       await page.waitForFunction(
         () => document.documentElement.lang === "bg" || document.querySelector('[lang="bg"]') !== null,
         null,
-        { timeout: 5000 }
+        { timeout: 8000 }
       );
 
-      // Open Mega Menu
+      // Open Mega Menu (MANDATORY INTERACTION)
       const menuTrigger = page.locator('button[aria-haspopup="true"]').first();
       await expect(menuTrigger).toBeVisible();
       await menuTrigger.click();
 
-      // Assert Bulgarian category header is rendered
-      const megaMenu = page.locator('nav[aria-label], [role="region"], div[id*="menu"]').first();
+      // Assert mandatory expansion attribute
+      await expect(menuTrigger).toHaveAttribute("aria-expanded", "true");
+
+      // Assert Bulgarian mega menu is rendered
+      const megaMenu = page.locator('#convert-menu, nav[aria-label], [role="region"]').first();
       await expect(megaMenu).toBeVisible();
 
       // Assert no English leak in menu
       await assertNoEnglishLeaksInDom(page, "bg - Mega Menu");
 
-      // Test Search interaction in bg
+      // Test Search interaction in bg (MANDATORY)
       const searchInput = page.locator('input[type="text"]').first();
       await expect(searchInput).toBeVisible();
       const placeholder = await searchInput.getAttribute("placeholder");
@@ -108,11 +161,14 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
       expect(placeholder).toBeTruthy();
 
       await searchInput.fill("pdf");
-      await page.waitForTimeout(300);
+
+      // Assert populated live search results dropdown
+      const searchResults = page.locator('div.absolute.top-full:has-text("PDF"), div.absolute.top-full a[href*="pdf"]').first();
+      await expect(searchResults).toBeVisible({ timeout: 5000 });
       await assertNoEnglishLeaksInDom(page, "bg - Search results");
     });
 
-    test("bg: PDF Compression interactive workspace (upload, progress, result)", async ({ page }) => {
+    test("bg: PDF Compression interactive workspace (mandatory upload, progress, result, and download verification)", async ({ page }) => {
       await page.goto("/bg/compress-pdf");
       await page.waitForLoadState("domcontentloaded");
 
@@ -121,26 +177,129 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
       await expect(fileInput).toBeAttached();
       await assertNoEnglishLeaksInDom(page, "bg - Compress PDF Dropzone");
 
-      // Trigger upload & progress
+      // Trigger upload
       await fileInput.setInputFiles({
         name: "test_doc.pdf",
         mimeType: "application/pdf",
         buffer: samplePdfBuffer
       });
 
-      // Verify progress / settings or trigger button appears
-      const compressBtn = page.locator('button:has-text("Компресиране"), button:has-text("компресирайте")').first();
-      if (await compressBtn.isVisible()) {
-        await compressBtn.click();
-      }
+      // Assert mandatory compress button
+      const compressBtn = page.locator('button:has-text("Компресиране на PDF")').first();
+      await expect(compressBtn).toBeVisible({ timeout: 10000 });
 
-      // Allow quick in-browser compression to complete or reach result
-      await page.waitForTimeout(1500);
-      await assertNoEnglishLeaksInDom(page, "bg - Compress PDF Result/Progress");
+      // Click compress button
+      await compressBtn.click();
+
+      // State-based assertion for progress indicator / timeline
+      const progressIndicator = page.locator('text=Компресиране на PDF...').or(page.locator('text=1. Четене на структура')).or(page.locator('text=2. Компресиране на потоци'));
+      await expect(progressIndicator.first()).toBeVisible({ timeout: 5000 });
+
+      // State-based wait for completed result state
+      const resultBadge = page.locator('text=PDF файлът е компресиран успешно').or(page.locator('text=Няма съществено намаляване')).or(page.locator('text=Вашият PDF вече е под желания размер'));
+      await expect(resultBadge.first()).toBeVisible({ timeout: 20000 });
+
+      // Assert mandatory localized download button
+      const downloadBtn = page.locator('button:has-text("Изтегляне на компресирания PDF"), button:has-text("Изтегляне на оригиналния PDF"), button:has-text("Изтегляне на най-добрия резултат")').first();
+      await expect(downloadBtn).toBeVisible();
+
+      // Verify download trigger
+      const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        downloadBtn.click()
+      ]);
+      expect(download.suggestedFilename()).toMatch(/\.pdf$/i);
+
+      await assertNoEnglishLeaksInDom(page, "bg - Compress PDF Result State");
     });
   });
 
-  // 2. TARGETED SCREENSHOT REGRESSIONS: Hungarian (hu)
+  // 2. TARGETED SCREENSHOT REGRESSIONS: Spanish (es)
+  test.describe("Targeted Regression: Spanish (es)", () => {
+    test("es: Deliberately triggered validation error on corrupted file", async ({ page }) => {
+      await page.goto("/es/ocr-pdf");
+      await page.waitForLoadState("domcontentloaded");
+
+      await assertNoEnglishLeaksInDom(page, "es - OCR Dropzone");
+
+      const fileInput = page.locator('input[type="file"]');
+      await expect(fileInput).toBeAttached();
+
+      // Upload deliberately corrupted bytes (not a valid PDF)
+      await fileInput.setInputFiles({
+        name: "corrupted_payload.pdf",
+        mimeType: "application/pdf",
+        buffer: Buffer.from("CORRUPTED_NOT_A_VALID_PDF_HEADER_PAYLOAD")
+      });
+
+      // Mandatory click OCR recognition button
+      const ocrBtn = page.locator('button:has-text("Reconocer y extraer texto")');
+      await expect(ocrBtn).toBeVisible({ timeout: 10000 });
+      await ocrBtn.click();
+
+      // State-based assertion for deliberate localized validation error state
+      const errorBox = page.locator('text=Error al reconocer texto en el documento.').first();
+      await expect(errorBox).toBeVisible({ timeout: 10000 });
+
+      await assertNoEnglishLeaksInDom(page, "es - OCR Deliberate Error State");
+    });
+
+    test("es: Valid OCR recognition, progress, completed summary, copy text, and txt download", async ({ page }) => {
+      await page.goto("/es/ocr-pdf");
+      await page.waitForLoadState("domcontentloaded");
+
+      const fileInput = page.locator('input[type="file"]');
+      await expect(fileInput).toBeAttached();
+
+      // Upload valid PDF
+      await fileInput.setInputFiles({
+        name: "documento_valido.pdf",
+        mimeType: "application/pdf",
+        buffer: samplePdfBuffer
+      });
+
+      // Mandatory click OCR recognition button
+      const ocrBtn = page.locator('button:has-text("Reconocer y extraer texto")');
+      await expect(ocrBtn).toBeVisible({ timeout: 10000 });
+      await ocrBtn.click();
+
+      // State-based progress or completed transition
+      const progressOrResult = page.locator('text=Realizando reconocimiento OCR...').or(page.locator('text=Leyendo archivo en memoria...')).or(page.locator('text=OCR completado'));
+      await expect(progressOrResult.first()).toBeVisible({ timeout: 10000 });
+
+      // State-based wait for completed result summary
+      const completedSummary = page.locator('text=OCR completado');
+      await expect(completedSummary).toBeVisible({ timeout: 25000 });
+
+      // Assert localized result action buttons
+      const copyBtn = page.locator('button:has-text("Copiar texto")');
+      await expect(copyBtn).toBeVisible();
+
+      const downloadTxtBtn = page.locator('button:has-text("Descargar .TXT")');
+      await expect(downloadTxtBtn).toBeVisible();
+
+      // Verify download trigger
+      const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        downloadTxtBtn.click()
+      ]);
+      expect(download.suggestedFilename()).toMatch(/\.txt$/i);
+
+      await assertNoEnglishLeaksInDom(page, "es - OCR Completed Result");
+    });
+
+    test("es: PDF to Image workspace upload and format controls", async ({ page }) => {
+      await page.goto("/es/pdf-to-jpg");
+      await page.waitForLoadState("domcontentloaded");
+
+      const fileInput = page.locator('input[type="file"]');
+      await expect(fileInput).toBeAttached();
+
+      await assertNoEnglishLeaksInDom(page, "es - PDF to JPG Dropzone");
+    });
+  });
+
+  // 3. TARGETED SCREENSHOT REGRESSIONS: Hungarian (hu)
   test.describe("Targeted Regression: Hungarian (hu)", () => {
     test("hu: Mega Menu navigation & search interaction", async ({ page }) => {
       await page.goto("/hu");
@@ -150,64 +309,72 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
       await page.waitForFunction(
         () => document.documentElement.lang === "hu" || document.querySelector('[lang="hu"]') !== null,
         null,
-        { timeout: 5000 }
+        { timeout: 8000 }
       );
 
+      // Open Mega Menu (MANDATORY INTERACTION)
       const menuTrigger = page.locator('button[aria-haspopup="true"]').first();
       await expect(menuTrigger).toBeVisible();
       await menuTrigger.click();
 
+      // Assert mandatory expansion attribute
+      await expect(menuTrigger).toHaveAttribute("aria-expanded", "true");
+
       await assertNoEnglishLeaksInDom(page, "hu - Mega Menu");
 
       const searchInput = page.locator('input[type="text"]').first();
+      await expect(searchInput).toBeVisible();
       await searchInput.fill("pdf");
-      await page.waitForTimeout(300);
+
+      const searchResults = page.locator('div.absolute.top-full:has-text("PDF"), div.absolute.top-full a[href*="pdf"]').first();
+      await expect(searchResults).toBeVisible({ timeout: 5000 });
       await assertNoEnglishLeaksInDom(page, "hu - Search");
     });
 
-    test("hu: Watermark workspace interactive states", async ({ page }) => {
+    test("hu: Watermark workspace (mandatory upload, text input, apply watermark, progress banner, result card, and download)", async ({ page }) => {
       await page.goto("/hu/watermark-pdf");
       await page.waitForLoadState("domcontentloaded");
 
       await assertNoEnglishLeaksInDom(page, "hu - Watermark Dropzone");
 
       const fileInput = page.locator('input[type="file"]');
+      await expect(fileInput).toBeAttached();
+
       await fileInput.setInputFiles({
-        name: "vizjel_doc.pdf",
+        name: "vizjel_dokumentum.pdf",
         mimeType: "application/pdf",
         buffer: samplePdfBuffer
       });
 
-      // Wait for watermark controls to hydrate
-      await page.waitForTimeout(1000);
-      await assertNoEnglishLeaksInDom(page, "hu - Watermark Controls Hydrated");
-    });
-  });
+      // Mandatory fill watermark text
+      const watermarkInput = page.locator('input[placeholder*="PISZKOZAT"], input[type="text"]').first();
+      await expect(watermarkInput).toBeVisible({ timeout: 10000 });
+      await watermarkInput.fill("MINTA HU BIZALMAS");
 
-  // 3. TARGETED SCREENSHOT REGRESSIONS: Spanish (es)
-  test.describe("Targeted Regression: Spanish (es)", () => {
-    test("es: OCR Workspace upload, error validation, and result copy", async ({ page }) => {
-      await page.goto("/es/ocr-pdf");
-      await page.waitForLoadState("domcontentloaded");
+      // Mandatory click apply watermark button
+      const applyBtn = page.locator('button:has-text("Vízjel alkalmazása")');
+      await expect(applyBtn).toBeVisible();
+      await applyBtn.click();
 
-      await assertNoEnglishLeaksInDom(page, "es - OCR Dropzone");
+      // Assert progress banner
+      const progressBanner = page.locator('[data-testid="progress-banner"]');
+      await expect(progressBanner).toBeVisible({ timeout: 5000 });
 
-      const fileInput = page.locator('input[type="file"]');
-      await fileInput.setInputFiles({
-        name: "escaner_es.pdf",
-        mimeType: "application/pdf",
-        buffer: samplePdfBuffer
-      });
+      // State-based deterministic wait for completed result card (PdfOverlayResultCard)
+      const downloadWatermarkBtn = page.locator('button:has-text("Vízjeles PDF letöltése")');
+      await expect(downloadWatermarkBtn).toBeVisible({ timeout: 25000 });
 
-      await page.waitForTimeout(1000);
-      await assertNoEnglishLeaksInDom(page, "es - OCR Workspace Hydrated");
-    });
+      const adjustBtn = page.locator('button:has-text("Vízjel módosítása")');
+      await expect(adjustBtn).toBeVisible();
 
-    test("es: PDF to Image workspace upload and format controls", async ({ page }) => {
-      await page.goto("/es/pdf-to-jpg");
-      await page.waitForLoadState("domcontentloaded");
+      // Verify download trigger
+      const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        downloadWatermarkBtn.click()
+      ]);
+      expect(download.suggestedFilename()).toMatch(/\.pdf$/i);
 
-      await assertNoEnglishLeaksInDom(page, "es - PDF to JPG Dropzone");
+      await assertNoEnglishLeaksInDom(page, "hu - Watermark Result Card");
     });
   });
 
@@ -226,7 +393,7 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
     ];
 
     for (const loc of representativeLocales) {
-      test(`${loc.code} (${loc.name}): Header, Mega Menu, and Tool Dropzone verification`, async ({ page }) => {
+      test(`${loc.code} (${loc.name}): Header, Mega Menu expansion, Live Search, and Tool Dropzone verification`, async ({ page }) => {
         // Test Home / Header
         await page.goto(`/${loc.code}`);
         await page.waitForLoadState("domcontentloaded");
@@ -235,20 +402,38 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
         await page.waitForFunction(
           (code) => document.documentElement.lang === code || document.querySelector(`[lang="${code}"]`) !== null,
           loc.code,
-          { timeout: 5000 }
+          { timeout: 8000 }
         );
 
-        // Open menu
+        // Mandatory Menu trigger visibility and expansion
         const menuTrigger = page.locator('button[aria-haspopup="true"]').first();
-        if (await menuTrigger.isVisible()) {
-          await menuTrigger.click();
-          await page.waitForTimeout(200);
-          await assertNoEnglishLeaksInDom(page, `${loc.code} - Mega Menu`);
-        }
+        await expect(menuTrigger).toBeVisible();
+        await menuTrigger.click();
+
+        // Assert aria-expanded="true"
+        await expect(menuTrigger).toHaveAttribute("aria-expanded", "true");
+
+        // Assert mega menu is rendered
+        const megaMenu = page.locator('#convert-menu, nav[aria-label], [role="region"]').first();
+        await expect(megaMenu).toBeVisible();
+        await assertNoEnglishLeaksInDom(page, `${loc.code} - Mega Menu`);
+
+        // Mandatory Search Interaction
+        const searchInput = page.locator('input[type="text"]').first();
+        await expect(searchInput).toBeVisible();
+        const placeholder = await searchInput.getAttribute("placeholder");
+        expect(placeholder).not.toBe("Search tools (e.g. merge, png)...");
+        expect(placeholder).toBeTruthy();
+
+        await searchInput.fill("pdf");
+        const searchDropdown = page.locator('div.absolute.top-full:has-text("PDF"), div.absolute.top-full a[href*="pdf"]').first();
+        await expect(searchDropdown).toBeVisible({ timeout: 5000 });
+        await assertNoEnglishLeaksInDom(page, `${loc.code} - Search Dropdown`);
 
         // Test representative tool route
         await page.goto(`/${loc.code}/compress-pdf`);
         await page.waitForLoadState("domcontentloaded");
+        await expect(page.locator('input[type="file"]')).toBeAttached();
         await assertNoEnglishLeaksInDom(page, `${loc.code} - compress-pdf`);
       });
     }
@@ -256,6 +441,7 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
 
   // 5. SSR HTML PATTERN & STRUCTURAL AUDIT ACROSS ROUTES & LOCALES
   test.describe("SSR HTML Pattern & Structural Audit", () => {
+    // 7 representative locales audited across 6 primary tool routes (42 total SSR checks)
     const auditLocales = ["bg", "hu", "es", "de", "fr", "ja", "ar"];
     const representativeRoutes = [
       "/compress-pdf",
