@@ -50,6 +50,9 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
     setProgressPercent(10);
     setProgressStage(tr.initialReading);
 
+    // Yield to let browser render the active initial reading progress state
+    await new Promise((resolve) => setTimeout(resolve, 80));
+
     try {
       const buffer = await sourceFile.arrayBuffer();
       const ocrResult = await OcrEngine.processDocument(

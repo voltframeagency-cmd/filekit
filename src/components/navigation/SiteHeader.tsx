@@ -117,7 +117,10 @@ export default function SiteHeader() {
         })()}
 
         {/* Desktop Navigation */}
-        <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-1.5 relative">
+        <nav
+          aria-label={NAV_ACCESSIBILITY_LABELS.mainNavigation?.[activeLocale] || NAV_ACCESSIBILITY_LABELS.mainNavigation?.[shortLocale] || "Main Navigation"}
+          className="hidden md:flex items-center gap-1.5 relative"
+        >
           {MAIN_NAVIGATION.map((item: TopNavItem) => {
             const hasMega = Boolean(item.megaMenu);
             const isOpen = activeMenuId === item.id;

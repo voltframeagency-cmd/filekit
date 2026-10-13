@@ -27,6 +27,11 @@ async function createSamplePdfBytes(): Promise<Buffer> {
 
 // Known prohibited English leak phrases that must NEVER appear in non-English rendered states
 const PROHIBITED_ENGLISH_LEAKS = [
+  "Main Navigation",
+  "Mobile Navigation Menu",
+  "Open navigation menu",
+  "Close navigation menu",
+  "Mega Menu",
   "Drop your PDF here",
   "Drop your image here",
   "Select PowerPoint Presentation",
@@ -64,8 +69,8 @@ const ALLOWED_SHARED_TERMS = new Set([
 ]);
 
 /**
- * Deep inspection of DOM innerText, aria-label, placeholder, and button texts
- * Ensures prohibited English leak phrases are never present, while respecting allowed shared terms.
+ * Detection of monitored English leak phrases across rendered DOM innerText, aria-label,
+ * placeholder, and button texts, while filtering and respecting universal allowed terms.
  */
 async function assertNoEnglishLeaksInDom(page: Page, contextDescription: string) {
   const domData = await page.evaluate(() => {
@@ -90,6 +95,7 @@ async function assertNoEnglishLeaksInDom(page: Page, contextDescription: string)
     return { text, ariaLabels, placeholders, buttonTexts };
   });
 
+  // 1. Monitored prohibited English phrases check across all channels
   for (const leakPhrase of PROHIBITED_ENGLISH_LEAKS) {
     if (domData.text.includes(leakPhrase)) {
       throw new Error(`[${contextDescription}] English leak in innerText: "${leakPhrase}"`);
@@ -111,10 +117,18 @@ async function assertNoEnglishLeaksInDom(page: Page, contextDescription: string)
     }
   }
 
-  // Verify that any capitalized isolated acronyms in headers/labels belong to the allowed shared terms
-  for (const term of ALLOWED_SHARED_TERMS) {
-    // Verified that allowed terms do not trigger leak detection
-    if (term.length === 0) continue;
+  // 2. Allowlist verification: Filter standalone tokens in ARIA labels to ensure
+  // any Latin uppercase acronyms correspond to permitted universal identifiers
+  for (const label of domData.ariaLabels) {
+    const tokens = label.split(/\s+/);
+    for (const token of tokens) {
+      const clean = token.replace(/[^A-Za-z0-9]/g, "");
+      if (clean.length >= 2 && clean === clean.toUpperCase() && !/^\d+$/.test(clean)) {
+        if (!ALLOWED_SHARED_TERMS.has(clean)) {
+          throw new Error(`[${contextDescription}] Unrecognized uppercase English acronym in aria-label: "${clean}" (label: "${label}")`);
+        }
+      }
+    }
   }
 }
 
@@ -137,6 +151,10 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
         null,
         { timeout: 8000 }
       );
+
+      // Verify main navigation aria-label regression
+      const mainNav = page.locator('header nav').first();
+      await expect(mainNav).not.toHaveAttribute("aria-label", "Main Navigation");
 
       // Open Mega Menu (MANDATORY INTERACTION)
       const menuTrigger = page.locator('button[aria-haspopup="true"]').first();
@@ -263,9 +281,9 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
       await expect(ocrBtn).toBeVisible({ timeout: 10000 });
       await ocrBtn.click();
 
-      // State-based progress or completed transition
-      const progressOrResult = page.locator('text=Realizando reconocimiento OCR...').or(page.locator('text=Leyendo archivo en memoria...')).or(page.locator('text=OCR completado'));
-      await expect(progressOrResult.first()).toBeVisible({ timeout: 10000 });
+      // Strictly require and assert active localized progress state
+      const progressIndicator = page.locator('text=Leyendo archivo en memoria...').or(page.locator('text=Realizando reconocimiento OCR...'));
+      await expect(progressIndicator.first()).toBeVisible({ timeout: 5000 });
 
       // State-based wait for completed result summary
       const completedSummary = page.locator('text=OCR completado');
@@ -312,6 +330,10 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
         { timeout: 8000 }
       );
 
+      // Verify main navigation aria-label regression
+      const mainNav = page.locator('header nav').first();
+      await expect(mainNav).not.toHaveAttribute("aria-label", "Main Navigation");
+
       // Open Mega Menu (MANDATORY INTERACTION)
       const menuTrigger = page.locator('button[aria-haspopup="true"]').first();
       await expect(menuTrigger).toBeVisible();
@@ -346,10 +368,15 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
         buffer: samplePdfBuffer
       });
 
-      // Mandatory fill watermark text
-      const watermarkInput = page.locator('input[placeholder*="PISZKOZAT"], input[type="text"]').first();
+      // Scoped watermark text input: specifically targets the watermark control inside the editor workspace
+      const watermarkInput = page.locator('div:has(> label:has-text("Vízjel szövege")) input[type="text"]').or(page.locator('input[placeholder*="PISZKOZAT"]')).first();
       await expect(watermarkInput).toBeVisible({ timeout: 10000 });
       await watermarkInput.fill("MINTA HU BIZALMAS");
+      await expect(watermarkInput).toHaveValue("MINTA HU BIZALMAS");
+
+      // Verify header search field was not targeted or populated
+      const headerSearch = page.locator('header input[type="text"]').first();
+      await expect(headerSearch).toHaveValue("");
 
       // Mandatory click apply watermark button
       const applyBtn = page.locator('button:has-text("Vízjel alkalmazása")');
@@ -404,6 +431,10 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
           loc.code,
           { timeout: 8000 }
         );
+
+        // Verify main navigation aria-label regression
+        const mainNav = page.locator('header nav').first();
+        await expect(mainNav).not.toHaveAttribute("aria-label", "Main Navigation");
 
         // Mandatory Menu trigger visibility and expansion
         const menuTrigger = page.locator('button[aria-haspopup="true"]').first();
