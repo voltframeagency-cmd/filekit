@@ -19,7 +19,6 @@ on:
                                               name: Localization Gate, E2E Browser & Production Build
                                                   runs-on: ubuntu-latest
                                                       timeout-minutes: 25
-
                                                           steps:
                                                                 - name: Checkout Repository
                                                                         uses: actions/checkout@v4
@@ -44,12 +43,10 @@ on:
                                                                                                                                                                           
                                                                                                                                                                                 - name: Start Production Server & Wait for Readiness
                                                                                                                                                                                         run: |
-                                                                                                                                                                                                  npm start &
-                                                                                                                                                                                                            npx --yes wait-on -t 60000 http://localhost:3000
-                                                                                                                                                                                                            
-                                                                                                                                                                                                                  - name: Run SSR HTML Pattern Audit
-                                                                                                                                                                                                                          run: npm run test:i18n:ssr
-                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                - name: Run Playwright Real Browser Localization Regression Suite
-                                                                                                                                                                                                                                        run: npm run test:e2e:i18n
-                                                                                                                                                                                                                                        
+                                                                                                                                                                                                  npm start & npx --yes wait-on -t 60000 http://localhost:3000
+                                                                                                                                                                                                  
+                                                                                                                                                                                                        - name: Run SSR HTML Pattern Audit
+                                                                                                                                                                                                                run: npm run test:i18n:ssr
+                                                                                                                                                                                                                
+                                                                                                                                                                                                                      - name: Run Playwright Real Browser Localization Regression Suite
+                                                                                                                                                                                                                              run: npm run test:e2e:i18n
