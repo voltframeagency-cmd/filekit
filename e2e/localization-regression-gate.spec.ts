@@ -117,15 +117,15 @@ async function assertNoEnglishLeaksInDom(page: Page, contextDescription: string)
     }
   }
 
-  // 2. Allowlist verification: Filter standalone tokens in ARIA labels to ensure
-  // any Latin uppercase acronyms correspond to permitted universal identifiers
+  // 2. Unapproved token verification: Filter standalone tokens in ARIA labels to ensure
+  // uppercase tokens match permitted universal identifiers or explicit allowlist exceptions
   for (const label of domData.ariaLabels) {
     const tokens = label.split(/\s+/);
     for (const token of tokens) {
       const clean = token.replace(/[^A-Za-z0-9]/g, "");
       if (clean.length >= 2 && clean === clean.toUpperCase() && !/^\d+$/.test(clean)) {
         if (!ALLOWED_SHARED_TERMS.has(clean)) {
-          throw new Error(`[${contextDescription}] Unrecognized uppercase English acronym in aria-label: "${clean}" (label: "${label}")`);
+          throw new Error(`[${contextDescription}] Unapproved uppercase token in aria-label: "${clean}" (label: "${label}"). Expected recognized universal term or explicit allowlist exception.`);
         }
       }
     }
@@ -262,14 +262,58 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
       await assertNoEnglishLeaksInDom(page, "es - OCR Deliberate Error State");
     });
 
-    test("es: Valid OCR recognition, progress, completed summary, copy text, and txt download", async ({ page }) => {
+    test("es: Controlled asynchronous OCR progress state verification", async ({ page }) => {
+      await page.goto("/es/ocr-pdf");
+      await page.waitForLoadState("domcontentloaded");
+
+      // Inject controlled asynchronous test gate to hold progress state deterministically
+      await page.evaluate(() => {
+        (window as any).__FILEKIT_OCR_TEST_GATE__ = new Promise<void>((resolve) => {
+          (window as any).__FILEKIT_RELEASE_OCR__ = resolve;
+        });
+      });
+
+      const fileInput = page.locator('input[type="file"]');
+      await expect(fileInput).toBeAttached();
+
+      await fileInput.setInputFiles({
+        name: "documento_controlado.pdf",
+        mimeType: "application/pdf",
+        buffer: samplePdfBuffer
+      });
+
+      const ocrBtn = page.locator('button:has-text("Reconocer y extraer texto")');
+      await expect(ocrBtn).toBeVisible({ timeout: 10000 });
+      await ocrBtn.click();
+
+      // Assert active localized progress state rendered while engine is gated
+      const progressStage = page.locator('text=Leyendo archivo en memoria...');
+      await expect(progressStage).toBeVisible({ timeout: 5000 });
+
+      const processingBtn = page.locator('button:has-text("Realizando reconocimiento OCR...")');
+      await expect(processingBtn).toBeVisible();
+
+      await assertNoEnglishLeaksInDom(page, "es - Controlled OCR Progress State");
+
+      // Release gate to let workflow finalize cleanly
+      await page.evaluate(() => {
+        if ((window as any).__FILEKIT_RELEASE_OCR__) {
+          (window as any).__FILEKIT_RELEASE_OCR__();
+        }
+      });
+
+      const completedSummary = page.locator('text=OCR completado');
+      await expect(completedSummary).toBeVisible({ timeout: 20000 });
+    });
+
+    test("es: Real engine execution: completed summary, copy text, and txt download", async ({ page }) => {
       await page.goto("/es/ocr-pdf");
       await page.waitForLoadState("domcontentloaded");
 
       const fileInput = page.locator('input[type="file"]');
       await expect(fileInput).toBeAttached();
 
-      // Upload valid PDF
+      // Upload valid PDF to real engine (no test gate)
       await fileInput.setInputFiles({
         name: "documento_valido.pdf",
         mimeType: "application/pdf",
@@ -281,11 +325,7 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
       await expect(ocrBtn).toBeVisible({ timeout: 10000 });
       await ocrBtn.click();
 
-      // Strictly require and assert active localized progress state
-      const progressIndicator = page.locator('text=Leyendo archivo en memoria...').or(page.locator('text=Realizando reconocimiento OCR...'));
-      await expect(progressIndicator.first()).toBeVisible({ timeout: 5000 });
-
-      // State-based wait for completed result summary
+      // Real engine completion
       const completedSummary = page.locator('text=OCR completado');
       await expect(completedSummary).toBeVisible({ timeout: 25000 });
 
@@ -303,7 +343,7 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
       ]);
       expect(download.suggestedFilename()).toMatch(/\.txt$/i);
 
-      await assertNoEnglishLeaksInDom(page, "es - OCR Completed Result");
+      await assertNoEnglishLeaksInDom(page, "es - Real Engine OCR Completed Result");
     });
 
     test("es: PDF to Image workspace upload and format controls", async ({ page }) => {

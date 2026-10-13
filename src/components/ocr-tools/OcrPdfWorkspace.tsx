@@ -50,8 +50,10 @@ export const OcrPdfWorkspace: React.FC<OcrPdfWorkspaceProps> = ({
     setProgressPercent(10);
     setProgressStage(tr.initialReading);
 
-    // Yield to let browser render the active initial reading progress state
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    // Asynchronous engine gate for deterministic progress verification in automated tests
+    if (typeof window !== "undefined" && (window as any).__FILEKIT_OCR_TEST_GATE__) {
+      await (window as any).__FILEKIT_OCR_TEST_GATE__;
+    }
 
     try {
       const buffer = await sourceFile.arrayBuffer();
