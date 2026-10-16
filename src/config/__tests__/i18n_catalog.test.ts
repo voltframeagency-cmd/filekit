@@ -115,11 +115,11 @@ export async function runI18nCatalogTests() {
   console.log(`✓ Verified localized FAQ & How-To purity across non-English locales.`);
 
   // 4. Multi-regional Sitemap Coverage
-  console.log("▶ Testing Multi-regional 5,070 Sitemap URL Footprint...");
   const sitemapEntries = await siteSitemap();
-  const expectedTotal = allTestRoutes.length * 39;
-  if (sitemapEntries.length < 5000) {
-    throw new Error(`Expected at least 5,000 localized sitemap entries, got ${sitemapEntries.length}`);
+  const expectedTotal = (catalogRoutes.length + 10) * 39;
+  console.log(`▶ Testing Multi-regional ${expectedTotal} Sitemap URL Footprint...`);
+  if (sitemapEntries.length !== expectedTotal) {
+    throw new Error(`Expected exactly ${expectedTotal} localized sitemap entries, got ${sitemapEntries.length}`);
   }
   totalAssertions += sitemapEntries.length;
   console.log(`✓ Verified ${sitemapEntries.length} sitemap URLs across all 39 languages.`);

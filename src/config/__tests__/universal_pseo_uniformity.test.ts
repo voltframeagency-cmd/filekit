@@ -18,9 +18,9 @@ export async function runUniversalPseoTests() {
   );
 
   // 1. Catalog Integrity
-  console.log("▶ Testing 130-Tool Catalog Integrity & Routing Parameters...");
-  if (indexableTools.length < 120) {
-    throw new Error(`Expected at least 120 indexable tools, found ${indexableTools.length}`);
+  console.log("▶ Testing 116-Tool Catalog Integrity & Routing Parameters...");
+  if (indexableTools.length < 116) {
+    throw new Error(`Expected at least 116 indexable tools, found ${indexableTools.length}`);
   }
   for (const tool of indexableTools) {
     if (!tool.slug.startsWith("/")) throw new Error(`Invalid slug: ${tool.slug}`);

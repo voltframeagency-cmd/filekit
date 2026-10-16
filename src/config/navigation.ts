@@ -161,7 +161,7 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
     id: "archive-tools",
     label: "ARCHIVE & UTILITIES",
     compactLabel: "ARCHIVE",
-    accessibleLabel: "ZIP, RAR, 7Z extraction, creation, TAR conversion, font optimization, and privacy metadata stripping",
+    accessibleLabel: "ZIP, RAR, 7Z extraction, creation, TAR conversion, and privacy metadata stripping",
     links: [
       { label: "Extract ZIP", href: "/extract-zip" },
       { label: "Extract RAR", href: "/extract-rar" },
@@ -169,9 +169,7 @@ export const CONVERTER_NAVIGATION_GROUPS: ConverterNavigationGroup[] = [
       { label: "7Z to ZIP", href: "/7z-to-zip" },
       { label: "Create ZIP", href: "/create-zip" },
       { label: "TAR to ZIP", href: "/tar-to-zip" },
-      { label: "Strip EXIF", href: "/strip-exif" },
-      { label: "TTF to WOFF2", href: "/ttf-to-woff2" },
-      { label: "WOFF2 to TTF", href: "/woff2-to-ttf" }
+      { label: "Strip EXIF", href: "/strip-exif" }
     ]
   },
   {
