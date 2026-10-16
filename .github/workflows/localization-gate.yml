@@ -19,6 +19,8 @@ jobs:
     name: Localization Gate, E2E Browser & Production Build
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_SITE_URL: https://my-owned-file-compressor.org
 
     steps:
       - name: Checkout Repository
