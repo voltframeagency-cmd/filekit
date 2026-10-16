@@ -49,6 +49,9 @@ next-env.d.ts
 
 # testing and scratch
 *.pdf
+!test-fixtures/*.pdf
+!test-fixtures/*.jpg
+!test-fixtures/**/*.pdf
 /design-reference
 __pycache__/
 *.pyc
