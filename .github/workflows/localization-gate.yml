@@ -1,109 +1,54 @@
-name: Localization Regression Gate & Production Buildname: Localization Regression Gate & Production Build
+name: Localization Regression Gate & Production Build
 
 on:
   push:
-      branches:
-            - main
-                  - phase2-local-pdf-engine
-                    pull_request:
-                        branches:
-                              - main
-                                    - phase2-local-pdf-engine
+    branches:
+      - main
+      - phase2-local-pdf-engine
+  pull_request:
+    branches:
+      - main
+      - phase2-local-pdf-engine
 
-                                    concurrency:
-                                      group: ${{ github.workflow }}-${{ github.ref }}
-                                        cancel-in-progress: true
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
-                                        jobs:
-                                          localization-regression-gate:
-                                              name: Localization Gate, E2E Browser & Production Build
-                                                  runs-on: ubuntu-latest
-                                                      timeout-minutes: 25
+jobs:
+  localization-regression-gate:
+    name: Localization Gate, E2E Browser & Production Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
 
-                                                          steps:
-                                                                - name: Checkout Repository
-                                                                        uses: actions/checkout@v4
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-                                                                              - name: Setup Node.js 22
-                                                                                      uses: actions/setup-node@v4
-                                                                                              with:
-                                                                                                        node-version: 22
-                                                                                                                  cache: 'npm'
-                                                                                                                  
-                                                                                                                        - name: Install Dependencies
-                                                                                                                                run: npm ci
-                                                                                                                                
-                                                                                                                                      - name: Install Playwright Chromium
-                                                                                                                                              run: npx playwright install --with-deps chromium
-                                                                                                                                              
-                                                                                                                                                      - name: Run Unit & Localization Completeness Suite
-                                                                                                                                                              run: npm test
-                                                                                                                                                              
-                                                                                                                                                                    - name: Run Production Turbopack Build
-                                                                                                                                                                            run: npm run build
-                                                                                                                                                                            
-                                                                                                                                                                                  - name: Start Production Server & Wait for Readiness
-                                                                                                                                                                                          run: |
-                                                                                                                                                                                                    npm start &
-                                                                                                                                                                                                              npx --yes wait-on -t 60000 http://localhost:3000
-                                                                                                                                                                                                              
-                                                                                                                                                                                                                    - name: Run SSR HTML Pattern Audit
-                                                                                                                                                                                                                            run: npm run test:i18n:ssr
-                                                                                                                                                                                                                            
-                                                                                                                                                                                                                                  - name: Run Playwright Real Browser Localization Regression Suite
-                                                                                                                                                                                                                                          run: npm run test:e2e:i18n
-                                                                                                                                                                                                                                          
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
 
-on:
-  push:
-      branches:
-            - main
-                  - phase2-local-pdf-engine
-                    pull_request:
-                        branches:
-                              - main
-                                    - phase2-local-pdf-engine
+      - name: Install Dependencies
+        run: npm ci
 
-                                    concurrency:
-                                      group: ${{ github.workflow }}-${{ github.ref }}
-                                        cancel-in-progress: true
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
 
-                                        jobs:
-                                          localization-regression-gate:
-                                              name: Localization Gate, E2E Browser & Production Build
-                                                  runs-on: ubuntu-latest
-                                                      timeout-minutes: 25
+      - name: Run Unit & Localization Completeness Suite
+        run: npm test
 
-                                                          steps:
-                                                                - name: Checkout Repository
-                                                                        uses: actions/checkout@v4
+      - name: Run Production Turbopack Build
+        run: npm run build
 
-                                                                              - name: Setup Node.js 22
-                                                                                      uses: actions/setup-node@v4
-                                                                                              with:
-                                                                                                        node-version: 22
-                                                                                                                  cache: 'npm'
-                                                                                                                  
-                                                                                                                        - name: Install Dependencies
-                                                                                                                                run: npm ci
-                                                                                                                                
-                                                                                                                                      - name: Install Playwright Chromium
-                                                                                                                                              run: npx playwright install --with-deps chromium
-                                                                                                                                              
-                                                                                                                                                    - name: Run Unit & Localization Completeness Suite
-                                                                                                                                                            run: npm test
-                                                                                                                                                            
-                                                                                                                                                                  - name: Run Production Turbopack Build
-                                                                                                                                                                          run: npm run build
-                                                                                                                                                                          
-                                                                                                                                                                                - name: Start Production Server & Wait for Readiness
-                                                                                                                                                                                        run: |
-                                                                                                                                                                                                  npm start &
-                                                                                                                                                                                                            npx --yes wait-on -t 60000 http://localhost:3000
-                                                                                                                                                                                                            
-                                                                                                                                                                                                                  - name: Run SSR HTML Pattern Audit
-                                                                                                                                                                                                                          run: npm run test:i18n:ssr
-                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                - name: Run Playwright Real Browser Localization Regression Suite
-                                                                                                                                                                                                                                        run: npm run test:e2e:i18n
-                                                                                                                                                                                                                                        
+      - name: Start Production Server & Wait for Readiness
+        run: |
+          npm start &
+          npx --yes wait-on -t 60000 http://localhost:3000
+
+      - name: Run SSR HTML Pattern Audit
+        run: npm run test:i18n:ssr
+
+      - name: Run Playwright Real Browser Localization Regression Suite
+        run: npm run test:e2e:i18n
