@@ -1,5 +1,8 @@
 import { test, expect, Page } from "@playwright/test";
-import { PDFDocument } from "pdf-lib";
+import fs from "fs";
+import path from "path";
+import { PDFDocument, PDFName, PDFRawStream } from "pdf-lib";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { inspectSsrHtml } from "./helpers/ssrAuditHelper";
 
 /**
@@ -534,5 +537,163 @@ test.describe("FileKit Browser Localization Regression Gate", () => {
         });
       }
     }
+  });
+
+  // 6. REAL BROWSER PDF COMPRESSION WORKER EXECUTION & IMAGE TRANSFORMATION GATE
+  test.describe("Real Browser Image PDF Compression & Worker Execution Gate", () => {
+    test("Compresses image-bearing PDF via actual browser worker, asserts replacedCount > 0, smaller output, and valid image geometry/decodability", async ({ page }) => {
+      // 1. Build an image-bearing PDF fixture with a predictable compression opportunity
+      const fixturePath = path.join(process.cwd(), "test-fixtures", "sample_photo.jpg");
+      const jpgBytes = fs.readFileSync(fixturePath);
+      const pdfDoc = await PDFDocument.create();
+      const jpgImage = await pdfDoc.embedJpg(jpgBytes);
+      const page1 = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
+      page1.drawImage(jpgImage, {
+        x: 0,
+        y: 0,
+        width: jpgImage.width,
+        height: jpgImage.height,
+      });
+      const originalPdfBytes = await pdfDoc.save();
+      const originalSizeBytes = originalPdfBytes.byteLength;
+
+      // Navigate to /compress-pdf
+      await page.goto("/compress-pdf");
+      await page.waitForLoadState("domcontentloaded");
+
+      // Verify page is ready and workspace is hydrated
+      const fileInput = page.locator('input[type="file"]');
+      await expect(fileInput).toBeAttached();
+
+      // 2. Direct Web Worker Execution Test in genuine Chromium runtime (isNodeTest = false)
+      // Calls LocalPdfCompressionEngine.compress inside Chromium to ensure the real Web Worker
+      // and OffscreenCanvas pipeline executes and transforms image streams
+      const directWorkerResult = await page.evaluate(
+        async ({ pdfBase64, targetSize }) => {
+          const binary = atob(pdfBase64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+          const engine = (window as any).LocalPdfCompressionEngine;
+          if (!engine) throw new Error("LocalPdfCompressionEngine not found on window");
+
+          // Explicitly pass isNodeTest: false so it spawns the real Web Worker
+          const res = await engine.compress(
+            bytes.buffer,
+            targetSize,
+            undefined,
+            undefined,
+            false
+          );
+
+          // Return transferable fields and base64 output buffer
+          const outBytes = new Uint8Array(res.buffer);
+          let outBinary = "";
+          for (let i = 0; i < outBytes.length; i++) {
+            outBinary += String.fromCharCode(outBytes[i]);
+          }
+
+          return {
+            attemptsRun: res.attemptsRun,
+            imagesDiscovered: res.imagesDiscovered,
+            imagesSupported: res.imagesSupported,
+            replacedCount: res.replacedCount,
+            outcome: res.outcome,
+            outputSizeBytes: res.buffer.byteLength,
+            outputBase64: btoa(outBinary)
+          };
+        },
+        {
+          pdfBase64: Buffer.from(originalPdfBytes).toString("base64"),
+          targetSize: 200000 // 200 KB target provides predictable compression opportunity
+        }
+      );
+
+      // Assert genuine worker execution and image replacement
+      expect(directWorkerResult.attemptsRun).toBeGreaterThanOrEqual(1);
+      expect(directWorkerResult.imagesDiscovered).toBe(1);
+      expect(directWorkerResult.imagesSupported).toBe(1);
+      expect(directWorkerResult.replacedCount).toBeGreaterThan(0); // Proves image was actually recompressed!
+      expect(directWorkerResult.outputSizeBytes).toBeLessThan(originalSizeBytes); // Proves smaller selected output!
+
+      // 3. Customer-Facing UI Workflow Verification on /compress-pdf
+      await fileInput.setInputFiles({
+        name: "test_photo_doc.pdf",
+        mimeType: "application/pdf",
+        buffer: Buffer.from(originalPdfBytes),
+      });
+
+      // Submit compression button (scoped to main workspace to avoid header nav menu)
+      const compressBtn = page.locator('main button:has-text("Compress PDF")');
+      await expect(compressBtn).toBeVisible({ timeout: 10000 });
+      await compressBtn.click();
+
+      // Wait for completed result state
+      const downloadBtn = page.locator('button:has-text("Download compressed PDF"), button:has-text("Download best result")').first();
+      await expect(downloadBtn).toBeVisible({ timeout: 25000 });
+
+      // Check window.__LAST_COMPRESSION_RESULT__ from the customer-facing UI flow
+      const uiResult = await page.evaluate(() => (window as any).__LAST_COMPRESSION_RESULT__);
+      expect(uiResult).toBeTruthy();
+      expect(uiResult.imagesReplaced).toBeGreaterThan(0);
+      expect(uiResult.outputSizeBytes).toBeLessThan(originalSizeBytes);
+
+      // Trigger and intercept customer-facing file download
+      const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        downloadBtn.click()
+      ]);
+      expect(download.suggestedFilename()).toMatch(/\.pdf$/i);
+
+      // 4. Independently parse the result and verify page geometry and image decodability
+      const downloadedStream = await download.createReadStream();
+      const chunks: Buffer[] = [];
+      for await (const chunk of downloadedStream) {
+        chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+      }
+      const downloadedPdfBytes = Buffer.concat(chunks);
+
+      // Verify geometry with independent reader (pdfjs-dist)
+      const pdfjsDoc = await pdfjsLib.getDocument({ data: new Uint8Array(downloadedPdfBytes).slice() }).promise;
+      expect(pdfjsDoc.numPages).toBe(1);
+      const firstPage = await pdfjsDoc.getPage(1);
+      const viewport = firstPage.getViewport({ scale: 1.0 });
+      expect(viewport.width).toBe(jpgImage.width);
+      expect(viewport.height).toBe(jpgImage.height);
+
+      // Verify image stream integrity and decodability
+      const parsedDoc = await PDFDocument.load(downloadedPdfBytes);
+      const objects = parsedDoc.context.enumerateIndirectObjects();
+      let foundRecompressedImage = false;
+
+      for (const [_, obj] of objects) {
+        if (obj instanceof PDFRawStream) {
+          const dict = obj.dict;
+          if (dict.get(PDFName.of("Subtype")) === PDFName.of("Image")) {
+            const contents = obj.contents;
+            // Verify JPEG SOI marker
+            expect(contents[0]).toBe(0xFF);
+            expect(contents[1]).toBe(0xD8);
+            expect(contents[2]).toBe(0xFF);
+
+            // Verify in-browser image decodability via createImageBitmap
+            const isDecodable = await page.evaluate(async (imgBase64) => {
+              const binary = atob(imgBase64);
+              const bytes = new Uint8Array(binary.length);
+              for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+              const blob = new Blob([bytes], { type: "image/jpeg" });
+              const bitmap = await createImageBitmap(blob);
+              const valid = bitmap.width > 0 && bitmap.height > 0;
+              bitmap.close();
+              return valid;
+            }, Buffer.from(contents).toString("base64"));
+
+            expect(isDecodable).toBe(true);
+            foundRecompressedImage = true;
+          }
+        }
+      }
+      expect(foundRecompressedImage).toBe(true);
+    });
   });
 });

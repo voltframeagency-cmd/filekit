@@ -58,23 +58,47 @@ export class LocalPdfCompressionEngine {
       };
     }
 
+    if (abortSignal?.aborted) {
+      throw new DOMException("Aborted", "AbortError");
+    }
+
     const originalUint8 = new Uint8Array(arrayBuffer);
     const originalBytes = originalUint8.length;
 
     // 3. Lossless strategy for documents without compressible image objects
+    // Preserves cancellation and executes off-thread via Web Worker in browser environments
     if (strategy === "NO_IMAGES_FOUND") {
+      if (abortSignal?.aborted) {
+        throw new DOMException("Aborted", "AbortError");
+      }
       if (onProgress) onProgress(50);
-      const doc = await PDFDocument.load(arrayBuffer);
-      doc.catalog.delete(PDFName.of("Metadata"));
-      const optimizedBytes = await doc.save({ useObjectStreams: true });
+
+      const sliceToTransfer = originalUint8.slice(0).buffer;
+      let passResult: {
+        buffer: ArrayBuffer;
+        replacedCount: number;
+        timingLoadMs?: number;
+        timingCompressMs?: number;
+        timingSaveMs?: number;
+      };
+
+      if (typeof Worker !== "undefined" && !isNodeTest) {
+        passResult = await this.runWorkerPass(sliceToTransfer, 1.0, 1.0, abortSignal);
+      } else {
+        passResult = await this.runDirectPass(sliceToTransfer, 1.0, 1.0);
+      }
+
+      if (abortSignal?.aborted) {
+        throw new DOMException("Aborted", "AbortError");
+      }
       if (onProgress) onProgress(100);
 
       const candidates: Array<{ buffer: ArrayBuffer; size: number; replacedCount: number }> = [];
-      if (optimizedBytes.length < originalBytes) {
+      if (passResult.buffer.byteLength < originalBytes) {
         candidates.push({
-          buffer: optimizedBytes.buffer as ArrayBuffer,
-          size: optimizedBytes.length,
-          replacedCount: 0
+          buffer: passResult.buffer,
+          size: passResult.buffer.byteLength,
+          replacedCount: passResult.replacedCount
         });
       }
       return selectCompressionResult({

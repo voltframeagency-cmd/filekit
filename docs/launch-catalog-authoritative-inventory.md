@@ -92,13 +92,14 @@ These 4 tools remain gated to prevent unexpected client-side rendering failures 
 
 ## 4. Independent Quality Verification & Verified Tool Families
 
-Tested directly using `scripts/verify_core_output_quality.ts` (included in `npm test` and CI) by invoking FileKit's production functions and verifying outputs with independent readers (`pdfjs-dist`, `pdf-lib`, binary image decoders).
+Tested directly using `scripts/verify_core_output_quality.ts` (included in `npm test` and CI) and `e2e/localization-regression-gate.spec.ts` (real browser Chromium runner) by invoking FileKit's production functions and verifying outputs with independent readers (`pdfjs-dist`, `pdf-lib`, binary image decoders).
 
 ### Verified Tool Families Summary
 
 | Tool Family | Production Pipeline Invoked | Verified Candidates | Evidence Scope |
 | :--- | :--- | :--- | :--- |
-| **Core PDF Compression** | `LocalPdfCompressionEngine.compress` | `/compress-pdf`, `/compress-pdf-to-size`, `/compress-pdf-to-2mb` | Lossless text compaction & image-bearing document compression; growth guard rejection on oversized candidates. |
+| **Core PDF Compression (Worker Path)** | `LocalPdfCompressionEngine.compress` (Browser Worker) | `/compress-pdf`, `/compress-pdf-to-size`, `/compress-pdf-to-2mb` | Genuine browser Web Worker (`pdf.worker.ts`) and `OffscreenCanvas` execution in Chromium; verified `replacedCount > 0`, smaller output size, page geometry preservation, and image stream decodability. |
+| **Core PDF Compression (Text Path)** | `LocalPdfCompressionEngine.compress` | `/compress-pdf`, `/compress-pdf-to-size` | Lossless text compaction; off-thread Web Worker execution in browser; exact text character sequence equality (70 chars) and page count preservation. |
 | **PDF Page Manipulation** | `PdfManipulationEngine` (`reversePdf`, `addBlankPage`) | `/reverse-pdf`, `/add-blank-page-to-pdf` | Independent text sequence reversal and page expansion assertions. |
 | **PDF Overlay & Watermark** | `executePdfWatermark` | `/watermark-pdf` | Stamped text persistence in independent PDF.js rendered text stream. |
 | **Image-to-PDF Conversion** | `ImageToPdfEngine.convert` | `/image-to-pdf`, `/jpg-to-pdf`, `/png-to-pdf`, `/webp-to-pdf` | Production engine page bounds and viewport alignment. |
@@ -108,9 +109,10 @@ Tested directly using `scripts/verify_core_output_quality.ts` (included in `npm 
 ### Quality Audit Verification Matrix
 
 | Test Case | Production Function | Independent Reader & Assertion | Status |
-| :--- | :--- | :--- | :---: |
-| **PDF Text Document Compression** | `LocalPdfCompressionEngine.compress` | Text extracted before & after with `PdfManipulationEngine.extractPdfText`; exact 70-character string match | **PASSED** |
-| **PDF Image Document Compression** | `LocalPdfCompressionEngine.compress` | Compressed image-bearing PDF; `pdfjs-dist` verified 1 page with preserved 2500x1667 viewport | **PASSED** |
+| :--- | :--- | :--- | :--- |
+| **Real Browser PDF Image Compression** | `LocalPdfCompressionEngine.compress` (Chromium Worker) | Genuine Chromium Web Worker execution (`pdf.worker.ts`); `replacedCount > 0` confirmed; output size reduced; viewport preserved (2500x1667); image decodable via `createImageBitmap` | **PASSED** (Real Browser E2E) |
+| **PDF Text Document Compression** | `LocalPdfCompressionEngine.compress` | Text extracted before & after with `PdfManipulationEngine.extractPdfText`; exact 70-character string match; off-thread execution preserved | **PASSED** |
+| **Node Direct Fallback Coverage** | `LocalPdfCompressionEngine.compress` (`isNodeTest: true`) | Headless Node structural preflight and fallback save (labeled as Node fallback coverage; does NOT establish browser worker execution) | **PASSED** (Node Fallback) |
 | **Growth Guard Safety Check** | `selectCompressionResult` | Beneficial candidate accepted (`TARGET_ACHIEVED`); oversized candidate rejected (`OUTPUT_GROWTH`, safe rollback) | **PASSED** |
 | **Page Order Manipulation** | `PdfManipulationEngine.reversePdf` | Created 2-page document with distinct texts; reversed order verified via independent text extraction | **PASSED** |
 | **Watermark Text Survival** | `executePdfWatermark` | Executed full watermark workflow; rendered stream parsed with `pdfjs-dist` asserting "CONFIDENTIAL" string survived | **PASSED** |
@@ -123,6 +125,8 @@ Tested directly using `scripts/verify_core_output_quality.ts` (included in `npm 
 ### Precise Evidence Boundaries
 
 These bounded tests establish specific invariants and are explicitly scoped:
+- **Real browser image-bearing compression:** Proves that the customer-facing Chromium Web Worker executes `pdf.worker.ts`, re-encodes images (`replacedCount > 0`), yields a smaller selected output, preserves page viewport geometry, and produces decodable image streams; does not establish perceptual losslessness or aesthetic tuning across all possible downscaling resolutions.
+- **Node fallback coverage:** Proves preflight validation and safe serialization in headless Node test runners; explicitly labeled as fallback coverage and does not substitute for browser worker execution.
 - **Watermark text extraction:** Proves that watermark text exists in the PDF output stream; does not establish visual placement coordinates or raster rendering appearance.
 - **Image-to-PDF viewport:** Proves correct page bounding box dimensions match input image; does not establish pixel-level raster rendering fidelity.
 - **ICO embedded PNG decoding:** Proves specification compliance of directory entries and unpackaged embedded PNG dimensions; does not guarantee compatibility with every external legacy Windows icon loader.

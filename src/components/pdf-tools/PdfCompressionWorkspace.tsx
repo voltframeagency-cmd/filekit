@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import TrustPanel from "@/components/layout/TrustPanel";
 import { LocalPdfEngineAdapter } from "@/utils/engine/LocalPdfEngineAdapter";
+import { LocalPdfCompressionEngine } from "@/utils/engine/LocalPdfCompressionEngine";
 import { VerificationResult, ProcessingJob, ProcessingProgressEvent, ProcessingFailure, ProcessingStage } from "@/utils/engine/types";
 import { PdfCompressionMode, PdfRouteConfig } from "@/config/pdfCompressionRoutes";
 import { useLanguage } from "@/components/layout/LanguageContext";
@@ -64,6 +65,12 @@ export default function PdfCompressionWorkspace({
         return wt.compressing;
     }
   };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).LocalPdfCompressionEngine = LocalPdfCompressionEngine;
+    }
+  }, []);
 
   // Request versioning & cancellation refs
   const requestIdRef = useRef<number>(0);
@@ -194,6 +201,10 @@ export default function PdfCompressionWorkspace({
           if (requestIdRef.current !== currentReqId || controller.signal.aborted) {
             trackEvent("cancelled");
             return;
+          }
+          if (typeof window !== "undefined") {
+            (window as any).__LAST_COMPRESSION_RESULT__ = ver;
+            (window as any).__LAST_RESULT__ = ver;
           }
           setResult(ver);
           setIsProcessing(false);

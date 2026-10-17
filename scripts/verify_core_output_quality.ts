@@ -232,13 +232,13 @@ async function runCorePdfQualityAudit() {
     assert.strictEqual(viewport.height, jpgImage.height, "Page height must match original image height");
 
     record(
-      "PDF-Compression",
-      "Image Document Production Pipeline",
+      "PDF-Compression-Fallback",
+      "Image Document Node Direct Fallback Coverage",
       true,
-      `Executed LocalPdfCompressionEngine on image PDF (discovered 1 image, verified ${viewport.width}x${viewport.height} viewport via pdfjs-dist)`
+      `Executed LocalPdfCompressionEngine with isNodeTest: true fallback (discovered 1 image, verified ${viewport.width}x${viewport.height} viewport via pdfjs-dist; Node direct fallback coverage only, does not exercise browser Worker/canvas)`
     );
   } catch (err: any) {
-    record("PDF-Compression", "Image Document Production Pipeline", false, err.message);
+    record("PDF-Compression-Fallback", "Image Document Node Direct Fallback Coverage", false, err.message);
   }
 
   // 2. Growth Guard: Verify Candidate Selection and Oversized Candidate Rejection
