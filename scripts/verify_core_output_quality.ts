@@ -7,6 +7,7 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { PdfPreflightInspector } from "../src/utils/engine/PdfPreflightInspector";
 import { CompressionStrategySelector } from "../src/utils/engine/CompressionStrategySelector";
 import { selectCompressionResult } from "../src/utils/engine/TargetSizeController";
+import { LocalPdfCompressionEngine } from "../src/utils/engine/LocalPdfCompressionEngine";
 import { PdfManipulationEngine } from "../src/utils/pdf-manipulation/PdfManipulationEngine";
 import { executePdfWatermark } from "../src/utils/pdf-overlay/PdfOverlayEngine";
 import { ImageToPdfEngine } from "../src/utils/image-to-pdf/ImageToPdfEngine";
@@ -146,7 +147,7 @@ async function runCorePdfQualityAudit() {
   console.log("STAGE 1: CORE PDF OUTPUT QUALITY & PRODUCTION PIPELINE AUDIT");
   console.log("==================================================");
 
-  // 1. Text Preservation: Extract and Compare Full Text Before and After Optimization
+  // 1a. Text Preservation: Production Compression Pipeline & Text Content Equality
   try {
     const textPdfBuf = readFixture("text_simple.pdf");
     
@@ -162,12 +163,18 @@ async function runCorePdfQualityAudit() {
     const strategy = await CompressionStrategySelector.select(textPdfBuf.buffer as ArrayBuffer);
     assert.strictEqual(strategy, "NO_IMAGES_FOUND", "Pure text document must select NO_IMAGES_FOUND strategy");
 
-    // Execute object-stream optimization
-    const doc = await PDFDocument.load(textPdfBuf.slice());
-    const optimizedBytes = await doc.save({ useObjectStreams: true });
-    assert.ok(optimizedBytes.length > 0, "Optimized bytes must be non-empty");
+    // Invoke FileKit's production LocalPdfCompressionEngine
+    const compResult = await LocalPdfCompressionEngine.compress(
+      textPdfBuf.buffer as ArrayBuffer,
+      500000,
+      undefined,
+      undefined,
+      true // isNodeTest
+    );
+    assert.ok(compResult.buffer.byteLength > 0, "Production compression engine must return buffer");
 
-    // Extract text from optimized output using production PdfManipulationEngine
+    // Extract text from production compression output using production PdfManipulationEngine
+    const optimizedBytes = new Uint8Array(compResult.buffer);
     const optimizedExtracted = await PdfManipulationEngine.extractPdfText(optimizedBytes.slice());
     
     // Strict comparison of preserved text and page counts
@@ -184,10 +191,54 @@ async function runCorePdfQualityAudit() {
       "PDF-Compression",
       "Text Preservation & Strict Comparison",
       true,
-      `Extracted text preserved identically (${originalExtracted.text.length} chars), verified via pdfjs-dist`
+      `Executed LocalPdfCompressionEngine; extracted text preserved identically (${originalExtracted.text.length} chars), verified via pdfjs-dist`
     );
   } catch (err: any) {
     record("PDF-Compression", "Text Preservation & Strict Comparison", false, err.message);
+  }
+
+  // 1b. Image-Bearing Document: Production Compression Pipeline & Viewport Preservation
+  try {
+    const jpgBytes = readFixture("sample_photo.jpg");
+    const doc = await PDFDocument.create();
+    const jpgImage = await doc.embedJpg(jpgBytes);
+    const page = doc.addPage([jpgImage.width, jpgImage.height]);
+    page.drawImage(jpgImage, { x: 0, y: 0, width: jpgImage.width, height: jpgImage.height });
+    const pdfWithImageBytes = await doc.save();
+
+    // Verify preflight and strategy on image-bearing PDF
+    const preflight = await PdfPreflightInspector.inspect(pdfWithImageBytes.buffer as ArrayBuffer);
+    assert.strictEqual(preflight.imageCount, 1, "Preflight must discover 1 image XObject");
+    const strategy = await CompressionStrategySelector.select(pdfWithImageBytes.buffer as ArrayBuffer);
+    assert.strictEqual(strategy, "SAFE_LOCAL_COMPRESSION", "Document with JPEG image must select SAFE_LOCAL_COMPRESSION");
+
+    // Invoke FileKit's production LocalPdfCompressionEngine
+    const imageCompResult = await LocalPdfCompressionEngine.compress(
+      pdfWithImageBytes.buffer as ArrayBuffer,
+      300000,
+      undefined,
+      undefined,
+      true // isNodeTest
+    );
+    assert.ok(imageCompResult.buffer.byteLength > 0, "Compressed output must be non-empty");
+    assert.strictEqual(imageCompResult.imagesDiscovered, 1, "Engine must report 1 image discovered");
+
+    // Independently verify compressed output with pdfjs-dist
+    const pdfJsImageDoc = await pdfjsLib.getDocument({ data: new Uint8Array(imageCompResult.buffer).slice() }).promise;
+    assert.strictEqual(pdfJsImageDoc.numPages, 1, "Image PDF output must have 1 valid page");
+    const imgPage = await pdfJsImageDoc.getPage(1);
+    const viewport = imgPage.getViewport({ scale: 1.0 });
+    assert.strictEqual(viewport.width, jpgImage.width, "Page width must match original image width");
+    assert.strictEqual(viewport.height, jpgImage.height, "Page height must match original image height");
+
+    record(
+      "PDF-Compression",
+      "Image Document Production Pipeline",
+      true,
+      `Executed LocalPdfCompressionEngine on image PDF (discovered 1 image, verified ${viewport.width}x${viewport.height} viewport via pdfjs-dist)`
+    );
+  } catch (err: any) {
+    record("PDF-Compression", "Image Document Production Pipeline", false, err.message);
   }
 
   // 2. Growth Guard: Verify Candidate Selection and Oversized Candidate Rejection

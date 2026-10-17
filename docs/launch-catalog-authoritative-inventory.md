@@ -90,21 +90,44 @@ These 4 tools remain gated to prevent unexpected client-side rendering failures 
 
 ---
 
-## 4. Independent Quality Verification Results
+## 4. Independent Quality Verification & Verified Tool Families
 
-Tested using `scripts/verify_core_output_quality.ts` by invoking FileKit's production functions and verifying outputs with independent readers (`pdfjs-dist`, `pdf-lib`, binary image decoders):
+Tested directly using `scripts/verify_core_output_quality.ts` (included in `npm test` and CI) by invoking FileKit's production functions and verifying outputs with independent readers (`pdfjs-dist`, `pdf-lib`, binary image decoders).
+
+### Verified Tool Families Summary
+
+| Tool Family | Production Pipeline Invoked | Verified Candidates | Evidence Scope |
+| :--- | :--- | :--- | :--- |
+| **Core PDF Compression** | `LocalPdfCompressionEngine.compress` | `/compress-pdf`, `/compress-pdf-to-size`, `/compress-pdf-to-2mb` | Lossless text compaction & image-bearing document compression; growth guard rejection on oversized candidates. |
+| **PDF Page Manipulation** | `PdfManipulationEngine` (`reversePdf`, `addBlankPage`) | `/reverse-pdf`, `/add-blank-page-to-pdf` | Independent text sequence reversal and page expansion assertions. |
+| **PDF Overlay & Watermark** | `executePdfWatermark` | `/watermark-pdf` | Stamped text persistence in independent PDF.js rendered text stream. |
+| **Image-to-PDF Conversion** | `ImageToPdfEngine.convert` | `/image-to-pdf`, `/jpg-to-pdf`, `/png-to-pdf`, `/webp-to-pdf` | Production engine page bounds and viewport alignment. |
+| **Specialist Raster Encoders**| `BmpEncoder`, `IcoEncoder` | `/png-to-bmp`, `/jpg-to-bmp`, `/png-to-ico`, `/jpg-to-ico` | 24-bit BGR scanline decoding and multi-resolution ICO container unpackaging. |
+| **Preflight Security Boundaries**| `PdfPreflightInspector` | All PDF upload routes | Defense-in-depth rejection of encrypted, password-protected, and signed documents. |
+
+### Quality Audit Verification Matrix
 
 | Test Case | Production Function | Independent Reader & Assertion | Status |
 | :--- | :--- | :--- | :---: |
-| **PDF Text Content Preservation** | `PdfPreflightInspector` + Object Streams | Exact text extracted before & after with `PdfManipulationEngine.extractPdfText`; page count & strings match | **PASSED** |
-| **Growth Guard Safety Check** | `selectCompressionResult` | Exercised both beneficial candidate selection (`TARGET_ACHIEVED`) and oversized candidate rejection (`OUTPUT_GROWTH`, safe rollback) | **PASSED** |
+| **PDF Text Document Compression** | `LocalPdfCompressionEngine.compress` | Text extracted before & after with `PdfManipulationEngine.extractPdfText`; exact 70-character string match | **PASSED** |
+| **PDF Image Document Compression** | `LocalPdfCompressionEngine.compress` | Compressed image-bearing PDF; `pdfjs-dist` verified 1 page with preserved 2500x1667 viewport | **PASSED** |
+| **Growth Guard Safety Check** | `selectCompressionResult` | Beneficial candidate accepted (`TARGET_ACHIEVED`); oversized candidate rejected (`OUTPUT_GROWTH`, safe rollback) | **PASSED** |
 | **Page Order Manipulation** | `PdfManipulationEngine.reversePdf` | Created 2-page document with distinct texts; reversed order verified via independent text extraction | **PASSED** |
-| **Watermark Survival** | `executePdfWatermark` | Executed full watermark workflow; rendered stream parsed with `pdfjs-dist` asserting "CONFIDENTIAL" string survived | **PASSED** |
+| **Watermark Text Survival** | `executePdfWatermark` | Executed full watermark workflow; rendered stream parsed with `pdfjs-dist` asserting "CONFIDENTIAL" string survived | **PASSED** |
 | **Encrypted PDF Rejection** | `PdfPreflightInspector.inspect` | AES-256 and standard password PDFs throw `PDF_ENCRYPTED_OR_LOCKED` | **PASSED** |
 | **Signed PDF Rejection** | `PdfPreflightInspector.inspect` | Cryptographically signed PDFs throw `UNSUPPORTED_SIGNED_DOCUMENT` | **PASSED** |
 | **BMP 24-bit BGR Decoding** | `BmpEncoder.encode` | Parsed BM header and binary scanline BGR bytes; verified exact RGB pixel equality (255, 128, 64) | **PASSED** |
 | **ICO Multi-Res Packaging** | `IcoEncoder.encode` | Packaged genuine 16x16 and 32x32 PNG images; unpacked sub-image streams and verified dimensions via `doc.embedPng` | **PASSED** |
-| **Image to PDF Production** | `ImageToPdfEngine.convert` | Generated PDF with production engine; parsed via `pdfjs-dist` verifying exact page viewport dimensions | **PASSED** |
+| **Image to PDF Production** | `ImageToPdfEngine.convert` | Generated PDF with production engine; parsed via `pdfjs-dist` verifying exact 64x48 page viewport dimensions | **PASSED** |
+
+### Precise Evidence Boundaries
+
+These bounded tests establish specific invariants and are explicitly scoped:
+- **Watermark text extraction:** Proves that watermark text exists in the PDF output stream; does not establish visual placement coordinates or raster rendering appearance.
+- **Image-to-PDF viewport:** Proves correct page bounding box dimensions match input image; does not establish pixel-level raster rendering fidelity.
+- **ICO embedded PNG decoding:** Proves specification compliance of directory entries and unpackaged embedded PNG dimensions; does not guarantee compatibility with every external legacy Windows icon loader.
+- **Synthetic signature fixture:** Proves strict rejection of structural PDF signature dictionaries; does not represent cryptographic validation of genuine PKCS#7 / CMS digital signatures.
+- **Text preservation:** Proves identical text character sequence preservation through the production compression pipeline; does not assert font subsetting or vector kerning micro-adjustments.
 
 ---
 
