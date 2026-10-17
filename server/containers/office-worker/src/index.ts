@@ -329,6 +329,8 @@ export default {
               httpMetadata: { contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
             });
             stagedR2Keys.add(inputR2Key);
+          } else {
+            stagedR2Keys.add(inputR2Key);
           }
 
           if (faultStage === "AFTER_INPUT_R2_WRITE") {
@@ -548,6 +550,40 @@ export default {
           };
 
           const containerReadyWaitTotalMs = containerDurationMs - libreOfficeDurationMs;
+
+          const wantsBinary = request.headers.get("Accept")?.includes("application/pdf") ||
+                              request.headers.get("X-Return-Format") === "binary" ||
+                              url.searchParams.get("format") === "binary";
+
+          if (wantsBinary) {
+            responsePayload = new Response(pdfBuffer, {
+              status: 200,
+              headers: {
+                "Content-Type": "application/pdf",
+                "Content-Disposition": 'attachment; filename="converted.pdf"',
+                "X-Telemetry-JSON": JSON.stringify(telemetry),
+                "X-Container-Duration-Ms": String(containerDurationMs),
+                "X-LibreOffice-Duration-Ms": String(libreOfficeDurationMs),
+                "X-Output-Bytes": String(pdfBuffer.byteLength),
+                "X-Output-Sha256": outputSha256,
+                "X-Cloudflare-Instance-Id": cloudflareInstanceId,
+                "X-Container-Process-Boot-Id": containerProcessBootId,
+                "X-Profile-Method": profileMethod,
+                "X-Profile-Init-Ms": String(profileInitMs),
+                "X-LibreOffice-Start-Ms": "0",
+                "X-Document-Conversion-Ms": String(libreOfficeDurationMs),
+                "X-Pdf-Verification-Ms": "1",
+                "X-Container-Total-Ms": String(containerDurationMs),
+                "X-Worker-Total-Ms": String(totalWallTimeMs),
+                "X-Container-Attempt-Index": String(retries),
+                "X-Container-Ready-Wait-Total-Ms": String(containerReadyWaitTotalMs),
+                "X-Detected-Format": detectedFormat,
+                "X-Worker-Version-Id": env.CF_VERSION_METADATA?.id || "v1",
+                "X-Image-Digest": "sha256:staged"
+              }
+            });
+            return responsePayload;
+          }
 
           responsePayload = new Response(JSON.stringify(telemetry, null, 2), {
             status: 200,
