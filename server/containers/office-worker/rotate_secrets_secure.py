@@ -14,12 +14,12 @@ def main():
     a_secret = secrets.token_hex(32)
 
     print("Executing CANARY_BEARER_TOKEN rotation...")
-    p1 = subprocess.Popen("npx wrangler secret put CANARY_BEARER_TOKEN", stdin=subprocess.PIPE, text=True, shell=True)
+    p1 = subprocess.Popen("npx wrangler secret put CANARY_BEARER_TOKEN --name filekit-office-worker-canary", stdin=subprocess.PIPE, text=True, shell=True)
     p1.communicate(b_secret + "\n")
     time.sleep(3)
 
     print("Executing CANARY_ADMIN_SECRET rotation...")
-    p2 = subprocess.Popen("npx wrangler secret put CANARY_ADMIN_SECRET", stdin=subprocess.PIPE, text=True, shell=True)
+    p2 = subprocess.Popen("npx wrangler secret put CANARY_ADMIN_SECRET --name filekit-office-worker-canary", stdin=subprocess.PIPE, text=True, shell=True)
     p2.communicate(a_secret + "\n")
     time.sleep(3)
 

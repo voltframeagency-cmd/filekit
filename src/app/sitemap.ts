@@ -3,6 +3,8 @@ import { getSiteUrl } from "@/utils/siteUrl";
 import { getSitemapRoutes as getCatalogSitemapRoutes } from "@/config/conversionCatalog";
 import { NON_DEFAULT_LOCALES } from "@/config/i18n/locales";
 
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = getSiteUrl();
 
