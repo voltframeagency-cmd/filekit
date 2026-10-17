@@ -3,7 +3,7 @@
 ## Executive Summary
 
 This document establishes the single authoritative inventory of all 133 routes across FileKit, classifying each into:
-- **Launch-Ready Tools (116)**: Production-hardened, verified with independent readers, complete with full 39-locale metadata, JSON-LD schemas, and public sitemap inclusion.
+- **Launch Candidate Tools (116)**: Production-implemented, complete with full 39-locale metadata, JSON-LD schemas, and public sitemap inclusion, undergoing rigorous linked output verification across core engines.
 - **Gated Tools (4)**: Functionally implemented or under evaluation, but explicitly gated behind localized notice banners (`GatedToolNotice`), excluded from public sitemaps (`sitemapEnabled: false`), excluded from navigation (`navigationEnabled: false`), and marked `NOINDEX`.
 - **Redirect Aliases (11)**: Alternative semantic endpoints canonicalized to primary routes with HTTP 301 and canonical tags.
 - **Experimental / Planned Tools (2)**: In-development feature sets excluded from public access (`NOT_PUBLIC`, `PLANNED`).
@@ -14,7 +14,7 @@ This document establishes the single authoritative inventory of all 133 routes a
 
 | Classification | Count | Sitemap Status | Navigation Status | SEO Indexability | Description |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **Launch-Ready** | 116 | Included (4,914 URLs) | Visible in Mega Menu & Categories | `INDEXABLE` | Dependable, verified customer-facing tools |
+| **Launch Candidates** | 116 | Included (4,914 URLs) | Visible in Mega Menu & Categories | `INDEXABLE` | Customer-facing candidate tools undergoing linked verification |
 | **Gated** | 4 | Excluded | Excluded | `NOINDEX` | WOFF2 font tools & unverified Kindle tools |
 | **Redirect Aliases** | 11 | Excluded | Excluded | `REDIRECT_ALIAS` | Convenience format pairs (e.g. `/docx-to-pdf`) |
 | **Experimental/Planned**| 2 | Excluded | Excluded | `NOT_PUBLIC` | Future roadmap tools (`/sign-pdf`, `/add-image-to-pdf`) |
@@ -37,7 +37,7 @@ These 4 tools remain gated to prevent unexpected client-side rendering failures 
 
 ---
 
-## 3. Launch-Ready Tools Inventory (116 Canonical Tools)
+## 3. Launch Candidate Tools Inventory (116 Canonical Tools)
 
 ### A. Core PDF Preflight, Optimization & Organization (13 Tools)
 - `/compress-pdf`: Browser-first client-side image downsampling and object stream compaction
@@ -92,19 +92,19 @@ These 4 tools remain gated to prevent unexpected client-side rendering failures 
 
 ## 4. Independent Quality Verification Results
 
-Tested using `scripts/verify_core_output_quality.ts` against independent readers (`pdf-lib`, `pdfjs-dist`):
+Tested using `scripts/verify_core_output_quality.ts` by invoking FileKit's production functions and verifying outputs with independent readers (`pdfjs-dist`, `pdf-lib`, binary image decoders):
 
-| Test Case | Independent Reader | Observed Result | Status |
+| Test Case | Production Function | Independent Reader & Assertion | Status |
 | :--- | :--- | :--- | :---: |
-| **PDF Text Document Preservation** | `pdf-lib` + `pdfjs-dist` | Page count (1) preserved; valid bounding box [0, 0, 612, 792] | **PASSED** |
-| **Growth Guard Safety Check** | Pure evaluation matrix | Non-beneficial growth rejected; `TARGET_ACHIEVED` confirmed | **PASSED** |
-| **Multi-Page Merge Document** | `pdfjs-dist` | Merged document loaded with exactly 2 valid rendering pages | **PASSED** |
-| **Page Rotation & Watermark** | `pdf-lib` + `pdfjs-dist` | Stamped text intact; 90-degree page rotation confirmed by both | **PASSED** |
-| **Encrypted PDF Rejection** | `PdfPreflightInspector` | AES-256 and standard password PDFs throw `PDF_ENCRYPTED_OR_LOCKED` | **PASSED** |
-| **Signed PDF Rejection** | `PdfPreflightInspector` | Cryptographically signed PDFs throw `UNSUPPORTED_SIGNED_DOCUMENT` | **PASSED** |
-| **BMP 24-bit BGR Encoding** | Binary DataView header parser | Valid `BM` magic bytes, 16x16 dimensions, 24bpp pixel array | **PASSED** |
-| **ICO Multi-Res Container** | Binary DataView header parser | Valid directory entries with 16x16 and 32x32 sub-images | **PASSED** |
-| **PNG to PDF Vector Embedding** | `pdfjs-dist` | Embedded PNG loaded and validated as 1 page PDF | **PASSED** |
+| **PDF Text Content Preservation** | `PdfPreflightInspector` + Object Streams | Exact text extracted before & after with `PdfManipulationEngine.extractPdfText`; page count & strings match | **PASSED** |
+| **Growth Guard Safety Check** | `selectCompressionResult` | Exercised both beneficial candidate selection (`TARGET_ACHIEVED`) and oversized candidate rejection (`OUTPUT_GROWTH`, safe rollback) | **PASSED** |
+| **Page Order Manipulation** | `PdfManipulationEngine.reversePdf` | Created 2-page document with distinct texts; reversed order verified via independent text extraction | **PASSED** |
+| **Watermark Survival** | `executePdfWatermark` | Executed full watermark workflow; rendered stream parsed with `pdfjs-dist` asserting "CONFIDENTIAL" string survived | **PASSED** |
+| **Encrypted PDF Rejection** | `PdfPreflightInspector.inspect` | AES-256 and standard password PDFs throw `PDF_ENCRYPTED_OR_LOCKED` | **PASSED** |
+| **Signed PDF Rejection** | `PdfPreflightInspector.inspect` | Cryptographically signed PDFs throw `UNSUPPORTED_SIGNED_DOCUMENT` | **PASSED** |
+| **BMP 24-bit BGR Decoding** | `BmpEncoder.encode` | Parsed BM header and binary scanline BGR bytes; verified exact RGB pixel equality (255, 128, 64) | **PASSED** |
+| **ICO Multi-Res Packaging** | `IcoEncoder.encode` | Packaged genuine 16x16 and 32x32 PNG images; unpacked sub-image streams and verified dimensions via `doc.embedPng` | **PASSED** |
+| **Image to PDF Production** | `ImageToPdfEngine.convert` | Generated PDF with production engine; parsed via `pdfjs-dist` verifying exact page viewport dimensions | **PASSED** |
 
 ---
 

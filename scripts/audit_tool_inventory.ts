@@ -15,7 +15,7 @@ interface InventoryTier {
 
 const entries = Object.values(CONVERSION_CATALOG);
 
-const launchReady: InventoryTier[] = [];
+const launchCandidates: InventoryTier[] = [];
 const gated: InventoryTier[] = [];
 const aliases: InventoryTier[] = [];
 const experimental: InventoryTier[] = [];
@@ -48,7 +48,7 @@ for (const e of entries) {
   } else if (GATED_SLUGS.has(e.slug)) {
     gated.push(item);
   } else {
-    launchReady.push(item);
+    launchCandidates.push(item);
   }
 }
 
@@ -56,11 +56,11 @@ console.log("==================================================");
 console.log("AUTHORITATIVE FILEKIT TOOL INVENTORY AUDIT");
 console.log("==================================================");
 console.log(`Total Catalog Entries: ${entries.length}`);
-console.log(`- Launch-Ready Tools:   ${launchReady.length}`);
-console.log(`- Gated Tools:          ${gated.length}`);
-console.log(`- Redirect Aliases:     ${aliases.length}`);
-console.log(`- Experimental/Planned: ${experimental.length}`);
-console.log(`Sum: ${launchReady.length + gated.length + aliases.length + experimental.length}`);
+console.log(`- Launch Candidate Tools: ${launchCandidates.length} (pending linked output verification)`);
+console.log(`- Gated Tools:            ${gated.length}`);
+console.log(`- Redirect Aliases:       ${aliases.length}`);
+console.log(`- Experimental/Planned:   ${experimental.length}`);
+console.log(`Sum: ${launchCandidates.length + gated.length + aliases.length + experimental.length}`);
 console.log("==================================================");
 
 console.log("\n[GATED TOOLS]");
@@ -72,9 +72,9 @@ experimental.forEach((ex) => console.log(`  ${ex.slug.padEnd(20)} [${ex.family}]
 console.log("\n[REDIRECT ALIASES]");
 aliases.forEach((a) => console.log(`  ${a.slug.padEnd(20)} -> canonical in catalog`));
 
-console.log("\n[LAUNCH-READY BREAKDOWN BY FAMILY]");
+console.log("\n[LAUNCH CANDIDATES BREAKDOWN BY FAMILY]");
 const families: Record<string, number> = {};
-launchReady.forEach((t) => {
+launchCandidates.forEach((t) => {
   families[t.family] = (families[t.family] || 0) + 1;
 });
 for (const [f, count] of Object.entries(families)) {

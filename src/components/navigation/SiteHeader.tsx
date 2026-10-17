@@ -21,32 +21,7 @@ const LANGUAGES = Object.values(SUPPORTED_LOCALES).map((loc) => ({
   region: loc.region,
 }));
 
-// Tool search database for live header auto-complete
-const ALL_SEARCHABLE_TOOLS = [
-  { name: "Merge PDF Files", route: "/merge-pdf", tag: "PDF", desc: "Combine multiple PDF documents into one" },
-  { name: "Compress PDF", route: "/compress-pdf", tag: "PDF", desc: "Reduce PDF file size in browser" },
-  { name: "Compress PDF to 2 MB", route: "/compress-pdf-to-2mb", tag: "PDF", desc: "Shrink PDF below 2 MB target size" },
-  { name: "Compress PDF to Custom Size", route: "/compress-pdf-to-size", tag: "PDF", desc: "Compress PDF to exact target size" },
-  { name: "PNG to JPG", route: "/png-to-jpg", tag: "CONVERT", desc: "Convert PNG images to JPG photo format" },
-  { name: "JPG to PNG", route: "/jpg-to-png", tag: "CONVERT", desc: "Convert JPG to transparent PNG format" },
-  { name: "PNG to WebP", route: "/png-to-webp", tag: "CONVERT", desc: "Convert PNG to modern lightweight WebP" },
-  { name: "JPG to WebP", route: "/jpg-to-webp", tag: "CONVERT", desc: "Convert JPG to modern lightweight WebP" },
-  { name: "WebP to PNG", route: "/webp-to-png", tag: "CONVERT", desc: "Convert WebP back to standard PNG" },
-  { name: "WebP to JPG", route: "/webp-to-jpg", tag: "CONVERT", desc: "Convert WebP images to JPG photo format" },
-  { name: "PDF to JPG", route: "/pdf-to-jpg", tag: "CONVERT", desc: "Render PDF pages into high-res JPG photos" },
-  { name: "PDF to PNG", route: "/pdf-to-png", tag: "CONVERT", desc: "Render PDF pages into crisp PNG graphics" },
-  { name: "PDF to Image", route: "/pdf-to-image", tag: "CONVERT", desc: "Extract PDF pages into JPG or PNG images" },
-  { name: "Image to PDF", route: "/image-to-pdf", tag: "CONVERT", desc: "Convert JPG, PNG, or WebP images to PDF" },
-  { name: "JPG to PDF", route: "/jpg-to-pdf", tag: "CONVERT", desc: "Convert JPG photos into PDF document" },
-  { name: "PNG to PDF", route: "/png-to-pdf", tag: "CONVERT", desc: "Convert PNG graphics into PDF document" },
-  { name: "Universal Image Converter", route: "/convert-image", tag: "CONVERT", desc: "Convert between JPG, PNG, and WebP" },
-  { name: "Compress Image", route: "/compress-image", tag: "COMPRESS", desc: "Reduce photo file sizes up to 80%" },
-  { name: "Compress Image to 100 KB", route: "/compress-image-to-100kb", tag: "COMPRESS", desc: "Compress image below 100 KB" },
-  { name: "Compress Image to 200 KB", route: "/compress-image-to-200kb", tag: "COMPRESS", desc: "Compress image below 200 KB" },
-  { name: "Compress Image to 500 KB", route: "/compress-image-to-500kb", tag: "COMPRESS", desc: "Compress image below 500 KB" },
-  { name: "Compress Image to 1 MB", route: "/compress-image-to-1mb", tag: "COMPRESS", desc: "Compress photo below 1 MB" },
-  { name: "Compress Image to Custom Size", route: "/compress-image-to-size", tag: "COMPRESS", desc: "Compress image to exact target KB or MB" }
-];
+import { ALL_SEARCHABLE_TOOLS } from "@/config/searchableTools";
 
 export default function SiteHeader() {
   const pathname = usePathname();
