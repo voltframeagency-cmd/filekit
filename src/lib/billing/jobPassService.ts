@@ -1,14 +1,11 @@
 /**
- * FileKit Job Pass Billing Service
- * Core business logic enforcing:
+ * FileKit Job Pass Billing Service (Hardened)
  * - Server-created one-time checkout at €4.90.
- * - Verified payment before access granting (success URL alone never grants access).
- * - Seven-day expiry strictly anchored to confirmed payment time.
- * - Idempotency across duplicate events and identical underlying purchases.
+ * - Strict payment reconciliation (product, amount, currency, status, owner).
+ * - Out-of-order event handling with revocation preservation.
+ * - Fail-closed server access enforcement (missing store records strictly deny access).
+ * - Authenticated recovery requiring session verification; never rebinds to arbitrary sessions.
  * - Failure isolation: failed payment never revokes an existing active pass.
- * - Real-time revocation on refunds/chargebacks.
- * - Tab-closed / interrupted redirect purchase recovery.
- * - Preservation of the agreed free/paid feature matrix.
  */
 
 import crypto from 'node:crypto';
@@ -25,6 +22,7 @@ import { resolveTaxConfiguration, TaxResolutionResult } from './taxConfig';
 import { issueSignedEntitlementToken, verifySignedEntitlementToken } from './tokenEngine';
 import { billingStore } from './billingStore';
 import { stripeProvider, StripeWebhookEvent } from './stripeProvider';
+import { getBillingConfig } from './billingConfig';
 
 export interface CreateCheckoutInput {
   purchaserSessionId: string;
@@ -81,6 +79,7 @@ export class JobPassService {
       checkoutUrl: providerSession.checkoutUrl,
       amountCents: providerSession.amountCents,
       currency: providerSession.currency,
+      providerMode: providerSession.providerMode,
       taxSummary: {
         treatment: taxResolution.taxConfig.treatment,
         ratePercentage: taxResolution.taxConfig.ratePercentage,
@@ -91,7 +90,7 @@ export class JobPassService {
 
   /**
    * Processes incoming provider webhooks with cryptographic signature verification,
-   * replay prevention, underlying purchase deduplication, failure isolation, and refund handling.
+   * replay prevention, strict reconciliation, failure isolation, and refund handling.
    */
   public async processWebhook(
     rawPayload: string,
@@ -110,8 +109,16 @@ export class JobPassService {
       return { success: false, reason: 'MALFORMED_JSON' };
     }
 
-    // 2. Duplicate Event Deduplication (event.id)
-    if (billingStore.isWebhookEventProcessed(event.id)) {
+    // 2. Atomic duplicate event deduplication (event.id)
+    const isNew = billingStore.recordWebhookEventIfNew({
+      eventId: event.id,
+      eventType: event.type,
+      underlyingPurchaseId: event.data?.object?.payment_intent || event.data?.object?.id || 'unknown',
+      processedAt: Date.now(),
+      status: 'PROCESSED',
+    });
+
+    if (!isNew) {
       return { success: true, reason: 'DUPLICATE_EVENT_IGNORED', eventType: event.type };
     }
 
@@ -123,10 +130,29 @@ export class JobPassService {
         const sessionId = session.id;
         const paymentIntentId = session.payment_intent || `pi_from_${sessionId}`;
         const paymentStatus = session.payment_status;
-        const purchaserSessionId = session.metadata?.purchaserSessionId || session.client_reference_id;
-        const purchaserEmail = session.customer_email || session.customer_details?.email;
 
-        // Ensure payment status is confirmed 'paid'
+        // 3. RECONCILIATION AGAINST SERVER-CREATED PURCHASE
+        const attempt = billingStore.findPaymentAttempt(sessionId);
+        if (!attempt) {
+          return { success: false, reason: 'UNRECOGNIZED_PURCHASE_ATTEMPT' };
+        }
+
+        // Verify product
+        if (session.metadata?.product && session.metadata.product !== 'filekit_job_pass') {
+          return { success: false, reason: 'PRODUCT_MISMATCH' };
+        }
+
+        // Verify amount
+        if (session.amount_total !== undefined && session.amount_total !== JOB_PASS_PRICE_CENTS) {
+          return { success: false, reason: 'AMOUNT_MISMATCH' };
+        }
+
+        // Verify currency
+        if (session.currency && session.currency.toLowerCase() !== 'eur') {
+          return { success: false, reason: 'CURRENCY_MISMATCH' };
+        }
+
+        // Verify payment status
         if (paymentStatus !== 'paid') {
           billingStore.updatePaymentAttempt(sessionId, {
             status: 'PROCESSING',
@@ -135,22 +161,28 @@ export class JobPassService {
           break;
         }
 
-        // 3. Underlying Purchase Deduplication (paymentIntentId / sessionId)
+        // 4. PRESERVE REVOCATIONS & UNDERLYING DEDUPLICATION
         const check = billingStore.isUnderlyingPurchaseFulfilled(paymentIntentId);
         if (check.fulfilled && check.passId) {
+          const existingPass = billingStore.getEntitlement(check.passId);
+          if (existingPass && existingPass.status === 'REVOKED') {
+            // Out-of-order event preservation: if pass is already REVOKED, DO NOT reactivate!
+            handledPassId = existingPass.passId;
+            return { success: true, reason: 'REVOCATION_PRESERVED', passId: handledPassId };
+          }
           handledPassId = check.passId;
           break;
         }
 
-        // 4. Confirmed Payment Activation with 7-Day Expiry strictly anchored to payment confirmation time
+        // 5. Confirmed Payment Activation with 7-Day Expiry anchored strictly to payment confirmation time
         const confirmedPaymentTime = event.created ? event.created * 1000 : Date.now();
         const expiresAt = confirmedPaymentTime + JOB_PASS_DURATION_MS;
         const passId = `pass_${crypto.randomBytes(12).toString('hex')}`;
 
         const entitlement: JobPassEntitlementRecord = {
           passId,
-          purchaserSessionId: purchaserSessionId || `session_bound_${sessionId}`,
-          purchaserEmail,
+          purchaserSessionId: attempt.purchaserSessionId, // Owner strictly bound to server attempt
+          purchaserEmail: attempt.purchaserEmail || session.customer_email,
           sourceCheckoutSessionId: sessionId,
           sourcePaymentIntentId: paymentIntentId,
           status: 'ACTIVE',
@@ -176,35 +208,50 @@ export class JobPassService {
         const piId = pi.id;
         const confirmedPaymentTime = event.created ? event.created * 1000 : Date.now();
 
-        // Update payment attempt if exists
+        // Reconcile amount and currency
+        if (pi.amount !== undefined && pi.amount !== JOB_PASS_PRICE_CENTS) {
+          return { success: false, reason: 'AMOUNT_MISMATCH' };
+        }
+        if (pi.currency && pi.currency.toLowerCase() !== 'eur') {
+          return { success: false, reason: 'CURRENCY_MISMATCH' };
+        }
+
         billingStore.updatePaymentAttempt(piId, {
           status: 'SUCCEEDED',
           completedAt: confirmedPaymentTime,
         });
 
-        // If checkout.session.completed did not arrive first (out-of-order handling), grant pass if metadata exists
         const check = billingStore.isUnderlyingPurchaseFulfilled(piId);
-        if (!check.fulfilled && pi.metadata?.purchaserSessionId) {
-          const passId = `pass_${crypto.randomBytes(12).toString('hex')}`;
-          const expiresAt = confirmedPaymentTime + JOB_PASS_DURATION_MS;
-
-          const entitlement: JobPassEntitlementRecord = {
-            passId,
-            purchaserSessionId: pi.metadata.purchaserSessionId,
-            purchaserEmail: pi.metadata.customerEmail,
-            sourceCheckoutSessionId: pi.metadata.checkoutSessionId || `cs_for_${piId}`,
-            sourcePaymentIntentId: piId,
-            status: 'ACTIVE',
-            activatedAt: confirmedPaymentTime,
-            expiresAt,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          };
-
-          billingStore.createOrActivateEntitlement(entitlement);
-          handledPassId = passId;
-        } else if (check.passId) {
+        if (check.fulfilled && check.passId) {
+          const existingPass = billingStore.getEntitlement(check.passId);
+          if (existingPass?.status === 'REVOKED') {
+            handledPassId = existingPass.passId;
+            return { success: true, reason: 'REVOCATION_PRESERVED', passId: handledPassId };
+          }
           handledPassId = check.passId;
+        } else {
+          // Out of order: payment_intent succeeded before checkout.session.completed
+          const attempt = billingStore.findPaymentAttempt(piId);
+          if (attempt && attempt.status === 'SUCCEEDED') {
+            const passId = `pass_${crypto.randomBytes(12).toString('hex')}`;
+            const expiresAt = confirmedPaymentTime + JOB_PASS_DURATION_MS;
+
+            const entitlement: JobPassEntitlementRecord = {
+              passId,
+              purchaserSessionId: attempt.purchaserSessionId,
+              purchaserEmail: attempt.purchaserEmail,
+              sourceCheckoutSessionId: attempt.checkoutSessionId,
+              sourcePaymentIntentId: piId,
+              status: 'ACTIVE',
+              activatedAt: confirmedPaymentTime,
+              expiresAt,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            };
+
+            billingStore.createOrActivateEntitlement(entitlement);
+            handledPassId = passId;
+          }
         }
         break;
       }
@@ -215,7 +262,7 @@ export class JobPassService {
         const reason = pi.last_payment_error?.message || 'Payment method rejected';
 
         // CRITICAL: Record failure against THIS payment attempt only!
-        // Does NOT revoke or invalidate an existing active pass.
+        // Does NOT revoke an existing active pass.
         billingStore.recordPaymentFailure(piId, reason);
         break;
       }
@@ -237,18 +284,8 @@ export class JobPassService {
       }
 
       default:
-        // Other non-critical events are safely acknowledged
         break;
     }
-
-    // Record webhook audit for idempotency
-    billingStore.recordWebhookAudit({
-      eventId: event.id,
-      eventType: event.type,
-      underlyingPurchaseId: event.data?.object?.payment_intent || event.data?.object?.id || 'unknown',
-      processedAt: Date.now(),
-      status: 'PROCESSED',
-    });
 
     return {
       success: true,
@@ -259,8 +296,9 @@ export class JobPassService {
   }
 
   /**
-   * Server-side access enforcement.
-   * Validates cryptographic signed token and/or durable store lookup.
+   * Server-side access enforcement (Fail Closed).
+   * Validates cryptographic signed token AND enforces that an authoritative
+   * ACTIVE entitlement record exists in durable storage.
    */
   public verifyAccess(params: {
     token?: string;
@@ -270,7 +308,7 @@ export class JobPassService {
   }): EntitlementCheckResult {
     const now = params.nowMs || Date.now();
 
-    // 1. If a signed token is provided, verify cryptographic signature & claims
+    // 1. If a signed token is provided, verify signature AND verify backing database record
     if (params.token) {
       const validation = verifySignedEntitlementToken(params.token, params.purchaserSessionId, now);
       if (!validation.valid || !validation.payload) {
@@ -281,33 +319,51 @@ export class JobPassService {
         };
       }
 
-      // Check whether this pass has been revoked in store (e.g. via refund/chargeback)
-      const pass = billingStore.getEntitlement(validation.payload.passId);
-      if (pass && pass.status === 'REVOKED') {
+      // CRITICAL: Require existing ACTIVE entitlement in store.
+      // Missing store records strictly deny premium access!
+      const pass = billingStore.getEntitlement(validation.payload.passId, now);
+      if (!pass) {
         return {
           hasActivePass: false,
-          status: 'REVOKED',
-          passId: pass.passId,
-          error: 'PASS_REVOKED_REFUND',
+          status: 'NO_PASS',
+          error: 'ENTITLEMENT_RECORD_NOT_FOUND',
         };
       }
 
-      const remainingSeconds = Math.max(0, Math.floor((validation.payload.expiresAt - now) / 1000));
+      if (pass.status !== 'ACTIVE') {
+        return {
+          hasActivePass: false,
+          status: pass.status,
+          passId: pass.passId,
+          error: `PASS_${pass.status}`,
+        };
+      }
+
+      if (now >= pass.expiresAt) {
+        return {
+          hasActivePass: false,
+          status: 'EXPIRED',
+          passId: pass.passId,
+          error: 'PASS_EXPIRED',
+        };
+      }
+
+      const remainingSeconds = Math.max(0, Math.floor((pass.expiresAt - now) / 1000));
 
       return {
         hasActivePass: true,
         status: 'ACTIVE',
-        passId: validation.payload.passId,
-        expiresAt: validation.payload.expiresAt,
+        passId: pass.passId,
+        expiresAt: pass.expiresAt,
         remainingSeconds,
       };
     }
 
-    // 2. Lookup by session or email in durable store
-    if (params.purchaserSessionId || params.email) {
+    // 2. Direct lookup by authenticated session in durable store
+    if (params.purchaserSessionId) {
       const pass = billingStore.getActiveEntitlementForPurchaser(
         params.purchaserSessionId,
-        params.email,
+        undefined,
         now
       );
 
@@ -330,54 +386,60 @@ export class JobPassService {
   }
 
   /**
-   * Recovers a purchase after an interrupted redirect or closed tab.
-   * A checkout success URL query parameter ALONE never grants access;
-   * recovery checks the verified payment record in the durable store.
+   * Secure purchase recovery.
+   * Proves purchaser ownership server-side.
+   * NEVER rebinds a pass to an arbitrary session ID provided in the request body.
    */
   public recoverPurchase(params: {
+    authenticatedSessionId: string;
     checkoutSessionId?: string;
-    purchaserSessionId?: string;
     email?: string;
+    emailVerificationProof?: string;
     nowMs?: number;
   }): { recovered: boolean; token?: string; pass?: JobPassEntitlementRecord; error?: string } {
     const now = params.nowMs || Date.now();
 
-    if (!params.checkoutSessionId && !params.purchaserSessionId && !params.email) {
-      return { recovered: false, error: 'MISSING_RECOVERY_IDENTIFIER' };
+    if (!params.authenticatedSessionId) {
+      return { recovered: false, error: 'AUTHENTICATED_SESSION_REQUIRED' };
     }
 
-    // Look up via checkout session ID if available
     let pass: JobPassEntitlementRecord | null = null;
 
     if (params.checkoutSessionId) {
+      const attempt = billingStore.findPaymentAttempt(params.checkoutSessionId);
+      if (!attempt || attempt.status !== 'SUCCEEDED') {
+        return { recovered: false, error: 'PAYMENT_NOT_YET_CONFIRMED' };
+      }
+
+      // OWNERSHIP VERIFICATION: Caller's authenticated session must match the original purchaser session!
+      if (attempt.purchaserSessionId !== params.authenticatedSessionId) {
+        return { recovered: false, error: 'UNAUTHORIZED_SESSION_OWNERSHIP' };
+      }
+
       const check = billingStore.isUnderlyingPurchaseFulfilled(params.checkoutSessionId);
       if (check.fulfilled && check.passId) {
         pass = billingStore.getEntitlement(check.passId, now);
-      } else {
-        // Check if payment attempt was recorded as SUCCEEDED
-        const attempt = billingStore.findPaymentAttempt(params.checkoutSessionId);
-        if (!attempt || attempt.status !== 'SUCCEEDED') {
-          return {
-            recovered: false,
-            error: 'PAYMENT_NOT_YET_CONFIRMED',
-          };
-        }
-        if (attempt.paymentIntentId) {
-          const piCheck = billingStore.isUnderlyingPurchaseFulfilled(attempt.paymentIntentId);
-          if (piCheck.fulfilled && piCheck.passId) {
-            pass = billingStore.getEntitlement(piCheck.passId, now);
-          }
+      } else if (attempt.paymentIntentId) {
+        const piCheck = billingStore.isUnderlyingPurchaseFulfilled(attempt.paymentIntentId);
+        if (piCheck.fulfilled && piCheck.passId) {
+          pass = billingStore.getEntitlement(piCheck.passId, now);
         }
       }
-    }
+    } else if (params.email) {
+      // Email recovery strictly requires cryptographic verification proof
+      if (!params.emailVerificationProof) {
+        return { recovered: false, error: 'UNVERIFIED_EMAIL_IDENTITY' };
+      }
 
-    // Fall back to purchaserSessionId or email
-    if (!pass && (params.purchaserSessionId || params.email)) {
-      pass = billingStore.getActiveEntitlementForPurchaser(
-        params.purchaserSessionId,
-        params.email,
-        now
-      );
+      const isValidProof = this.verifyEmailOwnershipProof(params.email, params.emailVerificationProof);
+      if (!isValidProof) {
+        return { recovered: false, error: 'INVALID_EMAIL_VERIFICATION_PROOF' };
+      }
+
+      pass = billingStore.getActiveEntitlementForPurchaser(undefined, params.email, now);
+    } else {
+      // Fallback: recover active pass bound directly to caller's authenticated session
+      pass = billingStore.getActiveEntitlementForPurchaser(params.authenticatedSessionId, undefined, now);
     }
 
     if (!pass) {
@@ -392,10 +454,11 @@ export class JobPassService {
       return { recovered: false, error: 'PASS_EXPIRED' };
     }
 
-    // Generate fresh signed entitlement token
+    // ISSUE TOKEN STRICTLY BOUND TO THE ORIGINAL PURCHASER SESSION
+    // Never rebinds to an arbitrary caller-supplied ID!
     const token = issueSignedEntitlementToken({
       passId: pass.passId,
-      purchaserSessionId: params.purchaserSessionId || pass.purchaserSessionId,
+      purchaserSessionId: pass.purchaserSessionId,
       purchaserEmail: pass.purchaserEmail,
       activatedAt: pass.activatedAt,
       expiresAt: pass.expiresAt,
@@ -409,8 +472,45 @@ export class JobPassService {
   }
 
   /**
+   * Helper to verify cryptographic email ownership proof
+   */
+  public verifyEmailOwnershipProof(email: string, proofToken: string): boolean {
+    const config = getBillingConfig();
+    const parts = proofToken.split('.');
+    if (parts.length !== 2) return false;
+
+    const [timestampStr, sig] = parts;
+    const timestamp = parseInt(timestampStr, 10);
+    const now = Date.now();
+
+    // 15-minute challenge window
+    if (isNaN(timestamp) || Math.abs(now - timestamp) > 15 * 60 * 1000) {
+      return false;
+    }
+
+    const hmac = crypto.createHmac('sha256', config.signingSecret);
+    hmac.update(`${email.toLowerCase()}:${timestamp}`);
+    const expectedSig = hmac.digest('hex');
+
+    const expectedBuf = Buffer.from(expectedSig);
+    const providedBuf = Buffer.from(sig);
+    return expectedBuf.length === providedBuf.length && crypto.timingSafeEqual(expectedBuf, providedBuf);
+  }
+
+  /**
+   * Creates an email ownership proof token (e.g. for magic links or email recovery)
+   */
+  public createEmailOwnershipProof(email: string): string {
+    const config = getBillingConfig();
+    const timestamp = Date.now();
+    const hmac = crypto.createHmac('sha256', config.signingSecret);
+    hmac.update(`${email.toLowerCase()}:${timestamp}`);
+    const sig = hmac.digest('hex');
+    return `${timestamp}.${sig}`;
+  }
+
+  /**
    * Preserves the agreed Free/Paid commercial feature matrix.
-   * Processing location alone must NOT determine pricing!
    */
   public checkFeatureAccess(
     feature: FeatureIdentifier,

@@ -27,6 +27,14 @@ console.log('✓ Copied _next/static JS/CSS assets');
 fs.cpSync(PUBLIC_DIR, DIST_DIR, { recursive: true });
 console.log('✓ Copied public assets (including pdf.worker.min.mjs)');
 
+// 3b. Copy Cloudflare Pages Functions for server runtime execution
+const FUNCTIONS_DIR = path.join(ROOT_DIR, 'functions');
+if (fs.existsSync(FUNCTIONS_DIR)) {
+  const distFunctions = path.join(DIST_DIR, 'functions');
+  fs.cpSync(FUNCTIONS_DIR, distFunctions, { recursive: true });
+  console.log('✓ Packaged Cloudflare Pages Functions into dist-staging/functions');
+}
+
 // 4. Copy index.html
 const indexHtml = path.join(NEXT_APP_DIR, 'index.html');
 if (fs.existsSync(indexHtml)) {

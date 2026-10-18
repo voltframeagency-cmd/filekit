@@ -1,12 +1,14 @@
 /**
  * Stripe Payment Provider Adapter (Provider Test Mode)
- * Server-controlled pricing, server-side secret management, live charging disabled.
- * Provides cryptographic webhook signature verification matching Stripe's exact specification.
+ * Server-controlled pricing, server-side secret management.
+ * Strictly rejects live keys before any request is made.
+ * Cryptographic webhook signature verification matching Stripe's exact specification.
  */
 
 import crypto from 'node:crypto';
 import { JOB_PASS_PRICE_CENTS, JOB_PASS_CURRENCY, JOB_PASS_DURATION_DAYS } from './types';
 import { TaxResolutionResult } from './taxConfig';
+import { getBillingConfig } from './billingConfig';
 
 export interface CreateCheckoutParams {
   purchaserSessionId: string;
@@ -22,6 +24,7 @@ export interface CheckoutSessionResult {
   checkoutUrl: string;
   amountCents: number;
   currency: string;
+  providerMode: 'STRIPE_TEST_MODE' | 'MOCK_PROVIDER_TEST_ONLY';
 }
 
 export interface StripeWebhookEvent<T = any> {
@@ -33,68 +36,42 @@ export interface StripeWebhookEvent<T = any> {
   };
 }
 
-export interface StripeCheckoutSessionObject {
-  id: string;
-  payment_status: 'paid' | 'unpaid' | 'no_payment_required';
-  payment_intent?: string;
-  customer_email?: string;
-  client_reference_id?: string;
-  metadata?: Record<string, string>;
-  amount_total: number;
-  currency: string;
-}
-
-export interface StripePaymentIntentObject {
-  id: string;
-  status: 'succeeded' | 'requires_payment_method' | 'requires_action' | 'canceled';
-  amount: number;
-  currency: string;
-  customer?: string;
-  last_payment_error?: {
-    message?: string;
-    code?: string;
-  };
-  metadata?: Record<string, string>;
-}
-
-export interface StripeChargeObject {
-  id: string;
-  payment_intent?: string;
-  amount: number;
-  amount_refunded: number;
-  refunded: boolean;
-  dispute?: any;
-}
-
 export class StripeProvider {
-  private secretKey: string;
-  private webhookSecret: string;
-  private isLiveMode: boolean = false;
-
-  constructor() {
-    this.secretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_filekit_dummy_key';
-    this.webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_filekit_test_secret';
-
-    // Live charging is explicitly disabled in this integration phase
-    if (this.secretKey.startsWith('sk_live_')) {
-      console.warn('WARNING: Live Stripe key detected, but live charging is currently disabled. Defaulting to provider test mode.');
-      this.isLiveMode = false;
+  /**
+   * Asserts that live credentials are never used in this integration.
+   * Throws immediately if live keys are present.
+   */
+  private assertTestModeOnly(secretKey?: string): void {
+    if (secretKey && (secretKey.startsWith('sk_live_') || secretKey.startsWith('rk_live_'))) {
+      throw new Error(
+        'FATAL_SECURITY_ERROR: Live Stripe credentials rejected. Live mode is strictly disabled. ' +
+        'Only Stripe test-mode keys (sk_test_*) are permitted.'
+      );
     }
   }
 
   public getWebhookSecret(): string {
-    return this.webhookSecret;
+    return getBillingConfig().stripeWebhookSecret;
   }
 
   /**
    * Creates a one-time Stripe Checkout Session strictly enforcing €4.90 pricing server-side.
-   * Client cannot modify the price or currency.
    */
   public async createCheckoutSession(params: CreateCheckoutParams): Promise<CheckoutSessionResult> {
-    const isOfflineTest = !process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('dummy');
+    const config = getBillingConfig();
+    this.assertTestModeOnly(config.stripeSecretKey);
 
-    if (isOfflineTest) {
-      // Deterministic provider test-mode session
+    const hasRealTestKey = config.stripeSecretKey && config.stripeSecretKey.startsWith('sk_test_');
+
+    if (!hasRealTestKey) {
+      if (!config.allowMocks) {
+        throw new Error(
+          'CREDENTIAL_BLOCKED: Real Stripe test credentials (sk_test_*) are required in deployed environment. ' +
+          'Mock provider is disabled.'
+        );
+      }
+
+      // Explicitly labeled mock test mode (allowed strictly in unit/e2e test harness)
       const mockSessionId = `cs_test_${crypto.randomBytes(16).toString('hex')}`;
       const mockUrl = `https://checkout.stripe.com/c/pay/${mockSessionId}?session_id=${mockSessionId}`;
 
@@ -103,10 +80,11 @@ export class StripeProvider {
         checkoutUrl: mockUrl,
         amountCents: params.taxResolution.totalGrossCents,
         currency: JOB_PASS_CURRENCY,
+        providerMode: 'MOCK_PROVIDER_TEST_ONLY',
       };
     }
 
-    // Call official Stripe REST API in test mode
+    // Call official Stripe REST API in genuine test mode
     const body = new URLSearchParams();
     body.append('mode', 'payment'); // strictly one-time payment; NEVER a subscription
     body.append('success_url', `${params.successUrl}?session_id={CHECKOUT_SESSION_ID}`);
@@ -137,7 +115,7 @@ export class StripeProvider {
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${this.secretKey}`,
+        Authorization: `Bearer ${config.stripeSecretKey}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: body.toString(),
@@ -154,17 +132,18 @@ export class StripeProvider {
       checkoutUrl: data.url,
       amountCents: data.amount_total || params.taxResolution.totalGrossCents,
       currency: data.currency || JOB_PASS_CURRENCY,
+      providerMode: 'STRIPE_TEST_MODE',
     };
   }
 
   /**
-   * Cryptographic verification of Stripe Webhook Signature (`stripe-signature` header)
+   * Cryptographic verification of Stripe Webhook Signature (`stripe-signature` header).
    * Prevents forged webhooks and replay attacks outside standard tolerance window (300s).
    */
   public verifyWebhookSignature(
     rawPayload: string | Buffer,
     signatureHeader: string,
-    secret: string = this.webhookSecret,
+    secret: string = this.getWebhookSecret(),
     toleranceSeconds: number = 300
   ): boolean {
     if (!signatureHeader || !rawPayload) {
@@ -188,7 +167,7 @@ export class StripeProvider {
       return false;
     }
 
-    // Check tolerance window to prevent replay of very old payloads
+    // Check tolerance window to prevent replay of stale payloads
     const nowSeconds = Math.floor(Date.now() / 1000);
     if (Math.abs(nowSeconds - timestamp) > toleranceSeconds) {
       return false;
@@ -214,11 +193,11 @@ export class StripeProvider {
   }
 
   /**
-   * Helper to construct a valid `stripe-signature` header for testing or mock webhooks.
+   * Helper to construct a valid `stripe-signature` header for testing.
    */
   public constructSignatureHeader(
     rawPayload: string,
-    secret: string = this.webhookSecret,
+    secret: string = this.getWebhookSecret(),
     timestamp: number = Math.floor(Date.now() / 1000)
   ): string {
     const signedPayload = `${timestamp}.${rawPayload}`;

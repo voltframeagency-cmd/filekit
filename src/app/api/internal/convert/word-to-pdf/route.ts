@@ -7,6 +7,7 @@ import {
   executeRemoteStorageDeletion,
 } from '@/lib/engine/serverStorageAdapter';
 import { reconcileJobExecutionCost } from '@/lib/engine/providerCostReconciliation';
+import { assertFeatureEntitlement } from '@/lib/billing/entitlementGuard';
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +20,12 @@ export async function POST(req: NextRequest) {
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
+    // 0. Server-side Entitlement Guard (Free fair-use up to 50MB; Job Pass required for >50MB)
+    const guard = await assertFeatureEntitlement(req, 'SERVER_OFFICE_CONVERSION', { fileSizeBytes: buffer.length });
+    if (!guard.authorized && guard.response) {
+      return guard.response;
+    }
 
     // 1. Server-side Preflight & Revalidation
     const preflight = validateUploadedBuffer(buffer, file.type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');

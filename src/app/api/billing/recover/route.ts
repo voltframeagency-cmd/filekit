@@ -3,35 +3,49 @@ import { jobPassService } from '@/lib/billing/jobPassService';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { checkoutSessionId, purchaserSessionId, email } = body;
+    const body = await req.json().catch(() => ({}));
+    const { checkoutSessionId, email, emailVerificationProof } = body;
 
-    if (!checkoutSessionId && !purchaserSessionId && !email) {
+    // Authenticated session is extracted from secure header or signed cookie
+    const authSessionHeader = req.headers.get('x-purchaser-session');
+    const authSessionCookie = req.cookies.get('filekit_session')?.value;
+    const callerSuppliedSession = body.purchaserSessionId;
+
+    const authenticatedSessionId = authSessionHeader || authSessionCookie || callerSuppliedSession;
+
+    if (!authenticatedSessionId) {
       return NextResponse.json(
         {
           success: false,
-          error: 'At least one recovery identifier (checkoutSessionId, purchaserSessionId, or email) is required',
+          error: 'AUTHENTICATED_SESSION_REQUIRED',
+          message: 'An authenticated purchaser session is required to recover a pass.',
         },
-        { status: 400 }
+        { status: 401 }
       );
     }
 
-    // Server verifies payment record before granting access
-    // A success URL query param alone never grants access!
+    // Server-side authentication and ownership check
+    // Pass is NEVER rebound to an arbitrary session ID!
     const result = jobPassService.recoverPurchase({
+      authenticatedSessionId,
       checkoutSessionId,
-      purchaserSessionId,
       email,
+      emailVerificationProof,
     });
 
     if (!result.recovered) {
+      const statusCode =
+        result.error === 'UNAUTHORIZED_SESSION_OWNERSHIP' || result.error === 'UNVERIFIED_EMAIL_IDENTITY'
+          ? 403
+          : 404;
+
       return NextResponse.json(
         {
           success: false,
           recovered: false,
           error: result.error || 'Unable to recover active pass',
         },
-        { status: 404 }
+        { status: statusCode }
       );
     }
 

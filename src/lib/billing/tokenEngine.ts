@@ -5,6 +5,7 @@
  */
 
 import crypto from 'node:crypto';
+import { getBillingConfig } from './billingConfig';
 
 export interface EntitlementTokenPayload {
   v: number;
@@ -23,8 +24,7 @@ export interface TokenValidationResult {
 }
 
 function getSigningSecret(): string {
-  // Server-side secret only. Defaults to a deterministic fallback in development/test.
-  return process.env.JOB_PASS_SIGNING_SECRET || 'filekit-test-signing-secret-key-32chars!!';
+  return getBillingConfig().signingSecret;
 }
 
 function base64UrlEncode(str: string): string {

@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { VideoEngine } from "@/utils/video/VideoEngine";
+import { assertFeatureEntitlement } from "@/lib/billing/entitlementGuard";
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. Enforce Job Pass Entitlement on Video Conversion workloads
+    const guard = await assertFeatureEntitlement(request, 'UNLIMITED_BURST_PROCESSING');
+    if (!guard.authorized && guard.response) {
+      return guard.response;
+    }
+
     const body = await request.json().catch(() => ({}));
     const { fileName, fileSizeBytes, mode, targetFormat, targetSizeBytes, durationSeconds } = body;
 

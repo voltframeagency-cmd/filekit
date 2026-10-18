@@ -48,6 +48,10 @@ async function runAllBillingTests() {
   console.log('       FILEKIT €4.90 JOB PASS BILLING VERIFICATION SUITE        ');
   console.log('================================================================\n');
 
+  // Explicitly configure test harness mode
+  process.env.FILEKIT_TEST_MODE = 'true';
+  process.env.ALLOW_BILLING_MOCK = 'true';
+
   // Reset store for a pristine test run
   billingStore.resetForTesting();
 
@@ -98,8 +102,8 @@ async function runAllBillingTests() {
 
     // Attempt recovery on unconfirmed session
     const recovery = jobPassService.recoverPurchase({
+      authenticatedSessionId: unconfirmedSessionId,
       checkoutSessionId: checkout.sessionId,
-      purchaserSessionId: unconfirmedSessionId,
     });
     assert.strictEqual(recovery.recovered, false, 'Recovery must fail if payment is unconfirmed');
     assert.strictEqual(recovery.error, 'PAYMENT_NOT_YET_CONFIRMED');
@@ -468,8 +472,8 @@ async function runAllBillingTests() {
 
     // User reopens the website and clicks "Restore Pass" with their checkout session ID
     const recovered = jobPassService.recoverPurchase({
+      authenticatedSessionId: recoverySession,
       checkoutSessionId: checkout.sessionId,
-      purchaserSessionId: recoverySession,
     });
 
     assert.strictEqual(recovered.recovered, true, 'Purchase must be successfully recovered');
