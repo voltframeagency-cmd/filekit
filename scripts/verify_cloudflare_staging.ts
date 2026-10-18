@@ -66,7 +66,7 @@ function parsePdfOutput(filePath: string): { pageCount: number; pages: string[] 
  */
 function parseImageOutput(filePath: string): { format: string; width: number; height: number } {
   const normalizedPath = filePath.replace(/\\/g, '/');
-  const pythonCmd = `python -c "import sys, json, PIL.Image; im=PIL.Image.open(sys.argv[1]); print(json.dumps({'format': im.format, 'width': im.size[0], 'height': im.size[1]}))" "${normalizedPath}"`;
+  const pythonCmd = `python -c "import sys, json, PIL.Image; im=PIL.Image.open(sys.argv[1]); im.load(); print(json.dumps({'format': im.format, 'width': im.size[0], 'height': im.size[1]}))" "${normalizedPath}"`;
   const output = execSync(pythonCmd, { encoding: 'utf-8' });
   return JSON.parse(output.trim());
 }
@@ -382,7 +382,7 @@ export async function runStagingVerificationSuite(options: StagingVerificationOp
     results.push({
       step: 'Privacy Detector Validation (Synthetic Controls)',
       status: 'PASS',
-      details: 'Demonstrated detector correctly catches controlled same-origin uploads and outgoing WebSocket frames while permitting benign GET asset requests.',
+      details: 'Demonstrated detector correctly catches controlled same-origin uploads and outgoing WebSocket frames while permitting benign GET asset requests (tests the event evaluator, not the browser capture mechanism end to end).',
       metrics: {
         sameOriginDetected: true,
         wsFrameDetected: true,
@@ -607,7 +607,7 @@ export async function runStagingVerificationSuite(options: StagingVerificationOp
     results.push({
       step: 'Bounded Privacy: /compress-image-to-200kb Workflow',
       status: 'PASS',
-      details: `Full workflow completed: fixture selected -> optimized in browser -> downloaded result (${downloadedBytes} bytes). Independently decoded: valid JPEG, exact dimensions (2500x1667) verified, target size confirmed (${downloadedBytes} <= 204,800 bytes). Monitored channels (Fetch, XHR, WebSocket, Beacon): 0 payload-bearing requests and 0 outgoing WebSocket frames transmitted off-device.`,
+      details: `Full workflow completed: fixture selected -> optimized in browser -> downloaded result (${downloadedBytes} bytes). Independently decoded via full pixel load: valid JPEG, exact dimensions (1750x1167) verified, target size confirmed (${downloadedBytes} <= 204,800 bytes). Monitored channels (Fetch, XHR, WebSocket, Beacon): 0 payload-bearing requests and 0 outgoing WebSocket frames transmitted off-device.`,
       metrics: { downloadedBytes, width: parsedImage.width, height: parsedImage.height, format: parsedImage.format }
     });
     console.log(`  ✓ Bounded Privacy (/compress-image-to-200kb): local optimization verified, decoded dimensions confirmed, 0 bytes leaked.`);
