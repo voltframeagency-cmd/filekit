@@ -39,7 +39,7 @@ async function handleCheck(req: NextRequest) {
     const purchaserSessionId = sessionHeader || querySession || bodySession;
     const email = queryEmail || bodyEmail;
 
-    const result = jobPassService.verifyAccess({
+    const result = await jobPassService.verifyAccess({
       token,
       purchaserSessionId,
       email,

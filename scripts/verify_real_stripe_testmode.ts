@@ -1,13 +1,16 @@
 /**
- * Real Stripe Test-Mode Purchase Verification Runner
- * Explicitly separates real Stripe API test-mode execution from mock test harnesses.
+ * Real Stripe Test-Mode Verification Runner
+ * Explicitly separates:
+ * 1. Provider Checkout Session Creation (verified against api.stripe.com)
+ * 2. Real Payment Completion (requires customer card entry or PaymentIntent confirmation)
+ * 3. Provider Webhook Ingress (requires Stripe CLI forwarder or public webhook URL)
+ * 4. Self-signed synthetic events (explicitly labeled as local mocks)
+ *
  * Live charging is unconditionally blocked.
  */
 
 import { jobPassService } from '../src/lib/billing/jobPassService';
-import { transactionalBillingStore } from '../src/lib/billing/transactionalBillingStore';
 import { stripeProvider } from '../src/lib/billing/stripeProvider';
-import { issueSignedEntitlementToken } from '../src/lib/billing/tokenEngine';
 import assert from 'node:assert';
 
 async function runRealStripeTestModeCheck() {
@@ -28,7 +31,7 @@ async function runRealStripeTestModeCheck() {
     return;
   }
 
-  console.log('Stripe test key detected. Executing real test purchase against api.stripe.com...');
+  console.log('Stripe test key detected. Initiating checkout creation against api.stripe.com...');
 
   const purchaserSessionId = `sess_live_test_${Date.now()}`;
   const checkout = await jobPassService.createCheckout({
@@ -40,19 +43,26 @@ async function runRealStripeTestModeCheck() {
 
   assert.ok(checkout.sessionId.startsWith('cs_test_'), 'Must return real Stripe test session ID');
   assert.strictEqual(checkout.amountCents, 490, 'Amount must be strictly €4.90');
-  console.log(`✓ Real Stripe Checkout Session created: ${checkout.sessionId}`);
-  console.log(`✓ Real Stripe Checkout URL: ${checkout.checkoutUrl}`);
+  console.log(`[PROVIDER_SESSION_CREATION]: SUCCESS`);
+  console.log(`  Checkout Session ID: ${checkout.sessionId}`);
+  console.log(`  Checkout URL: ${checkout.checkoutUrl}`);
+  console.log(`  Mode: One-time payment (never renews)`);
 
-  // Construct and deliver webhook for this real session
+  console.log('\n[PROVIDER_COMPLETION_STATUS]: PARTIAL PROVIDER VERIFICATION');
+  console.log('  1. Session Creation: VERIFIED against live Stripe API (api.stripe.com).');
+  console.log('  2. Payment Execution: PENDING customer action at checkout URL above.');
+  console.log('  3. Stripe-Delivered Ingress: PENDING public webhook forwarder (e.g. stripe listen --forward-to).');
+
+  console.log('\n[SELF_SIGNED_SYNTHETIC_MOCK]: Delivering simulated webhook for reconciliation audit...');
   const webhookEvent = {
-    id: `evt_real_test_${Date.now()}`,
+    id: `evt_synthetic_${Date.now()}`,
     type: 'checkout.session.completed',
     created: Math.floor(Date.now() / 1000),
     data: {
       object: {
         id: checkout.sessionId,
         payment_status: 'paid',
-        payment_intent: `pi_real_test_${Date.now()}`,
+        payment_intent: `pi_simulated_${Date.now()}`,
         customer_email: 'test_buyer@example.com',
         amount_total: 490,
         currency: 'eur',
@@ -69,15 +79,16 @@ async function runRealStripeTestModeCheck() {
   const webhookRes = await jobPassService.processWebhook(raw, signature);
 
   assert.strictEqual(webhookRes.success, true);
-  assert.ok(webhookRes.passId);
-  console.log(`✓ Real test webhook confirmed: Pass ${webhookRes.passId} activated`);
+  console.log(`  Mock Webhook Result: Pass ${webhookRes.passId} processed (Labeled: SELF_SIGNED_MOCK).`);
 
-  // Verify access
-  const access = jobPassService.verifyAccess({ purchaserSessionId });
+  const access = await jobPassService.verifyAccess({ purchaserSessionId });
   assert.strictEqual(access.hasActivePass, true);
-  console.log(`✓ Access verified: Active until ${new Date(access.expiresAt!).toISOString()}`);
+  console.log(`  Access Verified: Active until ${new Date(access.expiresAt!).toISOString()}`);
 
-  console.log('\n[REAL_PROVIDER_TEST]: 100% COMPLETED AND VERIFIED AGAINST STRIPE TEST API.');
+  console.log('\n================================================================');
+  console.log('SUMMARY: Checkout session creation verified with Stripe test servers.');
+  console.log('Full purchase verification remains credential/tunnel blocked until');
+  console.log('Stripe CLI or a public webhook ingress receives live payment confirmation.');
   console.log('================================================================\n');
 }
 

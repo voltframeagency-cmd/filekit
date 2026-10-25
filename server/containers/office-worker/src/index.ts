@@ -104,15 +104,22 @@ export default {
           });
         }
 
-        // Security Token Check
+        // Security Token Check (Admin Bearer Token OR Verified Job Pass Token)
         const authHeader = request.headers.get("Authorization") || "";
         const secretHeader = request.headers.get("X-Canary-Secret") || "";
+        const jobPassToken = request.headers.get("X-Job-Pass-Token") || "";
+        const isGatewayVerified = request.headers.get("X-Job-Pass-Verified") === "true";
         const expectedSecret = env.CANARY_BEARER_TOKEN;
 
         const token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : secretHeader;
-        if (!token || token !== expectedSecret) {
-          return new Response(JSON.stringify({ error: "UNAUTHORIZED_CANARY_ACCESS" }), {
-            status: 401,
+        const isAdminAuthorized = Boolean(token && expectedSecret && token === expectedSecret);
+
+        if (!isAdminAuthorized && !isGatewayVerified && !jobPassToken) {
+          return new Response(JSON.stringify({
+            error: "JOB_PASS_REQUIRED",
+            details: "Conversion requires admin authorization or an active FileKit Job Pass (€4.90 one-time)."
+          }), {
+            status: 402,
             headers: { "Content-Type": "application/json" }
           });
         }

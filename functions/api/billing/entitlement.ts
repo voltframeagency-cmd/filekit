@@ -31,7 +31,7 @@ export const onRequest = async (context: any) => {
     const purchaserSessionId = sessionHeader || querySession || bodySession;
     const email = queryEmail || bodyEmail;
 
-    const result = jobPassService.verifyAccess({
+    const result = await jobPassService.verifyAccess({
       token,
       purchaserSessionId,
       email,

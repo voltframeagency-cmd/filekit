@@ -52,7 +52,7 @@ export async function assertFeatureEntitlement(
   const token = bearerToken || cookieToken;
 
   // 3. Verify server-side access (enforces backing database record & 7-day validity)
-  const check = jobPassService.verifyAccess({
+  const check = await jobPassService.verifyAccess({
     token,
     purchaserSessionId: sessionHeader,
   });

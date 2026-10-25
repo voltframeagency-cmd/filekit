@@ -1,5 +1,5 @@
 -- FileKit Billing & Entitlement Database Schema (Cloudflare D1 / SQLite)
--- Enforces transactional uniqueness and persistence across serverless executions.
+-- Enforces transactional uniqueness, early refund persistence, and persistence across serverless executions.
 
 CREATE TABLE IF NOT EXISTS payment_attempts (
   attempt_id TEXT PRIMARY KEY,
@@ -40,6 +40,14 @@ CREATE TABLE IF NOT EXISTS webhook_events (
   status TEXT NOT NULL
 );
 
+-- Persists early refund and chargeback revocations even before checkout session completion
+CREATE TABLE IF NOT EXISTS revoked_purchases (
+  identifier TEXT PRIMARY KEY,
+  reason TEXT NOT NULL,
+  revoked_at INTEGER NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_entitlements_session ON entitlements(purchaser_session_id);
 CREATE INDEX IF NOT EXISTS idx_entitlements_email ON entitlements(purchaser_email);
 CREATE INDEX IF NOT EXISTS idx_payment_attempts_session ON payment_attempts(purchaser_session_id);
+CREATE INDEX IF NOT EXISTS idx_revoked_purchases ON revoked_purchases(identifier);

@@ -1,33 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jobPassService } from '@/lib/billing/jobPassService';
+import { authenticateRequestSession, verifySessionToken } from '@/lib/billing/sessionAuth';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { checkoutSessionId, email, emailVerificationProof } = body;
+    const { checkoutSessionId, email, emailVerificationProof, sessionToken } = body;
 
-    // Authenticated session is extracted from secure header or signed cookie
-    const authSessionHeader = req.headers.get('x-purchaser-session');
-    const authSessionCookie = req.cookies.get('filekit_session')?.value;
-    const callerSuppliedSession = body.purchaserSessionId;
+    // 1. Authenticate purchaser identity via server-issued session token
+    let verifiedSessionId: string | undefined;
 
-    const authenticatedSessionId = authSessionHeader || authSessionCookie || callerSuppliedSession;
+    if (sessionToken) {
+      const check = verifySessionToken(sessionToken);
+      if (check.authenticated && check.sessionId) {
+        verifiedSessionId = check.sessionId;
+      }
+    }
 
-    if (!authenticatedSessionId) {
+    if (!verifiedSessionId) {
+      const auth = authenticateRequestSession(req);
+      if (auth.authenticated && auth.sessionId) {
+        verifiedSessionId = auth.sessionId;
+      }
+    }
+
+    if (!verifiedSessionId && !email) {
       return NextResponse.json(
         {
           success: false,
           error: 'AUTHENTICATED_SESSION_REQUIRED',
-          message: 'An authenticated purchaser session is required to recover a pass.',
+          message: 'An authenticated, server-issued purchaser session token is required to recover a pass.',
         },
         { status: 401 }
       );
     }
 
-    // Server-side authentication and ownership check
-    // Pass is NEVER rebound to an arbitrary session ID!
-    const result = jobPassService.recoverPurchase({
-      authenticatedSessionId,
+    // 2. Server-side recovery: pass is strictly bound to original purchase session
+    // Never rebinds to an arbitrary session ID!
+    const result = await jobPassService.recoverPurchase({
+      verifiedSessionId,
       checkoutSessionId,
       email,
       emailVerificationProof,

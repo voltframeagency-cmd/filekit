@@ -1,17 +1,15 @@
 // Cloudflare Pages Function: /api/billing/checkout
 import { jobPassService } from '../../../src/lib/billing/jobPassService';
+import { issuePurchaserSession } from '../../../src/lib/billing/sessionAuth';
 
 export const onRequestPost = async (context: any) => {
   try {
-    const body = await context.request.json();
+    const body = await context.request.json().catch(() => ({}));
     const { purchaserSessionId, customerEmail, countryCode, successUrl, cancelUrl } = body;
 
-    if (!purchaserSessionId) {
-      return new Response(JSON.stringify({ success: false, error: 'purchaserSessionId is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    // Issue or sign authenticated purchaser session
+    const issuedSession = issuePurchaserSession(purchaserSessionId);
+    const effectiveSessionId = issuedSession.sessionId;
 
     const url = new URL(context.request.url);
     const origin = url.origin || 'https://filekit.app';
@@ -19,17 +17,30 @@ export const onRequestPost = async (context: any) => {
     const effectiveCancelUrl = cancelUrl || `${origin}/billing/cancel`;
 
     const checkout = await jobPassService.createCheckout({
-      purchaserSessionId,
+      purchaserSessionId: effectiveSessionId,
       customerEmail,
       countryCode,
       successUrl: effectiveSuccessUrl,
       cancelUrl: effectiveCancelUrl,
     });
 
-    return new Response(JSON.stringify({ success: true, ...checkout }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Set-Cookie': issuedSession.cookieHeader,
+    };
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        ...checkout,
+        purchaserSessionId: effectiveSessionId,
+        sessionToken: issuedSession.sessionToken,
+      }),
+      {
+        status: 200,
+        headers,
+      }
+    );
   } catch (err: any) {
     return new Response(JSON.stringify({ success: false, error: err.message || 'Checkout creation failed' }), {
       status: 500,

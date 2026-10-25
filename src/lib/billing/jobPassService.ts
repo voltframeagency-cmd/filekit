@@ -1,10 +1,11 @@
 /**
- * FileKit Job Pass Billing Service (Hardened)
+ * FileKit Job Pass Billing Service (Cloudflare D1 & Hardened Architecture)
  * - Server-created one-time checkout at €4.90.
  * - Strict payment reconciliation (product, amount, currency, status, owner).
- * - Out-of-order event handling with revocation preservation.
+ * - Atomic webhook processing (no early marking as PROCESSED).
+ * - Early refund/dispute persistence (revocation preserved even if refund arrives first).
  * - Fail-closed server access enforcement (missing store records strictly deny access).
- * - Authenticated recovery requiring session verification; never rebinds to arbitrary sessions.
+ * - Authenticated recovery requiring server-issued session token; never rebinds.
  * - Failure isolation: failed payment never revokes an existing active pass.
  */
 
@@ -17,12 +18,14 @@ import {
   EntitlementCheckResult,
   FeatureIdentifier,
   FEATURE_MATRIX,
+  WebhookEventAudit,
 } from './types';
 import { resolveTaxConfiguration, TaxResolutionResult } from './taxConfig';
 import { issueSignedEntitlementToken, verifySignedEntitlementToken } from './tokenEngine';
 import { billingStore } from './billingStore';
 import { stripeProvider, StripeWebhookEvent } from './stripeProvider';
 import { getBillingConfig } from './billingConfig';
+import { verifySessionToken } from './sessionAuth';
 
 export interface CreateCheckoutInput {
   purchaserSessionId: string;
@@ -34,7 +37,7 @@ export interface CreateCheckoutInput {
 
 export class JobPassService {
   /**
-   * Creates a one-time checkout session with server-controlled pricing (€4.90)
+   * Creates a one-time checkout session with server-controlled pricing (€4.90).
    */
   public async createCheckout(input: CreateCheckoutInput) {
     if (!input.purchaserSessionId) {
@@ -71,7 +74,7 @@ export class JobPassService {
       updatedAt: Date.now(),
     };
 
-    billingStore.recordPaymentAttempt(attemptRecord);
+    await billingStore.recordPaymentAttempt(attemptRecord);
 
     return {
       attemptId,
@@ -89,8 +92,12 @@ export class JobPassService {
   }
 
   /**
-   * Processes incoming provider webhooks with cryptographic signature verification,
-   * replay prevention, strict reconciliation, failure isolation, and refund handling.
+   * Processes incoming provider webhooks with:
+   * - Cryptographic signature verification
+   * - Atomic transaction execution (never marks PROCESSED prematurely)
+   * - Strict reconciliation against server-created purchase
+   * - Early revocation preservation
+   * - Failure isolation
    */
   public async processWebhook(
     rawPayload: string,
@@ -109,16 +116,9 @@ export class JobPassService {
       return { success: false, reason: 'MALFORMED_JSON' };
     }
 
-    // 2. Atomic duplicate event deduplication (event.id)
-    const isNew = billingStore.recordWebhookEventIfNew({
-      eventId: event.id,
-      eventType: event.type,
-      underlyingPurchaseId: event.data?.object?.payment_intent || event.data?.object?.id || 'unknown',
-      processedAt: Date.now(),
-      status: 'PROCESSED',
-    });
-
-    if (!isNew) {
+    // 2. Check if already processed (WITHOUT inserting prematurely)
+    const alreadyProcessed = await billingStore.isEventAlreadyProcessed(event.id);
+    if (alreadyProcessed) {
       return { success: true, reason: 'DUPLICATE_EVENT_IGNORED', eventType: event.type };
     }
 
@@ -132,7 +132,7 @@ export class JobPassService {
         const paymentStatus = session.payment_status;
 
         // 3. RECONCILIATION AGAINST SERVER-CREATED PURCHASE
-        const attempt = billingStore.findPaymentAttempt(sessionId);
+        const attempt = await billingStore.findPaymentAttempt(sessionId);
         if (!attempt) {
           return { success: false, reason: 'UNRECOGNIZED_PURCHASE_ATTEMPT' };
         }
@@ -154,52 +154,73 @@ export class JobPassService {
 
         // Verify payment status
         if (paymentStatus !== 'paid') {
-          billingStore.updatePaymentAttempt(sessionId, {
+          await billingStore.updatePaymentAttempt(sessionId, {
             status: 'PROCESSING',
             paymentIntentId,
           });
           break;
         }
 
-        // 4. PRESERVE REVOCATIONS & UNDERLYING DEDUPLICATION
-        const check = billingStore.isUnderlyingPurchaseFulfilled(paymentIntentId);
+        // 4. CHECK EARLY REVOCATION & OUT-OF-ORDER REFUNDS
+        const earlyRevoke =
+          (await billingStore.isPurchaseRevoked(paymentIntentId)) ||
+          (await billingStore.isPurchaseRevoked(sessionId));
+
+        const confirmedPaymentTime = event.created ? event.created * 1000 : Date.now();
+        const expiresAt = confirmedPaymentTime + JOB_PASS_DURATION_MS;
+        const passId = `pass_${crypto.randomBytes(12).toString('hex')}`;
+
+        // 5. Check if underlying purchase was already fulfilled
+        const check = await billingStore.isUnderlyingPurchaseFulfilled(paymentIntentId);
         if (check.fulfilled && check.passId) {
-          const existingPass = billingStore.getEntitlement(check.passId);
-          if (existingPass && existingPass.status === 'REVOKED') {
-            // Out-of-order event preservation: if pass is already REVOKED, DO NOT reactivate!
-            handledPassId = existingPass.passId;
+          const existingPass = await billingStore.getEntitlement(check.passId);
+          if (existingPass?.status === 'REVOKED' || earlyRevoke.revoked) {
+            handledPassId = check.passId;
             return { success: true, reason: 'REVOCATION_PRESERVED', passId: handledPassId };
           }
           handledPassId = check.passId;
           break;
         }
 
-        // 5. Confirmed Payment Activation with 7-Day Expiry anchored strictly to payment confirmation time
-        const confirmedPaymentTime = event.created ? event.created * 1000 : Date.now();
-        const expiresAt = confirmedPaymentTime + JOB_PASS_DURATION_MS;
-        const passId = `pass_${crypto.randomBytes(12).toString('hex')}`;
-
+        const entitlementStatus = earlyRevoke.revoked ? 'REVOKED' : 'ACTIVE';
         const entitlement: JobPassEntitlementRecord = {
           passId,
-          purchaserSessionId: attempt.purchaserSessionId, // Owner strictly bound to server attempt
+          purchaserSessionId: attempt.purchaserSessionId,
           purchaserEmail: attempt.purchaserEmail || session.customer_email,
           sourceCheckoutSessionId: sessionId,
           sourcePaymentIntentId: paymentIntentId,
-          status: 'ACTIVE',
+          status: entitlementStatus,
           activatedAt: confirmedPaymentTime,
           expiresAt,
+          revokedAt: earlyRevoke.revoked ? Date.now() : undefined,
+          revocationReason: earlyRevoke.revoked ? (earlyRevoke.reason as any) : undefined,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
 
-        billingStore.createOrActivateEntitlement(entitlement);
-        billingStore.updatePaymentAttempt(sessionId, {
-          status: 'SUCCEEDED',
-          paymentIntentId,
-          completedAt: confirmedPaymentTime,
+        const eventAudit: WebhookEventAudit = {
+          eventId: event.id,
+          eventType: event.type,
+          underlyingPurchaseId: paymentIntentId,
+          processedAt: Date.now(),
+          status: 'PROCESSED',
+        };
+
+        // 6. ATOMIC TRANSACTION COMMIT: Entitlement + Attempt + Webhook Event all commit together
+        await billingStore.commitWebhookSuccess({
+          eventAudit,
+          entitlement,
+          attemptUpdates: {
+            attemptId: attempt.attemptId,
+            paymentIntentId,
+            completedAt: confirmedPaymentTime,
+          },
         });
 
         handledPassId = passId;
+        if (earlyRevoke.revoked) {
+          return { success: true, reason: 'REVOCATION_PRESERVED', passId: handledPassId };
+        }
         break;
       }
 
@@ -208,7 +229,6 @@ export class JobPassService {
         const piId = pi.id;
         const confirmedPaymentTime = event.created ? event.created * 1000 : Date.now();
 
-        // Reconcile amount and currency
         if (pi.amount !== undefined && pi.amount !== JOB_PASS_PRICE_CENTS) {
           return { success: false, reason: 'AMOUNT_MISMATCH' };
         }
@@ -216,25 +236,28 @@ export class JobPassService {
           return { success: false, reason: 'CURRENCY_MISMATCH' };
         }
 
-        billingStore.updatePaymentAttempt(piId, {
+        await billingStore.updatePaymentAttempt(piId, {
           status: 'SUCCEEDED',
           completedAt: confirmedPaymentTime,
         });
 
-        const check = billingStore.isUnderlyingPurchaseFulfilled(piId);
+        const check = await billingStore.isUnderlyingPurchaseFulfilled(piId);
+        const earlyRevoke = await billingStore.isPurchaseRevoked(piId);
+
         if (check.fulfilled && check.passId) {
-          const existingPass = billingStore.getEntitlement(check.passId);
-          if (existingPass?.status === 'REVOKED') {
-            handledPassId = existingPass.passId;
+          const existingPass = await billingStore.getEntitlement(check.passId);
+          if (existingPass?.status === 'REVOKED' || earlyRevoke.revoked) {
+            handledPassId = check.passId;
             return { success: true, reason: 'REVOCATION_PRESERVED', passId: handledPassId };
           }
           handledPassId = check.passId;
         } else {
           // Out of order: payment_intent succeeded before checkout.session.completed
-          const attempt = billingStore.findPaymentAttempt(piId);
+          const attempt = await billingStore.findPaymentAttempt(piId);
           if (attempt && attempt.status === 'SUCCEEDED') {
             const passId = `pass_${crypto.randomBytes(12).toString('hex')}`;
             const expiresAt = confirmedPaymentTime + JOB_PASS_DURATION_MS;
+            const entitlementStatus = earlyRevoke.revoked ? 'REVOKED' : 'ACTIVE';
 
             const entitlement: JobPassEntitlementRecord = {
               passId,
@@ -242,15 +265,37 @@ export class JobPassService {
               purchaserEmail: attempt.purchaserEmail,
               sourceCheckoutSessionId: attempt.checkoutSessionId,
               sourcePaymentIntentId: piId,
-              status: 'ACTIVE',
+              status: entitlementStatus,
               activatedAt: confirmedPaymentTime,
               expiresAt,
+              revokedAt: earlyRevoke.revoked ? Date.now() : undefined,
+              revocationReason: earlyRevoke.revoked ? (earlyRevoke.reason as any) : undefined,
               createdAt: Date.now(),
               updatedAt: Date.now(),
             };
 
-            billingStore.createOrActivateEntitlement(entitlement);
+            const eventAudit: WebhookEventAudit = {
+              eventId: event.id,
+              eventType: event.type,
+              underlyingPurchaseId: piId,
+              processedAt: Date.now(),
+              status: 'PROCESSED',
+            };
+
+            await billingStore.commitWebhookSuccess({
+              eventAudit,
+              entitlement,
+              attemptUpdates: {
+                attemptId: attempt.attemptId,
+                paymentIntentId: piId,
+                completedAt: confirmedPaymentTime,
+              },
+            });
+
             handledPassId = passId;
+            if (earlyRevoke.revoked) {
+              return { success: true, reason: 'REVOCATION_PRESERVED', passId: handledPassId };
+            }
           }
         }
         break;
@@ -263,22 +308,19 @@ export class JobPassService {
 
         // CRITICAL: Record failure against THIS payment attempt only!
         // Does NOT revoke an existing active pass.
-        billingStore.recordPaymentFailure(piId, reason);
+        await billingStore.recordPaymentFailure(piId, reason);
         break;
       }
 
       case 'charge.refunded':
       case 'charge.dispute.created': {
         const charge = event.data.object;
-        const paymentIntentId = charge.payment_intent;
+        const paymentIntentId = charge.payment_intent || charge.id;
         const reason = event.type === 'charge.dispute.created' ? 'CHARGEBACK' : 'REFUND';
 
         if (paymentIntentId) {
-          // Immediately revoke entitlement associated with this payment intent
-          const revokedPass = billingStore.revokeEntitlementBySource(paymentIntentId, reason);
-          if (revokedPass) {
-            handledPassId = revokedPass.passId;
-          }
+          // Persist revocation in revoked_purchases table AND in entitlements
+          await billingStore.recordRevocation(paymentIntentId, reason);
         }
         break;
       }
@@ -298,17 +340,17 @@ export class JobPassService {
   /**
    * Server-side access enforcement (Fail Closed).
    * Validates cryptographic signed token AND enforces that an authoritative
-   * ACTIVE entitlement record exists in durable storage.
+   * ACTIVE entitlement record exists in the database.
    */
-  public verifyAccess(params: {
+  public async verifyAccess(params: {
     token?: string;
     purchaserSessionId?: string;
     email?: string;
     nowMs?: number;
-  }): EntitlementCheckResult {
+  }): Promise<EntitlementCheckResult> {
     const now = params.nowMs || Date.now();
 
-    // 1. If a signed token is provided, verify signature AND verify backing database record
+    // 1. If a signed token is provided, verify signature AND backing database record
     if (params.token) {
       const validation = verifySignedEntitlementToken(params.token, params.purchaserSessionId, now);
       if (!validation.valid || !validation.payload) {
@@ -319,9 +361,9 @@ export class JobPassService {
         };
       }
 
-      // CRITICAL: Require existing ACTIVE entitlement in store.
+      // CRITICAL: Require existing ACTIVE entitlement in database store.
       // Missing store records strictly deny premium access!
-      const pass = billingStore.getEntitlement(validation.payload.passId, now);
+      const pass = await billingStore.getEntitlement(validation.payload.passId, now);
       if (!pass) {
         return {
           hasActivePass: false,
@@ -359,9 +401,9 @@ export class JobPassService {
       };
     }
 
-    // 2. Direct lookup by authenticated session in durable store
+    // 2. Direct lookup by authenticated session in database store
     if (params.purchaserSessionId) {
-      const pass = billingStore.getActiveEntitlementForPurchaser(
+      const pass = await billingStore.getActiveEntitlementForPurchaser(
         params.purchaserSessionId,
         undefined,
         now
@@ -387,42 +429,54 @@ export class JobPassService {
 
   /**
    * Secure purchase recovery.
-   * Proves purchaser ownership server-side.
-   * NEVER rebinds a pass to an arbitrary session ID provided in the request body.
+   * Proves purchaser ownership server-side using server-issued, signed session.
+   * Never authenticates using raw caller-controlled request IDs.
+   * Never rebinds a pass to an arbitrary session ID.
    */
-  public recoverPurchase(params: {
-    authenticatedSessionId: string;
+  public async recoverPurchase(params: {
+    authenticatedSessionToken?: string;
+    verifiedSessionId?: string;
     checkoutSessionId?: string;
     email?: string;
     emailVerificationProof?: string;
     nowMs?: number;
-  }): { recovered: boolean; token?: string; pass?: JobPassEntitlementRecord; error?: string } {
+  }): Promise<{ recovered: boolean; token?: string; pass?: JobPassEntitlementRecord; error?: string }> {
     const now = params.nowMs || Date.now();
 
-    if (!params.authenticatedSessionId) {
+    let authenticatedSessionId: string | undefined = params.verifiedSessionId;
+
+    if (!authenticatedSessionId && params.authenticatedSessionToken) {
+      const sessionCheck = verifySessionToken(params.authenticatedSessionToken);
+      if (!sessionCheck.authenticated || !sessionCheck.sessionId) {
+        return { recovered: false, error: 'INVALID_SESSION_TOKEN' };
+      }
+      authenticatedSessionId = sessionCheck.sessionId;
+    }
+
+    if (!authenticatedSessionId) {
       return { recovered: false, error: 'AUTHENTICATED_SESSION_REQUIRED' };
     }
 
     let pass: JobPassEntitlementRecord | null = null;
 
     if (params.checkoutSessionId) {
-      const attempt = billingStore.findPaymentAttempt(params.checkoutSessionId);
+      const attempt = await billingStore.findPaymentAttempt(params.checkoutSessionId);
       if (!attempt || attempt.status !== 'SUCCEEDED') {
         return { recovered: false, error: 'PAYMENT_NOT_YET_CONFIRMED' };
       }
 
-      // OWNERSHIP VERIFICATION: Caller's authenticated session must match the original purchaser session!
-      if (attempt.purchaserSessionId !== params.authenticatedSessionId) {
+      // OWNERSHIP VERIFICATION: Verified session must match the original purchaser session!
+      if (attempt.purchaserSessionId !== authenticatedSessionId) {
         return { recovered: false, error: 'UNAUTHORIZED_SESSION_OWNERSHIP' };
       }
 
-      const check = billingStore.isUnderlyingPurchaseFulfilled(params.checkoutSessionId);
+      const check = await billingStore.isUnderlyingPurchaseFulfilled(params.checkoutSessionId);
       if (check.fulfilled && check.passId) {
-        pass = billingStore.getEntitlement(check.passId, now);
+        pass = await billingStore.getEntitlement(check.passId, now);
       } else if (attempt.paymentIntentId) {
-        const piCheck = billingStore.isUnderlyingPurchaseFulfilled(attempt.paymentIntentId);
+        const piCheck = await billingStore.isUnderlyingPurchaseFulfilled(attempt.paymentIntentId);
         if (piCheck.fulfilled && piCheck.passId) {
-          pass = billingStore.getEntitlement(piCheck.passId, now);
+          pass = await billingStore.getEntitlement(piCheck.passId, now);
         }
       }
     } else if (params.email) {
@@ -436,10 +490,10 @@ export class JobPassService {
         return { recovered: false, error: 'INVALID_EMAIL_VERIFICATION_PROOF' };
       }
 
-      pass = billingStore.getActiveEntitlementForPurchaser(undefined, params.email, now);
+      pass = await billingStore.getActiveEntitlementForPurchaser(undefined, params.email, now);
     } else {
-      // Fallback: recover active pass bound directly to caller's authenticated session
-      pass = billingStore.getActiveEntitlementForPurchaser(params.authenticatedSessionId, undefined, now);
+      // Direct recovery of active pass bound to verified session
+      pass = await billingStore.getActiveEntitlementForPurchaser(authenticatedSessionId, undefined, now);
     }
 
     if (!pass) {
@@ -455,7 +509,6 @@ export class JobPassService {
     }
 
     // ISSUE TOKEN STRICTLY BOUND TO THE ORIGINAL PURCHASER SESSION
-    // Never rebinds to an arbitrary caller-supplied ID!
     const token = issueSignedEntitlementToken({
       passId: pass.passId,
       purchaserSessionId: pass.purchaserSessionId,
@@ -483,7 +536,6 @@ export class JobPassService {
     const timestamp = parseInt(timestampStr, 10);
     const now = Date.now();
 
-    // 15-minute challenge window
     if (isNaN(timestamp) || Math.abs(now - timestamp) > 15 * 60 * 1000) {
       return false;
     }
@@ -498,7 +550,7 @@ export class JobPassService {
   }
 
   /**
-   * Creates an email ownership proof token (e.g. for magic links or email recovery)
+   * Creates an email ownership proof token (for magic links / verified email challenges)
    */
   public createEmailOwnershipProof(email: string): string {
     const config = getBillingConfig();

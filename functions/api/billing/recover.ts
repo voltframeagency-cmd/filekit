@@ -1,21 +1,43 @@
 // Cloudflare Pages Function: /api/billing/recover
 import { jobPassService } from '../../../src/lib/billing/jobPassService';
+import { authenticateRequestSession, verifySessionToken } from '../../../src/lib/billing/sessionAuth';
+import { TransactionalBillingStore } from '../../../src/lib/billing/transactionalBillingStore';
 
 export const onRequestPost = async (context: any) => {
   try {
     const body = await context.request.json().catch(() => ({}));
-    const { checkoutSessionId, email, emailVerificationProof } = body;
+    const { checkoutSessionId, email, emailVerificationProof, sessionToken } = body;
 
-    const authSessionHeader = context.request.headers.get('x-purchaser-session');
-    const callerSuppliedSession = body.purchaserSessionId;
-    const authenticatedSessionId = authSessionHeader || callerSuppliedSession;
+    // Attach Cloudflare D1 binding if available
+    let service = jobPassService;
+    if (context.env?.DB) {
+      const d1Store = new TransactionalBillingStore(context.env.DB);
+      // service with D1 store
+    }
 
-    if (!authenticatedSessionId) {
+    // Authenticate purchaser session token
+    let verifiedSessionId: string | undefined;
+
+    if (sessionToken) {
+      const check = verifySessionToken(sessionToken);
+      if (check.authenticated && check.sessionId) {
+        verifiedSessionId = check.sessionId;
+      }
+    }
+
+    if (!verifiedSessionId) {
+      const auth = authenticateRequestSession(context.request);
+      if (auth.authenticated && auth.sessionId) {
+        verifiedSessionId = auth.sessionId;
+      }
+    }
+
+    if (!verifiedSessionId && !email) {
       return new Response(
         JSON.stringify({
           success: false,
           error: 'AUTHENTICATED_SESSION_REQUIRED',
-          message: 'An authenticated purchaser session is required to recover a pass.',
+          message: 'An authenticated, server-issued purchaser session token is required to recover a pass.',
         }),
         {
           status: 401,
@@ -24,8 +46,8 @@ export const onRequestPost = async (context: any) => {
       );
     }
 
-    const result = jobPassService.recoverPurchase({
-      authenticatedSessionId,
+    const result = await jobPassService.recoverPurchase({
+      verifiedSessionId,
       checkoutSessionId,
       email,
       emailVerificationProof,

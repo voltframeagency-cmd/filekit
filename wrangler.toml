@@ -1,0 +1,16 @@
+name = "filekit-staging"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+pages_build_output_dir = "dist-staging"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "filekit-billing-d1"
+database_id = "filekit-billing-d1-staged"
+
+[vars]
+ENVIRONMENT = "staging"
+TAX_TREATMENT_DEFAULT = "INCLUSIVE"
+TAX_RATE_PERCENT_DEFAULT = "25.0"
+DEFAULT_TAX_JURISDICTION = "SE"

@@ -1,7 +1,7 @@
 /**
  * Durable, Atomic Payment & Entitlement Store
- * Backed by TransactionalBillingStore (Cloudflare D1 / SQLite).
- * Enforces true ACID transactions, unique constraints, failure isolation, and refund revocations.
+ * Backed by TransactionalBillingStore (Cloudflare D1 & SQLite).
+ * Enforces true ACID transactions, unique constraints, early refund persistence, and failure isolation.
  */
 
 import { transactionalBillingStore, TransactionalBillingStore } from './transactionalBillingStore';
@@ -18,78 +18,74 @@ export class BillingStore {
     this.store = customStore || transactionalBillingStore;
   }
 
-  public recordPaymentAttempt(attempt: PaymentAttemptRecord): void {
-    this.store.recordPaymentAttempt(attempt);
+  public async recordPaymentAttempt(attempt: PaymentAttemptRecord): Promise<void> {
+    await this.store.recordPaymentAttempt(attempt);
   }
 
-  public updatePaymentAttempt(
+  public async updatePaymentAttempt(
     identifier: string,
     updates: Partial<PaymentAttemptRecord>
-  ): PaymentAttemptRecord | null {
-    return this.store.updatePaymentAttempt(identifier, updates);
+  ): Promise<PaymentAttemptRecord | null> {
+    return await this.store.updatePaymentAttempt(identifier, updates);
   }
 
-  public findPaymentAttempt(id: string): PaymentAttemptRecord | null {
-    return this.store.findPaymentAttempt(id);
+  public async findPaymentAttempt(id: string): Promise<PaymentAttemptRecord | null> {
+    return await this.store.findPaymentAttempt(id);
   }
 
-  public recordPaymentFailure(identifier: string, reason: string): boolean {
-    return this.store.recordPaymentFailure(identifier, reason);
+  public async recordPaymentFailure(identifier: string, reason: string): Promise<boolean> {
+    return await this.store.recordPaymentFailure(identifier, reason);
   }
 
-  public isWebhookEventProcessed(eventId: string): boolean {
-    const existing = this.findWebhookEvent(eventId);
-    return Boolean(existing);
+  public async isEventAlreadyProcessed(eventId: string): Promise<boolean> {
+    return await this.store.isEventAlreadyProcessed(eventId);
   }
 
-  public recordWebhookEventIfNew(audit: WebhookEventAudit): boolean {
-    return this.store.recordWebhookEventIfNew(audit);
+  public async recordRevocation(identifier: string, reason: string): Promise<void> {
+    await this.store.recordRevocation(identifier, reason);
   }
 
-  public isUnderlyingPurchaseFulfilled(underlyingId: string): { fulfilled: boolean; passId?: string } {
-    return this.store.isUnderlyingPurchaseFulfilled(underlyingId);
+  public async isPurchaseRevoked(identifier: string): Promise<{ revoked: boolean; reason?: string }> {
+    return await this.store.isPurchaseRevoked(identifier);
   }
 
-  public recordWebhookAudit(audit: WebhookEventAudit): void {
-    this.store.recordWebhookEventIfNew(audit);
+  public async isUnderlyingPurchaseFulfilled(underlyingId: string): Promise<{ fulfilled: boolean; passId?: string }> {
+    return await this.store.isUnderlyingPurchaseFulfilled(underlyingId);
   }
 
-  public createOrActivateEntitlement(entitlement: JobPassEntitlementRecord): void {
-    this.store.createOrActivateEntitlement(entitlement);
+  public async commitWebhookSuccess(params: {
+    eventAudit: WebhookEventAudit;
+    entitlement: JobPassEntitlementRecord;
+    attemptUpdates: {
+      attemptId: string;
+      paymentIntentId: string;
+      completedAt: number;
+    };
+  }): Promise<void> {
+    await this.store.commitWebhookSuccess(params);
   }
 
-  public getEntitlement(passId: string, currentTimeMs: number = Date.now()): JobPassEntitlementRecord | null {
-    return this.store.getEntitlement(passId, currentTimeMs);
+  public async getEntitlement(passId: string, currentTimeMs: number = Date.now()): Promise<JobPassEntitlementRecord | null> {
+    return await this.store.getEntitlement(passId, currentTimeMs);
   }
 
-  public getActiveEntitlementForPurchaser(
+  public async getActiveEntitlementForPurchaser(
     purchaserSessionId?: string,
     email?: string,
     currentTimeMs: number = Date.now()
-  ): JobPassEntitlementRecord | null {
-    return this.store.getActiveEntitlementForPurchaser(purchaserSessionId, email, currentTimeMs);
+  ): Promise<JobPassEntitlementRecord | null> {
+    return await this.store.getActiveEntitlementForPurchaser(purchaserSessionId, email, currentTimeMs);
   }
 
-  public revokeEntitlementBySource(
+  public async revokeEntitlementBySource(
     sourcePaymentIntentOrSessionId: string,
     reason: 'REFUND' | 'CHARGEBACK' | 'MANUAL_REVOCATION'
-  ): JobPassEntitlementRecord | null {
-    return this.store.revokeEntitlementBySource(sourcePaymentIntentOrSessionId, reason);
+  ): Promise<JobPassEntitlementRecord | null> {
+    return await this.store.revokeEntitlementBySource(sourcePaymentIntentOrSessionId, reason);
   }
 
-  public resetForTesting(): void {
-    this.store.resetForTesting();
-  }
-
-  private findWebhookEvent(eventId: string): boolean {
-    // Check by attempting to see if it's already recorded
-    return !this.store.recordWebhookEventIfNew({
-      eventId,
-      eventType: 'PROBE',
-      underlyingPurchaseId: 'PROBE',
-      processedAt: Date.now(),
-      status: 'PROCESSED',
-    });
+  public async resetForTesting(): Promise<void> {
+    await this.store.resetForTesting();
   }
 }
 
