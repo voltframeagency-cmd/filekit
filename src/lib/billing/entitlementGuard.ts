@@ -4,18 +4,23 @@
  * Preserves the agreed free/paid feature matrix.
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { FeatureIdentifier, FEATURE_MATRIX } from './types';
 import { jobPassService } from './jobPassService';
+
+function parseCookie(cookieHeader: string | null, name: string): string | undefined {
+  if (!cookieHeader) return undefined;
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
 
 export interface GuardAuthorizationResult {
   authorized: boolean;
   passId?: string;
-  response?: NextResponse;
+  response?: Response;
 }
 
 export async function assertFeatureEntitlement(
-  req: NextRequest,
+  req: Request,
   feature: FeatureIdentifier,
   metadata?: {
     fileSizeBytes?: number;
@@ -46,7 +51,7 @@ export async function assertFeatureEntitlement(
   // 2. Extract entitlement credentials from request
   const authHeader = req.headers.get('authorization') || '';
   const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : undefined;
-  const cookieToken = req.cookies.get('filekit_pass_token')?.value;
+  const cookieToken = parseCookie(req.headers.get('cookie'), 'filekit_pass_token');
   const sessionHeader = req.headers.get('x-purchaser-session') || undefined;
 
   const token = bearerToken || cookieToken;
@@ -62,7 +67,7 @@ export async function assertFeatureEntitlement(
   }
 
   // 4. Return structured 402 Payment Required
-  const paymentRequiredResponse = NextResponse.json(
+  const paymentRequiredResponse = Response.json(
     {
       success: false,
       error: 'JOB_PASS_REQUIRED',

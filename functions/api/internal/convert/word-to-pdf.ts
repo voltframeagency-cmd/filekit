@@ -3,7 +3,6 @@
 // Enforces €4.90 Job Pass entitlement for premium/large workloads.
 
 import { assertFeatureEntitlement } from '../../../../src/lib/billing/entitlementGuard';
-import { NextRequest } from 'next/server';
 
 const REAL_OFFICE_WORKER_URL = 'https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/convert';
 
@@ -27,12 +26,7 @@ export const onRequestPost = async (context: any) => {
 
     // 1. ENFORCE JOB PASS ENTITLEMENT ON DEPLOYED PATH
     // Fair-use files <= 50MB are allowed free; files > 50MB or batch requests require Job Pass
-    const nextReq = new NextRequest(req.url, {
-      method: req.method,
-      headers: req.headers,
-    });
-
-    const guard = await assertFeatureEntitlement(nextReq, 'SERVER_OFFICE_CONVERSION', {
+    const guard = await assertFeatureEntitlement(req, 'SERVER_OFFICE_CONVERSION', {
       fileSizeBytes: fileSize,
     });
 
