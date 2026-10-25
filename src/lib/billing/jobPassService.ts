@@ -142,13 +142,26 @@ export class JobPassService {
           return { success: false, reason: 'PRODUCT_MISMATCH' };
         }
 
-        // Verify amount
-        if (session.amount_total !== undefined && session.amount_total !== JOB_PASS_PRICE_CENTS) {
+        // Verify amount:
+        // In Managed Payments MoR, gross amount_total = 490 (inclusive VAT) OR amount_subtotal = 490 (exclusive sales tax)
+        // or base_amount_cents = 490.
+        const expectedPrice = JOB_PASS_PRICE_CENTS;
+        const amountMatches =
+          session.amount_total === expectedPrice ||
+          session.amount_subtotal === expectedPrice ||
+          (session.metadata?.base_amount_cents && Number(session.metadata.base_amount_cents) === expectedPrice);
+
+        if (session.amount_total !== undefined && !amountMatches) {
           return { success: false, reason: 'AMOUNT_MISMATCH' };
         }
 
-        // Verify currency
-        if (session.currency && session.currency.toLowerCase() !== 'eur') {
+        // Verify currency: EUR base currency or adaptive pricing currency
+        const currencyMatches =
+          !session.currency ||
+          session.currency.toLowerCase() === 'eur' ||
+          session.metadata?.base_currency?.toLowerCase() === 'eur';
+
+        if (!currencyMatches) {
           return { success: false, reason: 'CURRENCY_MISMATCH' };
         }
 

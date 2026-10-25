@@ -103,7 +103,14 @@ export class StripeProvider {
       'line_items[0][price_data][product_data][description]',
       `7 days of premium file processing. One-time payment, never auto-renews. (${params.taxResolution.taxConfig.taxLabel || 'VAT included'})`
     );
+    // Product tax code for digital electronically supplied service / SaaS
+    body.append('line_items[0][price_data][product_data][tax_code]', 'txcd_10000000');
     body.append('line_items[0][quantity]', '1');
+
+    // Stripe Managed Payments (Merchant of Record mode)
+    if (config.useManagedPayments) {
+      body.append('managed_payments[enabled]', 'true');
+    }
 
     // Server metadata for attribution & session binding
     body.append('metadata[product]', 'filekit_job_pass');
@@ -111,6 +118,9 @@ export class StripeProvider {
     body.append('metadata[durationDays]', JOB_PASS_DURATION_DAYS.toString());
     body.append('metadata[taxTreatment]', params.taxResolution.taxConfig.treatment);
     body.append('metadata[jurisdiction]', params.taxResolution.taxConfig.jurisdictionCode || 'GLOBAL');
+    body.append('metadata[base_amount_cents]', params.taxResolution.totalGrossCents.toString());
+    body.append('metadata[base_currency]', JOB_PASS_CURRENCY);
+    body.append('metadata[managed_payments]', config.useManagedPayments ? 'true' : 'false');
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',

@@ -13,6 +13,7 @@ export interface BillingConfig {
   allowMocks: boolean;
   isTestEnv: boolean;
   isDeployed: boolean;
+  useManagedPayments: boolean;
 }
 
 let cachedConfig: BillingConfig | null = null;
@@ -84,6 +85,9 @@ export function getBillingConfig(forceReload: boolean = false): BillingConfig {
     );
   }
 
+  // Stripe Managed Payments: Default true for FileKit's MoR integration unless explicitly disabled
+  const useManagedPayments = process.env.STRIPE_MANAGED_PAYMENTS !== 'false';
+
   cachedConfig = {
     signingSecret,
     stripeSecretKey: rawStripeSecret ? rawStripeSecret.trim() : undefined,
@@ -91,6 +95,7 @@ export function getBillingConfig(forceReload: boolean = false): BillingConfig {
     allowMocks,
     isTestEnv,
     isDeployed,
+    useManagedPayments,
   };
 
   return cachedConfig;
