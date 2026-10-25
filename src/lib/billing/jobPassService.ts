@@ -142,27 +142,27 @@ export class JobPassService {
           return { success: false, reason: 'PRODUCT_MISMATCH' };
         }
 
-        // Verify amount:
-        // In Managed Payments MoR, gross amount_total = 490 (inclusive VAT) OR amount_subtotal = 490 (exclusive sales tax)
-        // or base_amount_cents = 490.
-        const expectedPrice = JOB_PASS_PRICE_CENTS;
-        const amountMatches =
-          session.amount_total === expectedPrice ||
-          session.amount_subtotal === expectedPrice ||
-          (session.metadata?.base_amount_cents && Number(session.metadata.base_amount_cents) === expectedPrice);
+        // Strict payment amount and currency verification:
+        // Must match Stripe's actual financial payment fields, NEVER relying on metadata alone.
+        // For tax-inclusive €4.90 pricing, the customer pays exactly 490 cents EUR (or equivalent documented converted currency).
+        const expectedCents = JOB_PASS_PRICE_CENTS; // 490 cents
+        const isDirectEurPaid =
+          session.currency?.toLowerCase() === 'eur' &&
+          session.amount_total === expectedCents;
 
-        if (session.amount_total !== undefined && !amountMatches) {
-          return { success: false, reason: 'AMOUNT_MISMATCH' };
-        }
+        const isConvertedEurPaid =
+          session.currency_conversion &&
+          session.currency_conversion.source_currency?.toLowerCase() === 'eur' &&
+          session.currency_conversion.amount_total === expectedCents;
 
-        // Verify currency: EUR base currency or adaptive pricing currency
-        const currencyMatches =
-          !session.currency ||
-          session.currency.toLowerCase() === 'eur' ||
-          session.metadata?.base_currency?.toLowerCase() === 'eur';
-
-        if (!currencyMatches) {
-          return { success: false, reason: 'CURRENCY_MISMATCH' };
+        if (!isDirectEurPaid && !isConvertedEurPaid) {
+          if (session.amount_total !== expectedCents) {
+            return { success: false, reason: 'AMOUNT_MISMATCH' };
+          }
+          if (session.currency && session.currency.toLowerCase() !== 'eur') {
+            return { success: false, reason: 'CURRENCY_MISMATCH' };
+          }
+          return { success: false, reason: 'AMOUNT_OR_CURRENCY_MISMATCH' };
         }
 
         // Verify payment status

@@ -105,6 +105,8 @@ export class StripeProvider {
     );
     // Product tax code for digital electronically supplied service / SaaS
     body.append('line_items[0][price_data][product_data][tax_code]', 'txcd_10000000');
+    // Explicitly configure tax-inclusive pricing so €4.90 includes all indirect taxes (VAT/GST)
+    body.append('line_items[0][price_data][tax_behavior]', 'inclusive');
     body.append('line_items[0][quantity]', '1');
 
     // Stripe Managed Payments (Merchant of Record mode)
@@ -116,10 +118,8 @@ export class StripeProvider {
     body.append('metadata[product]', 'filekit_job_pass');
     body.append('metadata[purchaserSessionId]', params.purchaserSessionId);
     body.append('metadata[durationDays]', JOB_PASS_DURATION_DAYS.toString());
-    body.append('metadata[taxTreatment]', params.taxResolution.taxConfig.treatment);
+    body.append('metadata[taxTreatment]', 'INCLUSIVE');
     body.append('metadata[jurisdiction]', params.taxResolution.taxConfig.jurisdictionCode || 'GLOBAL');
-    body.append('metadata[base_amount_cents]', params.taxResolution.totalGrossCents.toString());
-    body.append('metadata[base_currency]', JOB_PASS_CURRENCY);
     body.append('metadata[managed_payments]', config.useManagedPayments ? 'true' : 'false');
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
@@ -127,6 +127,7 @@ export class StripeProvider {
       headers: {
         Authorization: `Bearer ${config.stripeSecretKey}`,
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Stripe-Version': '2025-03-31.basil',
       },
       body: body.toString(),
     });
