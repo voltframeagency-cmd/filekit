@@ -1,8 +1,16 @@
 // Cloudflare Pages Function: /api/billing/webhook
 import { jobPassService } from '../../../src/lib/billing/jobPassService';
+import { getBillingConfig } from '../../../src/lib/billing/billingConfig';
 
 export const onRequestPost = async (context: any) => {
   try {
+    if (context.env) {
+      if (context.env.DB) {
+        jobPassService.bindD1(context.env.DB);
+      }
+      getBillingConfig(true, context.env);
+    }
+
     const rawPayload = await context.request.text();
     const signatureHeader = context.request.headers.get('stripe-signature') || '';
 

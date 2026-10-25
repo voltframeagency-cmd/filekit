@@ -1,8 +1,15 @@
 // Cloudflare Pages Function: /api/billing/entitlement
 import { jobPassService } from '../../../src/lib/billing/jobPassService';
+import { getBillingConfig } from '../../../src/lib/billing/billingConfig';
 
 export const onRequest = async (context: any) => {
   try {
+    if (context.env) {
+      if (context.env.DB) {
+        jobPassService.bindD1(context.env.DB);
+      }
+      getBillingConfig(true, context.env);
+    }
     const authHeader = context.request.headers.get('authorization') || '';
     const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : undefined;
     const sessionHeader = context.request.headers.get('x-purchaser-session') || undefined;

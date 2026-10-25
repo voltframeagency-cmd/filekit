@@ -1,9 +1,17 @@
 // Cloudflare Pages Function: /api/billing/checkout
 import { jobPassService } from '../../../src/lib/billing/jobPassService';
 import { issuePurchaserSession } from '../../../src/lib/billing/sessionAuth';
+import { getBillingConfig } from '../../../src/lib/billing/billingConfig';
 
 export const onRequestPost = async (context: any) => {
   try {
+    if (context.env) {
+      if (context.env.DB) {
+        jobPassService.bindD1(context.env.DB);
+      }
+      getBillingConfig(true, context.env);
+    }
+
     const body = await context.request.json().catch(() => ({}));
     const { purchaserSessionId, customerEmail, countryCode, successUrl, cancelUrl } = body;
 

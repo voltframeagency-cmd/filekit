@@ -1,18 +1,18 @@
 // Cloudflare Pages Function: /api/billing/recover
 import { jobPassService } from '../../../src/lib/billing/jobPassService';
 import { authenticateRequestSession, verifySessionToken } from '../../../src/lib/billing/sessionAuth';
-import { TransactionalBillingStore } from '../../../src/lib/billing/transactionalBillingStore';
+import { getBillingConfig } from '../../../src/lib/billing/billingConfig';
 
 export const onRequestPost = async (context: any) => {
   try {
     const body = await context.request.json().catch(() => ({}));
     const { checkoutSessionId, email, emailVerificationProof, sessionToken } = body;
 
-    // Attach Cloudflare D1 binding if available
-    let service = jobPassService;
-    if (context.env?.DB) {
-      const d1Store = new TransactionalBillingStore(context.env.DB);
-      // service with D1 store
+    if (context.env) {
+      if (context.env.DB) {
+        jobPassService.bindD1(context.env.DB);
+      }
+      getBillingConfig(true, context.env);
     }
 
     // Authenticate purchaser session token

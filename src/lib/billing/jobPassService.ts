@@ -36,6 +36,10 @@ export interface CreateCheckoutInput {
 }
 
 export class JobPassService {
+  public bindD1(d1Db: any): void {
+    billingStore.bindD1(d1Db);
+  }
+
   /**
    * Creates a one-time checkout session with server-controlled pricing (€4.90).
    */

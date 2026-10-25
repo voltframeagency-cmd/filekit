@@ -3,11 +3,20 @@
 // Enforces €4.90 Job Pass entitlement for premium/large workloads.
 
 import { assertFeatureEntitlement } from '../../../../src/lib/billing/entitlementGuard';
+import { jobPassService } from '../../../../src/lib/billing/jobPassService';
+import { getBillingConfig } from '../../../../src/lib/billing/billingConfig';
 
 const REAL_OFFICE_WORKER_URL = 'https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/convert';
 
 export const onRequestPost = async (context: any) => {
   try {
+    if (context.env) {
+      if (context.env.DB) {
+        jobPassService.bindD1(context.env.DB);
+      }
+      getBillingConfig(true, context.env);
+    }
+
     const req = context.request;
     const contentType = req.headers.get('content-type') || '';
 

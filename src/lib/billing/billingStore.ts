@@ -18,6 +18,12 @@ export class BillingStore {
     this.store = customStore || transactionalBillingStore;
   }
 
+  public bindD1(d1Db: any): void {
+    if (d1Db) {
+      this.store = this.store.withD1(d1Db);
+    }
+  }
+
   public async recordPaymentAttempt(attempt: PaymentAttemptRecord): Promise<void> {
     await this.store.recordPaymentAttempt(attempt);
   }

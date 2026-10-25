@@ -18,34 +18,36 @@ export interface BillingConfig {
 
 let cachedConfig: BillingConfig | null = null;
 
-export function getBillingConfig(forceReload: boolean = false): BillingConfig {
-  if (cachedConfig && !forceReload) {
+export function getBillingConfig(forceReload: boolean = false, envSourceOverride?: any): BillingConfig {
+  if (cachedConfig && !forceReload && !envSourceOverride) {
     return cachedConfig;
   }
 
+  const env = envSourceOverride || (typeof process !== 'undefined' ? process.env : {});
+
   // Deployed environment detection (Cloudflare Pages, Vercel, or production NODE_ENV)
   const isDeployed =
-    process.env.NODE_ENV === 'production' ||
-    process.env.CF_PAGES === '1' ||
-    process.env.VERCEL === '1' ||
-    process.env.ENVIRONMENT === 'production';
+    env.NODE_ENV === 'production' ||
+    env.CF_PAGES === '1' ||
+    env.VERCEL === '1' ||
+    env.ENVIRONMENT === 'production';
 
   const isTestEnv =
     !isDeployed &&
-    (process.env.NODE_ENV === 'test' || process.env.FILEKIT_TEST_MODE === 'true');
+    (env.NODE_ENV === 'test' || env.FILEKIT_TEST_MODE === 'true');
 
   // CRITICAL: Reject mock mode in deployed environments regardless of flags!
-  const allowMocks = !isDeployed && (process.env.ALLOW_BILLING_MOCK === 'true' || isTestEnv);
+  const allowMocks = !isDeployed && (env.ALLOW_BILLING_MOCK === 'true' || isTestEnv);
 
-  if (isDeployed && process.env.ALLOW_BILLING_MOCK === 'true') {
+  if (isDeployed && env.ALLOW_BILLING_MOCK === 'true') {
     console.warn(
       '[SECURITY_WARNING] ALLOW_BILLING_MOCK=true was specified, but is strictly ignored in deployed environment.'
     );
   }
 
-  const rawStripeSecret = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_TEST_SECRET_KEY;
-  const rawWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET || process.env.STRIPE_TEST_WEBHOOK_SECRET;
-  const rawSigningSecret = process.env.JOB_PASS_SIGNING_SECRET;
+  const rawStripeSecret = env.STRIPE_SECRET_KEY || env.STRIPE_TEST_SECRET_KEY;
+  const rawWebhookSecret = env.STRIPE_WEBHOOK_SECRET || env.STRIPE_TEST_WEBHOOK_SECRET;
+  const rawSigningSecret = env.JOB_PASS_SIGNING_SECRET;
 
   // 1. REJECT LIVE STRIPE KEYS UNCONDITIONALLY
   if (rawStripeSecret) {
@@ -86,7 +88,7 @@ export function getBillingConfig(forceReload: boolean = false): BillingConfig {
   }
 
   // Stripe Managed Payments: Default true for FileKit's MoR integration unless explicitly disabled
-  const useManagedPayments = process.env.STRIPE_MANAGED_PAYMENTS !== 'false';
+  const useManagedPayments = env.STRIPE_MANAGED_PAYMENTS !== 'false';
 
   cachedConfig = {
     signingSecret,
