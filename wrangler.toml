@@ -7,7 +7,7 @@ pages_build_output_dir = "dist-staging"
 [[d1_databases]]
 binding = "DB"
 database_name = "filekit-billing-d1"
-database_id = "filekit-billing-d1-staged"
+database_id = "682e90a1-f70f-41a4-a60c-ecc928c9f057"
 
 [vars]
 ENVIRONMENT = "staging"
