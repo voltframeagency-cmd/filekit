@@ -61,12 +61,14 @@ export class StripeProvider {
     const config = getBillingConfig();
     this.assertTestModeOnly(config.stripeSecretKey);
 
-    const hasRealTestKey = config.stripeSecretKey && config.stripeSecretKey.startsWith('sk_test_');
+    const hasRealTestKey =
+      config.stripeSecretKey &&
+      (config.stripeSecretKey.startsWith('sk_test_') || config.stripeSecretKey.startsWith('rk_test_'));
 
     if (!hasRealTestKey) {
       if (!config.allowMocks) {
         throw new Error(
-          'CREDENTIAL_BLOCKED: Real Stripe test credentials (sk_test_*) are required in deployed environment. ' +
+          'CREDENTIAL_BLOCKED: Real Stripe test credentials (sk_test_* or rk_test_*) are required in deployed environment. ' +
           'Mock provider is disabled.'
         );
       }
