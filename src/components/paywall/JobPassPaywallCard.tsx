@@ -31,7 +31,7 @@ export default function JobPassPaywallCard({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           purchaserSessionId,
-          successUrl: window.location.href,
+          successUrl: `${window.location.origin}/billing/success`,
           cancelUrl: window.location.href,
         }),
       });
