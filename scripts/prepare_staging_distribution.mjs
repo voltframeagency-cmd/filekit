@@ -42,26 +42,32 @@ if (fs.existsSync(indexHtml)) {
   console.log('✓ Copied root index.html');
 }
 
-// 5. Copy all prerendered HTML tool pages
-const appEntries = fs.readdirSync(NEXT_APP_DIR, { withFileTypes: true });
-let pageCount = 0;
+// 5. Copy all prerendered HTML tool pages (including nested routes like billing/success)
+function copyAppHtmlFiles(dir, relativeBase = '') {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    const relPath = relativeBase ? path.join(relativeBase, entry.name) : entry.name;
+    if (entry.isDirectory()) {
+      copyAppHtmlFiles(fullPath, relPath);
+    } else if (entry.isFile() && entry.name.endsWith('.html')) {
+      const routeRel = relPath.replace(/\.html$/, '').replace(/\\/g, '/');
+      if (routeRel === 'index' || routeRel.startsWith('_')) continue;
 
-for (const entry of appEntries) {
-  if (entry.isFile() && entry.name.endsWith('.html')) {
-    const routeName = entry.name.replace(/\.html$/, '');
-    if (routeName === 'index') continue;
-
-    const sourcePath = path.join(NEXT_APP_DIR, entry.name);
-    
-    // Write both <route>.html and <route>/index.html for robust edge URL resolution
-    const routeDir = path.join(DIST_DIR, routeName);
-    fs.mkdirSync(routeDir, { recursive: true });
-    fs.copyFileSync(sourcePath, path.join(routeDir, 'index.html'));
-    fs.copyFileSync(sourcePath, path.join(DIST_DIR, entry.name));
-    pageCount++;
+      const targetDir = path.join(DIST_DIR, routeRel);
+      fs.mkdirSync(targetDir, { recursive: true });
+      fs.copyFileSync(fullPath, path.join(targetDir, 'index.html'));
+      
+      const flatTarget = path.join(DIST_DIR, `${routeRel}.html`);
+      fs.mkdirSync(path.dirname(flatTarget), { recursive: true });
+      fs.copyFileSync(fullPath, flatTarget);
+      pageCount++;
+    }
   }
 }
-console.log(`✓ Packaged ${pageCount} tool routes into static directories`);
+let pageCount = 0;
+copyAppHtmlFiles(NEXT_APP_DIR);
+console.log(`✓ Packaged ${pageCount} tool and nested routes into static directories`);
 
 // 6. Handle 404.html for genuine edge 404 responses
 const notFoundHtml = path.join(NEXT_APP_DIR, '_not-found.html');

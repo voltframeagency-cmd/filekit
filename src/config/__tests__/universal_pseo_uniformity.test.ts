@@ -138,7 +138,7 @@ export async function runUniversalPseoTests() {
 
   let verifiedRoutes = 0;
   for (const entry of entries) {
-    if (!entry.isDirectory() || entry.name.startsWith("[") || entry.name.startsWith("(") || ["api", "dev", "sv"].includes(entry.name)) {
+    if (!entry.isDirectory() || entry.name.startsWith("[") || entry.name.startsWith("(") || ["api", "dev", "sv", "pricing", "billing"].includes(entry.name)) {
       continue;
     }
 

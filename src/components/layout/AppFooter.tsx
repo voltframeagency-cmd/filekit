@@ -19,7 +19,7 @@ export default function AppFooter() {
             {t("trust.badge4") || "Privacy"}
           </Link>
           <span className="text-blue-300/50">·</span>
-          <Link href={`${basePrefix}/#pricing`} className="hover:text-white transition-colors duration-150">
+          <Link href="/pricing" className="hover:text-white transition-colors duration-150">
             {t("nav.pricing") || "Pricing"}
           </Link>
           <span className="text-blue-300/50">·</span>

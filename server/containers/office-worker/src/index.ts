@@ -208,8 +208,8 @@ export default {
           });
         }
 
-        // Deep Structural & Security Preflight Inspection
-        const binaryStr = new TextDecoder("latin1").decode(inputBytes.subarray(0, Math.min(inputBytes.length, 1048576)));
+        // Deep Structural & Security Preflight Inspection (full buffer scan for OpenXML/OLE2 entries)
+        const binaryStr = new TextDecoder("latin1").decode(inputBytes);
 
         if (isZipMagic) {
           // Check for required OpenXML core entries
@@ -267,13 +267,15 @@ export default {
             });
           }
         } else if (isOle2Magic) {
-          // Deep OLE2 (.xls) stream inspection
+          // Deep OLE2 (.doc, .xls, .ppt) stream inspection
+          const hasWordStream = binaryStr.includes("WordDocument") || binaryStr.includes("W\x00o\x00r\x00d\x00D\x00o\x00c\x00u\x00m\x00e\x00n\x00t");
           const hasWorkbookStream = binaryStr.includes("Workbook") || binaryStr.includes("Book") ||
                                    binaryStr.includes("W\x00o\x00r\x00k\x00b\x00o\x00o\x00k\x00") ||
                                    binaryStr.includes("B\x00o\x00o\x00k\x00");
+          const hasPowerPointStream = binaryStr.includes("PowerPoint Document") || binaryStr.includes("P\x00o\x00w\x00e\x00r\x00P\x00o\x00i\x00n\x00t");
 
-          if (!hasWorkbookStream) {
-            return new Response(JSON.stringify({ error: "OFFICE_STRUCTURE_INVALID", details: "Input OLE2 compound binary does not contain a valid Excel Workbook or Book stream." }), {
+          if (!hasWordStream && !hasWorkbookStream && !hasPowerPointStream) {
+            return new Response(JSON.stringify({ error: "OFFICE_STRUCTURE_INVALID", details: "Input OLE2 compound binary does not contain a valid Word, Excel, or PowerPoint document stream." }), {
               status: 422,
               headers: { "Content-Type": "application/json" }
             });

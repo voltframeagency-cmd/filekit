@@ -51,6 +51,8 @@ export const onRequestPost = async (context: any) => {
       Authorization: `Bearer ${workerBearerToken}`,
       'Content-Type': file.type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'X-File-Name': file.name || 'document.docx',
+      Accept: 'application/pdf',
+      'X-Return-Format': 'binary',
     };
 
     if (guard.passId) {

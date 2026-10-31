@@ -390,6 +390,6 @@ export const MAIN_NAVIGATION: TopNavItem[] = [
   {
     id: "pricing",
     label: "Pricing",
-    href: "/#pricing"
+    href: "/pricing"
   }
 ];
