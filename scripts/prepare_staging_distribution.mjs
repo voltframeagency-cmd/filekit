@@ -117,7 +117,9 @@ async function prerenderLocalizedRoutes() {
     '/pt-BR/compress-pdf',
     '/es-419/compress-pdf',
     '/de/compress-pdf',
-    '/fr/compress-pdf'
+    '/fr/compress-pdf',
+    '/fr/pricing',
+    '/sv/pricing'
   ];
 
   for (const route of targetRoutes) {
