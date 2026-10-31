@@ -30,6 +30,7 @@ import PdfToImageWorkspace from "@/components/pdf-tools/PdfToImageWorkspace";
 import ImageCompressionWorkspace from "@/components/image-tools/ImageCompressionWorkspace";
 import ImageConverterWorkspace from "@/components/image-tools/ImageConverterWorkspace";
 import ToolGrid from "@/components/layout/ToolGrid";
+import JobPassPaywallCard from "@/components/paywall/JobPassPaywallCard";
 import { HowToStepSection } from "@/components/seo/HowToStepSection";
 import { AeoFaqSection } from "@/components/seo/AeoFaqSection";
 import { SchemaGenerator } from "@/utils/seo/SchemaGenerator";
@@ -85,6 +86,14 @@ export default function UniversalToolPage({ slug, locale: inputLocale }: Univers
       return (
         <div className="w-full max-w-5xl mx-auto">
           <ToolGrid />
+        </div>
+      );
+    }
+
+    if (normSlug === "/pricing") {
+      return (
+        <div className="w-full max-w-xl mx-auto">
+          <JobPassPaywallCard className="my-0" />
         </div>
       );
     }
