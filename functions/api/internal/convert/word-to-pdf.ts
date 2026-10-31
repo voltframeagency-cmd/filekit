@@ -32,11 +32,16 @@ export const onRequestPost = async (context: any) => {
     }
 
     const fileSize = file.size;
+    const isBatch =
+      formData.get('batch') === 'true' ||
+      req.headers.get('x-batch-mode') === 'true' ||
+      req.headers.get('x-require-premium') === 'true';
 
     // 1. ENFORCE JOB PASS ENTITLEMENT ON DEPLOYED PATH
-    // Fair-use files <= 50MB are allowed free; files > 50MB or batch requests require Job Pass
+    // Fair-use files <= 50MB are allowed free; files > 50MB or batch/premium requests require Job Pass
     const guard = await assertFeatureEntitlement(req, 'SERVER_OFFICE_CONVERSION', {
       fileSizeBytes: fileSize,
+      isBatch,
     });
 
     if (!guard.authorized && guard.response) {
@@ -44,7 +49,13 @@ export const onRequestPost = async (context: any) => {
     }
 
     // 2. DISPATCH TO REAL LIBREOFFICE WORKER CONTAINER
-    const workerBearerToken = context.env?.CANARY_BEARER_TOKEN || '78700c0be3ced34ae0f898038ce7641d3376e98103952bea2ccac914351c166c';
+    const workerBearerToken = context.env?.CANARY_BEARER_TOKEN;
+    if (!workerBearerToken) {
+      return new Response(JSON.stringify({ success: false, error: 'Missing CANARY_BEARER_TOKEN binding on edge.' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
     const fileBuffer = await file.arrayBuffer();
 
     const forwardHeaders: Record<string, string> = {

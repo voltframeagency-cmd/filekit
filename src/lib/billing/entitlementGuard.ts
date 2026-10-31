@@ -36,17 +36,16 @@ export async function assertFeatureEntitlement(
     effectiveFeature = 'LARGE_FILE_EXPANDED';
   }
 
-  // If request contains multiple files, it qualifies as BATCH_PROCESSING_HIGH_VOLUME
-  if (metadata?.isBatch) {
+  // If request contains multiple files or explicit premium header, it qualifies as BATCH_PROCESSING_HIGH_VOLUME
+  if (
+    metadata?.isBatch ||
+    req.headers.get('x-batch-mode') === 'true' ||
+    req.headers.get('x-require-premium') === 'true'
+  ) {
     effectiveFeature = 'BATCH_PROCESSING_HIGH_VOLUME';
   }
 
   const rule = FEATURE_MATRIX[effectiveFeature] || FEATURE_MATRIX.LOCAL_CONVERSION_STANDARD;
-
-  // If feature does not require pass, authorize immediately
-  if (!rule.requiresJobPass) {
-    return { authorized: true };
-  }
 
   // 2. Extract entitlement credentials from request
   const authHeader = req.headers.get('authorization') || '';
@@ -55,6 +54,20 @@ export async function assertFeatureEntitlement(
   const sessionHeader = req.headers.get('x-purchaser-session') || undefined;
 
   const token = bearerToken || cookieToken;
+
+  // If feature does not require pass, still verify optional token to attach passId (or reject explicitly revoked pass)
+  if (!rule.requiresJobPass) {
+    if (token) {
+      const check = await jobPassService.verifyAccess({
+        token,
+        purchaserSessionId: sessionHeader,
+      });
+      if (check.hasActivePass) {
+        return { authorized: true, passId: check.passId };
+      }
+    }
+    return { authorized: true };
+  }
 
   // 3. Verify server-side access (enforces backing database record & 7-day validity)
   const check = await jobPassService.verifyAccess({
