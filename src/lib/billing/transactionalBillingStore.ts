@@ -267,7 +267,7 @@ export class TransactionalBillingStore {
    * Persists an early refund/dispute revocation even before entitlement creation.
    * Ensures that out-of-order success events can never grant active access.
    */
-  public async recordRevocation(identifier: string, reason: string): Promise<void> {
+  public async recordRevocation(identifier: string, reason: string, eventAudit?: WebhookEventAudit): Promise<void> {
     const now = Date.now();
     const sqlRevoke = `
       INSERT OR REPLACE INTO revoked_purchases (identifier, reason, revoked_at)
@@ -282,6 +282,24 @@ export class TransactionalBillingStore {
 
     // Also revoke in entitlements if already exists
     await this.revokeEntitlementBySource(identifier, reason as any);
+
+    if (eventAudit) {
+      const sqlWebhook = `
+        INSERT OR REPLACE INTO webhook_events (event_id, event_type, underlying_purchase_id, processed_at, status)
+        VALUES (?, ?, ?, ?, 'PROCESSED')
+      `;
+      const paramsWebhook = [
+        eventAudit.eventId,
+        eventAudit.eventType,
+        eventAudit.underlyingPurchaseId,
+        eventAudit.processedAt,
+      ];
+      if (this.d1Db) {
+        await this.d1Db.prepare(sqlWebhook).bind(...paramsWebhook).run();
+      } else if (this.sqliteDb) {
+        this.sqliteDb.prepare(sqlWebhook).run(...paramsWebhook);
+      }
+    }
   }
 
   /**

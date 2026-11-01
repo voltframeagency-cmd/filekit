@@ -47,8 +47,8 @@ export class BillingStore {
     return await this.store.isEventAlreadyProcessed(eventId);
   }
 
-  public async recordRevocation(identifier: string, reason: string): Promise<void> {
-    await this.store.recordRevocation(identifier, reason);
+  public async recordRevocation(identifier: string, reason: string, eventAudit?: WebhookEventAudit): Promise<void> {
+    await this.store.recordRevocation(identifier, reason, eventAudit);
   }
 
   public async isPurchaseRevoked(identifier: string): Promise<{ revoked: boolean; reason?: string }> {

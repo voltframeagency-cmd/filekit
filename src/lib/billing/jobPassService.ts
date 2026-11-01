@@ -325,8 +325,15 @@ export class JobPassService {
         const reason = event.type === 'charge.dispute.created' ? 'CHARGEBACK' : 'REFUND';
 
         if (paymentIntentId) {
-          // Persist revocation in revoked_purchases table AND in entitlements
-          await billingStore.recordRevocation(paymentIntentId, reason);
+          const eventAudit: WebhookEventAudit = {
+            eventId: event.id,
+            eventType: event.type,
+            underlyingPurchaseId: paymentIntentId,
+            processedAt: Date.now(),
+            status: 'PROCESSED',
+          };
+          // Persist revocation in revoked_purchases table, entitlements, AND webhook_events
+          await billingStore.recordRevocation(paymentIntentId, reason, eventAudit);
         }
         break;
       }
