@@ -62,7 +62,7 @@ export const onRequestPost = async (context: any) => {
       Authorization: `Bearer ${workerBearerToken.trim()}`,
       'Content-Type': file.type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'X-File-Name': file.name || 'document.docx',
-      'X-Canary-Run-ID': req.headers.get('x-canary-run-id') || 'staging_live_v2',
+      'X-Canary-Run-ID': req.headers.get('x-canary-run-id') || 'default',
       Accept: 'application/pdf',
       'X-Return-Format': 'binary',
     };
