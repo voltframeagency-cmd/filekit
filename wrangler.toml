@@ -14,15 +14,17 @@ ENVIRONMENT = "staging"
 TAX_TREATMENT_DEFAULT = "INCLUSIVE"
 TAX_RATE_PERCENT_DEFAULT = "25.0"
 DEFAULT_TAX_JURISDICTION = "SE"
+OFFICE_WORKER_URL = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/convert"
 
-[env.production]
-[[env.production.d1_databases]]
+[env.preview]
+[[env.preview.d1_databases]]
 binding = "DB"
-database_name = "filekit-billing-prod"
-database_id = "c8890d8e-4632-453c-9a1d-102a0bff0e14"
+database_name = "filekit-billing-d1"
+database_id = "682e90a1-f70f-41a4-a60c-ecc928c9f057"
 
-[env.production.vars]
-ENVIRONMENT = "production"
+[env.preview.vars]
+ENVIRONMENT = "staging"
 TAX_TREATMENT_DEFAULT = "INCLUSIVE"
 TAX_RATE_PERCENT_DEFAULT = "25.0"
 DEFAULT_TAX_JURISDICTION = "SE"
+OFFICE_WORKER_URL = "https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/convert"

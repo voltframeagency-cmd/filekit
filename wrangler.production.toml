@@ -1,0 +1,17 @@
+name = "filekit-prod"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+pages_build_output_dir = "dist-staging"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "filekit-billing-prod"
+database_id = "c8890d8e-4632-453c-9a1d-102a0bff0e14"
+
+[vars]
+ENVIRONMENT = "production"
+TAX_TREATMENT_DEFAULT = "INCLUSIVE"
+TAX_RATE_PERCENT_DEFAULT = "25.0"
+DEFAULT_TAX_JURISDICTION = "SE"
+OFFICE_WORKER_URL = "https://filekit-office-worker-prod.voltframeagency.workers.dev/internal/canary/convert"
