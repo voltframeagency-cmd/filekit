@@ -14,3 +14,15 @@ ENVIRONMENT = "staging"
 TAX_TREATMENT_DEFAULT = "INCLUSIVE"
 TAX_RATE_PERCENT_DEFAULT = "25.0"
 DEFAULT_TAX_JURISDICTION = "SE"
+
+[env.production]
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "filekit-billing-prod"
+database_id = "c8890d8e-4632-453c-9a1d-102a0bff0e14"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+TAX_TREATMENT_DEFAULT = "INCLUSIVE"
+TAX_RATE_PERCENT_DEFAULT = "25.0"
+DEFAULT_TAX_JURISDICTION = "SE"

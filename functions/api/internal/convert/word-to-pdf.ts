@@ -6,7 +6,7 @@ import { assertFeatureEntitlement } from '../../../../src/lib/billing/entitlemen
 import { jobPassService } from '../../../../src/lib/billing/jobPassService';
 import { getBillingConfig } from '../../../../src/lib/billing/billingConfig';
 
-const REAL_OFFICE_WORKER_URL = 'https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/convert';
+const DEFAULT_OFFICE_WORKER_URL = 'https://filekit-office-worker-canary.voltframeagency.workers.dev/internal/canary/convert';
 
 export const onRequestPost = async (context: any) => {
   try {
@@ -16,6 +16,8 @@ export const onRequestPost = async (context: any) => {
       }
       getBillingConfig(true, context.env);
     }
+
+    const officeWorkerUrl = context.env?.OFFICE_WORKER_URL || DEFAULT_OFFICE_WORKER_URL;
 
     const req = context.request;
     const contentType = req.headers.get('content-type') || '';
@@ -71,7 +73,7 @@ export const onRequestPost = async (context: any) => {
       forwardHeaders['X-Job-Pass-Id'] = guard.passId;
     }
 
-    const workerRes = await fetch(REAL_OFFICE_WORKER_URL, {
+    const workerRes = await fetch(officeWorkerUrl, {
       method: 'POST',
       headers: forwardHeaders,
       body: fileBuffer,
